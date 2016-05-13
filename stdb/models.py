@@ -26,7 +26,8 @@ class Dataset(models.Model):
 
 
 class RefineResult(models.Model):
-    struct_name = models.ForeignKey(Dataset, on_delete=models.CASCADE)
+    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, default=0)
+    struct_name = models.CharField(max_length=200)
     cell_a = models.FloatField(max_length=8, default=0)
     cell_a.short_description = 'Unit Cell Parameter a'
     cell_b = models.FloatField(max_length=8, default=0)
@@ -35,5 +36,5 @@ class RefineResult(models.Model):
     cell_c.short_description = 'Unit Cell Parameter c'
 
     def __str__(self):
-        return self.struct_name.name
+        return self.struct_name
 
