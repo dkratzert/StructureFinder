@@ -16,6 +16,7 @@ class DatasetAdmin(admin.ModelAdmin):
     inlines = [RefineResultInline]
     list_display = ('name', 'measure_date', 'was_measured_recently', 'machine')
     list_filter = ['measure_date']
+    search_fields = ['name', 'operator', 'flask_name']
 
 admin.site.register(Dataset, DatasetAdmin)
 #admin.site.register(RefineResult)
