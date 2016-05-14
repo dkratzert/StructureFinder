@@ -18,5 +18,5 @@ class IndexView(generic.ListView):
         published in the future)
         """
         return Dataset.objects.filter(
-            pub_date__lte=timezone.now()
-        ).order_by('-pub_date')[:5]
+            measure_date__lte=timezone.now()
+        ).order_by('-measure_date')#[:5]

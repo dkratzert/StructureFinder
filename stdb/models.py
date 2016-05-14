@@ -18,7 +18,7 @@ class Dataset(models.Model):
 
     def was_measured_recently(self):
         now = timezone.now()
-        return now - datetime.timedelta(days=7) <= self.pub_date <= now
+        return now - datetime.timedelta(days=7) <= self.measure_date <= now
 
     was_measured_recently.admin_order_field = 'measure_date'
     was_measured_recently.boolean = True
