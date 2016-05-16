@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<title>{{ dataset.name }}</title>
+
+{% block title %}Measurement details for {{ dataset.name }}{% endblock %}
+    <p>
+    Operator: {{ dataset.operator }} <br>
+    Dataset Name: {{ dataset.name }} <br>
+    Machine: {{ dataset.machine }}
+    </p>
+
+    <ul>
+    {% for data in dataset.refineresult_set.all %}
+        <li> <it>a</it> = {{ data.cell_a }} </li>
+        <li> <it>b</it> = {{ data.cell_b }} </li>
+        <li> <it>c</it> = {{ data.cell_c }} </li>
+        <li> &alpha; = {{ data.alpha }} </li>
+        <li> &beta; = {{ data.alpha }} </li>
+        <li> &gamma; = {{ data.alpha }} </li>
+    {% endfor %}
+    </ul>
+
+<br>
+<a href="{% url 'index' %}">Back to main page</a>
+

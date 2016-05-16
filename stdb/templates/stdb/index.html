@@ -1,9 +1,14 @@
-{% if latest_measurment_list %}
+<!DOCTYPE html>
+<title>StructureDB</title>
+
+{% block title %}Latest measurements{% endblock %}
+
+
     <ul>
-    {% for mesure in latest_measurment_list %}
-        <li><a href="/polls/{{ dataset.id }}/">{{ dataset.name }}</a></li>
+    {% for dataset in latest_measurement_list %}
+        <li><a href="/stdb/{{ dataset.id }}/">{{ dataset.name }}</a></li>
     {% endfor %}
     </ul>
-{% else %}
-    <p>No polls are available.</p>
-{% endif %}
+
+
+

@@ -45,18 +45,22 @@ class RefineResult(models.Model):
     is_publishable = models.BooleanField(default=False)
     is_publishable.short_description = 'Is the structure publishable?'
     cell_a = models.FloatField(max_length=8, default=0, verbose_name='a', validators = [MinValueValidator(0), MaxValueValidator(500)])
-    cell_b = models.FloatField(max_length=8, default=0, validators=[MinValueValidator(0), MaxValueValidator(500)])
-    cell_c = models.FloatField(max_length=8, default=0, validators=[MinValueValidator(0), MaxValueValidator(500)])
-    cell_alpha = models.FloatField(max_length=8, default=0, validators = [MinValueValidator(0), MaxValueValidator(180)])
-    cell_beta = models.FloatField(max_length=8, default=0, validators = [MinValueValidator(0), MaxValueValidator(180)])
-    cell_gamma = models.FloatField(max_length=8, default=0, validators = [MinValueValidator(0), MaxValueValidator(180)])
+    cell_b = models.FloatField(max_length=8, default=0, verbose_name='b', validators=[MinValueValidator(0), MaxValueValidator(500)])
+    cell_c = models.FloatField(max_length=8, default=0, verbose_name='c', validators=[MinValueValidator(0), MaxValueValidator(500)])
+    alpha = models.FloatField(max_length=8, default=0, validators = [MinValueValidator(0), MaxValueValidator(180)])
+    beta = models.FloatField(max_length=8, default=0, validators = [MinValueValidator(0), MaxValueValidator(180)])
+    gamma = models.FloatField(max_length=8, default=0, validators = [MinValueValidator(0), MaxValueValidator(180)])
+    R1_all = models.FloatField(max_length=5, default=0, validators = [MinValueValidator(0), MaxValueValidator(1)])
+    wR2_all = models.FloatField(max_length=5, default=0, validators = [MinValueValidator(0), MaxValueValidator(1)])
+    R1_2s = models.FloatField(max_length=5, default=0, validators = [MinValueValidator(0), MaxValueValidator(1)])
+    wR2_2s = models.FloatField(max_length=5, default=0, validators = [MinValueValidator(0), MaxValueValidator(1)])
     cell_a.short_description = 'Unit Cell Parameter a'
     cell_b.short_description = 'Unit Cell Parameter b'
     cell_c.short_description = 'Unit Cell Parameter c'
-    cell_alpha.short_description = 'Unit Cell Parameter alpha'
-    cell_beta.short_description = 'Unit Cell Parameter beta'
-    cell_gamma.short_description = 'Unit Cell Parameter gamma'
+    alpha.short_description = 'Unit Cell Parameter alpha'
+    beta.short_description = 'Unit Cell Parameter beta'
+    gamma.short_description = 'Unit Cell Parameter gamma'
 
     def __str__(self):
-        return self.dataset.name+' dataset '+str(self.id)
+        return self.dataset.name#+' dataset '+str(self.id)
 

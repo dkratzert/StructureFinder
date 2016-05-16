@@ -9,11 +9,11 @@ class RefineResultInline(admin.StackedInline):
     verbose_name = 'Refine Result'
     verbose_name_plural = 'Refine Results'
     #fields = [
-    #     'is_publishable'
+    #     'alpha'
     #]
     #inlines = [UnitCell]
     #fieldsets = [
-     #   ('Unit Cell', {'fields': ['cell']}),
+    #    ('Unit Cell', {'fields': ['cell']}),
     #]
 
 class DatasetAdmin(admin.ModelAdmin):
@@ -26,7 +26,7 @@ class DatasetAdmin(admin.ModelAdmin):
     search_fields = ['name', 'operator', 'flask_name']
 
 admin.site.register(Dataset, DatasetAdmin)
-admin.site.register(RefineResult)
+#admin.site.register(RefineResult)
 
 """
 Add possibility to add machines like Choices in https://docs.djangoproject.com/en/1.9/intro/tutorial07/
