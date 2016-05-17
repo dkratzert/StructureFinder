@@ -4,56 +4,70 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 # Create your models here.
-from django.forms import fields
+from django.forms import fields, forms
 from django.utils import timezone
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
 
 
 class Dataset(models.Model):
     name = models.CharField(max_length=200)
     flask_name = models.CharField(max_length=200)
+    formula = models.CharField(max_length=200)
     machine = models.CharField(max_length=200)
-    operator = models.CharField(max_length=200)
-    measure_date = models.DateTimeField('date measured')
-    crystal_size_x = models.FloatField(max_length=4, default=0,
+    operator = models.CharField(max_length=200, verbose_name='Who measured the structure?')
+    measure_date = models.DateTimeField(verbose_name='date measured')
+    received = models.DateField(verbose_name='date received', blank=True, null=True)
+    output = models.DateField(verbose_name='date outgoing', blank=True, null=True)
+    crystal_size_x = models.FloatField(max_length=4, default=0, blank=True,
                                        validators = [MinValueValidator(0), MaxValueValidator(500)])
-    crystal_size_y = models.FloatField(max_length=4, default=0,
+    crystal_size_y = models.FloatField(max_length=4, default=0, blank=True,
                                        validators=[MinValueValidator(0), MaxValueValidator(500)])
-    crystal_size_z = models.FloatField(max_length=4, default=0,
+    crystal_size_z = models.FloatField(max_length=4, default=0, blank=True,
                                        validators=[MinValueValidator(0), MaxValueValidator(500)])
-
-    def __str__(self):
-        return self.name
-
-    def was_measured_recently(self):
-        now = timezone.now()
-        return now - datetime.timedelta(days=7) <= self.measure_date <= now
-
-    was_measured_recently.admin_order_field = 'measure_date'
-    was_measured_recently.boolean = True
-    was_measured_recently.short_description = 'Measured recently?'
-
-    def publishable(self):
-        return True
-        #return RefineResult.objects.get(id('name'), is_publishable=True)
-
-    publishable.boolean = True
-
-
-
-class RefineResult(models.Model):
-    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE, default=0)
+    customer = models.CharField(max_length=100, blank=True)
     is_publishable = models.BooleanField(default=False)
-    is_publishable.short_description = 'Is the structure publishable?'
+    comment = models.TextField(max_length=2000, blank=True)
     cell_a = models.FloatField(max_length=8, default=0, verbose_name='a', validators = [MinValueValidator(0), MaxValueValidator(500)])
     cell_b = models.FloatField(max_length=8, default=0, verbose_name='b', validators=[MinValueValidator(0), MaxValueValidator(500)])
     cell_c = models.FloatField(max_length=8, default=0, verbose_name='c', validators=[MinValueValidator(0), MaxValueValidator(500)])
     alpha = models.FloatField(max_length=8, default=0, validators = [MinValueValidator(0), MaxValueValidator(180)])
     beta = models.FloatField(max_length=8, default=0, validators = [MinValueValidator(0), MaxValueValidator(180)])
     gamma = models.FloatField(max_length=8, default=0, validators = [MinValueValidator(0), MaxValueValidator(180)])
-    R1_all = models.FloatField(max_length=5, default=0, validators = [MinValueValidator(0), MaxValueValidator(1)])
-    wR2_all = models.FloatField(max_length=5, default=0, validators = [MinValueValidator(0), MaxValueValidator(1)])
-    R1_2s = models.FloatField(max_length=5, default=0, validators = [MinValueValidator(0), MaxValueValidator(1)])
-    wR2_2s = models.FloatField(max_length=5, default=0, validators = [MinValueValidator(0), MaxValueValidator(1)])
+    R1_all = models.FloatField(max_length=5, default=0,
+                               validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True)
+    wR2_all = models.FloatField(max_length=5, default=0,
+                                validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True)
+    R1_2s = models.FloatField(max_length=5, default=0,
+                              validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True)
+    wR2_2s = models.FloatField(max_length=5, default=0,
+                               validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True)
+    density = models.FloatField(max_length=5, verbose_name='density (calc)', blank=True, null=True)
+    mu = models.FloatField(max_length=5, verbose_name='absorption/mm-1', blank=True, null=True)
+    '''
+    formular_weight
+    colour
+    shape
+    size
+    temp
+    crystal_system
+    space_group
+    volume
+    z
+    wavelength
+    radiation_type
+    theta_min (rendered as theta and d)
+    theta_max
+    measured_refl
+    indep_refl
+    refl_used
+    r_int
+    parameters
+    restraints
+    peak
+    hole
+    goof
+    '''
     cell_a.short_description = 'Unit Cell Parameter a'
     cell_b.short_description = 'Unit Cell Parameter b'
     cell_c.short_description = 'Unit Cell Parameter c'
@@ -62,5 +76,39 @@ class RefineResult(models.Model):
     gamma.short_description = 'Unit Cell Parameter gamma'
 
     def __str__(self):
-        return self.dataset.name#+' dataset '+str(self.id)
+        return self.name
 
+    def was_measured_recently(self):
+        now = timezone.now()
+        return now - datetime.timedelta(days=7) <= self.measure_date <= now
+
+    is_publishable.short_description = 'publishable?'
+    is_publishable.boolean = True
+    was_measured_recently.admin_order_field = 'measure_date'
+    was_measured_recently.boolean = True
+    was_measured_recently.short_description = 'Measured recently?'
+
+    def publishable(self):
+        if self.is_publishable:
+            return True
+        else:
+            return False
+
+    def format_formula(self):
+        """
+        Taken from: http: // www.mzan.com / article / 34067043 - django -
+        not -rendering - html -
+        with-tags - assigned - in -python - code.shtml  # sthash.QXxIeVLy.dpuf
+        :param string: Chemical formula
+        :return: formula as html string
+        """
+        new_string = ''
+        for item in self.formula:
+            if item.isdigit():
+                # we know item is a number, so no need to escape it
+                new_string += '<sub> '+ item +' </sub>'
+            else:
+                new_string += escape(item)
+                # we built new_string from safe parts, so we can mark it as
+                # safe to prevent autoescaping
+            return mark_safe(new_string)

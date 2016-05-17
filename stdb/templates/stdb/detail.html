@@ -3,21 +3,31 @@
 
 {% block title %}Measurement details for {{ dataset.name }}{% endblock %}
     <p>
-    Operator: {{ dataset.operator }} <br>
-    Dataset Name: {{ dataset.name }} <br>
-    Machine: {{ dataset.machine }}
+    <dl>
+    <dt>Operator: {{ dataset.operator }} </dt>
+    <dt>Dataset Name: {{ dataset.name }} </dt>
+    <dt>Machine: {{ dataset.machine }} </dt>
+    <dt>Received: {{ dataset.received }} </dt>
+    <dt>Measurement Date: {{ dataset.measure_date }} </dt>
+    <dt>Publishable: {% if dataset.is_publishable %} Yes! {% else %} No! {% endif %}</dt>
+    </dl>
     </p>
 
-    <ul>
-    {% for data in dataset.refineresult_set.all %}
-        <li> <it>a</it> = {{ data.cell_a }} </li>
-        <li> <it>b</it> = {{ data.cell_b }} </li>
-        <li> <it>c</it> = {{ data.cell_c }} </li>
-        <li> &alpha; = {{ data.alpha }} </li>
-        <li> &beta; = {{ data.alpha }} </li>
-        <li> &gamma; = {{ data.alpha }} </li>
-    {% endfor %}
-    </ul>
+    <dl>
+
+    <dt>Flask Name: {{ dataset.name }} </dt>
+    <dt>Formula: {{ dataset.format_formula }} </dt>
+    <dt>D / g&CenterDot;cm<sup>-3</sup>: {{ dataset.density }} </dt>
+    <p>
+        <h3>Unit Cell</h3>
+        <dt><it>a</it>: {{ dataset.cell_a }} </dt>
+        <dt><it>b</it>: {{ dataset.cell_b }} </dt>
+        <dt><it>c</it>: {{ dataset.cell_c }} </dt>
+        <dt><it>&alpha;</it>: {{ dataset.alpha }} </dt>
+        <dt><it>&beta;</it>: {{ dataset.beta }} </dt>
+        <dt><it>&gamma;</it>: {{ dataset.gamma }} </dt>
+    </p>
+    </dl>
 
 <br>
 <a href="{% url 'index' %}">Back to main page</a>
