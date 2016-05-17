@@ -43,37 +43,36 @@ class Dataset(models.Model):
     wR2_2s = models.FloatField(max_length=5, default=0,
                                validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True)
     density = models.FloatField(max_length=5, verbose_name='density (calc)', blank=True, null=True)
-    mu = models.FloatField(max_length=5, verbose_name='absorption/mm-1', blank=True, null=True)
-    '''
-    formular_weight
-    colour
-    shape
-    size
-    temp
-    crystal_system
-    space_group
-    volume
-    z
-    wavelength
-    radiation_type
-    theta_min (rendered as theta and d)
-    theta_max
-    measured_refl
-    indep_refl
-    refl_used
-    r_int
-    parameters
-    restraints
-    peak
-    hole
-    goof
-    '''
+    mu = models.FloatField(max_length=5, verbose_name='absorption [mm-1]', blank=True, null=True)
+    formular_weight = models.FloatField(max_length=8, verbose_name='Formular weight', blank=True, null=True)
+    colour = models.CharField(max_length=20, blank=True)
+    shape = models.CharField(max_length=20, blank=True)
+    temperature = models.FloatField(max_length=5, verbose_name='Temperature [K]', blank=True, default=0, null=True)
+    crystal_system = models.CharField(max_length=15, blank=True)
+    space_group = models.CharField(max_length=15, blank=True)
+    volume = models.FloatField(max_length=5, blank=True, null=True)
+    Z = models.IntegerField(blank=True, null=True)
+    wavelength = models.FloatField(max_length=10, blank=True, null=True)
+    radiation_type = models.CharField(max_length=8, blank=True)
+    theta_min = models.FloatField(max_length=10, blank=True, null=True)
+    theta_max = models.FloatField(max_length=10, blank=True, null=True)
+    measured_refl = models.FloatField(max_length=10, blank=True, null=True)
+    indep_refl = models.FloatField(max_length=20, blank=True, null=True)
+    refl_used = models.FloatField(max_length=15, blank=True, null=True)
+    r_int = models.FloatField(max_length=10, blank=True, null=True)
+    parameters = models.FloatField(max_length=10, blank=True, null=True)
+    restraints = models.FloatField(max_length=10, blank=True, null=True)
+    peak = models.FloatField(max_length=10, blank=True, null=True)
+    hole = models.FloatField(max_length=10, blank=True, null=True)
+    goof = models.FloatField(max_length=10, blank=True, null=True)
+
     cell_a.short_description = 'Unit Cell Parameter a'
     cell_b.short_description = 'Unit Cell Parameter b'
     cell_c.short_description = 'Unit Cell Parameter c'
     alpha.short_description = 'Unit Cell Parameter alpha'
     beta.short_description = 'Unit Cell Parameter beta'
     gamma.short_description = 'Unit Cell Parameter gamma'
+    Z.empty_value_display = '?'
 
     def __str__(self):
         return self.name
@@ -103,12 +102,15 @@ class Dataset(models.Model):
         :return: formula as html string
         """
         new_string = ''
-        for item in self.formula:
-            if item.isdigit():
-                # we know item is a number, so no need to escape it
-                new_string += '<sub> '+ item +' </sub>'
-            else:
-                new_string += escape(item)
-                # we built new_string from safe parts, so we can mark it as
-                # safe to prevent autoescaping
-            return mark_safe(new_string)
+        try:
+            for item in self.formula:
+                if item.isdigit():
+                    # we know item is a number, so no need to escape it
+                    new_string += '<sub> '+ item +' </sub>'
+                else:
+                    new_string += escape(item)
+                    # we built new_string from safe parts, so we can mark it as
+                    # safe to prevent autoescaping
+                return mark_safe(new_string)
+        except:
+            return ''
