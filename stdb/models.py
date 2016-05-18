@@ -102,15 +102,12 @@ class Dataset(models.Model):
         :return: formula as html string
         """
         new_string = ''
-        try:
-            for item in self.formula:
-                if item.isdigit():
-                    # we know item is a number, so no need to escape it
-                    new_string += '<sub> '+ item +' </sub>'
-                else:
-                    new_string += escape(item)
-                    # we built new_string from safe parts, so we can mark it as
-                    # safe to prevent autoescaping
-                return mark_safe(new_string)
-        except:
-            return ''
+        for item in self.formula:
+            if item.isdigit():
+                # we know item is a number, so no need to escape it
+                new_string += '<sub>'+ item +'</sub>'
+            else:
+                new_string += escape(item)
+                # we built new_string from safe parts, so we can mark it as
+                # safe to prevent autoescaping
+        return mark_safe(new_string)
