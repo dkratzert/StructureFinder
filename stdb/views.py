@@ -1,7 +1,8 @@
+from django.core.urlresolvers import reverse
 from django.shortcuts import render
 
 # Create your views here.
-from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.utils import timezone
 from django.views import generic
 
@@ -33,7 +34,6 @@ def list(request):
         if form.is_valid():
             newdoc = Document(docfile=request.FILES['docfile'])
             newdoc.save()
-
             # Redirect to the document list after POST
             return HttpResponseRedirect(reverse('list'))
     else:

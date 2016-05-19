@@ -55,7 +55,7 @@ class Dataset(models.Model):
     volume = models.FloatField(max_length=5, blank=True, null=True)
     Z = models.IntegerField(blank=True, null=True)
     wavelength = models.FloatField(max_length=10, blank=True, null=True)
-    radiation_type = models.CharField(max_length=8, blank=True)
+    radiation_type = models.CharField(max_length=18, blank=True)
     theta_min = models.FloatField(max_length=10, blank=True, null=True)
     theta_max = models.FloatField(max_length=10, blank=True, null=True)
     measured_refl = models.FloatField(max_length=10, blank=True, null=True)
@@ -114,3 +114,6 @@ class Dataset(models.Model):
                 # safe to prevent autoescaping
         return mark_safe(new_string)
 
+class Document(models.Model):
+    name = models.ForeignKey(Dataset, on_delete=models.CASCADE, )
+    docfile = models.FileField(upload_to='documents/', verbose_name='File')

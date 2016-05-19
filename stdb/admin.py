@@ -2,12 +2,31 @@ from django.contrib import admin
 
 # Register your models here.
 from .models import Dataset
+from .models import Document
+
+
+class DocumentInline(admin.TabularInline):
+    model = Document
+    extra = 1
+    verbose_name = 'File'
+    verbose_name_plural = 'Files'
+    fieldsets = [
+        ('Data files', {'fields': ['docfile']
+                        }
+         )
+    ]
+
+
+#class DocumentAdmin(admin.ModelAdmin):
+#    fields = ['docfile']
 
 
 class DatasetAdmin(admin.ModelAdmin):
+    inlines = [DocumentInline, ]
     fieldsets = [
         ('Measurement', {'fields': [('name', 'is_publishable'), 'measure_date', 'operator', 'flask_name', 'machine',
                                     ('received', 'output')]}),
+        #('Documents', {'fields': [ 'docfile' ] } ),
         ('Misc', {'fields': ['formula', 'Z', 'comment']}),
         ('Results', {'fields': [ ('cell_a', 'cell_b', 'cell_c'),
                                  ('alpha', 'beta', 'gamma'), 'R1_all', 'wR2_all', 'R1_2s', 'wR2_2s',
@@ -23,8 +42,9 @@ class DatasetAdmin(admin.ModelAdmin):
     list_filter = ['measure_date']
     search_fields = ['name', 'operator', 'flask_name']
 
-admin.site.register(Dataset, DatasetAdmin)
 
+admin.site.register(Dataset, DatasetAdmin)
+#admin.site.register(Document, DocumentAdmin)
 
 """
 Add possibility to add machines like Choices in https://docs.djangoproject.com/en/1.9/intro/tutorial07/
