@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 # Create your models here.
+from django.db.models import Model
 from django.forms import fields, forms
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -79,6 +80,9 @@ class Dataset(models.Model):
     def __str__(self):
         return self.name
 
+    def get_pk_val(self):
+        return self.pk
+
     def was_measured_recently(self):
         now = timezone.now()
         return now - datetime.timedelta(days=7) <= self.measure_date <= now
@@ -114,6 +118,15 @@ class Dataset(models.Model):
                 # safe to prevent autoescaping
         return mark_safe(new_string)
 
+
 class Document(models.Model):
-    name = models.ForeignKey(Dataset, on_delete=models.CASCADE, )
+    dataname = models.ForeignKey(Dataset, on_delete=models.CASCADE, )
+    #print(Dataset.objects.filter(pk=1), '###')
+    #docfile = models.FileField(upload_to='documents/{}'.format(Dataset.objects.filter(pk=dataname.)),
+    #                           verbose_name='File')
     docfile = models.FileField(upload_to='documents/', verbose_name='File')
+
+
+
+    def __str__(self):
+        return self.dataname.name
