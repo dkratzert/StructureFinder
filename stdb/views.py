@@ -19,7 +19,7 @@ class IndexView(generic.ListView):
         Return the last five published questions.(not including those set to be
         published in the future)
         """
-        return Dataset.objects.filter(measure_date__lte=timezone.now()).order_by('-measure_date')#[:5]
+        return Dataset.objects.filter(measure_date__lte=timezone.now()).order_by('measure_date')#[:5]
 
 
 class DetailView(generic.DetailView):
