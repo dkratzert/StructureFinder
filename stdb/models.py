@@ -80,9 +80,6 @@ class Dataset(models.Model):
     def __str__(self):
         return self.name
 
-    def get_pk_val(self):
-        return self.pk
-
     def was_measured_recently(self):
         now = timezone.now()
         return now - datetime.timedelta(days=7) <= self.measure_date <= now
@@ -121,12 +118,7 @@ class Dataset(models.Model):
 
 class Document(models.Model):
     dataname = models.ForeignKey(Dataset, on_delete=models.CASCADE, )
-    #print(Dataset.objects.filter(pk=1), '###')
-    #docfile = models.FileField(upload_to='documents/{}'.format(Dataset.objects.filter(pk=dataname.)),
-    #                           verbose_name='File')
     docfile = models.FileField(upload_to='documents/', verbose_name='File')
-
-
-
+    
     def __str__(self):
         return self.dataname.name
