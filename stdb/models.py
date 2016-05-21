@@ -117,8 +117,8 @@ class Dataset(models.Model):
 
 
 class Document(models.Model):
-    dataname = models.ForeignKey(Dataset, on_delete=models.CASCADE, )
+    dataname = models.ForeignKey(Dataset, on_delete=models.CASCADE)#, null=True) # null=True alllows upload to no dataset!
     docfile = models.FileField(upload_to='documents/', verbose_name='File')
-    
+
     def __str__(self):
         return self.dataname.name

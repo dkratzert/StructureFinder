@@ -17,10 +17,6 @@ class DocumentInline(admin.TabularInline):
     ]
 
 
-#class DocumentAdmin(admin.ModelAdmin):
-#    fields = ['docfile']
-
-
 class DatasetAdmin(admin.ModelAdmin):
     inlines = [DocumentInline, ]
     fieldsets = [
