@@ -1,4 +1,5 @@
 import datetime
+import os
 
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -116,9 +117,18 @@ class Dataset(models.Model):
         return mark_safe(new_string)
 
 
+def get_filename(instance, name):
+    """
+    returns the path to where the uploaded file should be stored
+    :param instance: An instance of the model where the FileField is defined.
+    :param name: Filename to be stored
+    :return: full path to store into
+    """
+    return os.path.join('documents/', os.path.join(instance.dataname.name, name))
+
 class Document(models.Model):
     dataname = models.ForeignKey(Dataset, on_delete=models.CASCADE)#, null=True) # null=True alllows upload to no dataset!
-    docfile = models.FileField(upload_to='documents/', verbose_name='File')
+    docfile = models.FileField(upload_to=get_filename, verbose_name='File')
 
     def __str__(self):
         return self.dataname.name

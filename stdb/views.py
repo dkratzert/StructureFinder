@@ -47,12 +47,13 @@ def list(request):
     else:
         form = DocumentForm()  # A empty, unbound form
 
-    # Load documents for the list page
+    # Load datasets and documents for the list page
+    datasets = Dataset.objects.all()
     documents = Document.objects.all()
 
     # Render list page with the documents and the form
     return render(
         request,
         'stdb/list.html',
-        {'documents': documents, 'form': form}
+        {'datasets': datasets, 'documents': documents, 'form': form}
     )
