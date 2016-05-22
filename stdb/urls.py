@@ -2,14 +2,14 @@ from django.conf.urls import url, include
 
 from stdb import admin
 from .views import (
-    IndexView,
-    DetailView,
+    index_view,
+    detail_view,
     list
 )
 
-app_name = 'stdb'
+#app_name = 'stdb'
 urlpatterns = [
-    url(r'^$', IndexView.as_view(), name='index'),
-    url(r'^(?P<pk>[0-9]+)/$', DetailView.as_view(), name='detail'),
+    url(r'^$', index_view, name='index'),
+    url('^(?P<pk>\d+)/$', detail_view, name='detail'),
     url(r'^list/$', list, name='list'),
     ]

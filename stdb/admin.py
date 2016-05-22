@@ -22,7 +22,6 @@ class DatasetAdmin(admin.ModelAdmin):
     fieldsets = [
         ('Measurement', {'fields': [('name', 'is_publishable'), 'measure_date', 'operator', 'flask_name', 'machine',
                                     ('received', 'output')]}),
-        #('Documents', {'fields': [ 'docfile' ] } ),
         ('Misc', {'fields': ['formula', 'Z', 'comment']}),
         ('Results', {'fields': [ ('cell_a', 'cell_b', 'cell_c'),
                                  ('alpha', 'beta', 'gamma'), 'R1_all', 'wR2_all', 'R1_2s', 'wR2_2s',

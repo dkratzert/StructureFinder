@@ -126,6 +126,7 @@ def get_filename(instance, name):
     """
     return os.path.join('documents/', os.path.join(instance.dataname.name, name))
 
+
 class Document(models.Model):
     dataname = models.ForeignKey(Dataset, on_delete=models.CASCADE)#, null=True) # null=True alllows upload to no dataset!
     docfile = models.FileField(upload_to=get_filename, verbose_name='File')

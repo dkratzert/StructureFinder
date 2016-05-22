@@ -6,6 +6,16 @@
     </head>
 
     <body>
+        <!-- List of datasets -->
+        {% if datasets %}
+            <ul>
+                {% for data in datasets %}
+                    <li><a href="{{ data.url }}">{{ data.name }}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No datasets.</p>
+        {% endif %}
         <!-- List of uploaded documents -->
         {% if documents %}
             <ul>
