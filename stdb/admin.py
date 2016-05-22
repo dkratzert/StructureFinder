@@ -19,6 +19,7 @@ class DocumentInline(admin.TabularInline):
 
 class DatasetAdmin(admin.ModelAdmin):
     inlines = [DocumentInline, ]
+    ordering = ['-measure_date']
     fieldsets = [
         ('Measurement', {'fields': [('name', 'is_publishable'), 'measure_date', 'operator', 'flask_name', 'machine',
                                     ('received', 'output')]}),

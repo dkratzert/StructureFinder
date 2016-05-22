@@ -16,7 +16,7 @@ def index_view(request):
     context = {
         'latest_measurement_list': list_of_measurements
     }
-    return render(request, 'base.html', context)
+    return render(request, 'data_list.html', context)
 
 
 def dataset_create(request):
@@ -31,8 +31,6 @@ def dataset_create(request):
         instance.save()
         messages.success(request, "Dataset saved successfully!")
         return HttpResponseRedirect(instance.get_absolute_url())
-    else:
-        messages.error(request, "Failed to save dataset!!")
     context = {
         'form': form
     }
@@ -109,4 +107,4 @@ def list(request):
 
 
     # Render list page with the documents and the form
-    return render(request, 'list.html', context)
+    return render(request, 'file_upload.html', context)
