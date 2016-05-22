@@ -1,17 +1,18 @@
-<!-- DOCTYPE html -->
-<html>
+{% extends "base.html" %}
+
+<title>{% block head_title %} {{ dataset.name }} | {{ block.super }}{% endblock head_title %}</title>
+
+<style>
+    {% block style %}
+        {{ block.super }}
+    {% endblock style %}
+</style>
+
+{% block content %}
+
 <title>{{ dataset.name }}</title>
 
-<body>
-{% if messages %}
-<ul class="messages">
-    {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-
-{% block title %}Measurement details for {{ dataset.name }}{% endblock %}
+{% block title %}<h2>Measurement details for {{ dataset.name }}</h2>{% endblock %}
     <p>
     <dl>
     <dt>Operator: {{ dataset.operator }} </dt>
@@ -80,4 +81,4 @@
 
 <a href="{% url 'stdb:index' %}">Back to main page</a>
 
-</body>
+{% endblock content %}

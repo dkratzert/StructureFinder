@@ -12,13 +12,11 @@ from .forms import DocumentForm
 
 
 def index_view(request):
-    template_name = 'stdb/index.html'
     list_of_measurements = Dataset.objects.filter(measure_date__lte=timezone.now()).order_by('-measure_date')#[:5]
-    #instance = get_object_or_404(Dataset)
     context = {
         'latest_measurement_list': list_of_measurements
     }
-    return render(request, template_name, context)
+    return render(request, 'base.html', context)
 
 
 def dataset_create(request):
@@ -38,7 +36,7 @@ def dataset_create(request):
     context = {
         'form': form
     }
-    return render(request, "stdb/new_dataset.html", context)
+    return render(request, "new_dataset.html", context)
 
 
 def dataset_update(request, pk=None):
@@ -64,14 +62,14 @@ def dataset_update(request, pk=None):
     context = {
         'form': form
     }
-    return render(request, "stdb/new_dataset.html", context)
+    return render(request, "new_dataset.html", context)
 
 
 def delete_dataset(request, pk=None):
     instance = get_object_or_404(Dataset, pk=pk)
     instance.delete()
     messages.success(request, "Dataset deleted successfully!")
-    return redirect("stdb:index")
+    return redirect("index")
 
 
 def detail_view(request, pk=None):
@@ -83,7 +81,7 @@ def detail_view(request, pk=None):
         'dataset': instance,
         'documents': Document.objects.filter(dataname_id=pk)
     }
-    return render(request, 'stdb/detail.html', context)
+    return render(request, 'detail.html', context)
 
 
 def list(request):
@@ -111,4 +109,4 @@ def list(request):
 
 
     # Render list page with the documents and the form
-    return render(request, 'stdb/list.html', context)
+    return render(request, 'list.html', context)

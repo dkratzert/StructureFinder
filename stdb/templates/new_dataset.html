@@ -1,0 +1,18 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>Edit Dataset</h1>
+    <body>
+    <form method="POST" action="">{% csrf_token %}
+
+    {{ form.as_p }}
+
+    <input type="submit" value="Save Dataset" />
+    </form>
+
+    <a href="{% url 'stdb:index' %}">Back to main page</a>
+    </body>
+
+{% endblock %}
