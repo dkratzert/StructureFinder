@@ -1,12 +1,15 @@
-<!DOCTYPE html>
+<!-- DOCTYPE html -->
+<html>
 <title>{{ dataset.name }}</title>
 
+<body>
 {% if messages %}
 <ul class="messages">
     {% for message in messages %}
-        <li{% if message.tags %} class=""
-
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
 </ul>
+{% endif %}
 
 {% block title %}Measurement details for {{ dataset.name }}{% endblock %}
     <p>
@@ -46,9 +49,14 @@
             <p>No documents.</p>
         {% endif %}
     </p>
+    <p>
+        <a href="{% url 'stdb:update' pk=dataset.id %}">Edit Data</a>
+    </p>
+    <p>
+        <a href="{% url 'stdb:delete' pk=dataset.id %}">Delete Dataset!</a>
+    </p>
 
-
-    {% comment %}
+{% comment %}
     <p>
     <!-- Upload form. Note enctype attribute! -->
     <form action="{% url "stdb:list" %}" method="POST" enctype="multipart/form-data">
@@ -72,3 +80,4 @@
 
 <a href="{% url 'stdb:index' %}">Back to main page</a>
 
+</body>

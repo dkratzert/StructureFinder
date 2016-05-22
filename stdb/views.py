@@ -1,5 +1,5 @@
 from django.core.urlresolvers import reverse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 
 # Create your views here.
@@ -65,6 +65,13 @@ def dataset_update(request, pk=None):
         'form': form
     }
     return render(request, "stdb/new_dataset.html", context)
+
+
+def delete_dataset(request, pk=None):
+    instance = get_object_or_404(Dataset, pk=pk)
+    instance.delete()
+    messages.success(request, "Dataset deleted successfully!")
+    return redirect("stdb:index")
 
 
 def detail_view(request, pk=None):
