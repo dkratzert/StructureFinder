@@ -31,8 +31,8 @@
         <!-- List of uploaded documents -->
         {% if documents %}
             <ul>
-                {% for document in documents %}
-                    <li><a href="{{ document.docfile.url }}">{{ document.docfile.name }}</a></li>
+                {% for doc in documents %}
+                    <li><a href="{{ doc.docfile.url }}">{{ doc.docfile.name }}</a> {{ doc.getsize }}</li>
                 {% endfor %}
             </ul>
         {% else %}
@@ -63,5 +63,5 @@
 
 <br>
 
-<a href="{% url 'index' %}">Back to main page</a>
+<a href="{% url 'stdb:index' %}">Back to main page</a>
 

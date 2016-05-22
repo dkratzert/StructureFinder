@@ -10,6 +10,6 @@ from .views import (
 #app_name = 'stdb'
 urlpatterns = [
     url(r'^$', index_view, name='index'),
-    url('^(?P<pk>\d+)/$', detail_view, name='detail'),
+    url('^stdb/(?P<pk>\d+)/$', detail_view, name='detail'),
     url(r'^list/$', list, name='list'),
     ]

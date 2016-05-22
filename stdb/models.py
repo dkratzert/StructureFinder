@@ -1,6 +1,7 @@
 import datetime
 import os
 
+from django.core.urlresolvers import reverse
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
@@ -81,6 +82,9 @@ class Dataset(models.Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse('stdb:detail', kwargs={'pk': self.id})
+
     def was_measured_recently(self):
         now = timezone.now()
         return now - datetime.timedelta(days=7) <= self.measure_date <= now
@@ -133,3 +137,9 @@ class Document(models.Model):
 
     def __str__(self):
         return self.dataname.name
+
+    def getsize(self):
+        if self.docfile.size >= 1000:
+            return '{:.2f} {}'.format(self.docfile.size/1000, 'kB')
+        if self.docfile.size >= 1000000:
+            return '{:.2f} {}'.format(self.docfile.size / 1000000, 'MB')

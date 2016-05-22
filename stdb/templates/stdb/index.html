@@ -6,7 +6,7 @@
 
     <ul>
     {% for dataset in latest_measurement_list %}
-        <li><a href="{% url 'detail' pk=dataset.id %}">{{ dataset.name }}</a></li>
+        <li><a href="{{ dataset.get_absolute_url }}">{{ dataset.name }}</a></li>
     {% endfor %}
     </ul>
 
