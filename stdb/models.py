@@ -139,7 +139,7 @@ class Document(models.Model):
         return self.dataname.name
 
     def getsize(self):
-        if self.docfile.size >= 1000:
+        if self.docfile.size >= 1000 and self.docfile.size < 1000000:
             return '{:.2f} {}'.format(self.docfile.size/1000, 'kB')
-        if self.docfile.size >= 1000000:
+        else:
             return '{:.2f} {}'.format(self.docfile.size / 1000000, 'MB')

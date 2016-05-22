@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <title>{{ dataset.name }}</title>
 
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+        <li{% if message.tags %} class=""
+
+</ul>
+
 {% block title %}Measurement details for {{ dataset.name }}{% endblock %}
     <p>
     <dl>

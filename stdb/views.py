@@ -1,5 +1,6 @@
 from django.core.urlresolvers import reverse
 from django.shortcuts import render, get_object_or_404
+from django.contrib import messages
 
 # Create your views here.
 from django.http import HttpResponseRedirect
@@ -20,17 +21,62 @@ def index_view(request):
     return render(request, template_name, context)
 
 
+def dataset_create(request):
+    """
+    Creates a new Dataset
+    :param request:
+    :return:
+    """
+    form = DocumentForm(request.POST or None)
+    if form.is_valid():
+        instance = form.save(commit=False)
+        instance.save()
+        messages.success(request, "Dataset saved successfully!")
+        return HttpResponseRedirect(instance.get_absolute_url())
+    else:
+        messages.error(request, "Failed to save dataset!!")
+    context = {
+        'form': form
+    }
+    return render(request, "stdb/new_dataset.html", context)
+
+
+def dataset_update(request, pk=None):
+    """
+    Updates a dataset.
+    :param request:
+    :param pk:
+    :return:
+    """
+    instance = get_object_or_404(Dataset, pk=pk)
+    form = DocumentForm(request.POST or None, instance=instance)
+    if form.is_valid():
+        # print(form.cleaned_data.get('name'))
+        instance = form.save(commit=False)
+        instance.save()
+        messages.success(request, "Successfully updated!")
+        return HttpResponseRedirect(instance.get_absolute_url())
+    context = {
+        'dataset': instance,
+        'documents': Document.objects.filter(dataname_id=pk),
+        'form': form
+    }
+    context = {
+        'form': form
+    }
+    return render(request, "stdb/new_dataset.html", context)
+
+
 def detail_view(request, pk=None):
     """
     returns the detailed view of all the structures.
     """
     instance = get_object_or_404(Dataset, pk=pk)
-    template_name = 'stdb/detail.html'
     context = {
-                'dataset': instance,
-                'documents': Document.objects.filter(dataname_id=pk)
+        'dataset': instance,
+        'documents': Document.objects.filter(dataname_id=pk)
     }
-    return render(request, template_name, context)
+    return render(request, 'stdb/detail.html', context)
 
 
 def list(request):
@@ -48,12 +94,13 @@ def list(request):
     # Load datasets and documents for the list page
     datasets = Dataset.objects.all()
     documents = Document.objects.all()
-    #instance = get_object_or_404(Document, id=?)
-    context = {'datasets': datasets,
-               'documents': documents,
-               'form': form,
-               #'instance': instance
-               }
+    #instance = get_object_or_404(Document, pk=?)
+    context = {
+        'datasets': datasets,
+        'documents': documents,
+        'form': form,
+        #'instance': instance
+    }
 
 
     # Render list page with the documents and the form
