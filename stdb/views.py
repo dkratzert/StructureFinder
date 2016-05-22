@@ -24,11 +24,11 @@ def detail_view(request, pk=None):
     """
     returns the detailed view of all the structures.
     """
+    instance = get_object_or_404(Dataset, pk=pk)
     template_name = 'stdb/detail.html'
-    instance = (Dataset.objects.all(), pk)
     context = {
-                'dataset': Dataset,
-                'instance': instance
+                'dataset': instance,
+                'documents': Document.objects.filter(dataname_id=pk)
     }
     return render(request, template_name, context)
 

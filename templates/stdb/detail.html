@@ -27,6 +27,38 @@
         <dt><it>&beta;</it>: {{ dataset.beta }} </dt>
         <dt><it>&gamma;</it>: {{ dataset.gamma }} </dt>
     </p>
+    <p>
+        <!-- List of uploaded documents -->
+        {% if documents %}
+            <ul>
+                {% for document in documents %}
+                    <li><a href="{{ document.docfile.url }}">{{ document.docfile.name }}</a></li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No documents.</p>
+        {% endif %}
+    </p>
+
+
+    {% comment %}
+    <p>
+    <!-- Upload form. Note enctype attribute! -->
+    <form action="{% url "stdb:list" %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <p>{{ form.non_field_errors }}</p>
+
+        <p>{{ form.docfile.label_tag }} {{ form.docfile.help_text }}</p>
+
+        <p>
+            {{ form.docfile.errors }}
+            {{ form.docfile }}
+        </p>
+
+        <p><input type="submit" value="Upload"/></p>
+    </form>
+    </p>
+    {% endcomment %}
     </dl>
 
 <br>
