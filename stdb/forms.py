@@ -1,11 +1,17 @@
 from django import forms
-from .models import Dataset
+from .models import Dataset, Document
+
+
 #from .models import Document
 
-class DocumentForm(forms.Form):
-    docfile = forms.FileField(
-        label='Select a file'
-    )
+
+class CifDocumentForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        ciffile = forms.FileField(label='Select a file')
+        fields = [
+            'cif_file',
+        ]
 
 
 class DocumentForm(forms.ModelForm):
@@ -18,5 +24,4 @@ class DocumentForm(forms.ModelForm):
             'cell_a',
             'cell_b',
             'cell_c',
-
         ]

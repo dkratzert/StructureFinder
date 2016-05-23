@@ -11,7 +11,7 @@ class DocumentInline(admin.TabularInline):
     verbose_name = 'File'
     verbose_name_plural = 'Files'
     fieldsets = [
-        ('Data files', {'fields': ['docfile']
+        ('Data files', {'fields': ['cif_file']
                         }
          )
     ]
@@ -19,7 +19,7 @@ class DocumentInline(admin.TabularInline):
 
 class DatasetAdmin(admin.ModelAdmin):
     inlines = [DocumentInline, ]
-    ordering = ['-measure_date']
+    #ordering = ['-measure_date']
     fieldsets = [
         ('Measurement', {'fields': [('name', 'is_publishable'), 'measure_date', 'operator', 'flask_name', 'machine',
                                     ('received', 'output')]}),

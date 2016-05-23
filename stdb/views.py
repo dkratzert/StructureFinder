@@ -8,11 +8,12 @@ from django.utils import timezone
 
 from .models import Dataset
 from .models import Document
-from .forms import DocumentForm
+from .forms import DocumentForm, CifDocumentForm
 
 
 def index_view(request):
-    list_of_measurements = Dataset.objects.filter(measure_date__lte=timezone.now()).order_by('-measure_date')#[:5]
+    # returns all measurements of the past, not of the future
+    list_of_measurements = Dataset.objects.filter(measure_date__lte=timezone.now())#[:2]
     context = {
         'latest_measurement_list': list_of_measurements
     }
@@ -75,19 +76,36 @@ def detail_view(request, pk=None):
     returns the detailed view of all the structures.
     """
     instance = get_object_or_404(Dataset, pk=pk)
+    ciffiles = CifDocumentForm(request.POST or None)#, request.DATA or None)
     context = {
         'dataset': instance,
-        'documents': Document.objects.filter(dataname_id=pk)
+        'documents': Document.objects.filter(dataname_id=pk),
+        'ciffiles': ciffiles,
     }
     return render(request, 'detail.html', context)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+############################# old ###############
 def list(request):
     # Handle file upload
     if request.method == 'POST':
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
-            newdoc = Document(docfile=request.FILES['docfile'])
+            newdoc = Document(docfile=request.FILES['cif_file'])
             newdoc.save()
             # Redirect to the document list after POST
             return HttpResponseRedirect(reverse('stdb:list'))
@@ -104,7 +122,6 @@ def list(request):
         'form': form,
         #'instance': instance
     }
-
-
     # Render list page with the documents and the form
-    return render(request, 'file_upload.html', context)
+    return render(request, 'old_file_upload.html', context)
+#########################################################

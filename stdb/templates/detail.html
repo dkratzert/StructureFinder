@@ -42,8 +42,8 @@
         <!-- List of uploaded documents -->
         {% if documents %}
             <ul>
-                {% for doc in documents %}
-                    <li><a href="{{ doc.docfile.url }}">{{ doc.docfile.name }}</a> {{ doc.getsize }}</li>
+                {% for file in documents %}
+                    <li><a href="{{ file.cif_file.url }}">{{ file.cif_file.name }}</a> {{ file.getsize }}</li>
                 {% endfor %}
             </ul>
         {% else %}
@@ -64,11 +64,11 @@
         {% csrf_token %}
         <p>{{ form.non_field_errors }}</p>
 
-        <p>{{ form.docfile.label_tag }} {{ form.docfile.help_text }}</p>
+        <p>{{ form.cif_file.label_tag }} {{ form.cif_file.help_text }}</p>
 
         <p>
-            {{ form.docfile.errors }}
-            {{ form.docfile }}
+            {{ form.cif_file.errors }}
+            {{ form.cif_file }}
         </p>
 
         <p><input type="submit" value="Upload"/></p>

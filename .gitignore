@@ -49,4 +49,4 @@ Temporary Items
 *.pyc
 .idea/
 stdb/migrations/
-media/documents/
+media/cif_file/
