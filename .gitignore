@@ -50,3 +50,4 @@ Temporary Items
 .idea/
 stdb/migrations/
 media/cif_file/
+cif_file/

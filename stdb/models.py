@@ -7,16 +7,13 @@ from django.db import models
 
 # Create your models here.
 from django.db.models import Model
-from django.forms import fields, forms
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
 from django.utils import timezone
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 
 class Dataset(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True)
     flask_name = models.CharField(max_length=200)
     formula = models.CharField(max_length=200)
     machine = models.CharField(max_length=200)
@@ -56,7 +53,7 @@ class Dataset(models.Model):
     crystal_system = models.CharField(max_length=15, blank=True)
     space_group = models.CharField(max_length=15, blank=True)
     volume = models.FloatField(max_length=5, blank=True, null=True)
-    Z = models.IntegerField(blank=True, null=True)
+    z = models.IntegerField(blank=True, null=True)
     wavelength = models.FloatField(max_length=10, blank=True, null=True)
     radiation_type = models.CharField(max_length=18, blank=True)
     theta_min = models.FloatField(max_length=10, blank=True, null=True)
@@ -77,7 +74,7 @@ class Dataset(models.Model):
     alpha.short_description = 'Unit Cell Parameter alpha'
     beta.short_description = 'Unit Cell Parameter beta'
     gamma.short_description = 'Unit Cell Parameter gamma'
-    Z.empty_value_display = '?'
+    z.empty_value_display = '?'
 
     class Meta:
         ordering = ['-measure_date', '-name']

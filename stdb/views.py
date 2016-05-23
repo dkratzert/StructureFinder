@@ -27,13 +27,15 @@ def dataset_create(request):
     :return:
     """
     form = DocumentForm(request.POST or None)
-    if form.is_valid():
+    ciffiles = CifDocumentForm(request.POST or None, request.DATA or None)
+    if form.is_valid() and ciffiles.is_valid():
         instance = form.save(commit=False)
         instance.save()
         messages.success(request, "Dataset saved successfully!")
         return HttpResponseRedirect(instance.get_absolute_url())
     context = {
-        'form': form
+        'form': form,
+        'ciffiles': ciffiles,
     }
     return render(request, "new_dataset.html", context)
 
@@ -46,20 +48,21 @@ def dataset_update(request, pk=None):
     :return:
     """
     instance = get_object_or_404(Dataset, pk=pk)
+    #instance2 = get_object_or_404(Document, pk=instance.pk)
     form = DocumentForm(request.POST or None, instance=instance)
-    if form.is_valid():
-        # print(form.cleaned_data.get('name'))
+    ciffiles = CifDocumentForm(request.POST or None, request.FILES or None)
+    if form.is_valid() and ciffiles.is_valid():
         instance = form.save(commit=False)
         instance.save()
+     #   instance2 = ciffiles.save(commit=False)
+      #  instance2.save()
         messages.success(request, "Successfully updated!")
         return HttpResponseRedirect(instance.get_absolute_url())
     context = {
         'dataset': instance,
         'documents': Document.objects.filter(dataname_id=pk),
-        'form': form
-    }
-    context = {
-        'form': form
+        'form': form,
+        'ciffiles': ciffiles,
     }
     return render(request, "new_dataset.html", context)
 

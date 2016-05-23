@@ -1,4 +1,5 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
+from django.conf import settings
 
 from stdb import admin
 from .views import (
@@ -19,3 +20,12 @@ urlpatterns = [
     url(r'^new/$', dataset_create, name='new'),
     url(r'^list/$', list, name='list'),
     ]
+
+"""
+if settings.DEBUG:
+    urlpatterns += patterns('',
+        url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {
+            'document_root': settings.MEDIA_ROOT,
+        }),
+   )
+"""

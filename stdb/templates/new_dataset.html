@@ -1,14 +1,33 @@
-
 {% extends "base.html" %}
+
+{% comment %}
+This template is for creation and editing of a dataset
+{% endcomment %}
+
 
 {% block content %}
 
     <h1>Edit Dataset</h1>
     <body>
-    <form method="POST" action="">{% csrf_token %}
-
+    <form method="POST" action="" enctype="multipart/form-data">{% csrf_token %}
+    <p>
     {{ form.as_p }}
-
+    {{ ciffiles.as_table }}
+    </p>
+    <p>
+        <!-- List of uploaded documents -->
+        {% if documents %}
+            <ul>
+                {% for file in documents %}
+                    <li><a href="{{ file.cif_file.url }}">{{ file.cif_file.name }}</a> {{ file.getsize }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No documents.</p>
+        {% endif %}
+    </p>
+    <p>
+    <br>
     <input type="submit" value="Save Dataset" />
     </form>
 
