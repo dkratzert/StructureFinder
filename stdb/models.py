@@ -6,11 +6,19 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 # Create your models here.
-from django.db.models import Model
 from django.utils import timezone
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
+
+def get_filename(instance, name):
+    """
+    returns the path to where the uploaded file should be stored
+    :param instance: An instance of the model where the FileField is defined.
+    :param name: Filename to be stored
+    :return: full path to store into
+    """
+    return os.path.join('cif_file/', os.path.join(instance.name, name))
 
 class Dataset(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -67,7 +75,8 @@ class Dataset(models.Model):
     peak = models.FloatField(max_length=10, blank=True, null=True)
     hole = models.FloatField(max_length=10, blank=True, null=True)
     goof = models.FloatField(max_length=10, blank=True, null=True)
-
+    cif_file = models.FileField(upload_to=get_filename, verbose_name='CIF File', null=True, blank=True)
+    res_file = models.FileField(upload_to=get_filename, verbose_name='RES File', null=True, blank=True)
     cell_a.short_description = 'Unit Cell Parameter a'
     cell_b.short_description = 'Unit Cell Parameter b'
     cell_c.short_description = 'Unit Cell Parameter c'
@@ -95,6 +104,12 @@ class Dataset(models.Model):
     was_measured_recently.boolean = True
     was_measured_recently.short_description = 'Measured recently?'
 
+    def getsize(self):
+        if 1000 <= self.cif_file.size < 1000000:
+              return '{:.2f} {}'.format(self.cif_file.size / 1000, 'kB')
+        else:
+           return '{:.2f} {}'.format(self.cif_file.size / 1000000, 'MB')
+
     def publishable(self):
         if self.is_publishable:
             return True
@@ -120,27 +135,3 @@ class Dataset(models.Model):
                 # safe to prevent autoescaping
         return mark_safe(new_string)
 
-
-def get_filename(instance, name):
-    """
-    returns the path to where the uploaded file should be stored
-    :param instance: An instance of the model where the FileField is defined.
-    :param name: Filename to be stored
-    :return: full path to store into
-    """
-    return os.path.join('cif_file/', os.path.join(instance.dataname.name, name))
-
-
-class Document(models.Model):
-    dataname = models.ForeignKey(Dataset, on_delete=models.CASCADE)#, null=True) # null=True alllows upload to no dataset!
-    cif_file = models.FileField(upload_to=get_filename, verbose_name='CIF File', null=True, blank=True)
-    res_file = models.FileField(upload_to=get_filename, verbose_name='RES File', null=True, blank=True)
-
-    def __str__(self):
-        return self.dataname.name
-
-    def getsize(self):
-        if 1000 <= self.cif_file.size < 1000000:
-            return '{:.2f} {}'.format(self.cif_file.size / 1000, 'kB')
-        else:
-            return '{:.2f} {}'.format(self.cif_file.size / 1000000, 'MB')

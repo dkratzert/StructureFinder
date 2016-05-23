@@ -44,11 +44,9 @@ This template shows the details of a dataset with all its values
     </p>
     <p>
         <!-- List of uploaded documents -->
-        {% if documents %}
+        {% if dataset.cif_file %}
             <ul>
-                {% for file in documents %}
-                    <li><a href="{{ file.cif_file.url }}">{{ file.cif_file.name }}</a> {{ file.getsize }}</li>
-                {% endfor %}
+            <li><a href="{{ dataset.cif_file.url }}">{{ dataset.cif_file.name }}</a> {{ dataset.getsize }}</li>
             </ul>
         {% else %}
             <p>No documents.</p>

@@ -1,10 +1,11 @@
 from django import forms
-from .models import Dataset, Document
+#from .models import Dataset, Document
 
 
 #from .models import Document
+from stdb.models import Dataset
 
-
+"""
 class CifDocumentForm(forms.ModelForm):
     class Meta:
         model = Document
@@ -13,11 +14,15 @@ class CifDocumentForm(forms.ModelForm):
             'cif_file',
         ]
 
+class DocumentForm(forms.Form):
+    docfile = forms.FileField(
+        label='Select a file'
+    )
+"""
 
 class DocumentForm(forms.ModelForm):
     class Meta:
         model = Dataset
-        #measure_date = forms.DateField('measure_date')
         fields = [
             'name',
             'flask_name',
@@ -31,4 +36,5 @@ class DocumentForm(forms.ModelForm):
             'alpha',
             'beta',
             'gamma',
+            'cif_file',
         ]

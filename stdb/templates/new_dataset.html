@@ -17,23 +17,6 @@ This template is for creation and editing of a dataset
 <input type="submit" value="Save Dataset" />
 </form>
 
-
-<p>
-<!-- List of uploaded documents -->
-{% if documents %}
-    <ul>
-        {% for file in documents %}
-            <li><a href="{{ file.cif_file.url }}">{{ file.cif_file.name }}</a> {{ file.getsize }}</li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>No documents.</p>
-{% endif %}
-</p>
-
-<form method="POST" action="" enctype="multipart/form-data">{% csrf_token %}
-{{ ciffiles }} <input type="submit" value="Upload cif" />
-</form>
 <p>
 <a href="{% url 'stdb:index' %}">Back to main page</a>
 </p>

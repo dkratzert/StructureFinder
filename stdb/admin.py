@@ -2,9 +2,9 @@ from django.contrib import admin
 
 # Register your models here.
 from .models import Dataset
-from .models import Document
+#from .models import Document
 
-
+"""
 class DocumentInline(admin.TabularInline):
     model = Document
     extra = 1
@@ -15,14 +15,15 @@ class DocumentInline(admin.TabularInline):
                         }
          )
     ]
-
+"""
 
 class DatasetAdmin(admin.ModelAdmin):
-    inlines = [DocumentInline, ]
+    #inlines = [DocumentInline, ]
     #ordering = ['-measure_date']
     fieldsets = [
         ('Measurement', {'fields': [('name', 'is_publishable'), 'measure_date', 'operator', 'flask_name', 'machine',
                                     ('received', 'output')]}),
+        ('Files', {'fields': [ 'cif_file', 'res_file' ]}),
         ('Misc', {'fields': ['formula', 'z', 'comment']}),
         ('Results', {'fields': [ ('cell_a', 'cell_b', 'cell_c'),
                                  ('alpha', 'beta', 'gamma'), 'R1_all', 'wR2_all', 'R1_2s', 'wR2_2s',

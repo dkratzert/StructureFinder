@@ -7,9 +7,8 @@ from django.http import HttpResponseRedirect
 from django.utils import timezone
 
 from .models import Dataset
-from .models import Document
-from .forms import DocumentForm, CifDocumentForm
-
+#from .models import Document
+from .forms import DocumentForm
 
 def index_view(request):
     # returns all measurements of the past, not of the future
@@ -26,16 +25,14 @@ def dataset_create(request):
     :param request:
     :return:
     """
-    form = DocumentForm(request.POST or None)
-    ciffiles = CifDocumentForm(request.POST or None, request.DATA or None)
-    if form.is_valid() and ciffiles.is_valid():
+    form = DocumentForm(request.POST or None, request.FILES or None)
+    if form.is_valid():
         instance = form.save(commit=False)
         instance.save()
         messages.success(request, "Dataset saved successfully!")
         return HttpResponseRedirect(instance.get_absolute_url())
     context = {
         'form': form,
-        'ciffiles': ciffiles,
     }
     return render(request, "new_dataset.html", context)
 
@@ -48,18 +45,15 @@ def dataset_update(request, pk=None):
     :return:
     """
     instance = get_object_or_404(Dataset, pk=pk)
-    form = DocumentForm(request.POST or None, instance=instance)
-    ciffiles = CifDocumentForm(request.POST or None, request.FILES or None)
-    if form.is_valid() and ciffiles.is_valid():
+    form = DocumentForm(request.POST or None, request.FILES or None, instance=instance)
+    if form.is_valid():
         instance = form.save(commit=False)
         instance.save()
         messages.success(request, "Successfully updated!")
         return HttpResponseRedirect(instance.get_absolute_url())
     context = {
         'dataset': instance,
-        'documents': Document.objects.filter(dataname_id=pk),
         'form': form,
-        'ciffiles': ciffiles,
     }
     return render(request, "new_dataset.html", context)
 
@@ -76,11 +70,8 @@ def detail_view(request, pk=None):
     returns the detailed view of all the structures.
     """
     instance = get_object_or_404(Dataset, pk=pk)
-    ciffiles = CifDocumentForm(request.POST or None)#, request.DATA or None)
     context = {
         'dataset': instance,
-        'documents': Document.objects.filter(dataname_id=pk),
-        'ciffiles': ciffiles,
     }
     return render(request, 'detail.html', context)
 
