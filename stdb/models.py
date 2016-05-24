@@ -26,7 +26,9 @@ class Dataset(models.Model):
     formula = models.CharField(max_length=200)
     machine = models.CharField(max_length=200)
     operator = models.CharField(max_length=200, verbose_name='Who measured the structure?')
-    measure_date = models.DateTimeField(verbose_name='date measured')
+    # need child table for this:
+    #measured_for = models.CharField(max_length=200, verbose_name='Who measured the structure?')
+    measure_date = models.DateField(verbose_name='date measured')
     received = models.DateField(verbose_name='date received', blank=True, null=True)
     output = models.DateField(verbose_name='date outgoing', blank=True, null=True)
     crystal_size_x = models.FloatField(max_length=4, default=0, blank=True,
@@ -38,6 +40,7 @@ class Dataset(models.Model):
     customer = models.CharField(max_length=150, blank=True)
     colour = models.CharField(max_length=20, blank=True)
     is_publishable = models.BooleanField(default=False)
+    service_structure = models.BooleanField(default=False)
     comment = models.TextField(max_length=2000, blank=True)
     cell_a = models.FloatField(max_length=8, default=0, verbose_name='a', validators = [MinValueValidator(0), MaxValueValidator(500)])
     cell_b = models.FloatField(max_length=8, default=0, verbose_name='b', validators=[MinValueValidator(0), MaxValueValidator(500)])
@@ -95,7 +98,7 @@ class Dataset(models.Model):
         return reverse('stdb:detail', kwargs={'pk': self.id})
 
     def was_measured_recently(self):
-        now = timezone.now()
+        now = datetime.date.today()
         return now - datetime.timedelta(days=7) <= self.measure_date <= now
 
     is_publishable.short_description = 'publishable?'

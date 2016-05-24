@@ -5,14 +5,18 @@ from django import forms
 #from .models import Document
 from stdb.models import Dataset
 
-
+class DateInput(forms.SelectDateWidget):
+    input_type = 'date'
 
 class DocumentForm(forms.ModelForm):
     cif_file = forms.FileField(label='Cif file', allow_empty_file=True, required=False)
     class Meta:
         model = Dataset
-        fields = [str(i).split('.')[-1] for i in model._meta.fields]
-        """
+        #fields = [str(i).split('.')[-1] for i in model._meta.fields]
+        widgets = {
+            'measure_date': DateInput,
+        }
+        #"""
         fields = [
             'name',
             'flask_name',
@@ -27,7 +31,7 @@ class DocumentForm(forms.ModelForm):
             'beta',
             'gamma',
             'cif_file',
-        ]"""
+        ]#"""
 
 
 
