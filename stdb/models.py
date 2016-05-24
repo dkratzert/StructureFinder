@@ -105,6 +105,10 @@ class Dataset(models.Model):
     was_measured_recently.short_description = 'Measured recently?'
 
     def getsize(self):
+        try:
+            self.cif_file.size
+        except:
+            return 'File not found!'
         if 1000 <= self.cif_file.size < 1000000:
               return '{:.2f} {}'.format(self.cif_file.size / 1000, 'kB')
         else:

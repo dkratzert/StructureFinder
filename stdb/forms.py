@@ -9,7 +9,7 @@ from stdb.models import Dataset
 class CifDocumentForm(forms.ModelForm):
     class Meta:
         model = Document
-        #cif_file = forms.FileField(Document, label='Select a file')
+        #cif_file = forms.FileField(Document, label='Select a cif file')
         fields = [
             'cif_file',
         ]
