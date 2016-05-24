@@ -5,25 +5,14 @@ from django import forms
 #from .models import Document
 from stdb.models import Dataset
 
-"""
-class CifDocumentForm(forms.ModelForm):
-    class Meta:
-        model = Document
-        #cif_file = forms.FileField(Document, label='Select a cif file')
-        fields = [
-            'cif_file',
-        ]
 
-class DocumentForm(forms.Form):
-    docfile = forms.FileField(
-        label='Select a file'
-    )
-"""
 
 class DocumentForm(forms.ModelForm):
+    cif_file = forms.FileField(label='Cif file', allow_empty_file=True, required=False)
     class Meta:
         model = Dataset
-        #ciffile = forms.FileField(label='Select a cif file')
+        fields = [str(i).split('.')[-1] for i in model._meta.fields]
+        """
         fields = [
             'name',
             'flask_name',
@@ -38,4 +27,23 @@ class DocumentForm(forms.ModelForm):
             'beta',
             'gamma',
             'cif_file',
+        ]"""
+
+
+
+
+
+"""
+class CifDocumentForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        #cif_file = forms.FileField(Document, label='Select a cif file')
+        fields = [
+            'cif_file',
         ]
+
+class DocumentForm(forms.Form):
+    docfile = forms.FileField(
+        label='Select a file'
+    )
+"""

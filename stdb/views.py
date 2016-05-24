@@ -7,7 +7,6 @@ from django.http import HttpResponseRedirect
 from django.utils import timezone
 
 from .models import Dataset
-#from .models import Document
 from .forms import DocumentForm
 
 def index_view(request):
@@ -70,8 +69,10 @@ def detail_view(request, pk=None):
     returns the detailed view of all the structures.
     """
     instance = get_object_or_404(Dataset, pk=pk)
+    form = DocumentForm(instance=instance)
     context = {
         'dataset': instance,
+        'form': form,
     }
     return render(request, 'detail.html', context)
 

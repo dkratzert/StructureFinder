@@ -35,7 +35,8 @@ class Dataset(models.Model):
                                        validators=[MinValueValidator(0), MaxValueValidator(500)])
     crystal_size_z = models.FloatField(max_length=4, default=0, blank=True,
                                        validators=[MinValueValidator(0), MaxValueValidator(500)])
-    customer = models.CharField(max_length=100, blank=True)
+    customer = models.CharField(max_length=150, blank=True)
+    colour = models.CharField(max_length=20, blank=True)
     is_publishable = models.BooleanField(default=False)
     comment = models.TextField(max_length=2000, blank=True)
     cell_a = models.FloatField(max_length=8, default=0, verbose_name='a', validators = [MinValueValidator(0), MaxValueValidator(500)])
@@ -44,39 +45,35 @@ class Dataset(models.Model):
     alpha = models.FloatField(max_length=8, default=0, validators = [MinValueValidator(0), MaxValueValidator(180)])
     beta = models.FloatField(max_length=8, default=0, validators = [MinValueValidator(0), MaxValueValidator(180)])
     gamma = models.FloatField(max_length=8, default=0, validators = [MinValueValidator(0), MaxValueValidator(180)])
-    R1_all = models.FloatField(max_length=5, default=0,
-                               validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True)
-    wR2_all = models.FloatField(max_length=5, default=0,
-                                validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True)
-    R1_2s = models.FloatField(max_length=5, default=0,
-                              validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True)
-    wR2_2s = models.FloatField(max_length=5, default=0,
-                               validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True)
+    R1_all = models.FloatField(max_length=5, validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True, null=True)
+    wR2_all = models.FloatField(max_length=5, validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True, null=True)
+    R1_2s = models.FloatField(max_length=5, validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True, null=True)
+    wR2_2s = models.FloatField(max_length=5, validators = [MinValueValidator(0), MaxValueValidator(1)], blank=True, null=True)
     density = models.FloatField(max_length=5, verbose_name='density (calc)', blank=True, null=True)
     mu = models.FloatField(max_length=5, verbose_name='absorption [mm-1]', blank=True, null=True)
     formular_weight = models.FloatField(max_length=8, verbose_name='Formular weight', blank=True, null=True)
-    colour = models.CharField(max_length=20, blank=True)
     shape = models.CharField(max_length=20, blank=True)
     temperature = models.FloatField(max_length=5, verbose_name='Temperature [K]', blank=True, default=0, null=True)
     crystal_system = models.CharField(max_length=15, blank=True)
     space_group = models.CharField(max_length=15, blank=True)
     volume = models.FloatField(max_length=5, blank=True, null=True)
     z = models.IntegerField(blank=True, null=True)
+    fnull = models.IntegerField(blank=True, null=True)
     wavelength = models.FloatField(max_length=10, blank=True, null=True)
     radiation_type = models.CharField(max_length=18, blank=True)
     theta_min = models.FloatField(max_length=10, blank=True, null=True)
     theta_max = models.FloatField(max_length=10, blank=True, null=True)
-    measured_refl = models.FloatField(max_length=10, blank=True, null=True)
-    indep_refl = models.FloatField(max_length=20, blank=True, null=True)
-    refl_used = models.FloatField(max_length=15, blank=True, null=True)
+    measured_refl = models.IntegerField(blank=True, null=True)
+    indep_refl = models.IntegerField(blank=True, null=True)
+    refl_used = models.IntegerField(blank=True, null=True)
     r_int = models.FloatField(max_length=10, blank=True, null=True)
-    parameters = models.FloatField(max_length=10, blank=True, null=True)
-    restraints = models.FloatField(max_length=10, blank=True, null=True)
+    parameters = models.IntegerField(blank=True, null=True)
+    restraints = models.IntegerField(blank=True, null=True)
     peak = models.FloatField(max_length=10, blank=True, null=True)
     hole = models.FloatField(max_length=10, blank=True, null=True)
     goof = models.FloatField(max_length=10, blank=True, null=True)
-    cif_file = models.FileField(upload_to=get_filename, verbose_name='CIF File', null=True, blank=True)
-    res_file = models.FileField(upload_to=get_filename, verbose_name='RES File', null=True, blank=True)
+    cif_file = models.FileField(upload_to=get_filename, verbose_name='CIF File', blank=True)
+    res_file = models.FileField(upload_to=get_filename, verbose_name='RES File', blank=True)
     cell_a.short_description = 'Unit Cell Parameter a'
     cell_b.short_description = 'Unit Cell Parameter b'
     cell_c.short_description = 'Unit Cell Parameter c'
@@ -87,6 +84,9 @@ class Dataset(models.Model):
 
     class Meta:
         ordering = ['-measure_date', '-name']
+
+    def get_model_fields(model):
+        return model._meta.fields
 
     def __str__(self):
         return self.name
@@ -147,4 +147,14 @@ class Dataset(models.Model):
                 # we built new_string from safe parts, so we can mark it as
                 # safe to prevent autoescaping
         return mark_safe(new_string.replace(' ', ''))
+
+    def format_scpace_group(self):
+        """
+        find all 2(1), 3(1), 3(2), 4(1), 4(2), 6(1), 6(2), 6(3), 6(4), 6(5) and replace with 2<sub>1<sub> ....
+        find all -number and replace with <bar>number</bar>
+        make all characters italic
+        :return:
+        """
+        pass
+
 

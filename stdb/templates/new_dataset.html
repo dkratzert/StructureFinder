@@ -7,6 +7,13 @@ This template is for creation and editing of a dataset
 
 {% block content %}
 
+    {% comment  %}
+
+    Just show the most essential input fields (e.g. Operator, Machine, ...) here and
+    let all other fields be populated by the cif file.
+
+    {% endcomment %}
+
 <h1>Edit Dataset</h1>
 <body>
 <form method="POST" action="" enctype="multipart/form-data">{% csrf_token %}
