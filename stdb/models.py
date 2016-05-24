@@ -129,13 +129,22 @@ class Dataset(models.Model):
         :return: formula as html string
         """
         new_string = ''
-        for item in self.formula:
-            if item.isdigit():
+        for n, item in enumerate(self.formula):
+            try:
+                before = '.,-'.find(self.formula[n + 1])
+            except(IndexError):
+                before = False
+            try:
+                after = '.,-'.find(self.formula[n - 1])
+            except(IndexError):
+                after = False
+            # make shure before and after the digit is no komma or dash. like in 1,2-Diol
+            if item.isdigit() and not (before > 0 or after > 0):
                 # we know item is a number, so no need to escape it
                 new_string += '<sub>'+ item +'</sub>'
             else:
                 new_string += escape(item)
                 # we built new_string from safe parts, so we can mark it as
                 # safe to prevent autoescaping
-        return mark_safe(new_string)
+        return mark_safe(new_string.replace(' ', ''))
 
