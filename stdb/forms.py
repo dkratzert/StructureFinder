@@ -23,6 +23,7 @@ class DocumentForm(forms.Form):
 class DocumentForm(forms.ModelForm):
     class Meta:
         model = Dataset
+        #ciffile = forms.FileField(label='Select a cif file')
         fields = [
             'name',
             'flask_name',
