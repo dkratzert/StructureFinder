@@ -13,10 +13,44 @@ This template shows the details of a dataset with all its values
 </style>
 
 {% block content %}
+    <script type="text/javascript">
+    var Info;
+    ;(function() {
+    Info = {
+        width: 500,
+        height: 500,
+        debug: false,
+        color: "0xC0C0C0",
+        addSelectionOptions: true,
+        use: "HTML5",
+        readyFunction: null,
+       document: "http://127.0.0.1:8000{{ dataset.cif_file.url }}",
+        bondWidth: 4,
+        zoomScaling: 1.5,
+        pinchScaling: 2.0,
+        mouseDragFactor: 0.5,
+        touchDragFactor: 0.15,
+        multipleBondSpacing: 4,
+        spinRateX: 0.2,
+        spinRateY: 0.5,
+        spinFPS: 20,
+        spin:true,
+        defaultModel: "$dopamine",
+        load: "{{ dataset.cif_file.url }}"
+    }
+    })();
+    $(window).ready(function() {
+        Jmol.getTMApplet("jmol", Info);
+      $("#apphere").html(jmol._code);
+      $("#spinstuff").html('<a href="javascript:jmol.spin(true)">spin ON</a> <a href="javascript:jmol.spin(false)">spin OFF</a>');
+    });
+    </script>
 
 <title>{{ dataset.name }}</title>
-
-{% block title %}<h2 class="sm-title">Results of {{ dataset.name }}</h2>{% endblock %}
+<div class="row">
+    <!-- erste Spalte mit Datentabelle: -->
+    <div class="col-lg-10">
+    {% block title %}<h2 class="sm-title">Results of {{ dataset.name }}</h2>{% endblock %}
     <p>
     <div class="col-sm-6">
     <table class="table">
@@ -59,17 +93,6 @@ This template shows the details of a dataset with all its values
     <tr><td>Index ranges</td>               <td>{{ dataset.temperature }} </td></tr> {% comment  %}maybe not?{% endcomment %}
     <tr><td>Measured reflections</td>       <td>{{ dataset.measured_refl }} </td></tr>
     <tr><td>Independent reflections</td>    <td>{{ dataset.indep_refl }} [R<sub>int</sub> = {{ dataset.r_int }}]</td></tr>
-    <tr><td colspan="2">
-        <!-- List of uploaded documents -->
-        {% if dataset.cif_file %}
-            <p>
-            Cif file: -> <a href="{{ dataset.cif_file.url }}">{{ dataset.cif_file.name }}</a> {{ dataset.getsize }}
-            </p>
-        {% else %}
-            <p>No cif file uploaded.</p>
-        {% endif %}
-    </td>
-    </tr>
     </table>
     <p>
         <a href="{% url 'stdb:update' pk=dataset.id %}">Edit Data</a>
@@ -77,9 +100,38 @@ This template shows the details of a dataset with all its values
     <p>
         <a href="{% url 'stdb:delete' pk=dataset.id %}">Delete Dataset!</a>
     </p>
+    <p>
+        <a href="{% url 'stdb:index' %}">Back to main page</a>
+    </p>
+    </div>
 
+    <!-- zweite Spalte mit 3D Bild und files: -->
+    <div class="col-lg-2">
+
+        <tr><td colspan="1">
+
+        <div id="spinstuff"></div>
+        <br>
+        <div id="apphere"></div>
+
+        </td></tr>
+        <!-- Files list: -->
+        </table>
+
+        <tr><td colspan="1">
+            <!-- List of uploaded documents -->
+            {% if dataset.cif_file %}
+                <p>
+                Cif file: -> <a href="{{ dataset.cif_file.url }}">{{ dataset.cif_file.name }}</a> {{ dataset.getsize }}
+                </p>
+            {% else %}
+                <p>No cif file uploaded.</p>
+            {% endif %}
+        </td></tr>
+        </table>
+
+    </div>
+</div>
 <br>
 
-<a href="{% url 'stdb:index' %}">Back to main page</a>
-</div>
 {% endblock content %}

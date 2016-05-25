@@ -1,13 +1,8 @@
 import datetime
-
 from django import forms
-#from .models import Dataset, Document
-
-
-#from .models import Document
 from django.forms import DateInput
-
 from stdb.models import Dataset
+
 
 class DateInput(forms.SelectDateWidget):
     """
@@ -23,16 +18,17 @@ class DateInput(forms.SelectDateWidget):
         self.years = year_field
 
 
-
 class DocumentForm(forms.ModelForm):
     cif_file = forms.FileField(label='Cif file', allow_empty_file=True, required=False)
+
     class Meta:
         model = Dataset
-        #fields = [str(i).split('.')[-1] for i in model._meta.fields]
+        fields = [str(i).split('.')[-1] for i in model._meta.fields]
         widgets = {
             'measure_date': DateInput,
         }
-        #"""
+        fields.extend(widgets.keys())
+        """
         fields = [
             'name',
             'flask_name',
@@ -47,23 +43,5 @@ class DocumentForm(forms.ModelForm):
             'beta',
             'gamma',
             'cif_file',
-        ]#"""
+        ]"""
 
-
-
-
-
-"""
-class CifDocumentForm(forms.ModelForm):
-    class Meta:
-        model = Document
-        #cif_file = forms.FileField(Document, label='Select a cif file')
-        fields = [
-            'cif_file',
-        ]
-
-class DocumentForm(forms.Form):
-    docfile = forms.FileField(
-        label='Select a file'
-    )
-"""
