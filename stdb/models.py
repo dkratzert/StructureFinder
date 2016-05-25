@@ -26,6 +26,7 @@ class Dataset(models.Model):
     formula = models.CharField(max_length=200)
     machine = models.CharField(max_length=200)
     operator = models.CharField(max_length=200, verbose_name='Who measured the structure?')
+    picked_at = models.IntegerField(verbose_name='Crystals picked at which temperature?', default=0)
     # need child table for this:
     #measured_for = models.CharField(max_length=200, verbose_name='Who measured the structure?')
     measure_date = models.DateField(verbose_name='date measured')
@@ -67,6 +68,8 @@ class Dataset(models.Model):
     theta_min = models.FloatField(max_length=10, blank=True, null=True)
     theta_max = models.FloatField(max_length=10, blank=True, null=True)
     measured_refl = models.IntegerField(blank=True, null=True)
+    #_diffrn_measured_fraction_theta_max:
+    completeness = models.IntegerField(blank=True, null=True)
     indep_refl = models.IntegerField(blank=True, null=True)
     refl_used = models.IntegerField(blank=True, null=True)
     r_int = models.FloatField(max_length=10, blank=True, null=True)
