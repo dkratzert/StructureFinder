@@ -1,3 +1,5 @@
+import datetime
+
 from django import forms
 #from .models import Dataset, Document
 
@@ -7,6 +9,8 @@ from stdb.models import Dataset
 
 class DateInput(forms.SelectDateWidget):
     input_type = 'date'
+    past_year = datetime.date.today().year-15
+    year_field = range(int(past_year), int(datetime.date.today().year) + 3)
 
 class DocumentForm(forms.ModelForm):
     cif_file = forms.FileField(label='Cif file', allow_empty_file=True, required=False)
