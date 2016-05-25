@@ -13,38 +13,6 @@ This template shows the details of a dataset with all its values
 </style>
 
 {% block content %}
-    <script type="text/javascript">
-    var Info;
-    ;(function() {
-    Info = {
-        width: 500,
-        height: 500,
-        debug: false,
-        color: "0xC0C0C0",
-        addSelectionOptions: true,
-        use: "HTML5",
-        readyFunction: null,
-       document: "http://127.0.0.1:8000{{ dataset.cif_file.url }}",
-        bondWidth: 4,
-        zoomScaling: 1.5,
-        pinchScaling: 2.0,
-        mouseDragFactor: 0.5,
-        touchDragFactor: 0.15,
-        multipleBondSpacing: 4,
-        spinRateX: 0.2,
-        spinRateY: 0.5,
-        spinFPS: 20,
-        spin:true,
-        defaultModel: "$dopamine",
-        load: "{{ dataset.cif_file.url }}"
-    }
-    })();
-    $(window).ready(function() {
-        Jmol.getTMApplet("jmol", Info);
-      $("#apphere").html(jmol._code);
-      $("#spinstuff").html('<a href="javascript:jmol.spin(true)">spin ON</a> <a href="javascript:jmol.spin(false)">spin OFF</a>');
-    });
-    </script>
 
 <title>{{ dataset.name }}</title>
 <div class="row">
@@ -52,7 +20,7 @@ This template shows the details of a dataset with all its values
     <div class="col-lg-10">
     {% block title %}<h2 class="sm-title">Results of {{ dataset.name }}</h2>{% endblock %}
     <p>
-    <div class="col-sm-6">
+    <div class="col-md-6">
     <table class="table">
     <tr><td>Dataset Name</td>           <td>{{ dataset.name }} </td></tr>
     <tr><td>Flask Name</td>                 <td>{{ dataset.name }}  </td></tr>
@@ -106,13 +74,12 @@ This template shows the details of a dataset with all its values
     </div>
 
     <!-- zweite Spalte mit 3D Bild und files: -->
-    <div class="col-lg-2">
+    <div class="col-lg-6">
 
         <tr><td colspan="1">
 
-        <div id="spinstuff"></div>
-        <br>
-        <div id="apphere"></div>
+        <!-- add molecule here -->
+
 
         </td></tr>
         <!-- Files list: -->
