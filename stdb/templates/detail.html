@@ -23,8 +23,12 @@ This template shows the details of a dataset with all its values
     <div class="col-md-6">
     <table class="table">
     <tr><td>Dataset Name</td>           <td>{{ dataset.name }} </td></tr>
-    <tr><td>Flask Name</td>                 <td>{{ dataset.name }}  </td></tr>
+    <tr><td>Flask Name</td>             <td>{{ dataset.name }}  </td></tr>
     <tr><td>Operator</td>               <td>{{ dataset.operator }} </td></tr>
+    {% comment %}
+        <tr><td>Client</td>                 <td>{{ dataset.measured_for }} </td></tr>
+    <tr><td>EMail</td>                  <td>{{ dataset.email }} </td></tr>
+    {% endcomment %}
     <tr><td>Machine</td>                <td> {{ dataset.machine }} </td></tr>
     <tr><td>Received</td>               <td> {{ dataset.received }} </td></tr>
     <tr><td>Measurement Date</td>       <td> {{ dataset.measure_date }} </td></tr>

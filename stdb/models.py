@@ -27,6 +27,7 @@ class Dataset(models.Model):
     machine = models.CharField(max_length=200)
     operator = models.CharField(max_length=200, verbose_name='Who measured the structure?')
     picked_at = models.IntegerField(verbose_name='Crystals picked at which temperature?', default=0)
+    email = models.EmailField(blank=True)
     # need child table for this:
     #measured_for = models.CharField(max_length=200, verbose_name='Who measured the structure?')
     measure_date = models.DateField(verbose_name='date measured')
