@@ -165,3 +165,22 @@ class Dataset(models.Model):
         pass
 
 
+STATE_ONLINE  = 1
+STATE_DRAFT   = 2
+STATE_OFFLINE = 3
+STATE_OTHER = 4
+
+STATE_CHOICES = (
+    (STATE_ONLINE,  'Smart APEXII Quazar'),
+    (STATE_DRAFT,   'R-AXIS Spider'),
+    (STATE_OFFLINE, 'VENTURE'),
+    (STATE_OTHER, 'other'),
+)
+
+STATE_DICT = dict(STATE_CHOICES)
+
+class Content(models.Model):
+    machine = models.PositiveSmallIntegerField(choices=STATE_CHOICES, default=STATE_DRAFT)
+
+    def __str__(self):
+        return '{}'.format(STATE_DICT[self.machine])

@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Dataset
+from .models import Dataset, Content
+
 #from .models import Document
 
 """
@@ -16,6 +17,10 @@ class DocumentInline(admin.TabularInline):
          )
     ]
 """
+
+class ContentAdmin(admin.ModelAdmin):
+    pass
+
 
 class DatasetAdmin(admin.ModelAdmin):
     #inlines = [DocumentInline, ]
@@ -41,7 +46,7 @@ class DatasetAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Dataset, DatasetAdmin)
-#admin.site.register(Document, DocumentAdmin)
+admin.site.register(Content, ContentAdmin)
 
 """
 Add possibility to add machines like Choices in https://docs.djangoproject.com/en/1.9/intro/tutorial07/
