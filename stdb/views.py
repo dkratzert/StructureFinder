@@ -65,7 +65,7 @@ def upload(request):
                           request.FILES or None,
                           instance=Files(user=request.cif_file))
     if filesform.is_valid():
-        filesform.cif_file = request.cif_file
+        filesform.cif_file = filesform.cif_file_set.get(pk=request.POST['cif_file'])
         filesform.save()
         messages.success(request, "Successfully updated!")
         #return HttpResponseRedirect(instance.get_absolute_url())
