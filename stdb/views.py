@@ -44,27 +44,32 @@ def dataset_update(request, pk=None):
     :param pk:
     :return:
     """
+    # http://stackoverflow.com/questions/27942795/how-to-display-foreignkey-image-in-django
     instance = get_object_or_404(Dataset, pk=pk)
-    files_instance = get_object_or_404(Files, pk=pk)
     form = DatasetForm(request.POST or None, instance=instance)
-    filesform = FilesForm(request.FILES or None, instance=files_instance)
     if form.is_valid():
         files_instance = form.save(commit=False)
         files_instance.save()
-        messages.success(request, "Successfully uploaded!")
-        return HttpResponseRedirect(instance.get_absolute_url())
-        # return HttpResponseRedirect(reverse('stdb:list'))
-    if filesform.is_valid():
-        form = filesform.save(commit=False)
-        form.save()
         messages.success(request, "Successfully updated!")
         return HttpResponseRedirect(instance.get_absolute_url())
+        # return HttpResponseRedirect(reverse('stdb:list'))
     context = {
         'dataset': instance,
         'form': form,
-        'filesform': filesform,
-        'files_instance': files_instance,
     }
+    return render(request, "new_dataset.html", context)
+
+
+def upload(request):
+    filesform = FilesForm(request.POST or None,
+                          request.FILES or None,
+                          instance=Files(user=request.cif_file))
+    if filesform.is_valid():
+        filesform.cif_file = request.cif_file
+        filesform.save()
+        messages.success(request, "Successfully updated!")
+        #return HttpResponseRedirect(instance.get_absolute_url())
+    context = {'filesform': filesform}
     return render(request, "new_dataset.html", context)
 
 

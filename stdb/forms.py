@@ -17,6 +17,10 @@ class DateInput(forms.SelectDateWidget):
         year_field = range(int(past_year), int(datetime.date.today().year) + 3)
         self.years = year_field
 
+#    def Meta:
+#        model = DateInput
+#        date = forms.ModelMultipleChoiceField(queryset=DateInput.objects.all())
+
 
 class FilesForm(forms.ModelForm):
     cif_file = forms.FileField(label='Cif file', allow_empty_file=True, required=False)
