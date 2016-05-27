@@ -1,13 +1,14 @@
 from django.core.urlresolvers import reverse
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, get_list_or_404
 from django.contrib import messages
 
 # Create your views here.
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 
-from .models import Dataset
-from .forms import DocumentForm
+from .models import Dataset, Files
+from .forms import DatasetForm, FilesForm
+
 
 def index_view(request):
     # returns all measurements of the past, not of the future
@@ -24,7 +25,7 @@ def dataset_create(request):
     :param request:
     :return:
     """
-    form = DocumentForm(request.POST or None, request.FILES or None)
+    form = DatasetForm(request.POST or None, request.FILES or None)
     if form.is_valid():
         instance = form.save(commit=False)
         instance.save()
@@ -44,15 +45,25 @@ def dataset_update(request, pk=None):
     :return:
     """
     instance = get_object_or_404(Dataset, pk=pk)
-    form = DocumentForm(request.POST or None, request.FILES or None, instance=instance)
+    files_instance = get_object_or_404(Files, pk=pk)
+    form = DatasetForm(request.POST or None, instance=instance)
+    filesform = FilesForm(request.FILES or None, instance=files_instance)
     if form.is_valid():
-        instance = form.save(commit=False)
-        instance.save()
+        files_instance = form.save(commit=False)
+        files_instance.save()
+        messages.success(request, "Successfully uploaded!")
+        return HttpResponseRedirect(instance.get_absolute_url())
+        # return HttpResponseRedirect(reverse('stdb:list'))
+    if filesform.is_valid():
+        form = filesform.save(commit=False)
+        form.save()
         messages.success(request, "Successfully updated!")
         return HttpResponseRedirect(instance.get_absolute_url())
     context = {
         'dataset': instance,
         'form': form,
+        'filesform': filesform,
+        'files_instance': files_instance,
     }
     return render(request, "new_dataset.html", context)
 
@@ -69,7 +80,7 @@ def detail_view(request, pk=None):
     returns the detailed view of all the structures.
     """
     instance = get_object_or_404(Dataset, pk=pk)
-    form = DocumentForm(instance=instance)
+    form = DatasetForm(instance=instance)
     context = {
         'dataset': instance,
         'form': form,
@@ -95,14 +106,14 @@ def detail_view(request, pk=None):
 def list(request):
     # Handle file upload
     if request.method == 'POST':
-        form = DocumentForm(request.POST, request.FILES)
+        form = DatasetForm(request.POST, request.FILES)
         if form.is_valid():
             newdoc = Document(docfile=request.FILES['cif_file'])
             newdoc.save()
             # Redirect to the document list after POST
             return HttpResponseRedirect(reverse('stdb:list'))
     else:
-        form = DocumentForm()  # A empty, unbound form
+        form = DatasetForm()  # A empty, unbound form
 
     # Load datasets and documents for the list page
     datasets = Dataset.objects.all()

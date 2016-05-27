@@ -27,7 +27,7 @@ class FilesForm(forms.ModelForm):
         fields = ['cif_file', 'res_file']
 
 
-class DocumentForm(forms.ModelForm):
+class DatasetForm(forms.ModelForm):
 
     class Meta:
         model = Dataset

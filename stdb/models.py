@@ -200,6 +200,11 @@ class Files(models.Model):
         else:
             return '{:.2f} {}'.format(file.size / 1000000, 'MB')
 
+    class Meta:
+        pass
+        #files = Files.objects.all()
+
+
 
 class Customer(models.Model):
     dataset = models.ManyToManyField(Dataset)
