@@ -5,6 +5,7 @@ from django.contrib import messages
 # Create your views here.
 from django.http import HttpResponseRedirect
 from django.utils import timezone
+from django.views.generic import CreateView
 
 from .models import Dataset, Files
 from .forms import DatasetForm, FilesForm
@@ -52,7 +53,6 @@ def dataset_update(request, pk=None):
         files_instance.save()
         messages.success(request, "Successfully updated!")
         return HttpResponseRedirect(instance.get_absolute_url())
-        # return HttpResponseRedirect(reverse('stdb:list'))
     context = {
         'dataset': instance,
         'form': form,
@@ -60,17 +60,11 @@ def dataset_update(request, pk=None):
     return render(request, "new_dataset.html", context)
 
 
-def upload(request):
-    filesform = FilesForm(request.POST or None,
-                          request.FILES or None,
-                          instance=Files(user=request.cif_file))
-    if filesform.is_valid():
-        filesform.cif_file = filesform.cif_file_set.get(pk=request.POST['cif_file'])
-        filesform.save()
-        messages.success(request, "Successfully updated!")
-        #return HttpResponseRedirect(instance.get_absolute_url())
-    context = {'filesform': filesform}
-    return render(request, "new_dataset.html", context)
+class UpdateView(CreateView):
+    model = Dataset
+    form_class = FilesForm
+    template_name = 'new_dataset.html'
+    success_url = '?success'
 
 
 def delete_dataset(request, pk=None):

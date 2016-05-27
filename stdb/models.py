@@ -10,14 +10,6 @@ from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 
-def get_filename(instance, name):
-    """
-    returns the path to where the uploaded file should be stored
-    :param instance: An instance of the model where the FileField is defined.
-    :param name: Filename to be stored
-    :return: full path to store into
-    """
-    return os.path.join('cif_file/', os.path.join(instance.name.name, name))
 
 
 class Dataset(models.Model):
@@ -172,10 +164,22 @@ class Machines(models.Model):
         return '{}'.format(STATE_DICT[self.machine])
 
 
+def get_filename(instance, name):
+    """
+    returns the path to where the uploaded file should be stored
+    :param instance: An instance of the model where the FileField is defined.
+    :param name: Filename to be stored
+    :return: full path to store into
+    """
+    path = os.path.join('cif_file/', os.path.join(instance.dataset.name, name))
+    print('upload path:', path, '######')
+    return path
+
+
 class Files(models.Model):
     dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
-    cif_file = models.FileField(upload_to=get_filename, verbose_name='CIF File', blank=True)
-    res_file = models.FileField(upload_to=get_filename, verbose_name='RES File', blank=True)
+    cif_file = models.FileField(upload_to='cif_file/', verbose_name='CIF File', blank=True)
+    res_file = models.FileField(upload_to='cif_file/', verbose_name='RES File', blank=True)
     raw_file = models.FileField(upload_to=get_filename, verbose_name='raw_file', blank=True)
     abs_file = models.FileField(upload_to=get_filename, verbose_name='abs File', blank=True)
     ls_file = models.FileField(upload_to=get_filename, verbose_name='_ls File', blank=True)

@@ -26,15 +26,6 @@ This template is for creation and editing of a dataset
 </form>
 
 
-<form method="POST" action="" enctype="multipart/form-data">{% csrf_token %}
-<p>
-{{ filesform.as_p }}
-</p>
-
-<br>
-<input type="submit" class="btn btn-sm btn-primary" value="Save Files" />
-</form>
-
 <p>
 <a href="{% url 'stdb:index' %}">Back to main page</a>
 </p>

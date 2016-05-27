@@ -1,6 +1,8 @@
 import datetime
 from django import forms
 from django.forms import DateInput
+
+from multiupload.fields import MultiFileField
 from stdb.models import Dataset, Files
 
 
@@ -31,6 +33,12 @@ class FilesForm(forms.ModelForm):
         fields = ['cif_file', 'res_file']
 
 
+
+
+
+
+
+
 class DatasetForm(forms.ModelForm):
 
     class Meta:
@@ -39,22 +47,36 @@ class DatasetForm(forms.ModelForm):
         widgets = {
             'measure_date': DateInput,
         }
-        #formset = forms.inlineformset_factory(Dataset, Files, fields=('cif_file', 'res_file'))
         fields.extend(widgets.keys())
-        """
-        fields = [
-            'name',
-            'flask_name',
-            'machine',
-            'measure_date',
-            'formula',
-            'operator',
-            'cell_a',
-            'cell_b',
-            'cell_c',
-            'alpha',
-            'beta',
-            'gamma',
-            'cif_file',
-        ]"""
 
+    files = MultiFileField(min_num=1, max_num=3)
+
+    def save(self, commit=True):
+        instance = super(DatasetForm, self).save(commit)
+        for each in self.cleaned_data['files']:
+            Files.objects.create(file=each, message=instance)
+        return instance
+
+
+
+
+
+
+
+
+    """
+    fields = [
+        'name',
+        'flask_name',
+        'machine',
+        'measure_date',
+        'formula',
+        'operator',
+        'cell_a',
+        'cell_b',
+        'cell_c',
+        'alpha',
+        'beta',
+        'gamma',
+        'cif_file',
+    ]"""

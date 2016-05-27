@@ -103,7 +103,7 @@ This template shows the details of a dataset with all its values
             <!-- List of uploaded documents -->
             {% if dataset.cif_file %}
                 <p>
-                Cif file: -> <a href="{{ dataset.cif_file.url }}">{{ dataset.cif_file.name }}</a> {{ dataset.getsize }}
+                Cif file: -> <a href="{{ files.cif_file.url }}">{{ files.cif_file.name }}</a> {{ files.getsize }}
                 </p>
             {% else %}
                 <p>No cif file uploaded.</p>
