@@ -1,7 +1,7 @@
 import datetime
 from django import forms
 from django.forms import DateInput
-from stdb.models import Dataset
+from stdb.models import Dataset, Files
 
 
 class DateInput(forms.SelectDateWidget):
@@ -18,8 +18,16 @@ class DateInput(forms.SelectDateWidget):
         self.years = year_field
 
 
-class DocumentForm(forms.ModelForm):
+class FilesForm(forms.ModelForm):
     cif_file = forms.FileField(label='Cif file', allow_empty_file=True, required=False)
+    res_file = forms.FileField(label='Res file', allow_empty_file=True, required=False)
+
+    class Meta:
+        model = Files
+        fields = ['cif_file', 'res_file']
+
+
+class DocumentForm(forms.ModelForm):
 
     class Meta:
         model = Dataset
@@ -27,6 +35,7 @@ class DocumentForm(forms.ModelForm):
         widgets = {
             'measure_date': DateInput,
         }
+        #formset = forms.inlineformset_factory(Dataset, Files, fields=('cif_file', 'res_file'))
         fields.extend(widgets.keys())
         """
         fields = [

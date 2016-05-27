@@ -26,13 +26,13 @@ This template shows the details of a dataset with all its values
     <tr><td>Flask Name</td>             <td>{{ dataset.name }}  </td></tr>
     <tr><td>Operator</td>               <td>{{ dataset.operator }} </td></tr>
     {% comment %}
-        <tr><td>Client</td>                 <td>{{ dataset.measured_for }} </td></tr>
+    <tr><td>Client</td>                 <td>{{ dataset.measured_for }} </td></tr>
     <tr><td>EMail</td>                  <td>{{ dataset.email }} </td></tr>
     {% endcomment %}
     <tr><td>Machine</td>                <td> {{ dataset.machine }} </td></tr>
     <tr><td>Received</td>               <td> {{ dataset.received }} </td></tr>
     <tr><td>Measurement Date</td>       <td> {{ dataset.measure_date }} </td></tr>
-    <tr><td>Crystals picked at</td>     <td>{{ dataset.picked_at }} </td></tr>
+    <tr><td>Crystals picked at</td>     <td> {{ dataset.picked_at }} </td></tr>
     <tr><td>Publishable?</td>           <td> {% if dataset.is_publishable %} Yes! {% else %} No! {% endif %}</td></tr>
     </table>
     </p>
