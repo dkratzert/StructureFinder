@@ -77,7 +77,7 @@ This template shows the details of a dataset with all its values
     <tr><td>Largest diff. density Peak / hole      </td>    <td>{{ dataset.peak }} / {{ dataset.hole }}</td></tr>
     </table>
     <p>
-        <a href="{% url 'stdb:update' pk=dataset.id %}">Edit Data</a>
+        <a href="{% url 'stdb:edit' pk=dataset.id %}">Edit Data</a>
     </p>
     <p>
         <a href="{% url 'stdb:delete' pk=dataset.id %}">Delete Dataset!</a>
@@ -103,14 +103,14 @@ This template shows the details of a dataset with all its values
             <!-- List of uploaded documents -->
             {% if dataset.cif_file %}
                 <p>
-                cif file: -> <a href="{{ dataset.cif_file.url }}">{{ dataset.cif_file.name }}</a> {{ dataset.cif_file.size|format_size }}
+                cif file: -> <a href="{{ dataset.cif_file.url }}">{{ dataset.cif_file.name }}</a> {{ dataset.cif_file.size|filesizeformat }}
                 </p>
             {% else %}
                 <p>No cif file uploaded.</p>
             {% endif %}
             {% if dataset.res_file %}
                 <p>
-                res file: -> <a href="{{ dataset.res_file.url }}">{{ dataset.res_file.name }}</a> {{ dataset.res_file.size|format_size }}
+                res file: -> <a href="{{ dataset.res_file.url }}">{{ dataset.res_file.name }}</a> {{ dataset.res_file.size|filesizeformat }}
                 </p>
             {% else %}
                 <p>No res file uploaded.</p>

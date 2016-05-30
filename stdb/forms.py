@@ -1,6 +1,6 @@
 import datetime
 from django import forms
-from django.forms import DateInput
+from django.forms import DateInput, CheckboxInput, widgets
 from stdb.models import Dataset
 
 
@@ -19,18 +19,50 @@ class DateInput(forms.SelectDateWidget):
 
 
 
-
 class DatasetForm(forms.ModelForm):
 
     class Meta:
         model = Dataset
         fields = [str(i).split('.')[-1] for i in model._meta.fields]
-        #cif_file = forms.FileField(label='Cif file', allow_empty_file=True, required=False)
-        #res_file = forms.FileField(label='Res file', allow_empty_file=True, required=False)
+        is_publishable = forms.BooleanField(required=False)
         widgets = {
             'measure_date': DateInput,
             'received': DateInput,
             'output': DateInput,
+            'is_publishable': CheckboxInput,
         }
         fields.extend(widgets.keys())
+
+
+class EditDatasetForm(forms.ModelForm):
+
+    class Meta:
+        model = Dataset
+        fields = ['name', 'flask_name', 'operator', 'machine', 'measure_date', 'received', 'output', 'picked_at',
+                  'operator', 'colour', 'shape', 'is_publishable',
+                  'cif_file',
+                  'fcf_file',
+                  'res_file',
+                  'raw_file',
+                  'p4p_file',
+                  'abs_file',
+                  'eps_file',
+                  'ls_file',
+                  'pdf_file',
+                  'checkcif_file',
+                  'hkl_file',
+                  'sfrm_file',
+                  'cht_file',
+                  'other_file1',
+                  'other_file2',
+                  'other_file3',
+                  ]
+        is_publishable = forms.BooleanField(required=False)
+        widgets = {
+            'measure_date': DateInput,
+            'received': DateInput,
+            'output': DateInput,
+            'is_publishable': CheckboxInput,
+        }
+
 

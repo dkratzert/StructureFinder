@@ -46,15 +46,18 @@ class Dataset(models.Model):
     is_publishable = models.BooleanField(default=False)
     service_structure = models.BooleanField(default=False)
     comment = models.TextField(max_length=2000, blank=True)
-    cell_a = models.FloatField(max_length=8, default=0, verbose_name='a', validators=[MinValueValidator(0),
-                                                                                      MaxValueValidator(500)])
-    cell_b = models.FloatField(max_length=8, default=0, verbose_name='b', validators=[MinValueValidator(0),
-                                                                                      MaxValueValidator(500)])
-    cell_c = models.FloatField(max_length=8, default=0, verbose_name='c', validators=[MinValueValidator(0),
-                                                                                      MaxValueValidator(500)])
-    alpha = models.FloatField(max_length=8, default=0, validators=[MinValueValidator(0), MaxValueValidator(180)])
-    beta = models.FloatField(max_length=8, default=0, validators=[MinValueValidator(0), MaxValueValidator(180)])
-    gamma = models.FloatField(max_length=8, default=0, validators=[MinValueValidator(0), MaxValueValidator(180)])
+    cell_a = models.FloatField(max_length=8, default=0, verbose_name='a', null=True, blank=True,
+                               validators=[MinValueValidator(0), MaxValueValidator(500)])
+    cell_b = models.FloatField(max_length=8, default=0, verbose_name='b', null=True, blank=True,
+                               validators=[MinValueValidator(0), MaxValueValidator(500)])
+    cell_c = models.FloatField(max_length=8, default=0, verbose_name='c', null=True, blank=True,
+                               validators=[MinValueValidator(0), MaxValueValidator(500)])
+    alpha = models.FloatField(max_length=8, default=0, null=True, blank=True,
+                              validators=[MinValueValidator(0), MaxValueValidator(180)])
+    beta = models.FloatField(max_length=8, default=0, null=True, blank=True,
+                             validators=[MinValueValidator(0), MaxValueValidator(180)])
+    gamma = models.FloatField(max_length=8, default=0, null=True, blank=True,
+                              validators=[MinValueValidator(0), MaxValueValidator(180)])
     R1_all = models.FloatField(max_length=5, validators=[MinValueValidator(0),
                                                          MaxValueValidator(1)], blank=True, null=True)
     wR2_all = models.FloatField(max_length=5, validators=[MinValueValidator(0),
@@ -190,22 +193,38 @@ def format_size(size):
         return '{:.2f} {}'.format(size / 1000000, 'MB')
 
 
-STATE_CHOICES = (
-    (1,  'Smart APEXII Quazar'),
-    (2,   'R-AXIS Spider'),
-    (3, 'VENTURE'),
-    (4, 'other'),
+MACHINE_CHOICES = (
+    (1,  'Select a machine'),
+    (2,  'Smart APEXII Quazar'),
+    (3,   'R-AXIS Spider'),
+    (4, 'VENTURE'),
+    (5, 'other'),
 )
-STATE_DICT = dict(STATE_CHOICES)
+MACHINE_DICT = dict(MACHINE_CHOICES)
 
 
 class Machines(models.Model):
     name = models.ForeignKey(Dataset, on_delete=models.CASCADE)
-    machine = models.PositiveSmallIntegerField(choices=STATE_CHOICES, default=1)
+    machine = models.PositiveSmallIntegerField(choices=MACHINE_CHOICES, default=1)
 
     def __str__(self):
-        return '{}'.format(STATE_DICT[self.machine])
+        return '{}'.format(MACHINE_DICT[self.machine])
 
 
 
 
+COLOUR_CHOICES = (
+    (1, 'Select a colour'),
+    (2, 'R-AXIS Spider'),
+    (3, 'VENTURE'),
+    (4, 'other'),
+) #['red','blue','green','yellow','violet','brown','purple','black','white', 'colourless']
+COLOUR_DICT = dict(COLOUR_CHOICES)
+
+
+class Colours(models.Model):
+    name = models.ForeignKey(Dataset, on_delete=models.CASCADE)
+    colour = models.PositiveSmallIntegerField(choices=COLOUR_CHOICES, default=1)
+
+    def __str__(self):
+        return '{}'.format(COLOUR_DICT[self.colour])

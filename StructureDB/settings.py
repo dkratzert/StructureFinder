@@ -27,10 +27,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 # Application definition
 
 INSTALLED_APPS = [
+    'crispy_forms',
     'stdb.apps.StdbConfig',
     'django.contrib.admin',
     'django.contrib.auth',

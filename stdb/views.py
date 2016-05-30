@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.views.generic import CreateView
 
 from .models import Dataset
-from .forms import DatasetForm
+from .forms import DatasetForm, EditDatasetForm
 
 
 def index_view(request):
@@ -20,13 +20,13 @@ def index_view(request):
     return render(request, 'data_list.html', context)
 
 
-def dataset_create(request):
+def new_dataset(request):
     """
     Creates a new Dataset
     :param request:
     :return:
     """
-    form = DatasetForm(request.POST or None, request.FILES or None)
+    form = EditDatasetForm(request.POST or None, request.FILES or None)
     if form.is_valid():
         instance = form.save(commit=False)
         instance.save()
@@ -35,10 +35,10 @@ def dataset_create(request):
     context = {
         'form': form,
     }
-    return render(request, "new_dataset.html", context)
+    return render(request, "edit_dataset.html", context)
 
 
-def dataset_update(request, pk=None):
+def edit_dataset(request, pk=None):
     """
     Updates a dataset.
     :param request:
@@ -46,17 +46,17 @@ def dataset_update(request, pk=None):
     :return:
     """
     instance = get_object_or_404(Dataset, pk=pk)
-    form = DatasetForm(request.POST or None, request.FILES or None, instance=instance)
+    form = EditDatasetForm(request.POST or None, request.FILES or None, instance=instance)
     if form.is_valid():
         instance = form.save(commit=False)
         instance.save()
-        messages.success(request, "Successfully updated!")
+        messages.success(request, "Dataset successfully updated!")
         return HttpResponseRedirect(instance.get_absolute_url())
     context = {
         'dataset': instance,
         'form': form,
     }
-    return render(request, "new_dataset.html", context)
+    return render(request, "edit_dataset.html", context)
 
 
 def delete_dataset(request, pk=None):
