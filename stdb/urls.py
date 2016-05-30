@@ -9,13 +9,13 @@ from .views import (
     dataset_create,
     dataset_update,
     delete_dataset,
-    UpdateView)
+    )
 
 app_name = 'stdb'
 urlpatterns = [
     url(r'^$', index_view, name='index'),
     url(r'^(?P<pk>\d+)/$', detail_view, name='detail'),
-    url(r'^(?P<pk>\d+)/edit/$', UpdateView.as_view(), name='update'),
+    url(r'^(?P<pk>\d+)/edit/$', dataset_update, name='update'),
     url(r'^(?P<pk>\d+)/delete/$', delete_dataset, name='delete'),
     url(r'^new/$', dataset_create, name='new'),
     url(r'^list/$', list, name='list'),

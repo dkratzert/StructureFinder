@@ -51,3 +51,5 @@ Temporary Items
 stdb/migrations/
 media/cif_file/
 cif_file/
+files/
+uploads/

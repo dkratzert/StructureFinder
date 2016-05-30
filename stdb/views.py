@@ -7,8 +7,8 @@ from django.http import HttpResponseRedirect
 from django.utils import timezone
 from django.views.generic import CreateView
 
-from .models import Dataset, Files
-from .forms import DatasetForm, FilesForm
+from .models import Dataset
+from .forms import DatasetForm
 
 
 def index_view(request):
@@ -45,12 +45,11 @@ def dataset_update(request, pk=None):
     :param pk:
     :return:
     """
-    # http://stackoverflow.com/questions/27942795/how-to-display-foreignkey-image-in-django
     instance = get_object_or_404(Dataset, pk=pk)
-    form = DatasetForm(request.POST or None, instance=instance)
+    form = DatasetForm(request.POST or None, request.FILES or None, instance=instance)
     if form.is_valid():
-        files_instance = form.save(commit=False)
-        files_instance.save()
+        instance = form.save(commit=False)
+        instance.save()
         messages.success(request, "Successfully updated!")
         return HttpResponseRedirect(instance.get_absolute_url())
     context = {
@@ -58,13 +57,6 @@ def dataset_update(request, pk=None):
         'form': form,
     }
     return render(request, "new_dataset.html", context)
-
-
-class UpdateView(CreateView):
-    model = Dataset
-    form_class = FilesForm
-    template_name = 'new_dataset.html'
-    success_url = '?success'
 
 
 def delete_dataset(request, pk=None):

@@ -31,7 +31,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'multiupload',
     'stdb.apps.StdbConfig',
     'django.contrib.admin',
     'django.contrib.auth',

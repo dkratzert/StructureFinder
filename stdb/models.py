@@ -6,10 +6,21 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 # Create your models here.
+from django.template.defaultfilters import register
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
 
+def get_filename(instance, name):
+    """
+    returns the path to where the uploaded file should be stored
+    :param instance: An instance of the model where the FileField is defined.
+    :param name: Filename to be stored
+    :return: full path to store into
+    """
+    path = os.path.join('files/', os.path.join(instance.name, name))
+    print('upload path:', path, '######')
+    return path
 
 
 class Dataset(models.Model):
@@ -20,6 +31,9 @@ class Dataset(models.Model):
     operator = models.CharField(max_length=200, verbose_name='Who measured the structure?')
     picked_at = models.IntegerField(verbose_name='Crystals picked at which temperature?', default=0)
     measure_date = models.DateField(verbose_name='date measured')
+    measured_for = models.CharField(max_length=120, verbose_name='Customer', blank=True)
+    email = models.EmailField(blank=True)
+    ak = models.CharField(max_length=120, verbose_name='Workgroup', blank=True)
     received = models.DateField(verbose_name='date received', blank=True, null=True)
     output = models.DateField(verbose_name='date outgoing', blank=True, null=True)
     crystal_size_x = models.FloatField(max_length=4, default=0, blank=True,
@@ -81,6 +95,24 @@ class Dataset(models.Model):
     beta.short_description = 'Unit Cell Parameter beta'
     gamma.short_description = 'Unit Cell Parameter gamma'
     z.empty_value_display = '?'
+
+    cif_file = models.FileField(upload_to=get_filename, verbose_name='CIF File', blank=True)
+    fcf_file = models.FileField(upload_to=get_filename, verbose_name='fcf File', blank=True)
+    res_file = models.FileField(upload_to=get_filename, verbose_name='RES File', blank=True)
+    raw_file = models.FileField(upload_to=get_filename, verbose_name='raw/mul_file', blank=True)
+    p4p_file = models.FileField(upload_to=get_filename, verbose_name='p4p File', blank=True)
+    abs_file = models.FileField(upload_to=get_filename, verbose_name='abs File', blank=True)
+    eps_file = models.FileField(upload_to=get_filename, verbose_name='abs File', blank=True)
+    ls_file = models.FileField(upload_to=get_filename, verbose_name='name_0m._ls File', blank=True)
+    pdf_file = models.FileField(upload_to=get_filename, verbose_name='Checkfif File', blank=True)
+    checkcif_file = models.FileField(upload_to=get_filename, verbose_name='checkcif File', blank=True)
+    hkl_file = models.FileField(upload_to=get_filename, verbose_name='hkl File', blank=True)
+    sfrm_file = models.FileField(upload_to=get_filename, verbose_name='one Frame', blank=True)
+    cht_file = models.FileField(upload_to=get_filename, verbose_name='name .cht file', blank=True)
+    other_file1 = models.FileField(upload_to=get_filename, verbose_name='other File', blank=True)
+    other_file2 = models.FileField(upload_to=get_filename, verbose_name='other File', blank=True)
+    other_file3 = models.FileField(upload_to=get_filename, verbose_name='other File', blank=True)
+
 
     class Meta:
         ordering = ['-measure_date', '-name']
@@ -146,6 +178,17 @@ class Dataset(models.Model):
         """
         pass
 
+@register.filter(name='format_size')
+def format_size(size):
+    try:
+        int(size)
+    except(ValueError):
+        return 'File not found!'
+    if 1000 <= size < 1000000:
+        return '{:.2f} {}'.format(size / 1000, 'kB')
+    else:
+        return '{:.2f} {}'.format(size / 1000000, 'MB')
+
 
 STATE_CHOICES = (
     (1,  'Smart APEXII Quazar'),
@@ -164,54 +207,5 @@ class Machines(models.Model):
         return '{}'.format(STATE_DICT[self.machine])
 
 
-def get_filename(instance, name):
-    """
-    returns the path to where the uploaded file should be stored
-    :param instance: An instance of the model where the FileField is defined.
-    :param name: Filename to be stored
-    :return: full path to store into
-    """
-    path = os.path.join('cif_file/', os.path.join(instance.dataset.name, name))
-    print('upload path:', path, '######')
-    return path
 
 
-class Files(models.Model):
-    dataset = models.ForeignKey(Dataset, on_delete=models.CASCADE)
-    cif_file = models.FileField(upload_to='cif_file/', verbose_name='CIF File', blank=True)
-    res_file = models.FileField(upload_to='cif_file/', verbose_name='RES File', blank=True)
-    raw_file = models.FileField(upload_to=get_filename, verbose_name='raw_file', blank=True)
-    abs_file = models.FileField(upload_to=get_filename, verbose_name='abs File', blank=True)
-    ls_file = models.FileField(upload_to=get_filename, verbose_name='_ls File', blank=True)
-    fcf_file = models.FileField(upload_to=get_filename, verbose_name='fcf File', blank=True)
-    other_file = models.FileField(upload_to=get_filename, verbose_name='other File', blank=True)
-    pdf_file = models.FileField(upload_to=get_filename, verbose_name='Checkfif File', blank=True)
-    report_file = models.FileField(upload_to=get_filename, verbose_name='report File', blank=True)
-    hkl_file = models.FileField(upload_to=get_filename, verbose_name='hkl File', blank=True)
-    p4p_file = models.FileField(upload_to=get_filename, verbose_name='p4p File', blank=True)
-    comment = models.TextField(max_length=2000, blank=True)
-
-    def __str__(self):
-        return self.dataset.name
-
-    def getsize(self, file):
-        try:
-            file.size
-        except:
-            return 'File not found!'
-        if 1000 <= file.size < 1000000:
-            return '{:.2f} {}'.format(file.size / 1000, 'kB')
-        else:
-            return '{:.2f} {}'.format(file.size / 1000000, 'MB')
-
-    class Meta:
-        pass
-        #files = Files.objects.all()
-
-
-
-class Customer(models.Model):
-    dataset = models.ManyToManyField(Dataset)
-    measured_for = models.CharField(max_length=120, verbose_name='Customer', blank=True)
-    email = models.EmailField(blank=True)
-    ak = models.CharField(max_length=120, verbose_name='Workgroup')
