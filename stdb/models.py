@@ -215,12 +215,20 @@ class Machines(models.Model):
 
 COLOUR_CHOICES = (
     (1, 'Select a colour'),
-    (2, 'R-AXIS Spider'),
-    (3, 'VENTURE'),
-    (4, 'other'),
-) #['red','blue','green','yellow','violet','brown','purple','black','white', 'colourless']
+    (2, 'colourless'),
+    (3, 'white'),
+    (4, 'yellow'),
+    (5, 'red'),
+    (6, 'green'),
+    (7, 'blue'),
+    (8, 'brown'),
+    (9, 'black'),
+    (10, 'violet'),
+    (11, 'purple'),
+    (12, 'pink'),
+    (13, 'other'),
+)
 COLOUR_DICT = dict(COLOUR_CHOICES)
-
 
 class Colours(models.Model):
     name = models.ForeignKey(Dataset, on_delete=models.CASCADE)

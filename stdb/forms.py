@@ -1,7 +1,7 @@
 import datetime
 from django import forms
-from django.forms import DateInput, CheckboxInput, widgets
-from stdb.models import Dataset
+from django.forms import DateInput, CheckboxInput, Select, ModelChoiceField
+from stdb.models import Dataset, MACHINE_CHOICES, MACHINE_DICT
 
 
 class DateInput(forms.SelectDateWidget):
@@ -20,7 +20,6 @@ class DateInput(forms.SelectDateWidget):
 
 
 class DatasetForm(forms.ModelForm):
-
     class Meta:
         model = Dataset
         fields = [str(i).split('.')[-1] for i in model._meta.fields]
@@ -34,12 +33,12 @@ class DatasetForm(forms.ModelForm):
         fields.extend(widgets.keys())
 
 
-class EditDatasetForm(forms.ModelForm):
 
+class EditDatasetForm(forms.ModelForm):
     class Meta:
         model = Dataset
         fields = ['name', 'flask_name', 'operator', 'machine', 'measure_date', 'received', 'output', 'picked_at',
-                  'operator', 'colour', 'shape', 'is_publishable',
+                  'operator', 'colour', 'shape', 'is_publishable', 'service_structure',
                   'cif_file',
                   'fcf_file',
                   'res_file',
@@ -57,12 +56,12 @@ class EditDatasetForm(forms.ModelForm):
                   'other_file2',
                   'other_file3',
                   ]
-        is_publishable = forms.BooleanField(required=False)
         widgets = {
             'measure_date': DateInput,
             'received': DateInput,
             'output': DateInput,
             'is_publishable': CheckboxInput,
+           # 'machine': ModelChoiceField(queryset=MACHINE_DICT),
         }
 
 

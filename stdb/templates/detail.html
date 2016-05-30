@@ -32,7 +32,9 @@ This template shows the details of a dataset with all its values
     <tr><td>Machine</td>                <td> {{ dataset.machine }} </td></tr>
     <tr><td>Received</td>               <td> {{ dataset.received }} </td></tr>
     <tr><td>Measurement Date</td>       <td> {{ dataset.measure_date }} </td></tr>
-    <tr><td>Crystals picked at</td>     <td> {{ dataset.picked_at }} </td></tr>
+    {% if dataset.picked_at %}
+        <tr><td>Crystals picked at</td>     <td> {{ dataset.picked_at }} °C</td></tr>
+    {% endif %}
     <tr><td>Publishable?</td>           <td> {% if dataset.is_publishable %} Yes! {% else %} No! {% endif %}</td></tr>
     </table>
     </p>
