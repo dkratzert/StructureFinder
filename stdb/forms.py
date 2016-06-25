@@ -1,7 +1,8 @@
 import datetime
 from django import forms
 from django.forms import DateInput, CheckboxInput, Select, ModelChoiceField
-from stdb.models import Dataset, MACHINE_CHOICES, MACHINE_DICT
+from stdb.models import Dataset, Machines
+    #MACHINE_CHOICES, MACHINE_DICT
 
 
 class DateInput(forms.SelectDateWidget):
@@ -65,3 +66,5 @@ class EditDatasetForm(forms.ModelForm):
         }
 
 
+class MachinesForm(forms.Form):
+    machine = forms.ModelChoiceField(queryset=Machines.objects.all())

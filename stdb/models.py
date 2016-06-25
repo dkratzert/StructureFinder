@@ -10,6 +10,11 @@ from django.template.defaultfilters import register
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
 
+"""
+django-filter - generating interfaces similar to the Django admin's list_filter interface.
+django-model-utils
+"""
+
 
 def get_filename(instance, name):
     """
@@ -205,10 +210,10 @@ MACHINE_DICT = dict(MACHINE_CHOICES)
 
 class Machines(models.Model):
     name = models.ForeignKey(Dataset, on_delete=models.CASCADE)
-    machine = models.PositiveSmallIntegerField(choices=MACHINE_CHOICES, default=1)
+    #machine = models.PositiveSmallIntegerField(choices=MACHINE_CHOICES, default=1)
 
-    def __str__(self):
-        return '{}'.format(MACHINE_DICT[self.machine])
+    #def __str__(self):
+    #    return '{}'.format(MACHINE_DICT[self.machine])
 
 
 
