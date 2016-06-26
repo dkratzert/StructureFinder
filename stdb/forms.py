@@ -19,6 +19,16 @@ class DateInput(forms.SelectDateWidget):
         self.years = year_field
 
 
+"""
+class Meta:
+        model = Dataset
+
+def __init__(self, *args, **kwargs):
+    super(IceCreamStoreUpdateForm, self).__init__(*args, **kwargs)
+    self.fields['phone'].required = True
+    self.fields['description'].required = True
+"""
+
 
 class DatasetForm(forms.ModelForm):
     class Meta:
