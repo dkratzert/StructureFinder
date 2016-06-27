@@ -209,11 +209,10 @@ MACHINE_DICT = dict(MACHINE_CHOICES)
 
 
 class Machines(models.Model):
-    name = models.ForeignKey(Dataset, on_delete=models.CASCADE)
-    #machine = models.PositiveSmallIntegerField(choices=MACHINE_CHOICES, default=1)
+    machine = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name='machines')
 
-    #def __str__(self):
-    #    return '{}'.format(MACHINE_DICT[self.machine])
+    def __str__(self):
+        return '{}'.format(self.machine)
 
 
 
