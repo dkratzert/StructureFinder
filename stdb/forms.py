@@ -71,7 +71,7 @@ class EditDatasetForm(forms.ModelForm):
             'received': DateInput,
             'output': DateInput,
             'is_publishable': CheckboxInput,
-            #'machine': ModelChoiceField(queryset=Machines.objects)
+            #'machine': ModelChoiceField(queryset=Dataset.Machines_set.all()) #related_name=machines
         }
 
 
