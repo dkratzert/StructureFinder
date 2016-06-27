@@ -35,7 +35,9 @@ class Dataset(models.Model):
     machine = models.CharField(max_length=200)
     operator = models.CharField(max_length=200, verbose_name='Who measured the structure?')
     picked_at = models.IntegerField(verbose_name='Crystals picked at which temperature?', default=0)
-    measure_date = models.DateField(auto_now_add=True, verbose_name='date measured')
+    measure_date = models.DateField(#auto_now_add=True, # would not be changeable
+                                    #auto_now=True, # would not be changeable
+                                    verbose_name='date measured')
     measured_for = models.CharField(max_length=120, verbose_name='Customer', blank=True)
     email = models.EmailField(blank=True)
     ak = models.CharField(max_length=120, verbose_name='Workgroup', blank=True)
@@ -186,6 +188,7 @@ class Dataset(models.Model):
         """
         pass
 
+
 @register.filter(name='format_size')
 def format_size(size):
     try:
@@ -198,21 +201,13 @@ def format_size(size):
         return '{:.2f} {}'.format(size / 1000000, 'MB')
 
 
-MACHINE_CHOICES = (
-    (1,  'Select a machine'),
-    (2,  'Smart APEXII Quazar'),
-    (3,   'R-AXIS Spider'),
-    (4, 'VENTURE'),
-    (5, 'other'),
-)
-MACHINE_DICT = dict(MACHINE_CHOICES)
-
 
 class Machines(models.Model):
-    machine = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name='machines')
+    number = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name='machines')
+    name = models.CharField(max_length=40, unique=True)
 
     def __str__(self):
-        return '{}'.format(self.machine)
+        return '{}'.format(self.name)
 
 
 
@@ -233,6 +228,7 @@ COLOUR_CHOICES = (
     (13, 'other'),
 )
 COLOUR_DICT = dict(COLOUR_CHOICES)
+
 
 class Colours(models.Model):
     name = models.ForeignKey(Dataset, on_delete=models.CASCADE)
