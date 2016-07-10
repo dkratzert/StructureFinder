@@ -13,6 +13,12 @@ from django.utils.safestring import mark_safe
 """
 django-filter - generating interfaces similar to the Django admin's list_filter interface.
 django-model-utils
+
+Machines.objects.all()
+Manegers are attached to the model class, not to model instances!
+d = Dataset.objects.get(id=1)
+d.machines.all()
+Dataset.objects.get(name__iexact='Testset')
 """
 
 
