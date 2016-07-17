@@ -1,4 +1,5 @@
 from django.core.urlresolvers import reverse
+from django.forms import ModelChoiceField, forms, ChoiceField
 from django.shortcuts import render, get_object_or_404, redirect, get_list_or_404
 from django.contrib import messages
 
@@ -7,8 +8,8 @@ from django.http import HttpResponseRedirect
 from django.utils import timezone
 from django.views.generic import CreateView
 
-from .models import Dataset
-from .forms import DatasetForm, EditDatasetForm
+from .models import Dataset, Machine
+from .forms import DatasetForm, EditDatasetForm, MachinesForm
 
 
 def index_view(request):
@@ -46,6 +47,7 @@ def edit_dataset(request, pk=None):
     :return:
     """
     instance = get_object_or_404(Dataset, pk=pk)
+    machine = MachinesForm(data=request.POST)
     form = EditDatasetForm(request.POST or None, request.FILES or None, instance=instance)
     if form.is_valid():
         instance = form.save(commit=False)
@@ -55,6 +57,7 @@ def edit_dataset(request, pk=None):
     context = {
         'dataset': instance,
         'form': form,
+        'machine': machine
     }
     return render(request, "edit_dataset.html", context)
 
@@ -72,9 +75,11 @@ def detail_view(request, pk=None):
     """
     instance = get_object_or_404(Dataset, pk=pk)
     form = DatasetForm(instance=instance)
+    m = Machine.objects.get(pk=pk)
     context = {
         'dataset': instance,
         'form': form,
+        'machine': m
     }
     return render(request, 'detail.html', context)
 

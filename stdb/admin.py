@@ -1,23 +1,25 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Dataset, Machines
+from .models import Dataset, Machine
 
 
 
 class MachinesAdmin(admin.ModelAdmin):
-    pass
+    model = Machine
+    extra = 0
 
 class MachinesInline(admin.StackedInline):
-    model = Machines
+    model = Machine
     extra = 0
 
 
 class DatasetAdmin(admin.ModelAdmin):
-    inlines = [MachinesInline]
+    #inlines = [MachinesInline]
     #ordering = ['-measure_date']
     fieldsets = [
-        ('Measurement', {'fields': [('name', 'is_publishable'), 'measure_date', 'operator', 'flask_name', 'machine',
+        ('Measurement', {'fields': [('name', 'is_publishable'), 'measure_date', 'operator', 'flask_name',
+                                    #'machine',
                                     ('received', 'output')]}),
         ('Files', {'fields': [ 'cif_file', 'res_file' ]}),
         ('Misc', {'fields': ['formula', 'z', 'comment']}),
@@ -31,12 +33,14 @@ class DatasetAdmin(admin.ModelAdmin):
                      }
          )
     ]
-    list_display = ('name', 'measure_date', 'was_measured_recently', 'is_publishable', 'machine', 'operator')
+    list_display = ('name', 'measure_date', 'was_measured_recently', 'is_publishable',
+                    #'machine',
+                    'operator')
     list_filter = ['measure_date']
     search_fields = ['name', 'operator', 'flask_name']
 
 
 admin.site.register(Dataset, DatasetAdmin)
-#admin.site.register(Files, FilesAdmin)
+admin.site.register(Machine, MachinesAdmin)
 
 

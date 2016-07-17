@@ -38,7 +38,8 @@ class Dataset(models.Model):
     name = models.CharField(max_length=200, unique=True)
     flask_name = models.CharField(max_length=200)
     formula = models.CharField(max_length=200)
-    machine = models.CharField(max_length=200)
+    # using foreign key instead:
+    #machine = models.CharField(max_length=200)
     operator = models.CharField(max_length=200, verbose_name='Who measured the structure?')
     picked_at = models.IntegerField(verbose_name='Crystals picked at which temperature?', default=0)
     measure_date = models.DateField(#auto_now_add=True, # would not be changeable
@@ -207,9 +208,8 @@ def format_size(size):
         return '{:.2f} {}'.format(size / 1000000, 'MB')
 
 
-
-class Machines(models.Model):
-    number = models.ForeignKey(Dataset, on_delete=models.CASCADE, related_name='machines')
+class Machine(models.Model):
+    dataset = models.ForeignKey(Dataset, related_name='machine')
     name = models.CharField(max_length=40, unique=True)
 
     def __str__(self):

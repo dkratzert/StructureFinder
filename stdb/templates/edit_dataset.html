@@ -12,8 +12,9 @@ This template is for creation and editing of a dataset
 
 <form method="POST" action="" class="uniForm blueForms" enctype="multipart/form-data">{% csrf_token %}
 <div class="col-lg-6">
-
+{{ machine }}
 {{ form.as_p }}
+
 
 
 </div>

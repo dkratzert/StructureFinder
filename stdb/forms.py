@@ -1,7 +1,7 @@
 import datetime
 from django import forms
 from django.forms import DateInput, CheckboxInput, Select, ModelChoiceField
-from stdb.models import Dataset, Machines, Colours
+from stdb.models import Dataset, Machine, Colours
 
 
 class DateInput(forms.SelectDateWidget):
@@ -18,17 +18,6 @@ class DateInput(forms.SelectDateWidget):
         self.years = year_field
 
 
-"""
-class Meta:
-        model = Dataset
-
-def __init__(self, *args, **kwargs):
-    super(IceCreamStoreUpdateForm, self).__init__(*args, **kwargs)
-    self.fields['phone'].required = True
-    self.fields['description'].required = True
-"""
-
-
 class DatasetForm(forms.ModelForm):
     class Meta:
         model = Dataset
@@ -43,11 +32,12 @@ class DatasetForm(forms.ModelForm):
         fields.extend(widgets.keys())
 
 
-
 class EditDatasetForm(forms.ModelForm):
     class Meta:
         model = Dataset
-        fields = ['name', 'flask_name', 'operator', 'machine', 'measure_date', 'received', 'output', 'picked_at',
+        fields = ['name', 'flask_name', 'operator',
+                  'measure_date',
+                  'received', 'output', 'picked_at',
                   'operator', 'colour', 'shape', 'is_publishable', 'service_structure',
                   'cif_file',
                   'fcf_file',
@@ -71,11 +61,12 @@ class EditDatasetForm(forms.ModelForm):
             'received': DateInput,
             'output': DateInput,
             'is_publishable': CheckboxInput,
-            #'machine': ModelChoiceField(queryset=Dataset.Machines_set.all()) #related_name=machines
         }
 
 
 class MachinesForm(forms.Form):
+    machine = forms.ModelChoiceField(queryset=Machine.objects.all())
     class Meta:
-        model = Dataset
-        machine = forms.ModelChoiceField(queryset=Machines.objects.all())
+        model = Machine
+
+
