@@ -46,9 +46,11 @@ def edit_dataset(request, pk=None):
     :param pk:
     :return:
     """
-    instance = get_object_or_404(Dataset, pk=pk)
+    instance = get_object_or_404#(Dataset, pk=pk)
     machine = MachinesForm(data=request.POST)
     form = EditDatasetForm(request.POST or None, request.FILES or None, instance=instance)
+    # print(request.POST, '###')#['machine'])
+    # instance.machine.pk = request.POST['machine']
     if form.is_valid():
         instance = form.save(commit=False)
         instance.save()
