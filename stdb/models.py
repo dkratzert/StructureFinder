@@ -6,6 +6,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 # Create your models here.
+from django.db.models import Model
+from django.forms import ModelChoiceField, forms
 from django.template.defaultfilters import register
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
@@ -40,6 +42,7 @@ class Dataset(models.Model):
     formula = models.CharField(max_length=200)
     # using foreign key instead:
     #machine = models.CharField(max_length=200)
+    machine = models.CharField(max_length=30, blank=True)
     operator = models.CharField(max_length=200, verbose_name='Who measured the structure?')
     picked_at = models.IntegerField(verbose_name='Crystals picked at which temperature?', default=0)
     measure_date = models.DateField(#auto_now_add=True, # would not be changeable
@@ -209,12 +212,18 @@ def format_size(size):
 
 
 class Machine(models.Model):
+    measurement = models.ForeignKey(Dataset, related_name='machines')
+
+
+
+'''
+class Machine(models.Model):
     dataset = models.ForeignKey(Dataset, related_name='machine')
     name = models.CharField(max_length=40, unique=True)
 
     def __str__(self):
         return '{}'.format(self.name)
-
+'''
 
 
 

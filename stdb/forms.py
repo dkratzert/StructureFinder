@@ -65,8 +65,14 @@ class EditDatasetForm(forms.ModelForm):
 
 
 class MachinesForm(forms.Form):
+   machine = ModelChoiceField(queryset=Machine.objects.all())
+   class Meta:
+       model = Machine
+
+'''
+class MachinesForm(forms.Form):
     machine = forms.ModelChoiceField(queryset=Machine.objects.all())
     class Meta:
         model = Machine
-
+'''
 

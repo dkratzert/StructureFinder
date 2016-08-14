@@ -47,7 +47,7 @@ def edit_dataset(request, pk=None):
     :return:
     """
     instance = get_object_or_404#(Dataset, pk=pk)
-    machine = MachinesForm(data=request.POST)
+    machine = MachinesForm#(data=request.POST)
     form = EditDatasetForm(request.POST or None, request.FILES or None, instance=instance)
     # print(request.POST, '###')#['machine'])
     # instance.machine.pk = request.POST['machine']
@@ -77,7 +77,8 @@ def detail_view(request, pk=None):
     """
     instance = get_object_or_404(Dataset, pk=pk)
     form = DatasetForm(instance=instance)
-    m = Machine.objects.get(pk=pk)
+    m = instance.machine
+    #m = Machine.objects.get(pk=pk)# .get(pk=pk)
     context = {
         'dataset': instance,
         'form': form,

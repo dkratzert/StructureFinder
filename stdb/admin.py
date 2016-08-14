@@ -5,9 +5,9 @@ from .models import Dataset, Machine
 
 
 
-class MachinesAdmin(admin.ModelAdmin):
-    model = Machine
-    extra = 0
+#class MachinesAdmin(admin.ModelAdmin):
+#    model = Dataset
+#    extra = 0
 
 class MachinesInline(admin.StackedInline):
     model = Machine
@@ -15,7 +15,7 @@ class MachinesInline(admin.StackedInline):
 
 
 class DatasetAdmin(admin.ModelAdmin):
-    #inlines = [MachinesInline]
+    inlines = [MachinesInline]
     #ordering = ['-measure_date']
     fieldsets = [
         ('Measurement', {'fields': [('name', 'is_publishable'), 'measure_date', 'operator', 'flask_name',
@@ -41,6 +41,6 @@ class DatasetAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Dataset, DatasetAdmin)
-admin.site.register(Machine, MachinesAdmin)
+#admin.site.register(Machine, MachinesAdmin)
 
 
