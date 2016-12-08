@@ -1,2 +1,2 @@
 # StructureDB
-A django based structure db with report generator
+A pyQt base Structure database

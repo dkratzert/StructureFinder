@@ -17,6 +17,7 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
         self.statusBar().showMessage('Ready')
         self.ui.actionExit.triggered.connect(QtGui.qApp.quit)
+        self.ui.cifs_treeWidget.hide()
 
     def import_cif(self):
         print('foo')
@@ -24,17 +25,17 @@ class StartQT4(QtGui.QMainWindow):
         print(fname)
 
     def import_cif_dirs(self):
-        # fname = QtGui.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
-        fname = "D:/GitHub/StructureDB/test-data"
+        #fname = QtGui.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        #fname = "D:/GitHub/StructureDB/test-data"
+        fname = "/Users/daniel/GitHub/StructureDB/test-data"
         files = filecrawler.create_file_list(str(fname), endings='cif')
-        self.ui.mdiArea.show()
-        self.ui.cifSearchResultsWindow.show()
-        a = QtGui.QTreeWidgetItem(self.ui.cifs_treeWidget)
+        self.ui.cifs_treeWidget.show()
         for dir, file in files:
+            a = QtGui.QTreeWidgetItem(self.ui.cifs_treeWidget)
             a.setText(0, dir)
             a.setText(1, file)
         for i, _ in enumerate(files):
-            self.ui.cifs_treeWidget.resizeColumnToContents(i);
+            self.ui.cifs_treeWidget.resizeColumnToContents(i)
 
 
 if __name__ == "__main__":
@@ -42,4 +43,7 @@ if __name__ == "__main__":
     myapp = StartQT4()
     myapp.show()
     myapp.raise_()
-    sys.exit(app.exec_())
+    try:
+        sys.exit(app.exec_())
+    except KeyboardInterrupt:
+        sys.exit()

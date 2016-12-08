@@ -95,31 +95,10 @@
      </layout>
     </item>
     <item>
-     <widget class="QMdiArea" name="mdiArea">
-      <property name="tabsMovable">
-       <bool>true</bool>
-      </property>
-      <widget class="QWidget" name="cifSearchResultsWindow">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="windowTitle">
-        <string>File Search Results</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
+     <widget class="QStackedWidget" name="stackedWidget">
+      <widget class="QWidget" name="page">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
          <widget class="QTreeWidget" name="cifs_treeWidget">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -141,6 +120,7 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="page_2"/>
      </widget>
     </item>
    </layout>
@@ -151,7 +131,7 @@
      <x>0</x>
      <y>0</y>
      <width>946</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">
