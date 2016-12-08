@@ -1,0 +1,100 @@
+
+#==============================================================================#
+# PLATON/CHECK-(270106) versus check.def version of 120309   for entry: p21c     
+# Data From: DK_NTD51a.cif - Data Type: CIF      Bond Precision   C-C = 0.0020 A
+#
+# Cell  10.6456(9)  11.0330(9) 19.9214(16)           90  98.9380(10)          90
+# WaveLength 0.71073    Volume  Reported    2311.4(3)  Calculated    2311.4(3)  
+# SpaceGroup from Symmetry P 21/c        Hall: -P 2ybc          
+#                 Reported P2(1)/c              ?               
+# MoietyFormula C26 H33 N O3 Si
+#      Reported ?
+#    SumFormula C26 H33 N O3 Si
+#      Reported C26 H33 N O3 Si
+# Mr        =    435.62[Calc],    435.62[Rep]
+# Dx,gcm-3  =     1.252[Calc],     1.252[Rep]
+# Z         =         4[Calc],         4[Rep]
+# Mu (mm-1) =     0.129[Calc],     0.129[Rep]
+# F000      =     936.0[Calc],     936.0[Rep]  or F000' =    936.69[Calc]
+# Reported   T limits: Tmin=0.710              Tmax=0.745 'EMPIRICAL'    
+# Calculated T limits: Tmin=0.970 Tmin'=0.968  Tmax=0.987
+# Reported   Hmax= 12, Kmax= 13, Lmax= 24, Nref= 4228       , Th(max)= 25.35
+# Calculated Hmax= 12, Kmax= 13, Lmax= 24, Nref= 4229       , Ratio  =  1.00
+# rho(min) = -0.27, rho(max) =  0.36 e/Ang^3
+# R= 0.0326( 3846), wR2= 0.0876( 4228), S = 1.055, Npar= 284
+#===============================================================================
+
+          >>> The Following ALERTS were generated <<<
+          -------------------------------------------
+     Format: alert-number_ALERT_alert-type_alert-level text
+
+048_ALERT_1_G MoietyFormula Not Given ........................          ?
+062_ALERT_4_G Rescale T(min) & T(max) by .....................       1.32       
+125_ALERT_4_G No _symmetry_space_group_name_Hall Given .......          ?
+241_ALERT_2_G Check High      Ueq as Compared to Neighbors for         C2     
+802_ALERT_4_G CIF Input Record(s) with more than 80 Characters          !
+#===============================================================================
+
+               ALERT_Level and ALERT_Type Summary
+               ==================================
+  5 ALERT_Level_C = Check & Explain
+
+  1 ALERT_Type_1 CIF Construction/Syntax Error, Inconsistent or Missing Data. 
+  1 ALERT_Type_2 Indicator that the Structure Model may be Wrong or Deficient.
+  3 ALERT_Type_4 Improvement, Methodology, Query or Suggestion.               
+#===============================================================================
+
+Explanation and Advice for the Reported ALERTS
+================================================================================
+
+================================================================================
+ALERT_048 Type_1 CIF Construction/Syntax Error, Inconsistent or Missing Data. 
+================================================================================
+
+ The Moiety formula (i.e. the specification of the various species in the       
+ structure) should be given in the CIF.                                         
+                                                                                
+ Example: '(Cd 2+)3, (C6 N6Cr 3-)2, 2(H2 O)'                                    
+                                                                                
+================================================================================
+ALERT_062 Type_4 Improvement, Methodology, Query or Suggestion.               
+================================================================================
+
+ Some (empirical) correction packages (e.g. SADABS) will provide only one       
+ 'relative-correction-factor'. In such cases, Tmax should be given as           
+ Tmax-expected (as calculated from the crystal dimensions) and                  
+ Tmin = relative-correction-factor * Tmax.                                      
+                                                                                
+================================================================================
+ALERT_125 Type_4 Improvement, Methodology, Query or Suggestion.               
+================================================================================
+
+ Optionally specify the Hall symbol. The Hall symbol provides an                
+ unambiguous definition of the space-group symmetry where the Hermann-          
+ Mauguin symbol leaves room for alternative choises of the origin.              
+ E.g. for space-group P21, the screw axis is in general taken to coincide       
+ with the b-axis. However, sometimes it is choosen to be shifted by 1/4         
+ in the c-axis direction to bring out the relation with P21/c. The Hall         
+ symbols will be 'P 2yb' and 'P 2ybc' respectively.                             
+                                                                                
+ Refer to: S.R.Hall, Space-Group Notation with an Explicit Origin;              
+           Acta Cryst. (1981), A37, 517-525.                                    
+                                                                                
+       or: http://www.kristall.ethz.ch/LFK/software/sginfo/hall_symbols.html    
+                                                                                
+================================================================================
+ALERT_241 Type_2 Indicator that the Structure Model may be Wrong or Deficient.
+================================================================================
+
+ The U(eq) value of an atom is compared with the average U(eq) for to           
+ non-hydrogen atoms bonded to it. Large differences may indicate that the       
+ wrong atom type was assigned (e.g. N instead of O).                            
+                                                                                
+================================================================================
+ALERT_802 Type_4 Improvement, Methodology, Query or Suggestion.               
+================================================================================
+
+ The CIF contains records longer than 80 characters. Not all software will      
+ read beyond column 80.                                                         
+ The CIF-1.1 definition specifies a maximum of 2048 character per record.       
+                                                                                

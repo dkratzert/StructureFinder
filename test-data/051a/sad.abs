@@ -1,0 +1,226 @@
+
+ SADABS-2008/1 - Bruker AXS area detector scaling and absorption correction 
+ --------------------------------------------------------------------------
+
+ Equivalent reflections defined by point group 2/m    for scaling
+
+ Equivalent reflections defined by point group 2/m    for error model
+
+ Reading file DK_ntd51a_0m.raw
+
+ Mean and maximum errors in direction cosine check function =   0.003   0.012
+ The mean error should not exceed 0.005, and is usually caused by matrix
+ changes during data processing.
+
+ Approximate wavelength, cell and maximum 2-theta (from cosines etc.):
+ 0.71099   10.816   11.208   20.236   90.048   99.022   89.973   54.27
+
+ ==============================================================================
+
+ PART 1 - Refinement of parameters to model systematic errors
+
+ Thresholds should now be specified for excluding reflections from the
+ parameter refinement; these reflections may still be corrected and included
+ in the final output .hkl file
+
+   76112 Reflections of which   5415 unique;   10.64 data per frame
+
+ Redundancy:          1     2     3     4     5     6     7     8     9+
+ Number of groups:    28    28    57    49    70   165   135   145  4738
+
+ Mean(I/sigma):  -inf    0     1     2     3     5    10    15    20   +inf
+ Number of groups:  1297   489   430   389   315  1049   560   312   574
+
+
+ Determination of crystal position in pixel units relative to detector
+
+ Scan#  2theta    x        y        z      fit
+    1  -29.00  291.634  263.982  509.717  0.753028E-05
+    2  -29.00  289.013  263.775  512.706  0.218544E-05
+    3  -29.00  288.972  263.473  512.531  0.107405E-04
+    4  -29.00  290.942  264.126  510.936  0.181978E-04
+    5  -29.00  291.099  267.049  512.841  0.129052E-04
+    6  -29.00  288.693  264.251  509.605  0.167364E-04
+    7  -29.00  291.250  262.286  511.072  0.700789E-05
+    8  -29.00  288.325  267.631  513.362  0.415078E-05
+    9  -29.00  290.135  264.461  510.173  0.712864E-05
+   10  -29.00  289.879  265.044  513.177  0.215722E-05
+   11  -29.00  291.073  263.264  512.634  0.100906E-04
+   12  -29.00  290.470  266.346  510.726  0.153064E-04
+
+
+ Settings for parameter refinement:
+
+ Maximum resolution =  0.1000 A
+ (Intensity/sigma) threshold = 1.500
+ Restraint esd for equal adjacent scale factors =  0.0050
+ Maximum odd and even orders for spherical harmonics =   3   6
+
+   57488 Reflections employed for parameter determination
+ Effective data to parameter ratio =    7.42
+
+ wR2(int) =  0.0639 (selected reflections only, before parameter refinement)
+
+ Cycle  wR2(incid)  wR2(diffr)  Mean wt.
+    1     0.0556      0.0540     0.9216
+    2     0.0533      0.0532     0.9221
+    3     0.0531      0.0531     0.9222
+    4     0.0530      0.0530     0.9222
+    5     0.0530      0.0530     0.9223
+    6     0.0530      0.0530     0.9223
+    7     0.0529      0.0530     0.9223
+    8     0.0529      0.0530     0.9223
+    9     0.0529      0.0529     0.9223
+   10     0.0529      0.0529     0.9223
+   11     0.0529      0.0529     0.9223
+   12     0.0529      0.0529     0.9223
+   13     0.0529      0.0529     0.9223
+   14     0.0529      0.0529     0.9223
+   15     0.0529      0.0529     0.9223
+   16     0.0529      0.0529     0.9223
+   17     0.0529      0.0529     0.9223
+   18     0.0529      0.0529     0.9223
+   19     0.0529      0.0529     0.9223
+   20     0.0529      0.0529     0.9223
+   21     0.0529      0.0529     0.9223
+   22     0.0529      0.0529     0.9223
+   23     0.0529      0.0529     0.9223
+   24     0.0529      0.0529     0.9223
+   25     0.0529      0.0529     0.9223
+   26     0.0529      0.0529     0.9223
+   27     0.0529      0.0529     0.9223
+   28     0.0529      0.0529     0.9223
+   29     0.0529      0.0529     0.9223
+   30     0.0529      0.0529     0.9223
+   31     0.0529      0.0529     0.9223
+   32     0.0529      0.0529     0.9223
+   33     0.0529      0.0529     0.9223
+   34     0.0529      0.0529     0.9223
+   35     0.0529      0.0529     0.9223
+   36     0.0529      0.0529     0.9223
+   37     0.0529      0.0529     0.9223
+   38     0.0529      0.0529     0.9223
+   39     0.0529      0.0529     0.9223
+   40     0.0529      0.0529     0.9223
+   41     0.0529      0.0529     0.9223
+   42     0.0529      0.0529     0.9223
+   43     0.0529      0.0529     0.9223
+   44     0.0529      0.0529     0.9223
+   45     0.0529      0.0529     0.9223
+   46     0.0529      0.0529     0.9223
+   47     0.0529      0.0529     0.9223
+   48     0.0529      0.0529     0.9223
+   49     0.0529      0.0529     0.9223
+   50     0.0529      0.0529     0.9223
+   51     0.0529      0.0529     0.9223
+   52     0.0529      0.0529     0.9223
+   53     0.0529      0.0529     0.9223
+   54     0.0529      0.0529     0.9223
+   55     0.0529      0.0529     0.9223
+   56     0.0529      0.0529     0.9223
+   57     0.0529      0.0529     0.9223
+   58     0.0529      0.0529     0.9223
+   59     0.0529      0.0529     0.9223
+   60     0.0529      0.0529     0.9223
+   61     0.0529      0.0529     0.9223
+   62     0.0529      0.0529     0.9223
+   63     0.0529      0.0529     0.9223
+   64     0.0529      0.0529     0.9223
+   65     0.0529      0.0529     0.9223
+   66     0.0529      0.0529     0.9223
+   67     0.0529      0.0529     0.9223
+   68     0.0529      0.0529     0.9223
+   69     0.0529      0.0529     0.9223
+   70     0.0529      0.0529     0.9223
+   71     0.0529      0.0529     0.9223
+   72     0.0529      0.0529     0.9223
+   73     0.0529      0.0529     0.9223
+   74     0.0529      0.0529     0.9223
+   75     0.0529      0.0529     0.9223
+   76     0.0529      0.0529     0.9223
+   77     0.0529      0.0529     0.9223
+   78     0.0529      0.0529     0.9223
+   79     0.0529      0.0529     0.9223
+   80     0.0529      0.0529     0.9223
+   81     0.0529      0.0529     0.9223
+   82     0.0529      0.0529     0.9223
+   83     0.0529      0.0529     0.9223
+   84     0.0529      0.0529     0.9223
+   85     0.0529      0.0529     0.9223
+   86     0.0529      0.0529     0.9223
+   87     0.0529      0.0529     0.9223
+   88     0.0529      0.0529     0.9223
+   89     0.0529      0.0529     0.9223
+   90     0.0529      0.0529     0.9223
+   91     0.0529      0.0529     0.9223
+   92     0.0529      0.0529     0.9223
+   93     0.0529      0.0529     0.9223
+   94     0.0529      0.0529     0.9223
+   95     0.0529      0.0529     0.9223
+   96     0.0529      0.0529     0.9223
+   97     0.0529      0.0529     0.9223
+   98     0.0529      0.0529     0.9223
+   99     0.0529      0.0529     0.9223
+  100     0.0529      0.0529     0.9223
+
+ Detector phosphor efficiency refined to  0.905
+
+ wR2(int) =  0.0529 (selected reflections only, after parameter refinement)
+
+ ==============================================================================
+
+ PART 2 - Reject outliers and establish error model
+
+ Rejected reflections are ignored in the statistics and Postscript plots
+ (except the detector diagnostics) and in the output .hkl file
+ Before applying rejections there are:
+
+   76112 total and   5415 unique reflections assuming Friedel's law. 
+ Reflections rejected for which |I-<I>|/su >   2.60
+ Where:  su^2 = sigma(I)^2 + (  0.04000 <I>)^2  (sigma(I) from SAINT)
+
+   76055 total and   5415 unique reflections left after |I-<I>|/su test
+ g = 0.0577 gave best error model; g set to 0.0577 for statistics and .hkl
+ file output
+
+  Run 2-theta  R(int)  Incid. factors  Diffr. factors    K     Total I>2sig(I)
+    1  -29.0  0.0378   0.681 - 0.791   0.987 - 1.019   0.590    6323    5003
+    2  -29.0  0.0420   0.681 - 0.828   0.978 - 1.024   0.616    6345    4971
+    3  -29.0  0.0385   0.675 - 0.786   0.978 - 1.024   0.593    6314    4895
+    4  -29.0  0.0376   0.698 - 0.807   0.978 - 1.014   0.588    6368    5070
+    5  -29.0  0.0410   0.661 - 0.801   0.984 - 1.024   0.610    6334    5007
+    6  -29.0  0.0414   0.693 - 0.801   0.978 - 1.024   0.617    6358    4867
+    7  -29.0  0.0399   0.661 - 0.783   0.978 - 1.016   0.603    6329    4956
+    8  -29.0  0.0398   0.719 - 0.799   0.986 - 1.015   0.604    6343    5001
+    9  -29.0  0.0392   0.679 - 0.801   0.987 - 1.019   0.606    6326    4993
+   10  -29.0  0.0449   0.683 - 0.833   0.978 - 1.024   0.620    6342    4962
+   11  -29.0  0.0397   0.681 - 0.781   0.978 - 1.024   0.600    6314    4880
+   12  -29.0  0.0394   0.683 - 0.804   0.978 - 1.014   0.605    6359    5011
+
+ su = K * Sqrt[ sigma^2(I) + (g<I>)^2.00 ]  where sigma(I) is from SAINT
+
+ The above statistics are based on all non-rejected data, ignoring
+ reflections without equivalents when estimating R(int) and K.
+
+
+ ==============================================================================
+
+ PART 3 - Output Postscript diagnostics and corrected data
+
+ Diagnostic plots written to Postscript file sad.eps
+
+   76055 Corrected reflections written to file sad_u.hkl
+ Estimated minimum and maximum transmission:  0.7096  0.7454
+ The ratio of these values is more reliable than their absolute values!
+ Additional spherical absorption correction applied with mu*r =  0.2000
+
+   76055 Corrected reflections written to file sad_u.hkl
+ Estimated minimum and maximum transmission:  0.7096  0.7454
+ The ratio of these values is more reliable than their absolute values!
+ Additional spherical absorption correction applied with mu*r =  0.2000
+
+    5415 Corrected reflections written to file sad_m.hkl
+ Estimated minimum and maximum transmission:  0.7096  0.7454
+ The ratio of these values is more reliable than their absolute values!
+ Additional spherical absorption correction applied with mu*r =  0.2000
+

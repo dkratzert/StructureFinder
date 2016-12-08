@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% comment %}
+This template is for creation and editing of a dataset
+{% endcomment %}
+
+
+{% block content %}
+
+<h1>New/Edit Dataset</h1>
+
+
+<form method="POST" action="" class="uniForm blueForms" enctype="multipart/form-data">{% csrf_token %}
+<div class="col-lg-6">
+{{ machine }}
+{{ form.as_p }}
+
+
+
+</div>
+<div class="col-lg-6">
+<br>
+<input type="submit" class="btn btn-sm btn-primary" value="Save Dataset" />
+</form>
+
+
+<p>
+<a href="{% url 'stdb:index' %}">Back to main page</a>
+</p>
+</div>
+
+
+{% endblock %}
+
+{% comment %}
+<table class="table-responsive" >
+    <tr><td align="right"><b> Dataset Name: </b></td>           <td> {{ form.name }}</td></tr>
+    <tr><td align="right"><b> Flask Name: </b></td>             <td> {{ form.flask_name }}</td></tr>
+    <tr><td align="right"><b> Operator: </b></td>               <td> {{ form.operator }}</td></tr>
+    <tr><td align="right"><b> Machine: </b></td>                <td> {{ form.machine }}</td></tr>
+    <tr><td align="right"><b> Measure Date: </b></td>           <td> {{ form.measure_date }}</td></tr>
+
+    <tr><td align="right"><b> Received: </b></td>               <td> {{ form.received }}</td></tr>
+    <tr><td align="right"><b> Picking Temperature: </b></td>    <td> {{ form.picked_at }} K</td></tr>
+    <tr><td align="right"><b> Operator: </b></td>               <td> {{ form.operator }}</td></tr>
+    <tr><td align="right"><b> Machine: </b></td>                <td> {{ dataset.machine }}</td></tr>
+    <tr><td align="right"><b> Colour: </b></td>                 <td> {{ form.colour }}</td></tr>
+    <tr><td align="right"><b> Shape: </b></td>                  <td> {{ form.shape }}</td></tr>
+    <tr><td align="right"><b> Publishable: </b></td>            <td> {{ form.is_publishable }}</td></tr>
+</table>
+{% endcomment %}

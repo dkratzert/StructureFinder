@@ -1,0 +1,27 @@
+h1 {
+    color: green;
+}
+h2 {
+    color: black;
+}
+body {
+    color: midnightblue;
+    #font-family : Century;
+    font-family: sans-serif;
+
+}
+
+link a {
+    color: forestgreen;
+    text-underline: none;
+}
+
+li {
+    color: forestgreen;
+    text-underline: none;
+}
+
+a {
+    #color: forestgreen;
+    text-decoration: none;
+}

@@ -1,0 +1,125 @@
+#==============================================================================
+# PLATON/CHECK-(210609) versus check.def version of 100609  for entry: p21c
+# Data From: p21c-final.cif - Data Type: CIF    Bond Precision   C-C = 0.0020 A
+#                                                                  Temp = 100 K
+#
+# UCL 16.6171(14) 16.4743(12)   28.964(3)           90   103.218(4)          90
+# WaveLength 0.71073    Volume Reported   7719.0(12)  Calculated   7719.0(12)
+# SpaceGroup from Symmetry P 21/c        Hall: -P 2ybc
+#                 Reported P 21/c              -P 2ybc
+# MoietyFormula 2(C35 H32 O10), 3(C7 H8)
+#      Reported 2(C35 H32 O10), 3(C7 H8)
+#    SumFormula C91 H88 O20
+#      Reported C91 H88 O20
+# Mr        =   1501.61[Calc],   1501.61[Rep]
+# Dx,gcm-3  =     1.292[Calc],     1.292[Rep]
+# Z         =         4[Calc],         4[Rep]
+# Mu (mm-1) =     0.091[Calc],     0.091[Rep]
+# F000      =    3176.0[Calc],    3176.0[Rep]  or F000' =   3177.69[Calc]
+# Reported   T Limits: Tmin=0.932              Tmax=1.000  AbsCorr=MULTI-SCAN
+# Calculated T Limits: Tmin=0.986 Tmin'=0.980  Tmax=0.994
+# Reported   Hmax= 21, Kmax= 20, Lmax= 36, Nref= 16388        , Th(max)= 26.730
+# Calculated Hmax= 21, Kmax= 20, Lmax= 36, Nref= 16388        , Ratio  =  1.000
+# Reported   Rho(min) = -0.22, Rho(max) =  0.31 e/Ang**3 (From CIF)
+# w= 1/[sigma**2(Fo**2)+(0.0544P)**2+  4.1063P] P=(Fo**2+2*Fc**2)/3
+# R= 0.0420( 12749), wR2= 0.1204( 16388), S = 1.019, Npar=1150
+#==============================================================================
+ 
+===============================================================================
+>>> The Following Model and Quality ALERTS were generated     - (Acta-Mode) <<<
+===============================================================================
+     Format: alert-number_ALERT_alert-type_alert-level text
+ 
+413_ALERT_2_B Short Inter XH3 .. XHn     H90C   ..  H83F    ..       1.97 Ang.
+#==============================================================================
+250_ALERT_2_C Large U3/U1 Ratio for Average U(i,j) Tensor ....       2.29
+250_ALERT_2_C Large U3/U1 Ratio for Average U(i,j) Tensor ....       2.17
+#==============================================================================
+860_ALERT_3_G Note: Number of Least-Squares Restraints .......        291
+#==============================================================================
+#==============================================================================
+ 
+===============================================================================
+>>> The Following Improvement and Query ALERTS were generated - (Acta-Mode) <<<
+===============================================================================
+790_ALERT_4_C Centre of Gravity not Within Unit Cell: Resd.  #          5
+              C7 H8
+#==============================================================================
+302_ALERT_4_G Note: Anion/Solvent Disorder ...................      40.00 Perc.
+795_ALERT_4_G C-Atom in CIF Coordinate List out of Sequence ..        C77
+#==============================================================================
+ 
+               ALERT_Level and ALERT_Type Summary
+               ==================================
+  1 ALERT_Level_B = Potentially Serious Problem.
+  3 ALERT_Level_C = Check & Explain.
+  3 ALERT_Level_G = General Issues to Check, Not Necessarily Errors.
+ 
+  3 ALERT_Type_2 Indicator that the Structure Model may be Wrong or Deficient.
+  1 ALERT_Type_3 Indicator that the Structure Quality may be Low.
+  3 ALERT_Type_4 Improvement, Methodology, Query or Suggestion.
+#==============================================================================
+ 
+Explanation and Advice for the Reported ALERTS
+===============================================================================
+ 
+===============================================================================
+ALERT_250 Type_2 Indicator that the Structure Model may be Wrong or Deficient.
+===============================================================================
+ 
+ An average value of the U(i,j) tensor of the asymmetric unit of a residue
+ is calculated. An ALERT is generated when the corresponding U3/U1 ratio
+ deviates significantly from 1.0. Large values of this ratio should be taken
+ as an indication of possible systematic errors in the data or errors in
+ the model. Visual inspection of an ORTEP plot will show that many
+ displacement ellipsoids have their major axis pointing in the same direction.
+ 
+===============================================================================
+ALERT_302 Type_4 Improvement, Methodology, Query or Suggestion.
+===============================================================================
+ 
+ Atom sites that are not fully occupied are counted. A large fraction of
+ disordered atoms may be both a signal for serious structure analysis
+ problems or less reliable/interesting results.
+ 
+===============================================================================
+ALERT_413 Type_2 Indicator that the Structure Model may be Wrong or Deficient.
+===============================================================================
+ 
+ Short intermolecular H..H contacts may indicate incorrectly determined
+ structures (i.e. wrong symmetry, missed translation symmetry, wrong position
+ with reference to the symmetry elements, hydrogen atoms on atoms where there
+ should not be any  etc..). Short intermolecular contacts may be indicative
+ for inconsistent symmetry data (e.g. coordinates for space-group P43 and
+ symmetry specified as P41 or P21/n & P21/c confusions). Short contacts are
+ defined using a van der Waals radius of 1.2 Angstrom. Short H .. H contact
+ involving CH3 H-atoms are often hampered by the fact that they involve
+ H atoms at not optimal calculated positions.
+ 
+===============================================================================
+ALERT_790 Type_4 Improvement, Methodology, Query or Suggestion.
+===============================================================================
+ 
+ Unless for a good reason, molecular species should be transformed
+ (by symmetry and/or translation) so that their centres of gravity
+ are close to or within the unitcell bounds. This is a strict rule for the
+ main species. Deviations from this general rule are for smaller additional
+ species when relevant for intermolecular interactions with the main species.
+ 
+===============================================================================
+ALERT_795 Type_4 Improvement, Methodology, Query or Suggestion.
+===============================================================================
+ 
+ Atoms in the CIF are not given in logical order (i.e. C1, C2 etc.)
+ The recommended procedure is to sort the atom list in some logical
+ order before the final refinement cycles.
+ 
+===============================================================================
+ALERT_860 Type_3 Indicator that the Structure Quality may be Low.
+===============================================================================
+ 
+ The use of restraints used in the refinement should be explained in
+ the write-up of a structure analysis.
+ 
+ Note: An exception are restraints for floating origins (e.g. in P21).
+ 

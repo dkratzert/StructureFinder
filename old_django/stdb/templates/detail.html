@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% comment %}
+This template shows the details of a dataset with all its values
+{% endcomment %}
+
+<title xmlns="http://www.w3.org/1999/html">{% block head_title %} {{ dataset.name }} | {{ block.super }}{% endblock head_title %}</title>
+
+<style>
+    {% block style %}
+        {{ block.super }}
+    {% endblock style %}
+</style>
+
+{% block content %}
+
+<title>{{ dataset.name }}</title>
+<div class="row">
+    <!-- erste Spalte mit Datentabelle: -->
+    <div class="col-lg-10">
+    {% block title %}<h2 class="sm-title">Results of {{ dataset.name }}</h2>{% endblock %}
+    <p>
+    <div class="col-md-6">
+    <table class="table">
+    <tr><td>Dataset Name</td>           <td>{{ dataset.name }} </td></tr>
+    <tr><td>Flask Name</td>             <td>{{ dataset.name }}  </td></tr>
+    <tr><td>Operator</td>               <td>{{ dataset.operator }} </td></tr>
+    {% comment %}
+    <tr><td>Client</td>                 <td>{{ dataset.measured_for }} </td></tr>
+    <tr><td>EMail</td>                  <td>{{ dataset.email }} </td></tr>
+    {% endcomment %}
+    <tr><td>Machine</td>                <td> {{ machine }} </td></tr>
+    <tr><td>Received</td>               <td> {{ dataset.received }} </td></tr>
+    <tr><td>Measurement Date</td>       <td> {{ dataset.measure_date }} </td></tr>
+    {% if dataset.picked_at %}
+        <tr><td>Crystals picked at</td>     <td> {{ dataset.picked_at }} °C</td></tr>
+    {% endif %}
+    <tr><td>Publishable?</td>           <td> {% if dataset.is_publishable %} Yes! {% else %} No! {% endif %}</td></tr>
+    </table>
+    </p>
+
+    <table class="table" title="Details">
+    <thead class=""><tr><h3>Details</h3></tr></thead>
+    <tr><td>Formula</td>                    <td>{{ dataset.format_formula }} </td></tr>
+    <tr><td>Formula weight</td>             <td>{{ dataset.formular_weight }} </td></tr>
+    <tr><td>Temperature</td>                <td>{{ dataset.temperature }} </td></tr>
+    <tr><td>Wavelength</td>                 <td>{{ dataset.wavelength }} </td></tr>
+    <tr><td>Crystal system</td>             <td>{{ dataset.crystal_system }} </td></tr>
+    <tr><td>Space group</td>                <td>{{ dataset.space_group }} </td></tr>
+    <tr><td>Unit cell dimensions</td>
+        <td>
+        <table class="table-condensed">
+            <tr><td><em>a</em> = {{ dataset.cell_a }}</td>  <td> <em>&alpha;</em> = {{ dataset.alpha }} </td>    </tr>
+            <tr><td><em>b</em> = {{ dataset.cell_b }}</td>  <td> <em>&beta;</em> = {{ dataset.beta }}</td>       </tr>
+            <tr><td><em>c</em> = {{ dataset.cell_c }}</td>  <td> <em>&gamma;</em> = {{ dataset.gamma }}</td>     </tr>
+        </table>
+        </td>
+    </tr>
+    <tr><td>Volume</td>                     <td>{{ dataset.volume }} </td></tr>
+    <tr><td><em>Z</em></td>                 <td>{{ dataset.z }} </td></tr>
+    <tr><td>Density (calc.)</td>            <td>{{ dataset.density }} g&CenterDot;cm<sup>-3</sup></td></tr>
+    <tr><td><em>&mu;</em></td>              <td>{{ dataset.mu }} </td></tr>
+    <tr><td><em>F</em>(000)</td>            <td>{{ dataset.fnull }} </td></tr>
+    <tr><td>Crystal size</td>               <td>{{ dataset.crystal_size_x }} &times; {{ dataset.crystal_size_y }} &times; {{ dataset.crystal_size_z }} mm<sup>3</sup></td></tr>
+    <tr><td>Colour</td>                     <td>{{ dataset.colour }} </td></tr>
+    <tr><td>Shape</td>                      <td>{{ dataset.shape }} </td></tr>
+    <tr><td>Resolution</td>                 <td>{{ dataset.temperature }}  </td></tr> {% comment  %}add function to report resol in A and 2theta{% endcomment %}
+    <tr><td>Index ranges</td>               <td>{{ dataset.temperature }} </td></tr> {% comment  %}maybe not?{% endcomment %}
+    <tr><td>Measured reflections</td>       <td>{{ dataset.measured_refl }} </td></tr>
+    <tr><td>Independent reflections</td>    <td>{{ dataset.indep_refl }} [R<sub>int</sub> = {{ dataset.r_int }}]</td></tr>
+    <tr><td>Completeness</td>               <td> dataset.compl </td></tr>
+    <tr><td>Data / restraints / parameters</td>      <td>{{ dataset.indep_refl }} / {{ dataset.restraints }} / {{ dataset.parameters }}</td></tr>
+    <tr><td>Goodness-of-fit on <em>F</em><sup>2</sup></td>      <td>{{ dataset.goof }} </td></tr>
+    <tr><td>Shape</td>                      <td>{{ dataset.shape }} </td></tr>
+    <tr><td>w<em>R</em><sub>2</sub> (all data)     </td>    <td>{{ dataset.wR2_all }}</td></tr>
+    <tr><td>w<em>R</em><sub>2</sub> [<em>I</em> > 2&sigma;(<em>I</em>)]</td>    <td>{{ dataset.wR2_2s }}</td></tr>
+    <tr><td><em>R</em><sub>1</sub> (all data)          </td>    <td>{{ dataset.R1_all }}</td></tr>
+    <tr><td><em>R</em><sub>1</sub> [I>2&sigma;(I)] </td>    <td>{{ dataset.R1_2s }}</td></tr>
+    <tr><td>Largest diff. density Peak / hole      </td>    <td>{{ dataset.peak }} / {{ dataset.hole }}</td></tr>
+    <tr><td>Machine</td> <td> {{ machine }}  </td></tr>
+
+    </table>
+
+
+
+    <p>
+        <a href="{% url 'stdb:edit' pk=dataset.id %}">Edit Data</a>
+    </p>
+    <p>
+        <a href="{% url 'stdb:delete' pk=dataset.id %}">Delete Dataset!</a>
+    </p>
+    <p>
+        <a href="{% url 'stdb:index' %}">Back to main page</a>
+    </p>
+    </div>
+
+    <!-- zweite Spalte mit 3D Bild und files: -->
+    <div class="col-lg-6">
+
+        <tr><td colspan="1">
+
+        <!-- add molecule here -->
+
+
+        </td></tr>
+        <!-- Files list: -->
+        </table>
+
+        <tr><td colspan="1">
+            <!-- List of uploaded documents -->
+            {% if dataset.cif_file %}
+                <p>
+                cif file: -> <a href="{{ dataset.cif_file.url }}">{{ dataset.cif_file.name }}</a> {{ dataset.cif_file.size|filesizeformat }}
+                </p>
+            {% else %}
+                <p>No cif file uploaded.</p>
+            {% endif %}
+            {% if dataset.res_file %}
+                <p>
+                res file: -> <a href="{{ dataset.res_file.url }}">{{ dataset.res_file.name }}</a> {{ dataset.res_file.size|filesizeformat }}
+                </p>
+            {% else %}
+                <p>No res file uploaded.</p>
+            {% endif %}
+        </td></tr>
+        </table>
+
+    </div>
+</div>
+<br>
+
+{% endblock content %}
