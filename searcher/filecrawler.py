@@ -17,7 +17,7 @@ from cellpicker import get_res_cell
 import sys
 
 
-def create_file_list(searchpath='None'):
+def create_file_list(searchpath='None', endings='res'):
     '''
     walks through the file system and collects cells from res/cif files
     into a database
@@ -25,8 +25,8 @@ def create_file_list(searchpath='None'):
     if not os.path.isdir(searchpath):
         print('search path {0} not found!'.format(searchpath))
         sys.exit()
-    print('collecting res files...')
-    res = filewalker(searchpath, 'res')
+    print('collecting files...')
+    res = filewalker(searchpath, endings)
     print('ready')
     return res
 

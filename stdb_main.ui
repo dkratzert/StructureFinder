@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
+ <author>Daniel Kratzert</author>
  <class>stdbMainwindow</class>
  <widget class="QMainWindow" name="stdbMainwindow">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>471</width>
-    <height>474</height>
+    <width>946</width>
+    <height>711</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,9 +19,16 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QPushButton" name="pushButton_2">
+       <widget class="QPushButton" name="importFileButton">
         <property name="text">
-         <string>import</string>
+         <string>Import File</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="importDirButton">
+        <property name="text">
+         <string>Import Directory</string>
         </property>
        </widget>
       </item>
@@ -38,9 +46,9 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_3">
+       <widget class="QPushButton" name="exportButton">
         <property name="text">
-         <string>export</string>
+         <string>Export Database(s)</string>
         </property>
        </widget>
       </item>
@@ -58,9 +66,9 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton_4">
+       <widget class="QPushButton" name="searchButton">
         <property name="text">
-         <string>search</string>
+         <string>Cell Search</string>
         </property>
        </widget>
       </item>
@@ -78,16 +86,62 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="optionsButton">
         <property name="text">
-         <string>options</string>
+         <string>Options</string>
         </property>
        </widget>
       </item>
      </layout>
     </item>
     <item>
-     <widget class="QMdiArea" name="mdiArea"/>
+     <widget class="QMdiArea" name="mdiArea">
+      <property name="tabsMovable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="cifSearchResultsWindow">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="windowTitle">
+        <string>File Search Results</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QTreeWidget" name="cifs_treeWidget">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <column>
+           <property name="text">
+            <string>dir</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>file</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -96,12 +150,27 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>471</width>
+     <width>946</width>
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="fileMenu">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionExit"/>
+   </widget>
+   <addaction name="fileMenu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
