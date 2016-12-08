@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>946</width>
-    <height>711</height>
+    <width>583</width>
+    <height>482</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,6 +18,9 @@
    <layout class="QHBoxLayout" name="horizontalLayout">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetDefaultConstraint</enum>
+      </property>
       <item>
        <widget class="QPushButton" name="importFileButton">
         <property name="text">
@@ -94,35 +97,6 @@
       </item>
      </layout>
     </item>
-    <item>
-     <widget class="QStackedWidget" name="stackedWidget">
-      <widget class="QWidget" name="page">
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <item>
-         <widget class="QTreeWidget" name="cifs_treeWidget">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <column>
-           <property name="text">
-            <string>dir</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>file</string>
-           </property>
-          </column>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="page_2"/>
-     </widget>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -130,7 +104,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>946</width>
+     <width>583</width>
      <height>22</height>
     </rect>
    </property>
@@ -143,6 +117,50 @@
    <addaction name="fileMenu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QDockWidget" name="dataDock">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>400</width>
+     <height>345</height>
+    </size>
+   </property>
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_3">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QTreeWidget" name="cifs_treeWidget">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <column>
+        <property name="text">
+         <string>dir</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>file</string>
+        </property>
+       </column>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
