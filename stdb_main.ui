@@ -113,8 +113,26 @@
      <string>File</string>
     </property>
     <addaction name="actionExit"/>
+    <addaction name="actionImport_file"/>
+    <addaction name="actionImport_directory"/>
+    <addaction name="actionExport_Database_s"/>
+    <addaction name="actionOptions"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>edit</string>
+    </property>
+    <addaction name="actionEdit_dataset"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>help</string>
+    </property>
+    <addaction name="actionUser_manual"/>
    </widget>
    <addaction name="fileMenu"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QDockWidget" name="dataDock">
@@ -148,12 +166,17 @@
        </property>
        <column>
         <property name="text">
-         <string>dir</string>
+         <string>file</string>
         </property>
        </column>
        <column>
         <property name="text">
-         <string>file</string>
+         <string>cell</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>dir</string>
         </property>
        </column>
       </widget>
@@ -167,6 +190,36 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionEdit_dataset">
+   <property name="text">
+    <string>edit dataset</string>
+   </property>
+  </action>
+  <action name="actionUser_manual">
+   <property name="text">
+    <string>user manual</string>
+   </property>
+  </action>
+  <action name="actionImport_file">
+   <property name="text">
+    <string>Import file</string>
+   </property>
+  </action>
+  <action name="actionImport_directory">
+   <property name="text">
+    <string>Import directory</string>
+   </property>
+  </action>
+  <action name="actionExport_Database_s">
+   <property name="text">
+    <string>Export Database(s)</string>
+   </property>
+  </action>
+  <action name="actionOptions">
+   <property name="text">
+    <string>Options</string>
    </property>
   </action>
  </widget>

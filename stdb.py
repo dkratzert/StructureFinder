@@ -1,7 +1,12 @@
 from __future__ import print_function
 
+import os
 import sys
+from os.path import pathsep
+
 from PyQt4 import QtCore, QtGui, uic
+
+from searcher.cellpicker import get_res_cell, get_cif_cell
 
 uic.compileUiDir('./')
 from searcher import filecrawler
@@ -30,10 +35,14 @@ class StartQT4(QtGui.QMainWindow):
         fname = "/Users/daniel/GitHub/StructureDB/test-data"
         files = filecrawler.create_file_list(str(fname), endings='cif')
         self.ui.cifs_treeWidget.show()
+        # TODO: implement multiple cells in one cif file:
         for dir, file in files:
             a = QtGui.QTreeWidgetItem(self.ui.cifs_treeWidget)
             a.setText(0, dir)
-            a.setText(1, file)
+            #print(get_cif_cell(dir+os.path.sep+file))
+            #a.setText(1, ' '.join(map(str, get_res_cell(dir+os.path.sep+file))))
+            a.setText(1, ' '.join(map(str, get_cif_cell(dir+os.path.sep+file)[0][1:])))
+            a.setText(2, file)
         for i, _ in enumerate(files):
             self.ui.cifs_treeWidget.resizeColumnToContents(i)
 

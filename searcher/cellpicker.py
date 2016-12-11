@@ -37,24 +37,23 @@ def get_cif_cell(filename):
                 cell[0] = name
             if line.startswith('_cell_length_a'):
                 a = line.split()[1].split('(')[0]
-                cell[1] = a
+                cell[1] = float(a)
             if line.startswith('_cell_length_b'):
                 b = line.split()[1].split('(')[0]
-                cell[2] = b
+                cell[2] = float(b)
             if line.startswith('_cell_length_c'):
                 c = line.split()[1].split('(')[0]
-                cell[3] = c
+                cell[3] = float(c)
             if line.startswith('_cell_angle_alpha'):
                 alpha = line.split()[1].split('(')[0]
-                cell[4] = alpha
+                cell[4] = float(alpha)
             if line.startswith('_cell_angle_beta'):
                 beta = line.split()[1].split('(')[0]
-                cell[5] = beta
+                cell[5] = float(beta)
             if line.startswith('_cell_angle_gamma'):
                 gamma = line.split()[1].split('(')[0]
-                cell[6] = gamma
+                cell[6] = float(gamma)
             if all(cell[n] for n, i in enumerate(cell)):
-            #if cell[0] and cell[1] and cell[2] and cell[3] and cell[4] and cell[5] and cell[6]:
                 cells.append(cell[:])
                 cell = [None, None, None, None, None, None, None]               
     return cells
@@ -79,7 +78,8 @@ def get_res_cell(filename):
             except(ValueError):
                 print('Bad cell parameters in {0}.'.format(filename))
                 return False
-            #break
+            if line.startswith('UNIT'):
+                break
     if not cell:
         #print('Unable to find unit cell parameters in the file.')
         return False
