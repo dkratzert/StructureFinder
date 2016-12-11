@@ -223,11 +223,6 @@
               </column>
               <column>
                <property name="text">
-                <string>cell</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
                 <string>dir</string>
                </property>
               </column>

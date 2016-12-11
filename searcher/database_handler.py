@@ -51,7 +51,15 @@ class DatabaseRequest():
             self.cur.execute("DROP INDEX name")
         except:
             pass
-    
+
+        #self.cur.execute('''
+        #            CREATE TABLE measurement (
+        #                Id    INTEGER NOT NULL,
+        #                path  TEXT,
+        #                name    VARCHAR(255),
+        #                PRIMARY KEY(Id));
+        #            ''')
+
         self.cur.execute('''
                     CREATE TABLE structure (
                         Id    INTEGER NOT NULL,
@@ -217,7 +225,7 @@ class StructureTable():
         '''
         req = '''INSERT INTO cell (cellId, a, b, c, alpha, beta, gamma) 
                     VALUES(?, ?, ?, ?, ?, ?, ?)'''
-        if self.database.db_request(req, structureId, cell[0], cell[1], cell[2], \
+        if self.database.db_request(req, structureId, cell[0], cell[1], cell[2],
                                     cell[3], cell[4], cell[5]):
             return True
     
