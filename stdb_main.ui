@@ -65,6 +65,84 @@
            <string/>
           </property>
           <layout class="QGridLayout" name="gridLayout">
+           <item row="2" column="0">
+            <widget class="QPushButton" name="importFileButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Open Database</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <spacer name="verticalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="10" column="0">
+            <spacer name="verticalSpacer">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="7" column="0">
+            <spacer name="verticalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="11" column="0">
+            <widget class="QPushButton" name="optionsButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Options</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QPushButton" name="searchButton">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="text">
+              <string>Cell Search</string>
+             </property>
+            </widget>
+           </item>
            <item row="0" column="0">
             <widget class="QPushButton" name="importDirButton">
              <property name="sizePolicy">
@@ -79,20 +157,7 @@
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QPushButton" name="importFileButton">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Import File</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <spacer name="verticalSpacer_3">
+            <spacer name="verticalSpacer_4">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -104,7 +169,7 @@
              </property>
             </spacer>
            </item>
-           <item row="3" column="0">
+           <item row="8" column="0">
             <widget class="QPushButton" name="exportButton">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -114,58 +179,6 @@
              </property>
              <property name="text">
               <string>Export Database(s)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <spacer name="verticalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="5" column="0">
-            <widget class="QPushButton" name="searchButton">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Cell Search</string>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="0">
-            <spacer name="verticalSpacer">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item row="7" column="0">
-            <widget class="QPushButton" name="optionsButton">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="text">
-              <string>Options</string>
              </property>
             </widget>
            </item>
@@ -216,6 +229,15 @@
               <column>
                <property name="text">
                 <string>dir</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTreeWidget" name="properties_treeWidget">
+              <column>
+               <property name="text">
+                <string notr="true">1</string>
                </property>
               </column>
              </widget>

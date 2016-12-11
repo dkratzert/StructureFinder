@@ -12,6 +12,10 @@ uic.compileUiDir('./')
 from searcher import filecrawler
 from stdb_main import Ui_stdbMainwindow
 
+#TODO:
+# - store data from found files in DB
+# - list properties of a selected cif file
+# - implement relocate as file open dialog
 
 class StartQT4(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -23,9 +27,17 @@ class StartQT4(QtGui.QMainWindow):
         self.statusBar().showMessage('Ready')
         self.ui.actionExit.triggered.connect(QtGui.qApp.quit)
         self.ui.cifList_treeWidget.hide()
+        self.ui.properties_treeWidget.hide()
         self.ui.relocate_lineEdit.hide()
+        self.ui.cifList_treeWidget.clicked.connect(self.show_properties)
         # for later use to implement relocation of whole database:
         #self.ui.cifList_treeWidget.doubleClicked.connect(self.relocate)
+
+    def show_properties(self, str):
+        """
+        This slot show the properties of a cif file in the properties widget
+        """
+        self.ui.properties_treeWidget.show()
 
     def relocate(self):
         self.ui.relocate_lineEdit.show()
