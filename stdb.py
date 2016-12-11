@@ -71,11 +71,11 @@ class StartStructureDB(QtGui.QMainWindow):
                 continue
             self.structures.fill_structures_table(dir, file)
             a = QtGui.QTreeWidgetItem(self.ui.cifList_treeWidget)
+            a.setText(0, file)
             a.setText(1, dir)
             #print(get_cif_cell(dir+os.path.sep+file))
             #a.setText(1, ' '.join(map(str, get_res_cell(dir+os.path.sep+file))))
             #a.setText(2, ' '.join(map(str, get_cif_cell(dir+os.path.sep+file)[0][1:])))
-            a.setText(0, file)
             #print(n, get_cif_cell(dir+os.path.sep+file)[0][1:])
             self.structures.fill_cell_table(n, get_cif_cell(dir+os.path.sep+file)[0][1:])
             n += 1
