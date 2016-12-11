@@ -27,6 +27,7 @@ def get_cif_cell(filename):
     hkl data
     ;
     '''
+    # list of 1+n cells, because we can have more than one cif in a file. n = 0-inf:
     cells = []
     name, a, b, c, alpha, beta, gamma = None, None, None, None, None, None, None
     with open(filename) as f:
@@ -54,6 +55,7 @@ def get_cif_cell(filename):
                 gamma = line.split()[1].split('(')[0]
                 cell[6] = float(gamma)
             if all(cell[n] for n, i in enumerate(cell)):
+                # contains 1+n cells. n=0-inf
                 cells.append(cell[:])
                 cell = [None, None, None, None, None, None, None]               
     return cells
