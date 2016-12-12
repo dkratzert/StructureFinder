@@ -13,7 +13,7 @@ Created on 09.02.2015
 
 import os
 import fnmatch as fn
-from cellpicker import get_res_cell
+from searcher.cellpicker import get_res_cell
 import sys
 
 
