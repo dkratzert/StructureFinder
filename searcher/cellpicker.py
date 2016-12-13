@@ -10,6 +10,8 @@ Created on 09.02.2015
 
 @author: daniel
 '''
+import codecs
+import unicodedata
 
 
 def get_cif_cell(filename):
@@ -30,7 +32,7 @@ def get_cif_cell(filename):
     # list of 1+n cells, because we can have more than one cif in a file. n = 0-inf:
     cells = []
     name, a, b, c, alpha, beta, gamma = None, None, None, None, None, None, None
-    with open(filename) as f:
+    with codecs.open(filename, "r", encoding='ascii', errors='ignore') as f:
         cell = [None, None, None, None, None, None, None]
         for line in f:
             if line.startswith('data_'):

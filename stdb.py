@@ -3,7 +3,7 @@ from __future__ import print_function
 import os
 import sys
 
-from PyQt5 import QtGui, uic
+from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
@@ -16,6 +16,7 @@ uic.compileUiDir('./')
 from searcher import filecrawler
 from stdb_main import Ui_stdbMainwindow
 
+os.remove('./test.sqlite')
 
 # TODO:
 # - store data from found files in DB
@@ -66,9 +67,9 @@ class StartStructureDB(QMainWindow):
         print(fname)
 
     def import_cif_dirs(self):
-        fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        #fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         # fname = "D:/GitHub/StructureDB/test-data"
-        # fname = "/Users/daniel/GitHub/StructureDB/test-data"
+        fname = "/Users/daniel/GitHub/StructureDB/test-data"
         files = filecrawler.create_file_list(str(fname), endings='cif')
         self.ui.cifList_treeWidget.show()
         # TODO: implement multiple cells in one cif file:

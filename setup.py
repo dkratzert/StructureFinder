@@ -8,5 +8,5 @@ setup(
     license='Beerware',
     author='Daniel Kratzert',
     author_email='dkratzert@gmx.de',
-    description='A structure database'
+    description='A structure database', requires=['PyQt5']
 )
