@@ -9,7 +9,21 @@ import numpy as np
 from numpy.linalg import inv
 from numpy import dot, transpose
 
-from pymatgen.util.num_utils import abs_cap
+
+def abs_cap(val, max_abs_val=1):
+    """
+    Returns the value with its absolute value capped at max_abs_val.
+    Particularly useful in passing values to trignometric functions where
+    numerical errors may result in an argument > 1 being passed in.
+
+    Args:
+        val (float): Input value.
+        max_abs_val (float): The maximum absolute value for val. Defaults to 1.
+
+    Returns:
+        val if abs(val) < 1 else sign of val * max_abs_val.
+    """
+    return max(min(val, max_abs_val), -max_abs_val)
 
 """
 This module defines the classes relating to 3D lattices.
@@ -425,12 +439,12 @@ class Lattice():
             return self._lll_inverse
 
     def __repr__(self):
-        outs = ["Lattice", "    abc : " + " ".join(map(repr, self._lengths)),
-                " angles : " + " ".join(map(repr, self._angles)),
-                " volume : " + repr(self.volume),
-                "      A : " + " ".join(map(repr, self._matrix[0])),
-                "      B : " + " ".join(map(repr, self._matrix[1])),
-                "      C : " + " ".join(map(repr, self._matrix[2]))]
+        outs = ["Lattice", "    abc : {}".format(self._lengths),
+                " angles : {}".format(self._angles),
+                " volume : {:6.8}".format(str(self.volume)),
+                "      A : {}".format(list(self._matrix[0])),
+                "      B : {}".format(self._matrix[1]),
+                "      C : {}".format(self._matrix[2])]
         return "\n".join(outs)
 
     def __eq__(self, other):
@@ -983,14 +997,26 @@ if __name__ == '__main__':
     Niggli form:     a.a =     63.19      b.b =     80.56      c.c =    129.38
                      b.c =    -29.80      a.c =     -3.10      a.b =    -16.60
     '''
-    cell = [7.9492, 8.9757, 11.3745, 106.974, 91.963, 103.456]
+    cell = "10.6456  11.0330  19.9214  90.000  98.938  90.000".split()
+    cell = map(float, cell)
+    cell2 = "10.6453   11.0332   19.9213   90.0100   98.9375   90.0150".split()
+    cell2 = [float(i) for i in cell2]
     lattice = Lattice.from_parameters(*cell)
     print(lattice.get_niggli_reduced_lattice())
     print('\n')
     print(lattice.get_lll_reduced_lattice().metric_tensor)
     print('\n')
     print(lattice.lengths_and_angles)
+
+    print('\nCell2:')
+    lattice2 = Lattice.from_parameters(*cell2)
+    print(lattice2.get_lll_reduced_lattice().metric_tensor)
+    print('\n')
+    print(lattice2.lengths_and_angles)
+
     # have to create a second lattice:
     #bigger = lattice.scale(750.34*2).get_lll_reduced_lattice().matrix
-    #map = lattice.find_mapping(bigger)
+    map = lattice.find_mapping(lattice2, ltol=0.0001)
     print('##', map)
+    maps = lattice.find_mapping(lattice2, ltol=0.0001)
+    print('###', maps)
