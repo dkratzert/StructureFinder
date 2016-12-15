@@ -988,6 +988,8 @@ if __name__ == '__main__':
     '''
     DETERMINATION OF REDUCED (NIGGLI) CELL
 
+    https://atztogo.github.io/niggli/
+
     Transformation from original cell (HKLF-matrix):
         1.0000  0.0000  0.0000    0.0000  1.0000  0.0000    0.0000  0.0000  1.0000
 
