@@ -6,6 +6,7 @@ from __future__ import division, unicode_literals
 import math
 
 import numpy as np
+import sys
 from numpy.linalg import inv
 from numpy import dot, transpose
 
@@ -562,7 +563,6 @@ class Lattice():
                 else:
                     rotation_m = np.linalg.solve(aligned_m,
                                                  other_lattice.matrix)
-
                 yield Lattice(aligned_m), rotation_m, scale_m
 
     def find_mapping(self, other_lattice, ltol=1e-5, atol=1,
@@ -819,14 +819,12 @@ class Lattice():
         gamma = math.acos(Y / 2 / a / b) / math.pi * 180
 
         latt = Lattice.from_parameters(a, b, c, alpha, beta, gamma)
-
         mapped = self.find_mapping(latt, e, skip_rotation_matrix=True)
         if mapped is not None:
             if np.linalg.det(mapped[0].matrix) > 0:
                 return mapped[0]
             else:
                 return Lattice(-mapped[0].matrix)
-
         raise ValueError("can't find niggli")
 
     def scale(self, new_volume):
@@ -843,13 +841,9 @@ class Lattice():
             New lattice with desired volume.
         """
         versors = self.matrix / self.abc
-
         geo_factor = abs(np.dot(np.cross(versors[0], versors[1]), versors[2]))
-
         ratios = self.abc / self.c
-
         new_c = (new_volume / (geo_factor * np.prod(ratios))) ** (1/3.)
-
         return Lattice(versors * (new_c * ratios))
 
     def dot(self, coords_a, coords_b, frac_coords=False):
@@ -866,13 +860,10 @@ class Lattice():
         """
         coords_a, coords_b = np.reshape(coords_a, (-1, 3)), \
             np.reshape(coords_b, (-1, 3))
-
         if len(coords_a) != len(coords_b):
             raise ValueError("")
-
         if np.iscomplexobj(coords_a) or np.iscomplexobj(coords_b):
             raise TypeError("Complex array!")
-
         if not frac_coords:
             cart_a, cart_b = coords_a, coords_b
         else:
@@ -1003,6 +994,30 @@ if __name__ == '__main__':
     cell = map(float, cell)
     cell2 = "10.6453   11.0332   19.9213   90.0100   98.9375   90.0150".split()
     cell2 = [float(i) for i in cell2]
+
+    cell3 = [3.1457, 3.1457, 3.1541, 60.089, 60.0887, 60.104]
+    cell4 = [3.1456, 3.1458, 3.1541, 90.089, 119.907, 119.898]
+
+
+    lattice3 = Lattice.from_parameters(*cell3)
+    #print(lattice3.get_niggli_reduced_lattice())
+    #print(lattice3.lengths_and_angles)
+    print('\n')
+    lattice4 = Lattice.from_parameters(*cell4)
+    #print(lattice4.get_niggli_reduced_lattice())
+    #print(lattice4, '##2##')
+
+    map = lattice3.find_mapping(lattice4, ltol=0.00005, skip_rotation_matrix=False)
+    if map:
+        print('gleich')
+        print(map)
+    else:
+        print('ungleich')
+    #for i in map:
+    #    print(i)
+    #print('##', map)
+
+    sys.exit()
     lattice = Lattice.from_parameters(*cell)
     print(lattice.get_niggli_reduced_lattice())
     print('\n')
@@ -1022,3 +1037,4 @@ if __name__ == '__main__':
     print('##', map)
     maps = lattice.find_mapping(lattice2, ltol=0.0001)
     print('###', maps)
+

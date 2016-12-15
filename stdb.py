@@ -16,7 +16,7 @@ uic.compileUiDir('./')
 from searcher import filecrawler
 from stdb_main import Ui_stdbMainwindow
 
-os.remove('./test.sqlite')
+
 
 # TODO:
 # - store data from found files in DB
@@ -39,6 +39,7 @@ class StartStructureDB(QMainWindow):
         self.ui.relocate_lineEdit.hide()
         self.dbfilename = 'test.sqlite'
         print(self.dbfilename)
+        os.remove(self.dbfilename)
         self.structures = StructureTable(self.dbfilename)
         self.db = DatabaseRequest(self.dbfilename)
         self.db.initialize_db()

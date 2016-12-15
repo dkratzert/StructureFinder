@@ -1,15 +1,15 @@
-'''
+"""
 Created on 09.02.2015
 
  ----------------------------------------------------------------------------
 * "THE BEER-WARE LICENSE" (Revision 42):
-* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this 
-* notice you can do whatever you want with this stuff. If we meet some day, and 
+* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this
+* notice you can do whatever you want with this stuff. If we meet some day, and
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
 
 @author: daniel
-'''
+"""
 import sys
 
 __metaclass__ = type  # use new-style classes
@@ -19,11 +19,11 @@ from sqlite3 import OperationalError
 
 class DatabaseRequest():
     def __init__(self, dbfile):
-        '''
+        """
         creates a connection and the cursor to the SQLite3 database file "dbfile".
         :param dbfile: database file
         :type dbfile: str
-        '''
+        """
         # open the database
         self.con = sqlite3.connect(dbfile)
         self.con.execute("PRAGMA foreign_keys = ON")
@@ -52,23 +52,28 @@ class DatabaseRequest():
         except:
             pass
 
-        #self.cur.execute('''
-        #            CREATE TABLE measurement (
-        #                Id    INTEGER NOT NULL,
-        #                path  TEXT,
-        #                name    VARCHAR(255),
-        #                PRIMARY KEY(Id));
-        #            ''')
-
         self.cur.execute('''
-                    CREATE TABLE structure (
+                    CREATE TABLE measurement (
                         Id    INTEGER NOT NULL,
-                        path  TEXT,
                         name    VARCHAR(255),
                         PRIMARY KEY(Id));
                     ''')
 
         self.cur.execute('''
+                    CREATE TABLE structure (
+                        Id    INTEGER NOT NULL,
+                        measurement INTEGER NOT NULL,
+                        path  TEXT,
+                        name    VARCHAR(255),
+                        PRIMARY KEY(Id),
+                          FOREIGN KEY(measurement)
+                            REFERENCES structure(Id)
+                              ON DELETE CASCADE
+                              ON UPDATE NO ACTION);
+                    ''')
+
+        self.cur.execute(
+                    '''
                     CREATE TABLE cell (
                         Id        INTEGER NOT NULL,
                         cellId    INTEGER NOT NULL,
@@ -83,7 +88,27 @@ class DatabaseRequest():
                         REFERENCES cell(Id)
                           ON DELETE CASCADE
                           ON UPDATE NO ACTION);
-                    ''')
+                    '''
+                    )
+
+        self.cur.execute(
+                    '''
+                    CREATE TABLE niggli_cell (
+                                Id        INTEGER NOT NULL,
+                                cellId    INTEGER NOT NULL,
+                                a    FLOAT,
+                                b    FLOAT,
+                                c    FLOAT,
+                                alpha   FLOAT,
+                                beta    FLOAT,
+                                gamma   FLOAT,
+                            PRIMARY KEY(Id),
+                              FOREIGN KEY(cellId)
+                                REFERENCES niggli_cell(Id)
+                                  ON DELETE CASCADE
+                                  ON UPDATE NO ACTION);
+                    '''
+                    )
         
     def db_fetchone(self, request):
         '''
@@ -214,7 +239,10 @@ class StructureTable():
         Fills a structure into the database.
         
         '''
-        req = '''INSERT INTO structure (path, name) VALUES(?, ?)'''
+        req = '''
+                INSERT INTO measurement (name) VALUES(?)
+                INSERT INTO structure (path, name) VALUES(?, ?)
+              '''
         return self.database.db_request(req, path, name)
     
     
@@ -266,9 +294,9 @@ class StructureTable():
 
         
     def find_biggest_cell(self):
-        '''
+        """
         finds the structure with the biggest cell in the db
-        ''' 
+        """
         #req = '''SELECT max(a), max(b), max(c) FROM cell'''
         biggest = []
         req = '''SELECT Id, a, b, c FROM cell GROUP BY Id ORDER BY a, b, c ASC'''#.format(edge)
