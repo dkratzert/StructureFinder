@@ -31,12 +31,12 @@ This module defines the classes relating to 3D lattices.
 """
 
 
-__author__ = "Shyue Ping Ong, Michael Kocher, Daniel Kratzert"
+__author__ = "Shyue Ping Ong, Michael Kocher"
 __copyright__ = "Copyright 2011, The Materials Project"
 __version__ = "1.1"
 __maintainer__ = "Shyue Ping Ong"
 __email__ = "shyuep@gmail.com"
-__status__ = "Production"
+__status__ = "Production, modified by Daniel Kratzert"
 __date__ = "Sep 23, 2011"
 
 
@@ -130,6 +130,17 @@ class Lattice():
         if self._inv_matrix is None:
             self._inv_matrix = inv(self._matrix)
         return self._inv_matrix
+
+    @property
+    def niggli_cell(self):
+        """
+        Returns the niggli form of the unit cell as list.
+        Niggli form:    a.a =     63.19      b.b =     80.56      c.c =    129.38
+                        b.c =    -29.80      a.c =     -3.10      a.b =    -16.60
+        :return: Niggli cell: [a.a, b.b, c.c, b.c, a.c, a.b]
+        """
+        tensor = self.metric_tensor
+        return [tensor[0][0], tensor[1][1], tensor[2][2], tensor[1][2], tensor[0][2], tensor[0][1]]
 
     @property
     def metric_tensor(self):
@@ -268,6 +279,17 @@ class Lattice():
                                        ang[0], ang[1], ang[2])
 
     @staticmethod
+    def from_string(cell):
+        """
+        :type cell: str
+        :param cell: "a b c alpha beta gamma" 
+        :return: 
+        """
+        celltmp = cell.split()
+        celltmp = [float(i) for i in celltmp]
+        return Lattice.from_parameters(*celltmp)
+
+    @staticmethod
     def from_parameters(a, b, c, alpha, beta, gamma):
         """
         Create a Lattice using unit cell lengths and angles (in degrees).
@@ -283,7 +305,6 @@ class Lattice():
         Returns:
             Lattice with the specified lattice parameters.
         """
-
         alpha_r = math.radians(alpha)
         beta_r = math.radians(beta)
         gamma_r = math.radians(gamma)
@@ -298,31 +319,6 @@ class Lattice():
                     b * np.cos(alpha_r)]
         vector_c = [0.0, 0.0, float(c)]
         return Lattice([vector_a, vector_b, vector_c])
-
-    @classmethod
-    def from_dict(cls, d, fmt=None, **kwargs):
-        """
-        Create a Lattice from a dictionary containing the a, b, c, alpha, beta,
-        and gamma parameters if fmt is None.
-        
-        If fmt == "abivars", the function build a `Lattice` object from a
-        dictionary with the Abinit variables `acell` and `rprim` in Bohr.
-        If acell is not given, the Abinit default is used i.e. [1,1,1] Bohr
-
-        Example:
-
-            Lattice.from_dict(fmt="abivars", acell=3*[10], rprim=np.eye(3))
-        """
-        if fmt == "abivars":
-            from pymatgen.io.abinit.abiobjects import lattice_from_abivars
-            kwargs.update(d)
-            return lattice_from_abivars(cls=cls, **kwargs)
-
-        if "matrix" in d:
-            return cls(d["matrix"])
-        else:
-            return cls.from_parameters(d["a"], d["b"], d["c"],
-                                       d["alpha"], d["beta"], d["gamma"])
 
     @property
     def angles(self):
@@ -408,16 +404,8 @@ class Lattice():
             return self._reciprocal_lattice
         except AttributeError:
             v = np.linalg.inv(self._matrix).T
-            self._reciprocal_lattice = Lattice(v * 2 * math.pi)
+            self._reciprocal_lattice = Lattice(v)
             return self._reciprocal_lattice
-
-    @property
-    def reciprocal_lattice_crystallographic(self):
-        """
-        Returns the *crystallographic* reciprocal lattice, i.e., no factor of
-        2 * pi.
-        """
-        return Lattice(self.reciprocal_lattice.matrix / (2 * math.pi))
 
     @property
     def lll_matrix(self):
@@ -508,10 +496,12 @@ class Lattice():
 
         Yields:
             (aligned_lattice, rotation_matrix, scale_matrix) if a mapping is
-            found. aligned_lattice is a rotated version of other_lattice that
+            found. 
+            aligned_lattice is a rotated version of other_lattice that
             has the same lattice parameters, but which is aligned in the
             coordinate system of this lattice so that translational points
-            match up in 3D. rotation_matrix is the rotation that has to be
+            match up in 3D. 
+            rotation_matrix is the rotation that has to be
             applied to other_lattice to obtain aligned_lattice, i.e.,
             aligned_matrix = np.inner(other_lattice, rotation_matrix) and
             op = SymmOp.from_rotation_and_translation(rotation_matrix)
@@ -549,20 +539,16 @@ class Lattice():
 
         for i, all_j in enumerate(gammab):
             inds = np.logical_and(all_j[:, None],
-                                  np.logical_and(alphab,
-                                                 betab[i][None, :]))
+                                  np.logical_and(alphab, betab[i][None, :]))
             for j, k in np.argwhere(inds):
                 scale_m = np.array((f_a[i], f_b[j], f_c[k]), dtype=np.int)
                 if abs(np.linalg.det(scale_m)) < 1e-8:
                     continue
-
                 aligned_m = np.array((c_a[i], c_b[j], c_c[k]))
-
                 if skip_rotation_matrix:
                     rotation_m = None
                 else:
-                    rotation_m = np.linalg.solve(aligned_m,
-                                                 other_lattice.matrix)
+                    rotation_m = np.linalg.solve(aligned_m, other_lattice.matrix)
                 yield Lattice(aligned_m), rotation_m, scale_m
 
     def find_mapping(self, other_lattice, ltol=1e-5, atol=1,
@@ -581,14 +567,17 @@ class Lattice():
 
         Returns:
             (aligned_lattice, rotation_matrix, scale_matrix) if a mapping is
-            found. aligned_lattice is a rotated version of other_lattice that
+            found. 
+            aligned_lattice is a rotated version of other_lattice that
             has the same lattice parameters, but which is aligned in the
             coordinate system of this lattice so that translational points
-            match up in 3D. rotation_matrix is the rotation that has to be
+            match up in 3D. 
+            rotation_matrix is the rotation that has to be
             applied to other_lattice to obtain aligned_lattice, i.e.,
             aligned_matrix = np.inner(other_lattice, rotation_matrix) and
             op = SymmOp.from_rotation_and_translation(rotation_matrix)
             aligned_matrix = op.operate_multi(latt.matrix)
+            
             Finally, scale_matrix is the integer matrix that expresses
             aligned_matrix as a linear combination of this
             lattice, i.e., aligned_matrix = np.dot(scale_matrix, self.matrix)
@@ -600,11 +589,12 @@ class Lattice():
                 skip_rotation_matrix=skip_rotation_matrix):
             return x
 
+    '''
     def get_lll_reduced_lattice(self, delta=0.75):
         if delta not in self._lll_matrix_mappings:
             self._lll_matrix_mappings[delta] = self._calculate_lll()
         return Lattice(self._lll_matrix_mappings[delta][0])
-
+    '''
     def _calculate_lll(self, delta=0.75):
         """
         Performs a Lenstra-Lenstra-Lovasz lattice basis reduction to obtain a
@@ -623,20 +613,16 @@ class Lattice():
         # Transpose the lattice matrix first so that basis vectors are columns.
         # Makes life easier.
         a = self._matrix.copy().T
-
         b = np.zeros((3, 3))  # Vectors after the Gram-Schmidt process
         u = np.zeros((3, 3))  # Gram-Schmidt coeffieicnts
         m = np.zeros(3)  # These are the norm squared of each vec.
-
         b[:, 0] = a[:, 0]
         m[0] = dot(b[:, 0], b[:, 0])
         for i in range(1, 3):
             u[i, 0:i] = dot(a[:, i].T, b[:, 0:i]) / m[0:i]
             b[:, i] = a[:, i] - dot(b[:, 0:i], u[i, 0:i].T)
             m[i] = dot(b[:, i], b[:, i])
-
         k = 2
-
         mapping = np.identity(3, dtype=np.double)
         while k <= 3:
             # Size reduction.
@@ -651,7 +637,6 @@ class Lattice():
                     uu.append(1)
                     # Update the GS coefficients.
                     u[k - 1, 0:i] = u[k - 1, 0:i] - q * np.array(uu)
-
             # Check the Lovasz condition.
             if dot(b[:, k - 1], b[:, k - 1]) >=\
                     (delta - abs(u[k - 1, k - 2]) ** 2) *\
@@ -664,11 +649,9 @@ class Lattice():
                 v = a[:, k - 1].copy()
                 a[:, k - 1] = a[:, k - 2].copy()
                 a[:, k - 2] = v
-
                 v_m = mapping[:, k - 1].copy()
                 mapping[:, k - 1] = mapping[:, k - 2].copy()
                 mapping[:, k - 2] = v_m
-
                 # Update the Gram-Schmidt coefficients
                 for s in range(k - 1, k + 1):
                     u[s - 1, 0:(s - 1)] = dot(a[:, s - 1].T,
@@ -676,7 +659,6 @@ class Lattice():
                     b[:, s - 1] = a[:, s - 1] - dot(b[:, 0:(s - 1)],
                                                     u[s - 1, 0:(s - 1)].T)
                     m[s - 1] = dot(b[:, s - 1], b[:, s - 1])
-
                 if k > 2:
                     k -= 1
                 else:
@@ -685,7 +667,6 @@ class Lattice():
                     q = np.diag(m[(k - 2):k])
                     result = np.linalg.lstsq(q.T, p.T)[0].T
                     u[k:3, (k - 2):k] = result
-
         return a.T, mapping.T
 
     def get_lll_frac_coords(self, frac_coords):
@@ -694,7 +675,7 @@ class Lattice():
         fractional coordinates in the lll basis.
         """
         return np.dot(frac_coords, self.lll_inverse)
-
+    
     def get_frac_coords_from_lll(self, lll_frac_coords):
         """
         Given fractional coordinates in the lll basis, returns corresponding
@@ -922,7 +903,7 @@ class Lattice():
                 fcoords, dists, inds
         """
         # TODO: refactor to use lll matrix (nmax will be smaller)
-        recp_len = np.array(self.reciprocal_lattice.abc) / (2 * math.pi)
+        recp_len = np.array(self.reciprocal_lattice.abc)
         nmax = float(r) * recp_len + 0.01
 
         pcoords = self.get_fractional_coords(center)
@@ -990,54 +971,28 @@ if __name__ == '__main__':
     Niggli form:     a.a =     63.19      b.b =     80.56      c.c =    129.38
                      b.c =    -29.80      a.c =     -3.10      a.b =    -16.60
     '''
-    cell = "10.6456  11.0330  19.9214  90.000  98.938  90.000".split()
-    cell = map(float, cell)
-    cell2 = "10.6453   11.0332   19.9213   90.0100   98.9375   90.0150".split()
-    cell2 = [float(i) for i in cell2]
-
+    cell1 = "7.949    8.976   11.375  106.97   91.96  103.46"
     cell3 = [3.1457, 3.1457, 3.1541, 60.089, 60.0887, 60.104]
     cell4 = [3.1456, 3.1458, 3.1541, 90.089, 119.907, 119.898]
+    # cell 5 and 6 should be same:
+    cell5 = "3.1457 3.1457 3.1541 60.089 60.0887 60.104"
+    cell6 = "3.1456 3.1458 3.1541 90.089 119.907 119.89"
     #same:
     #1 [57.98, 57.98, 57.98, 92.02, 92.02, 92.02]
     #2 [80.36, 80.36, 99.44, 90, 90, 120]
     #3 [80.949, 80.572, 57.098, 90.0, 90.35, 90.0]
 
-    lattice3 = Lattice.from_parameters(*cell3)
-    #print(lattice3.get_niggli_reduced_lattice())
-    #print(lattice3.lengths_and_angles)
-    print('\n')
-    lattice4 = Lattice.from_parameters(*cell4)
-    #print(lattice4.get_niggli_reduced_lattice())
-    #print(lattice4, '##2##')
+    latt1 = Lattice.from_string(cell1)
+    latt1.get_niggli_reduced_lattice()
+    #print(latt1.niggli_cell)
 
-    map = lattice3.find_mapping(lattice4, ltol=0.00005, skip_rotation_matrix=False)
+    lattice5 = Lattice.from_string(cell5)
+    map = lattice5.find_mapping(Lattice.from_string(cell6), ltol=0.00005, skip_rotation_matrix=False)
     if map:
         print('gleich')
         print(map)
     else:
         print('ungleich')
-    #for i in map:
-    #    print(i)
-    #print('##', map)
 
-    sys.exit()
-    lattice = Lattice.from_parameters(*cell)
-    print(lattice.get_niggli_reduced_lattice())
-    print('\n')
-    print(lattice.get_lll_reduced_lattice().metric_tensor)
-    print('\n')
-    print(lattice.lengths_and_angles)
 
-    print('\nCell2:')
-    lattice2 = Lattice.from_parameters(*cell2)
-    print(lattice2.get_lll_reduced_lattice().metric_tensor)
-    print('\n')
-    print(lattice2.lengths_and_angles)
-
-    # have to create a second lattice:
-    #bigger = lattice.scale(750.34*2).get_lll_reduced_lattice().matrix
-    map = lattice.find_mapping(lattice2, ltol=0.0001)
-    print('##', map)
-    maps = lattice.find_mapping(lattice2, ltol=0.0001)
-    print('###', maps)
 
