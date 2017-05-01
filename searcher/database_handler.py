@@ -12,6 +12,8 @@ Created on 09.02.2015
 """
 import sys
 
+from pymatgen.core.lattice import Lattice
+
 __metaclass__ = type  # use new-style classes
 import sqlite3
 from sqlite3 import OperationalError
@@ -139,7 +141,8 @@ class DatabaseRequest():
         try:
             self.cur.execute(request, args)
             last_rowid = self.cur.lastrowid
-        except OperationalError:
+        except OperationalError as e:
+            print(e)
             return False
         rows = self.cur.fetchall()
         if not rows:
@@ -208,7 +211,15 @@ class StructureTable():
             structure.Id = {0}'''.format(structure_id)
         atomrows = self.database.db_request(req_atoms)
         return atomrows
-    
+
+    def get_cell_by_id(self, structure_id):
+        """
+        returns the cell of a res file in the db
+        """
+        req = '''SELECT a, b, c, alpha, beta, gamma FROM cell WHERE cellId = {0}'''.format(structure_id)
+        cell = self.database.db_request(req)
+        return cell
+
     def __contains__(self, str_id):
         '''
         return if db contains entry of id
@@ -301,9 +312,21 @@ class StructureTable():
         biggest = []
         req = '''SELECT Id, a, b, c FROM cell GROUP BY Id ORDER BY a, b, c ASC'''#.format(edge)
         result = self.database.db_request(req)
-        return result[-1]
+        if result:
+            return result[-1]
+        else:
+            return False
                   
             
             
-            
+if __name__ == '__main__':
+    s = StructureTable("../test.sqlite")
+    latt = Lattice.from_string("10 20 30 90 91 92")
+    for x in range(1000):
+        cell = s.get_cell_by_id(2)[0]
+        #print(cell)
+        m = latt.find_mapping(Lattice.from_parameters(*cell))
+        #print(m)
+    print("ready")
+
             
