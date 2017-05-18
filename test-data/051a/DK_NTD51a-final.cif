@@ -1,12 +1,11 @@
- 
-data_p21c 
+data_p21c
 
 
 _publ_contact_author               'Prof. Dr. Dietmar Stalke' 
 _publ_contact_author_email         dstalke@chemie.uni-goettingen.de 
   
 loop_ 
-_publ_author_name                  'N. Tölle, D. Kratzert, D. Stalke' 
+_publ_author_name                  'N. Toelle, D. Kratzert, D. Stalke'
 _journal_name_full                 '?' 
 _journal_volume                    '?' 
 _journal_page_first                '?' 
@@ -14,7 +13,7 @@ _journal_page_last                 '?'
 _journal_year                      '?' 
 _ccdc_journal_depnumber            '?' 
   
-_ccdc_compound_id                  'DK_NTD51a'  ;Nummer im Paper ;
+_ccdc_compound_id                  'DK_NTD51a'
  
 _audit_creation_method            SHELXL-97 
 _chemical_name_systematic 
