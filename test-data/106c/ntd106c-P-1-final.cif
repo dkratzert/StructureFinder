@@ -97,8 +97,8 @@ _computing_cell_refinement        'SAINT V7.61A'
 _computing_data_reduction         'SAINT V7.61A'
 _computing_structure_solution     'SHELXS-97 (Sheldrick, 2008)' 
 _computing_structure_refinement   'SHELXL-97 (Sheldrick, 2008)' 
-_computing_molecular_graphics     XSHELL in SHELXTL-97
-_computing_publication_material   XSHELL in SHELXTL-97
+_computing_molecular_graphics     'XSHELL in SHELXTL-97'
+_computing_publication_material   'XSHELL in SHELXTL-97'
  
 _refine_special_details 
 ; 

@@ -1,4 +1,4 @@
-'''
+"""
 Created on 09.02.2015
 
  ----------------------------------------------------------------------------
@@ -9,19 +9,18 @@ Created on 09.02.2015
 * ----------------------------------------------------------------------------
 
 @author: daniel
-'''
-
+"""
 import os
 import fnmatch as fn
 from searcher.cellpicker import get_res_cell
 import sys
 
 
-def create_file_list(searchpath='None', endings='res'):
-    '''
+def create_file_list(searchpath='None', endings='cif'):
+    """
     walks through the file system and collects cells from res/cif files
     into a database
-    '''
+    """
     if not os.path.isdir(searchpath):
         print('search path {0} not found!'.format(searchpath))
         sys.exit()
@@ -32,23 +31,34 @@ def create_file_list(searchpath='None', endings='res'):
 
     
 def filewalker(startdir, endings, add_excludes=[]):
-    '''
+    """
     walks through the filesystem starting from startdir and searches
     for files with ending endings.
-    '''
+    :type add_excludes: list
+    :type endings: str
+    :type startdir: str
+    """
     filelist = []
     excludes = ['.olex', 'dsrsaves']
     if add_excludes:
-        excludes.append(add_excludes)
+        excludes.extend(add_excludes)
     print('collecting files below '+startdir)
-    for root, dirs, files in os.walk(startdir):  # @UnusedVariable
-        for filen in files:
-            if fn.fnmatch(filen, '*.{0}'.format(endings)):
-                if os.stat(os.path.join(root, filen)).st_size == 0:
-                    continue
-                filelist.append([root, filen])
+
+    def scantree(path):
+        """Recursively yield DirEntry objects for given directory."""
+        for entry in os.scandir(path):
+            if entry.is_dir(follow_symlinks=False):
+                yield from scantree(entry.path)
             else:
-                continue
+                yield entry
+
+    for entry in scantree(startdir):
+        #if not entry.name.startswith('.') and entry.is_file():
+        #if entry.is_file():
+        if fn.fnmatch(entry.name, '*.{0}'.format(endings)):
+            filelist.append([entry.path, entry.name])
+        else:
+            continue
     return filelist
 
 

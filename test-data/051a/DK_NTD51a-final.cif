@@ -111,7 +111,7 @@ _diffrn_reflns_theta_min          1.94
 _diffrn_reflns_theta_max          25.35 
 _reflns_number_total              4228 
 _reflns_number_gt                 3846  
-_reflns_threshold_expression      >2sigma(I) 
+_reflns_threshold_expression      '>2sigma(I)'
  
 _computing_data_collection        'APEX2 v2.2-0' 
 _computing_cell_refinement        'SAINT V7.46A' 

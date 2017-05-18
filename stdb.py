@@ -70,25 +70,25 @@ class StartStructureDB(QMainWindow):
     def import_cif_dirs(self):
         #fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         # fname = "D:/GitHub/StructureDB/test-data"
-        fname = "/Users/daniel/GitHub/StructureDB/test-data"
+        fname = os.path.abspath("test-data")
         files = filecrawler.create_file_list(str(fname), endings='cif')
         self.ui.cifList_treeWidget.show()
         # TODO: implement multiple cells in one cif file:
         n = 1
-        for dir, file in files:
-            try:
-                cell = get_cif_cell(dir + os.path.sep + file)[0][1:]
-            except IndexError:
-                continue
-            self.structures.fill_structures_table(dir, file)
-            a = QTreeWidgetItem(self.ui.cifList_treeWidget)
-            a.setText(0, file)
-            a.setText(1, dir)
+        for dirn in files:
+            dirn = dirn[0]
             # print(get_cif_cell(dir+os.path.sep+file))
             # a.setText(1, ' '.join(map(str, get_res_cell(dir+os.path.sep+file))))
             # a.setText(2, ' '.join(map(str, get_cif_cell(dir+os.path.sep+file)[0][1:])))
             # print(n, get_cif_cell(dir+os.path.sep+file)[0][1:])
-            self.structures.fill_cell_table(n, get_cif_cell(dir + os.path.sep + file)[0][1:])
+            cell = get_cif_cell(dirn)[1:]
+            print(dirn)
+            if cell:
+                self.structures.fill_cell_table(n, cell)
+                self.structures.fill_structures_table(os.path.dirname(dirn), os.path.split(dirn)[-1])
+                a = QTreeWidgetItem(self.ui.cifList_treeWidget)
+                a.setText(0, os.path.split(dirn)[-1])
+                a.setText(1, dirn)
             n += 1
         for i, _ in enumerate(files):
             self.ui.cifList_treeWidget.resizeColumnToContents(i)
