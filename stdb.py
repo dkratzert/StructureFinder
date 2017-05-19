@@ -77,19 +77,21 @@ class StartStructureDB(QMainWindow):
         n = 1
         for dirn in files:
             dirn = dirn[0]
+            print(dirn)
             # print(get_cif_cell(dir+os.path.sep+file))
             # a.setText(1, ' '.join(map(str, get_res_cell(dir+os.path.sep+file))))
             # a.setText(2, ' '.join(map(str, get_cif_cell(dir+os.path.sep+file)[0][1:])))
             # print(n, get_cif_cell(dir+os.path.sep+file)[0][1:])
-            cell = get_cif_cell(dirn)[1:]
-            print(dirn)
+            with open(dirn, mode='r') as f:
+                cell = get_cif_cell(filename=f)[1:]
             if cell:
+                print(cell)
                 self.structures.fill_cell_table(n, cell)
                 self.structures.fill_structures_table(os.path.dirname(dirn), os.path.split(dirn)[-1])
                 a = QTreeWidgetItem(self.ui.cifList_treeWidget)
                 a.setText(0, os.path.split(dirn)[-1])
                 a.setText(1, dirn)
-            n += 1
+                n += 1
         for i, _ in enumerate(files):
             self.ui.cifList_treeWidget.resizeColumnToContents(i)
         self.ui.relocate_lineEdit.hide()

@@ -85,6 +85,12 @@ class DatabaseRequest():
                         alpha   FLOAT,
                         beta    FLOAT,
                         gamma   FLOAT,
+                        esda    FLOAT,
+                        esdb    FLOAT,
+                        esdc    FLOAT,
+                        esdalpha   FLOAT,
+                        esdbeta    FLOAT,
+                        esdgamma   FLOAT,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(cellId)
                         REFERENCES cell(Id)
@@ -221,9 +227,9 @@ class StructureTable():
         return cell
 
     def __contains__(self, str_id):
-        '''
+        """
         return if db contains entry of id
-        '''
+        """
         try:
             str_id = int(str_id)
         except(ValueError, TypeError):
@@ -235,43 +241,43 @@ class StructureTable():
     
     
     def has_index(self, Id, table='structure'):
-        '''
+        """
         Returns True if db has index Id
         :param Id: Id of the respective cell
         :type Id: int
         :rtype: bool
-        '''
+        """
         req = '''SELECT Id FROM {0} WHERE {1}.Id = {2}'''.format(table, table, Id)
         if self.database.db_request(req):
             return True
 
     def fill_structures_table(self, path, name, cell=None):
-        '''
+        """
         Fills a structure into the database.
         
-        '''
+        """
         req = '''
                 INSERT INTO measurement (name) VALUES(?)
                 INSERT INTO structure (path, name) VALUES(?, ?)
               '''
         return self.database.db_request(req, path, name)
-    
-    
+
     def fill_cell_table(self, structureId, cell):
-        '''
+        """
         fill the cell of structure(structureId) in the table
         cell = [a, b, c, alpha, beta, gamma]
-        '''
-        req = '''INSERT INTO cell (cellId, a, b, c, alpha, beta, gamma) 
-                    VALUES(?, ?, ?, ?, ?, ?, ?)'''
+        """
+        req = '''INSERT INTO cell (cellId, a, b, c, alpha, beta, gamma, 
+                                          esda, esdb, esdc, esdalpha, esdbeta, esdgamma) 
+                    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
         if self.database.db_request(req, structureId, cell[0], cell[1], cell[2],
                                     cell[3], cell[4], cell[5]):
             return True
     
     def find_cell_by_abc(self, a=False, b=False, c=False):
-        '''
+        """
         finds a cell
-        '''
+        """
         if a and not b and not c:    
             req = '''SELECT * FROM cell WHERE cell.a GLOB '{0}*' 
                     '''.format(a)

@@ -23,6 +23,7 @@ def get_cif_datablocks(filename):
     cif = CifFile.ReadCif(filename)
     return cif.visible_keys
 
+
 def get_cif_cell(filename):
     """
     """
@@ -34,12 +35,30 @@ def get_cif_cell(filename):
     a = cif[data].get('_cell_length_a')
     b = cif[data].get('_cell_length_b')
     c = cif[data].get('_cell_length_c')
-    alpha = cif[data].get('_cell_length_alpha')
-    beta = cif[data].get('_cell_length_beta')
-    gamma = cif[data].get('_cell_length_gamma')
+    alpha = cif[data].get('_cell_angle_alpha')
+    beta = cif[data].get('_cell_angle_beta')
+    gamma = cif[data].get('_cell_angle_gamma')
     return [data, a, b, c, alpha, beta, gamma]
 
 
+def get_error_from_value(value):
+    """ 
+    :type value: str
+    >>> get_error_from_value("0.0123 (23)")
+    '0.0023'
+    >>> get_error_from_value("0.0123(23)")
+    '0.0023'
+    >>> get_error_from_value('0.0123')
+    '0.0'
+    """
+    value = value.replace(" ", "")
+    if "(" in value:
+        spl = value.split("(")
+        val = spl[0].split('.')
+        err = spl[1].strip(")")
+        return val[0]+"."+"0"*(len(val[1])-len(err))+err
+    else:
+        return '0.0'
 
 def get_res_cell(filename):
     """
