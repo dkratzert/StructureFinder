@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
 
-from searcher.cellpicker import get_res_cell, get_cif_cell
+from searcher.cellpicker import get_res_cell, get_cif_cell, get_cif_cell_raw
 from searcher.database_handler import StructureTable, DatabaseRequest
 
 uic.compileUiDir('./')
@@ -100,7 +100,7 @@ class StartStructureDB(QMainWindow):
             path = os.path.dirname(dirn)
             structure_id = n
             with open(dirn, mode='r') as f:
-                cell = get_cif_cell(filename=f)[1:]
+                cell = get_cif_cell_raw(filename=f)[1:]
             if cell and filename and path:
                 print(cell, '##') #print(path, filename, structure_id)
                 measurement_id = self.structures.fill_measuremnts_table(filename, structure_id)
