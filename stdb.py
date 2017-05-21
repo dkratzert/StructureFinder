@@ -42,7 +42,6 @@ class StartStructureDB(QMainWindow):
         self.ui.properties_treeWidget.hide()
         self.ui.relocate_lineEdit.hide()
         self.dbfilename = 'test.sqlite'
-        self.strTree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         print(self.dbfilename)
         try:
             os.remove(self.dbfilename)
@@ -79,7 +78,10 @@ class StartStructureDB(QMainWindow):
         self.structures = StructureTable(self.dbfilename)
         self.ui.cifList_treeWidget.show()
         for i in self.structures:
-            self.strTree.setText(i[0], i[1])
+            strTree = QTreeWidgetItem(self.ui.cifList_treeWidget)
+            strTree.setText(0, i[1])
+            self.ui.cifList_treeWidget.resizeColumnToContents(0)
+            self.ui.cifList_treeWidget.resizeColumnToContents(1)
             print(i)
 
     def import_cif_dirs(self):
@@ -104,11 +106,12 @@ class StartStructureDB(QMainWindow):
                 measurement_id = self.structures.fill_measuremnts_table(filename, structure_id)
                 self.structures.fill_structures_table(path, filename, structure_id, measurement_id)
                 self.structures.fill_cell_table(structure_id, cell)
-                self.strTree.setText(0, filename)
-                self.strTree.setText(1, dirn)
+                strTree = QTreeWidgetItem(self.ui.cifList_treeWidget)
+                strTree.setText(0, filename)
+                strTree.setText(1, dirn)
                 n += 1
-        for i, _ in enumerate(files):
-            self.ui.cifList_treeWidget.resizeColumnToContents(i)
+                self.ui.cifList_treeWidget.resizeColumnToContents(0)
+                self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.ui.relocate_lineEdit.hide()
 
 
