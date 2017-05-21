@@ -136,10 +136,10 @@ class DatabaseRequest():
                     '''SELECT structure.cell FROM structure'''
         :type request: str
         """
-        print('-'*30, 'start')
-        print('request:', request)
-        print('args:', args)
-        print('_' * 30, 'end')
+        # print('-'*30, 'start')
+        # print('request:', request)
+        # print('args:', args)
+        # print('_' * 30, 'end')
         try:
             if isinstance(args[0], (list, tuple)):
                 args = args[0]
@@ -161,6 +161,11 @@ class DatabaseRequest():
         # commit is very slow:
         self.con.commit()
         self.con.close()
+
+    def commit_db(self, comment=""):
+        self.con.commit()
+        if comment:
+            print(comment)
 
 ##################################################################
 
@@ -193,7 +198,8 @@ class StructureTable():
         if rows:
             return len(rows)
         else:
-            raise IndexError('Could not determine database size')
+            return False
+            #raise IndexError('Could not determine database size')
 
     def __getitem__(self, str_id):
         try:
@@ -231,18 +237,21 @@ class StructureTable():
         """
         returns all fragment names in the database, sorted by name
         """
-        req = '''SELECT structure.Id, structure.name FROM structure'''
-        rows = [list(i) for i in self.database.db_request(req)]
+        req = '''SELECT structure.Id, structure.name, structure.path FROM structure'''
+        try:
+            rows = [list(i) for i in self.database.db_request(req)]
+        except TypeError:
+            return []
         return rows
 
     def get_filepath(self, structure_id):
         """
         returns the path of a res file in the db
         """
-        req_atoms = '''SELECT structure.path, structure.name FROM structure WHERE
+        req_path = '''SELECT structure.name, structure.path FROM structure WHERE
             structure.Id = {0}'''.format(structure_id)
-        atomrows = self.database.db_request(req_atoms)
-        return atomrows
+        path = self.database.db_request(req_path)[0]
+        return path
 
     def get_cell_by_id(self, structure_id):
         """

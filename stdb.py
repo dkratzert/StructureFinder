@@ -19,8 +19,10 @@ from stdb_main import Ui_stdbMainwindow
 
 
 # TODO:
-# - store data from found files in DB
 # - more elaborate check if all data is there for the db
+# - make progress bar
+# - get atoms from cif
+# - store atoms in db
 # - structure code
 # - make file type more flexible. handle .res and .cif equally
 # - group structures in measurements
@@ -77,17 +79,22 @@ class StartStructureDB(QMainWindow):
         self.dbfilename = fname[0]
         self.structures = StructureTable(self.dbfilename)
         self.ui.cifList_treeWidget.show()
-        for i in self.structures:
-            strTree = QTreeWidgetItem(self.ui.cifList_treeWidget)
-            strTree.setText(0, i[1])
-            self.ui.cifList_treeWidget.resizeColumnToContents(0)
-            self.ui.cifList_treeWidget.resizeColumnToContents(1)
-            print(i)
+        if not self.structures:
+            return False
+        for i in self.structures.get_all_structure_names():
+            #print(i)
+            str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
+            str_tree.setText(0, i[1])  # name
+            str_tree.setText(1, i[2])  # path
+            #if len(i[1]) > 10:
+        self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        self.ui.cifList_treeWidget.resizeColumnToContents(1)
+
 
     def import_cif_dirs(self):
-        #fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         # fname = "D:/GitHub/StructureDB/test-data"
-        fname = os.path.abspath("/Users/daniel/Downloads")
+        #fname = os.path.abspath("/Users/daniel/Downloads")
         #fname = os.path.abspath("test-data")
         files = filecrawler.create_file_list(str(fname), endings='cif')
         self.ui.cifList_treeWidget.show()
@@ -95,14 +102,18 @@ class StartStructureDB(QMainWindow):
         n = 1
         for dirn in files:
             dirn = dirn[0]
-            print(dirn, '#')
             filename = os.path.split(dirn)[-1]
             path = os.path.dirname(dirn)
             structure_id = n
             with open(dirn, mode='r') as f:
-                cell = get_cif_cell_raw(filename=f)[1:]
+                #print(filename)
+                try:
+                    cell = get_cif_cell_raw(filename=f)[1:]
+                except (TypeError, IndexError):
+                    print("No cell found. Trying next file...")
+                    continue
             if cell and filename and path:
-                print(cell, '##') #print(path, filename, structure_id)
+                #print(cell, '##') #print(path, filename, structure_id)
                 measurement_id = self.structures.fill_measuremnts_table(filename, structure_id)
                 self.structures.fill_structures_table(path, filename, structure_id, measurement_id)
                 self.structures.fill_cell_table(structure_id, cell)
@@ -110,9 +121,10 @@ class StartStructureDB(QMainWindow):
                 strTree.setText(0, filename)
                 strTree.setText(1, dirn)
                 n += 1
-                self.ui.cifList_treeWidget.resizeColumnToContents(0)
-                self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.ui.relocate_lineEdit.hide()
+        self.structures.database.commit_db("Committed")
 
 
 if __name__ == "__main__":

@@ -34,20 +34,77 @@ def get_cif_cell_raw(filename):
     _cell_angle_alpha                 90
     _cell_angle_beta                  107.055(5)
     _cell_angle_gamma                 90
+    and the respective error values
     ...
     _shelx_hkl_file
     ;
     hkl data
     ;
+    Attention: This implementation currently uses only the first cell of a cif file
     """
-    # list of 1+n cells, because we can have more than one cif in a file. n = 0-inf:
-    cells = []
     name, a, b, c, alpha, beta, gamma, esda, esdb, esdc, esdalpha, esdbeta, esdgamma = \
         None, None, None, None, None, None, None, None, None, None, None, None, None
     filename = os.path.abspath(filename.name)
-    with open(filename) as f:
-        with codecs.open(filename, "r", encoding='ascii', errors='ignore') as f:
-            cell = [None,  # 0 name
+    cell = [None,  # 0 name
+            None,  # 1 a
+            None,  # 2 b
+            None,  # 3 c
+            None,  # 4 alpha
+            None,  # 5 beta
+            None,  # 6 gamma
+            None,  # 7 esda
+            None,  # 8 esdb
+            None,  # 9 esdc
+            None,  # 10 esdalpha
+            None,  # 11 esdbeta
+            None]  # 12 esdgamma
+    with codecs.open(filename, "r", encoding='ascii', errors='ignore') as f:
+        for line in f:
+            if line.startswith('data_'):
+                name = line.split('_')[1].strip('\n')
+                cell[0] = name
+            if line.startswith('_cell_length_a'):
+                a = line.split()[1].split('(')[0]
+                cell[1] = float(a)
+                cell[7] = get_error_from_value(a)
+            if line.startswith('_cell_length_b'):
+                b = line.split()[1].split('(')[0]
+                cell[2] = float(b)
+                cell[8] = get_error_from_value(b)
+            if line.startswith('_cell_length_c'):
+                c = line.split()[1].split('(')[0]
+                cell[3] = float(c)
+                cell[9] = get_error_from_value(c)
+            if line.startswith('_cell_angle_alpha'):
+                alpha = line.split()[1].split('(')[0]
+                cell[4] = float(alpha)
+                cell[10] = get_error_from_value(alpha)
+            if line.startswith('_cell_angle_beta'):
+                beta = line.split()[1].split('(')[0]
+                cell[5] = float(beta)
+                cell[11] = get_error_from_value(beta)
+            if line.startswith('_cell_angle_gamma'):
+                gamma = line.split()[1].split('(')[0]
+                cell[6] = float(gamma)
+                cell[12] = get_error_from_value(gamma)
+            #if line.startswith("_shelx_hkl_file"):
+            #    return cell
+            if all(cell[n] for n, i in enumerate(cell)):
+                # contains 1+n cells. n=0-inf
+                return cell
+    return []
+
+
+class Cif():
+    def __init__(self, file):
+        """
+        A cif file parsing object
+        :param file: input filename object
+        :type file: object
+        It should return a dictionary where all entrys of a cif file are acessible through their cif names.
+        """
+        self.file = file
+        self.cell = [None,  # 0 name
                     None,  # 1 a
                     None,  # 2 b
                     None,  # 3 c
@@ -60,40 +117,43 @@ def get_cif_cell_raw(filename):
                     None,  # 10 esdalpha
                     None,  # 11 esdbeta
                     None]  # 12 esdgamma
-            for line in f:
-                if line.startswith('data_'):
-                    name = line.split('_')[1].strip('\n')
-                    cell[0] = name
-                if line.startswith('_cell_length_a'):
-                    a = line.split()[1].split('(')[0]
-                    cell[1] = float(a)
-                    cell[7] = get_error_from_value(a)
-                if line.startswith('_cell_length_b'):
-                    b = line.split()[1].split('(')[0]
-                    cell[2] = float(b)
-                    cell[8] = get_error_from_value(b)
-                if line.startswith('_cell_length_c'):
-                    c = line.split()[1].split('(')[0]
-                    cell[3] = float(c)
-                    cell[9] = get_error_from_value(c)
-                if line.startswith('_cell_angle_alpha'):
-                    alpha = line.split()[1].split('(')[0]
-                    cell[4] = float(alpha)
-                    cell[10] = get_error_from_value(alpha)
-                if line.startswith('_cell_angle_beta'):
-                    beta = line.split()[1].split('(')[0]
-                    cell[5] = float(beta)
-                    cell[11] = get_error_from_value(beta)
-                if line.startswith('_cell_angle_gamma'):
-                    gamma = line.split()[1].split('(')[0]
-                    cell[6] = float(gamma)
-                    cell[12] = get_error_from_value(gamma)
-    return cell
-                #if all(cell[n] for n, i in enumerate(cell)):
-                #    # contains 1+n cells. n=0-inf
-                #    cells.append(cell[:])
-                #    cell = [None, None, None, None, None, None, None, None, None, None, None, None]
-    #return cells
+        essentials = ('name', 'a', 'b', 'c', 'alpha', 'beta', 'gamma',
+                      'esda', 'esdb', 'esdc', 'esdalpha', 'esdbeta', 'esdgamma')
+        self.parmeters = [None,  # 0 _diffrn_ambient_temperature, Temperature
+                          None,  #
+                         ]
+    def parsefile(self):
+        for line in self.file:
+            if line.startswith('data_'):
+                name = line.split('_')[1].strip('\n')
+                self.cell[0] = name
+            if line.startswith('_cell_length_a'):
+                a = line.split()[1].split('(')[0]
+                self.cell[1] = float(a)
+                self.cell[7] = get_error_from_value(a)
+            if line.startswith('_cell_length_b'):
+                b = line.split()[1].split('(')[0]
+                self.cell[2] = float(b)
+                self.cell[8] = get_error_from_value(b)
+            if line.startswith('_cell_length_c'):
+                c = line.split()[1].split('(')[0]
+                self.cell[3] = float(c)
+                self.cell[9] = get_error_from_value(c)
+            if line.startswith('_cell_angle_alpha'):
+                alpha = line.split()[1].split('(')[0]
+                self.cell[4] = float(alpha)
+                self.cell[10] = get_error_from_value(alpha)
+            if line.startswith('_cell_angle_beta'):
+                beta = line.split()[1].split('(')[0]
+                self.cell[5] = float(beta)
+                self.cell[11] = get_error_from_value(beta)
+            if line.startswith('_cell_angle_gamma'):
+                gamma = line.split()[1].split('(')[0]
+                self.cell[6] = float(gamma)
+                self.cell[12] = get_error_from_value(gamma)
+            if line.startswith('_diffrn_ambient_temperature'):
+                pass
+
 
 def get_cif_cell(filename):
     """

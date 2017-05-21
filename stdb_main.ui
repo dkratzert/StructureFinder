@@ -204,8 +204,14 @@
               <property name="sizePolicy">
                <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
                 <horstretch>6</horstretch>
-                <verstretch>6</verstretch>
+                <verstretch>4</verstretch>
                </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>288</height>
+               </size>
               </property>
               <property name="verticalScrollBarPolicy">
                <enum>Qt::ScrollBarAsNeeded</enum>
@@ -230,17 +236,151 @@
             </item>
             <item>
              <widget class="QTreeWidget" name="properties_treeWidget">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>5</verstretch>
+               </sizepolicy>
+              </property>
               <column>
                <property name="text">
-                <string notr="true">1</string>
+                <string>key</string>
                </property>
               </column>
+              <column>
+               <property name="text">
+                <string>value</string>
+               </property>
+              </column>
+              <item>
+               <property name="text">
+                <string>Space Group</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Unit Cell</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>a</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>b</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>c</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>alpha</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>beta</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>gamma</string>
+                </property>
+               </item>
+              </item>
+              <item>
+               <property name="text">
+                <string>Temperature</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Sum Formula</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Z</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>R1</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>I&gt;2s</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>All Refl.</string>
+                </property>
+               </item>
+              </item>
+              <item>
+               <property name="text">
+                <string>wR2</string>
+               </property>
+               <item>
+                <property name="text">
+                 <string>All Refl.</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>I&gt;2s</string>
+                </property>
+               </item>
+              </item>
+              <item>
+               <property name="text">
+                <string>Goof</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Max. Shift</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Peak</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Hole</string>
+               </property>
+              </item>
              </widget>
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="refinement_edit_page"/>
-          <widget class="QWidget" name="stackedWidgetPage2"/>
+          <widget class="QWidget" name="refinement_edit_page">
+           <widget class="QOpenGLWidget" name="moleculeGLWidget">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>721</width>
+              <height>541</height>
+             </rect>
+            </property>
+           </widget>
+          </widget>
+          <widget class="QWidget" name="stackedWidgetPage2">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
          </widget>
         </item>
        </layout>
