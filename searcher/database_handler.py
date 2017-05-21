@@ -257,8 +257,10 @@ class StructureTable():
         """
         returns the cell of a res file in the db
         """
+        if not structure_id:
+            return False
         req = '''SELECT a, b, c, alpha, beta, gamma FROM cell WHERE cellId = {0}'''.format(structure_id)
-        cell = self.database.db_request(req)
+        cell = self.database.db_request(req)[0]
         return cell
 
     def __contains__(self, str_id):

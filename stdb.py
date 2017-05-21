@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 import sys
 
+import PyQt5
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QFileDialog
@@ -20,7 +21,8 @@ from stdb_main import Ui_stdbMainwindow
 
 # TODO:
 # - more elaborate check if all data is there for the db
-# - make progress bar
+# - make progress bar for indexer and file opener
+# - make text fields in properties widget. not enerving QTreewidget
 # - get atoms from cif
 # - store atoms in db
 # - structure code
@@ -42,6 +44,7 @@ class StartStructureDB(QMainWindow):
         self.statusBar().showMessage('Ready')
         self.ui.cifList_treeWidget.hide()
         self.ui.properties_treeWidget.hide()
+        self.ui.cifList_treeWidget.hideColumn(2)
         self.ui.relocate_lineEdit.hide()
         self.dbfilename = 'test.sqlite'
         print(self.dbfilename)
@@ -60,14 +63,17 @@ class StartStructureDB(QMainWindow):
         #self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
         self.ui.cifList_treeWidget.clicked.connect(self.show_properties)
         # for later use to implement relocation of whole database:
+        # das brauch ich nicht:
         # self.ui.cifList_treeWidget.doubleClicked.connect(self.relocate)
+        #self.ui.cifList_treeWidget.doubleClicked.connect(self.show_properties)
 
-    def show_properties(self, str):
+    def show_properties(self, item):
         """
         This slot show the properties of a cif file in the properties widget
         """
         self.ui.properties_treeWidget.show()
-        print(str)
+        cell = self.structures.get_cell_by_id(item.sibling(item.row(), 2).data())
+        print(cell)
 
     def relocate(self):
         self.ui.relocate_lineEdit.show()
@@ -86,6 +92,7 @@ class StartStructureDB(QMainWindow):
             str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
             str_tree.setText(0, i[1])  # name
             str_tree.setText(1, i[2])  # path
+            str_tree.setData(2, 0, i[0])  # id
             #if len(i[1]) > 10:
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.ui.cifList_treeWidget.resizeColumnToContents(1)
@@ -115,7 +122,6 @@ class StartStructureDB(QMainWindow):
                     print("No cell found. Trying next file...")
                     continue
             if cell and filename and path:
-                #print(cell, '##') #print(path, filename, structure_id)
                 measurement_id = self.structures.fill_measuremnts_table(filename, structure_id)
                 self.structures.fill_structures_table(path, filename, structure_id, measurement_id)
                 self.structures.fill_cell_table(structure_id, cell)

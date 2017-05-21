@@ -216,6 +216,7 @@ class Ui_stdbMainwindow(object):
         self.cifList_treeWidget.setSortingEnabled(True)
         self.cifList_treeWidget.headerItem().setText(0, _translate("stdbMainwindow", "file"))
         self.cifList_treeWidget.headerItem().setText(1, _translate("stdbMainwindow", "dir"))
+        self.cifList_treeWidget.headerItem().setText(2, _translate("stdbMainwindow", "Id"))
         self.properties_treeWidget.headerItem().setText(0, _translate("stdbMainwindow", "key"))
         self.properties_treeWidget.headerItem().setText(1, _translate("stdbMainwindow", "value"))
         __sortingEnabled = self.properties_treeWidget.isSortingEnabled()

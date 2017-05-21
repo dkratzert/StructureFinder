@@ -232,6 +232,11 @@
                 <string>dir</string>
                </property>
               </column>
+              <column>
+               <property name="text">
+                <string>Id</string>
+               </property>
+              </column>
              </widget>
             </item>
             <item>
