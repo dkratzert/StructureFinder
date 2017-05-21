@@ -49,12 +49,15 @@ def get_cif_cell(filename):
     esdalpha = get_error_from_value(alpha)
     esdbeta = get_error_from_value(beta)
     esdgamma = get_error_from_value(gamma)
-    a = a.split("(")[0].strip()
-    b = b.split("(")[0].strip()
-    c = c.split("(")[0].strip()
-    alpha = alpha.split("(")[0].strip()
-    beta = beta.split("(")[0].strip()
-    gamma = gamma.split("(")[0].strip()
+    try:
+        a = a.split("(")[0].strip()
+        b = b.split("(")[0].strip()
+        c = c.split("(")[0].strip()
+        alpha = alpha.split("(")[0].strip()
+        beta = beta.split("(")[0].strip()
+        gamma = gamma.split("(")[0].strip()
+    except AttributeError:
+        pass
     return [data, a, b, c, alpha, beta, gamma, esda, esdb, esdc, esdalpha, esdbeta, esdgamma]
 
 

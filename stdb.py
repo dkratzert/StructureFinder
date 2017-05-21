@@ -71,8 +71,9 @@ class StartStructureDB(QMainWindow):
         print(fname)
 
     def import_cif_dirs(self):
-        fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        #fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         # fname = "D:/GitHub/StructureDB/test-data"
+        fname = os.path.abspath("/Users/daniel")
         #fname = os.path.abspath("test-data")
         files = filecrawler.create_file_list(str(fname), endings='cif')
         self.ui.cifList_treeWidget.show()
@@ -83,14 +84,15 @@ class StartStructureDB(QMainWindow):
             print(dirn, '#')
             filename = os.path.split(dirn)[-1]
             path = os.path.dirname(dirn)
-            structureId = n
+            structure_id = n
             with open(dirn, mode='r') as f:
                 cell = get_cif_cell(filename=f)[1:]
-            if cell:
+            if cell and filename and path:
                 print(cell, '##')
-                self.structures.fill_measuremnts_table(filename, n)
-                self.structures.fill_structures_table(path, filename, n)
-                self.structures.fill_cell_table(n, cell)
+                #print(path, filename, structure_id)
+                mid = self.structures.fill_measuremnts_table(filename, structure_id)
+                self.structures.fill_structures_table(path, filename, structure_id, mid)
+                self.structures.fill_cell_table(structure_id, cell)
                 a = QTreeWidgetItem(self.ui.cifList_treeWidget)
                 a.setText(0, os.path.split(dirn)[-1])
                 a.setText(1, dirn)

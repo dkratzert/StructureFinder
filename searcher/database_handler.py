@@ -252,15 +252,15 @@ class StructureTable():
         if self.database.db_request(req):
             return True
 
-    def fill_structures_table(self, path, name, structure_id):
+    def fill_structures_table(self, path, name, structure_id, measurement_id):
         """
         Fills a structure into the database.
         
         """
         req = '''
-              INSERT INTO structure (Id, name, path) VALUES(?, ?, ?)
+              INSERT INTO structure (Id, measurement, name, path) VALUES(?, ?, ?, ?)
               '''
-        return self.database.db_request(req, structure_id, name, path)
+        return self.database.db_request(req, structure_id, measurement_id, name, path)
 
     def fill_measuremnts_table(self, name, structure_id):
         """
