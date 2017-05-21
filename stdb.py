@@ -96,6 +96,8 @@ class StartStructureDB(QMainWindow):
         # fname = "D:/GitHub/StructureDB/test-data"
         #fname = os.path.abspath("/Users/daniel/Downloads")
         #fname = os.path.abspath("test-data")
+        if not fname:
+            return False
         files = filecrawler.create_file_list(str(fname), endings='cif')
         self.ui.cifList_treeWidget.show()
         # TODO: implement multiple cells in one cif file:
