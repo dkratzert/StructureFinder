@@ -36,9 +36,9 @@ class DatabaseRequest():
             self.cur = self.con.cursor()
 
     def initialize_db(self):
-        '''
+        """
         initializtes the db
-        '''
+        """
         #self.con.execute("PRAGMA foreign_keys = ON")
         self.cur.execute("DROP TABLE IF EXISTS structure")
         try:
@@ -119,26 +119,27 @@ class DatabaseRequest():
                     )
         
     def db_fetchone(self, request):
-        '''
-        
-        '''
-
+        """
+        fetches one db entry
+        """
         self.cur.execute(request)
-
         row = self.cur.fetchone()
         return row
-    
-    
+
     def db_request(self, request, *args):
-        '''
+        """
         Performs a SQLite3 database request with "request" and optional arguments
         to insert parameters via "?" into the database request.
         A push request will return the last row-Id.
         A pull request will return the requested rows
         :param request: sqlite database request like:
-                    """SELECT structure.cell FROM structure"""
+                    '''SELECT structure.cell FROM structure'''
         :type request: str
-        '''
+        """
+        print('-'*30, 'start')
+        print('request:', request)
+        print('args:', args)
+        print('_' * 30, 'end')
         try:
             if isinstance(args[0], (list, tuple)):
                 args = args[0]
@@ -168,32 +169,31 @@ class DatabaseRequest():
 
 
 class StructureTable():
-    '''
+    """
     handles structure in and output from the database
-    '''
+    """
 
     def __init__(self, dbfile):
-        '''
+        """
         Class to modify the database tables of the cell database in "dbfile"
         :param dbfile: database file path
         :type dbfile: str
-        '''
+        """
         self.database = DatabaseRequest(dbfile)
 
     def __len__(self):
-        '''
+        """
         Called to implement the built-in function len().
         Should return the number of database entrys.
         
         :rtype: int
-        '''
+        """
         req = '''SELECT structure.Id FROM structure'''
         rows = self.database.db_request(req)
         if rows:
             return len(rows)
         else:
             raise IndexError('Could not determine database size')
-
 
     def __getitem__(self, str_id):
         try:
@@ -210,9 +210,9 @@ class StructureTable():
         #    raise IndexError('Database entry not found.')
     
     def get_filepath(self, structure_id):
-        '''
+        """
         returns the path of a res file in the db
-        '''
+        """
         req_atoms = '''SELECT structure.path, structure.name FROM structure WHERE
             structure.Id = {0}'''.format(structure_id)
         atomrows = self.database.db_request(req_atoms)
@@ -238,11 +238,12 @@ class StructureTable():
             return True
         else:
             return False
-    
-    
+
     def has_index(self, Id, table='structure'):
         """
         Returns True if db has index Id
+        :param table: which db table to query
+        :type table: str
         :param Id: Id of the respective cell
         :type Id: int
         :rtype: bool
@@ -251,27 +252,35 @@ class StructureTable():
         if self.database.db_request(req):
             return True
 
-    def fill_structures_table(self, path, name, cell=None):
+    def fill_structures_table(self, path, name, structure_id):
         """
         Fills a structure into the database.
         
         """
         req = '''
-                INSERT INTO measurement (name) VALUES(?)
-                INSERT INTO structure (path, name) VALUES(?, ?)
+              INSERT INTO structure (Id, name, path) VALUES(?, ?, ?)
               '''
-        return self.database.db_request(req, path, name)
+        return self.database.db_request(req, structure_id, name, path)
 
-    def fill_cell_table(self, structureId, cell):
+    def fill_measuremnts_table(self, name, structure_id):
+        """
+        Fills a measurements into the database.
+
+        """
+        req = '''
+              INSERT INTO measurement (Id, name) VALUES(?, ?)
+              '''
+        return self.database.db_request(req, structure_id, name)
+
+    def fill_cell_table(self, structure_id, cell):
         """
         fill the cell of structure(structureId) in the table
         cell = [a, b, c, alpha, beta, gamma]
         """
         req = '''INSERT INTO cell (cellId, a, b, c, alpha, beta, gamma, 
-                                          esda, esdb, esdc, esdalpha, esdbeta, esdgamma) 
-                    VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-        if self.database.db_request(req, structureId, cell[0], cell[1], cell[2],
-                                    cell[3], cell[4], cell[5]):
+                                   esda, esdb, esdc, esdalpha, esdbeta, esdgamma) 
+                            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        if self.database.db_request(req, structure_id, *cell):
             return True
     
     def find_cell_by_abc(self, a=False, b=False, c=False):
@@ -309,7 +318,6 @@ class StructureTable():
             sys.exit()
         return self.database.db_request(req)
 
-        
     def find_biggest_cell(self):
         """
         finds the structure with the biggest cell in the db
@@ -335,4 +343,3 @@ if __name__ == '__main__':
         #print(m)
     print("ready")
 
-            

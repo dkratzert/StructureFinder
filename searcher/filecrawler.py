@@ -26,10 +26,10 @@ def create_file_list(searchpath='None', endings='cif'):
         sys.exit()
     print('collecting files...')
     res = filewalker(searchpath, endings)
+    #res = filewalker_walk(searchpath, endings)
     print('ready')
     return res
 
-    
 def filewalker(startdir, endings, add_excludes=[]):
     """
     walks through the filesystem starting from startdir and searches
@@ -39,10 +39,11 @@ def filewalker(startdir, endings, add_excludes=[]):
     :type startdir: str
     """
     filelist = []
+    # TODO: use excludes:
     excludes = ['.olex', 'dsrsaves']
     if add_excludes:
         excludes.extend(add_excludes)
-    print('collecting files below '+startdir)
+    print('collecting files below ' + startdir)
 
     def scantree(path):
         """Recursively yield DirEntry objects for given directory."""
@@ -53,14 +54,36 @@ def filewalker(startdir, endings, add_excludes=[]):
                 yield entry
 
     for entry in scantree(startdir):
-        #if not entry.name.startswith('.') and entry.is_file():
-        #if entry.is_file():
+        # if not entry.name.startswith('.') and entry.is_file():
+        # if entry.is_file():
         if fn.fnmatch(entry.name, '*.{0}'.format(endings)):
             filelist.append([entry.path, entry.name])
         else:
             continue
     return filelist
 
+def filewalker_walk(startdir, endings, add_excludes=[]):
+    """
+    walks through the filesystem starting from startdir and searches
+    for files with ending endings.
+    """
+    filelist = []
+    excludes = ['.olex', 'dsrsaves']
+    if add_excludes:
+        excludes.extend(add_excludes)
+    print('collecting files below ' + startdir)
+    for root, dirs, files in os.walk(startdir):  # @UnusedVariable
+        for num, filen in enumerate(files):
+            if fn.fnmatch(filen, '*.{0}'.format(endings)):
+                if os.stat(os.path.join(root, filen)).st_size == 0:
+                    continue
+                filelist.append([root, filen])
+            else:
+                continue
+            # TODO:
+            #if num%100:
+            #    return filelist
+    return filelist
 
 def create_cells_table(structures):
     print('filling cells into table...')

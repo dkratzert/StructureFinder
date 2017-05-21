@@ -29,16 +29,33 @@ def get_cif_cell(filename):
     """
     try:
         cif = CifFile.ReadCif(filename)
-    except CifFile.StarFile.StarError:
+    except (CifFile.StarFile.StarError, UnicodeDecodeError):
+        print("Could not parse cif file...")
         return []
-    data = cif.visible_keys[0]
+    try:
+        data = cif.visible_keys[0]
+    except AttributeError:
+        print("Could not parse cif file....")
+        return []
     a = cif[data].get('_cell_length_a')
     b = cif[data].get('_cell_length_b')
     c = cif[data].get('_cell_length_c')
     alpha = cif[data].get('_cell_angle_alpha')
     beta = cif[data].get('_cell_angle_beta')
     gamma = cif[data].get('_cell_angle_gamma')
-    return [data, a, b, c, alpha, beta, gamma]
+    esda = get_error_from_value(a)
+    esdb = get_error_from_value(b)
+    esdc = get_error_from_value(c)
+    esdalpha = get_error_from_value(alpha)
+    esdbeta = get_error_from_value(beta)
+    esdgamma = get_error_from_value(gamma)
+    a = a.split("(")[0].strip()
+    b = b.split("(")[0].strip()
+    c = c.split("(")[0].strip()
+    alpha = alpha.split("(")[0].strip()
+    beta = beta.split("(")[0].strip()
+    gamma = gamma.split("(")[0].strip()
+    return [data, a, b, c, alpha, beta, gamma, esda, esdb, esdc, esdalpha, esdbeta, esdgamma]
 
 
 def get_error_from_value(value):
@@ -51,7 +68,10 @@ def get_error_from_value(value):
     >>> get_error_from_value('0.0123')
     '0.0'
     """
-    value = value.replace(" ", "")
+    try:
+        value = value.replace(" ", "")
+    except AttributeError:
+        return "0.0"
     if "(" in value:
         spl = value.split("(")
         val = spl[0].split('.')

@@ -39,7 +39,10 @@ class StartStructureDB(QMainWindow):
         self.ui.relocate_lineEdit.hide()
         self.dbfilename = 'test.sqlite'
         print(self.dbfilename)
-        os.remove(self.dbfilename)
+        try:
+            os.remove(self.dbfilename)
+        except:
+            pass
         self.structures = StructureTable(self.dbfilename)
         self.db = DatabaseRequest(self.dbfilename)
         self.db.initialize_db()
@@ -68,26 +71,26 @@ class StartStructureDB(QMainWindow):
         print(fname)
 
     def import_cif_dirs(self):
-        #fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         # fname = "D:/GitHub/StructureDB/test-data"
-        fname = os.path.abspath("test-data")
+        #fname = os.path.abspath("test-data")
         files = filecrawler.create_file_list(str(fname), endings='cif')
         self.ui.cifList_treeWidget.show()
         # TODO: implement multiple cells in one cif file:
         n = 1
         for dirn in files:
             dirn = dirn[0]
-            print(dirn)
-            # print(get_cif_cell(dir+os.path.sep+file))
-            # a.setText(1, ' '.join(map(str, get_res_cell(dir+os.path.sep+file))))
-            # a.setText(2, ' '.join(map(str, get_cif_cell(dir+os.path.sep+file)[0][1:])))
-            # print(n, get_cif_cell(dir+os.path.sep+file)[0][1:])
+            print(dirn, '#')
+            filename = os.path.split(dirn)[-1]
+            path = os.path.dirname(dirn)
+            structureId = n
             with open(dirn, mode='r') as f:
                 cell = get_cif_cell(filename=f)[1:]
             if cell:
-                print(cell)
+                print(cell, '##')
+                self.structures.fill_measuremnts_table(filename, n)
+                self.structures.fill_structures_table(path, filename, n)
                 self.structures.fill_cell_table(n, cell)
-                self.structures.fill_structures_table(os.path.dirname(dirn), os.path.split(dirn)[-1])
                 a = QTreeWidgetItem(self.ui.cifList_treeWidget)
                 a.setText(0, os.path.split(dirn)[-1])
                 a.setText(1, dirn)
