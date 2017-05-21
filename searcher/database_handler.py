@@ -208,7 +208,33 @@ class StructureTable():
             return found
         #else:
         #    raise IndexError('Database entry not found.')
-    
+
+    def __iter__(self):
+        """
+        This method is called when an iterator is required for FragmentTable.
+        Returns the Id and the Name as tuple.
+  
+        >>> dbfile = 'test-data/test.sqlite'
+        >>> db = FragmentTable(dbfile)
+        >>> for num, i in enumerate(db):
+        ...   print(i)
+        ...   if num > 1:
+        ...     break
+        """
+        all_structures = self.get_all_structure_names()
+        if all_structures:
+            return iter(all_structures)
+        else:
+            return False
+
+    def get_all_structure_names(self):
+        """
+        returns all fragment names in the database, sorted by name
+        """
+        req = '''SELECT structure.Id, structure.name FROM structure'''
+        rows = [list(i) for i in self.database.db_request(req)]
+        return rows
+
     def get_filepath(self, structure_id):
         """
         returns the path of a res file in the db

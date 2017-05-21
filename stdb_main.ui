@@ -66,7 +66,7 @@
           </property>
           <layout class="QGridLayout" name="gridLayout">
            <item row="2" column="0">
-            <widget class="QPushButton" name="importFileButton">
+            <widget class="QPushButton" name="importDatabaseButton">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -190,7 +190,7 @@
           <property name="currentIndex">
            <number>0</number>
           </property>
-          <widget class="QWidget" name="importResults" native="true">
+          <widget class="QWidget" name="importResults">
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
              <widget class="QLineEdit" name="relocate_lineEdit">
@@ -240,7 +240,7 @@
            </layout>
           </widget>
           <widget class="QWidget" name="refinement_edit_page"/>
-          <widget class="QWidget" name="stackedWidgetPage2" native="true"/>
+          <widget class="QWidget" name="stackedWidgetPage2"/>
          </widget>
         </item>
        </layout>
