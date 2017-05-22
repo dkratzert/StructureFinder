@@ -41,6 +41,15 @@ def get_cif_cell_raw(filename):
     hkl data
     ;
     Attention: This implementation currently uses only the first cell of a cif file
+    
+    - list of desired fileds
+    - cifdict = {}
+    for line in f:
+        for f in fields:
+            test = line[:len(f)]
+            if test == f:
+                cifdict[f] = test 
+    
     """
     name, a, b, c, alpha, beta, gamma, esda, esdb, esdc, esdalpha, esdbeta, esdgamma = \
         None, None, None, None, None, None, None, None, None, None, None, None, None

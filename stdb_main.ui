@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>958</width>
-    <height>659</height>
+    <height>722</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -187,31 +187,41 @@
         </item>
         <item row="1" column="1">
          <widget class="QStackedWidget" name="stackedWidget">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>3</verstretch>
+           </sizepolicy>
+          </property>
           <property name="currentIndex">
            <number>0</number>
           </property>
           <widget class="QWidget" name="importResults">
-           <layout class="QVBoxLayout" name="verticalLayout">
-            <item>
-             <widget class="QLineEdit" name="relocate_lineEdit">
-              <property name="frame">
-               <bool>false</bool>
+           <layout class="QGridLayout" name="gridLayout_6">
+            <item row="0" column="0">
+             <layout class="QHBoxLayout" name="searchLayout">
+              <property name="spacing">
+               <number>7</number>
               </property>
-             </widget>
+              <item>
+               <widget class="QLabel" name="searchLabel">
+                <property name="text">
+                 <string>Cell Search:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="searchLineEDit"/>
+              </item>
+             </layout>
             </item>
-            <item>
+            <item row="1" column="0">
              <widget class="QTreeWidget" name="cifList_treeWidget">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
-                <horstretch>6</horstretch>
-                <verstretch>4</verstretch>
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>3</verstretch>
                </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>288</height>
-               </size>
               </property>
               <property name="verticalScrollBarPolicy">
                <enum>Qt::ScrollBarAsNeeded</enum>
@@ -239,129 +249,324 @@
               </column>
              </widget>
             </item>
-            <item>
-             <widget class="QTreeWidget" name="properties_treeWidget">
+            <item row="2" column="0">
+             <widget class="QGroupBox" name="resultsGroupBox">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+               <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
                 <horstretch>0</horstretch>
-                <verstretch>5</verstretch>
+                <verstretch>4</verstretch>
                </sizepolicy>
               </property>
-              <column>
-               <property name="text">
-                <string>key</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>value</string>
-               </property>
-              </column>
-              <item>
-               <property name="text">
-                <string>Space Group</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Unit Cell</string>
-               </property>
-               <item>
-                <property name="text">
-                 <string>a</string>
-                </property>
+              <property name="title">
+               <string>Properties</string>
+              </property>
+              <layout class="QGridLayout" name="gridLayout_5">
+               <item row="1" column="2">
+                <layout class="QFormLayout" name="formLayout">
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="dataReflnsLabel">
+                   <property name="text">
+                    <string>dataReflns</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="dataReflnsLineEdit"/>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="numParametersLabel">
+                   <property name="text">
+                    <string>numParameters</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="numParametersLineEdit"/>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="numRestraintsLabel">
+                   <property name="text">
+                    <string>numRestraints</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QLineEdit" name="numRestraintsLineEdit"/>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="QLabel" name="reflTotalLabel">
+                   <property name="text">
+                    <string>reflTotal</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <widget class="QLineEdit" name="reflTotalLineEdit"/>
+                 </item>
+                 <item row="4" column="0">
+                  <widget class="QLabel" name="thetaMaxLabel">
+                   <property name="text">
+                    <string>thetaMax</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="1">
+                  <widget class="QLineEdit" name="thetaMaxLineEdit"/>
+                 </item>
+                 <item row="5" column="0">
+                  <widget class="QLabel" name="thetaFullLabel">
+                   <property name="text">
+                    <string>thetaFull</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="1">
+                  <widget class="QLineEdit" name="thetaFullLineEdit"/>
+                 </item>
+                 <item row="6" column="0">
+                  <widget class="QLabel" name="dLabel">
+                   <property name="text">
+                    <string>d</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="1">
+                  <widget class="QLineEdit" name="dLineEdit"/>
+                 </item>
+                 <item row="7" column="0">
+                  <widget class="QLabel" name="completeLabel">
+                   <property name="text">
+                    <string>complete</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="1">
+                  <widget class="QLineEdit" name="completeLineEdit"/>
+                 </item>
+                 <item row="8" column="0">
+                  <widget class="QLabel" name="wavelengthLabel">
+                   <property name="text">
+                    <string>Wavelength</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="1">
+                  <widget class="QLineEdit" name="wavelengthLineEdit"/>
+                 </item>
+                </layout>
                </item>
-               <item>
-                <property name="text">
-                 <string>b</string>
-                </property>
+               <item row="1" column="0">
+                <layout class="QFormLayout" name="formLayout_2">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetNoConstraint</enum>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="SPaceGrouplabel">
+                   <property name="text">
+                    <string>Space group</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="SaceGroupLineEdit">
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="CellLabel">
+                   <property name="text">
+                    <string>Unit Cell:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="aLabel">
+                   <property name="text">
+                    <string>a</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QLineEdit" name="aLineEdit">
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="QLabel" name="bLabel">
+                   <property name="text">
+                    <string>b</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <widget class="QLineEdit" name="bLineEdit">
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="0">
+                  <widget class="QLabel" name="cLabel">
+                   <property name="text">
+                    <string>c</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="1">
+                  <widget class="QLineEdit" name="cLineEdit">
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="0">
+                  <widget class="QLabel" name="alphaLabel">
+                   <property name="text">
+                    <string>alpha</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="1">
+                  <widget class="QLineEdit" name="alphaLineEdit">
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="0">
+                  <widget class="QLabel" name="betaLabel">
+                   <property name="text">
+                    <string>beta</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="1">
+                  <widget class="QLineEdit" name="betaLineEdit"/>
+                 </item>
+                 <item row="7" column="0">
+                  <widget class="QLabel" name="gammaLabel">
+                   <property name="text">
+                    <string>gamma</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="1">
+                  <widget class="QLineEdit" name="gammaLineEdit"/>
+                 </item>
+                 <item row="8" column="0">
+                  <widget class="QLabel" name="r1Label">
+                   <property name="text">
+                    <string>R1</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="1">
+                  <widget class="QLineEdit" name="r1LineEdit"/>
+                 </item>
+                </layout>
                </item>
-               <item>
-                <property name="text">
-                 <string>c</string>
-                </property>
+               <item row="1" column="1">
+                <layout class="QFormLayout" name="formLayout_3">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetNoConstraint</enum>
+                 </property>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="wR2Label">
+                   <property name="text">
+                    <string>wR2</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="wR2LineEdit"/>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="temperatureLabel">
+                   <property name="text">
+                    <string>Temperature</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="temperatureLineEdit"/>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="sumFormulaLabel">
+                   <property name="text">
+                    <string>Sum Formula</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QLineEdit" name="sumFormulaLineEdit"/>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="QLabel" name="zLabel">
+                   <property name="text">
+                    <string>Z</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <widget class="QLineEdit" name="zLineEdit"/>
+                 </item>
+                 <item row="4" column="0">
+                  <widget class="QLabel" name="goofLabel">
+                   <property name="text">
+                    <string>Goof</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="1">
+                  <widget class="QLineEdit" name="goofLineEdit"/>
+                 </item>
+                 <item row="5" column="0">
+                  <widget class="QLabel" name="maxShiftLabel">
+                   <property name="text">
+                    <string>Max Shift</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="1">
+                  <widget class="QLineEdit" name="maxShiftLineEdit"/>
+                 </item>
+                 <item row="6" column="0">
+                  <widget class="QLabel" name="peakLabel">
+                   <property name="text">
+                    <string>Peak</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="1">
+                  <widget class="QLineEdit" name="peakLineEdit"/>
+                 </item>
+                 <item row="7" column="0">
+                  <widget class="QLabel" name="rintLabel_2">
+                   <property name="text">
+                    <string>Rint</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="1">
+                  <widget class="QLineEdit" name="rintLineEdit_2"/>
+                 </item>
+                 <item row="8" column="0">
+                  <widget class="QLabel" name="rsigmaLabel_2">
+                   <property name="text">
+                    <string>Rsigma</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="8" column="1">
+                  <widget class="QLineEdit" name="rsigmaLineEdit_2"/>
+                 </item>
+                </layout>
                </item>
-               <item>
-                <property name="text">
-                 <string>alpha</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>beta</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>gamma</string>
-                </property>
-               </item>
-              </item>
-              <item>
-               <property name="text">
-                <string>Temperature</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Sum Formula</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Z</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>R1</string>
-               </property>
-               <item>
-                <property name="text">
-                 <string>I&gt;2s</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>All Refl.</string>
-                </property>
-               </item>
-              </item>
-              <item>
-               <property name="text">
-                <string>wR2</string>
-               </property>
-               <item>
-                <property name="text">
-                 <string>All Refl.</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>I&gt;2s</string>
-                </property>
-               </item>
-              </item>
-              <item>
-               <property name="text">
-                <string>Goof</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Max. Shift</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Peak</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Hole</string>
-               </property>
-              </item>
+              </layout>
              </widget>
             </item>
            </layout>

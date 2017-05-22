@@ -42,10 +42,9 @@ class StartStructureDB(QMainWindow):
         self.ui.setupUi(self)
         self.connect_signals_and_slots()
         self.statusBar().showMessage('Ready')
-        self.ui.cifList_treeWidget.hide()
-        self.ui.properties_treeWidget.hide()
+        self.ui.cifList_treeWidget.show()
         self.ui.cifList_treeWidget.hideColumn(2)
-        self.ui.relocate_lineEdit.hide()
+        #self.ui.cellSearchEdit.hide()
         self.dbfilename = 'test.sqlite'
         print(self.dbfilename)
         try:
@@ -71,12 +70,18 @@ class StartStructureDB(QMainWindow):
         """
         This slot show the properties of a cif file in the properties widget
         """
-        self.ui.properties_treeWidget.show()
+        #self.ui.properties_treeWidget.show()
         cell = self.structures.get_cell_by_id(item.sibling(item.row(), 2).data())
-        print(cell)
+        #print(item.sibling(item.row(), 2).data())
+        self.ui.aLineEdit.setText("{}".format(cell[0]))
+        self.ui.bLineEdit.setText("{}".format(cell[1]))
+        self.ui.cLineEdit.setText("{}".format(cell[2]))
+        self.ui.alphaLineEdit.setText("{}".format(cell[3]))
+        self.ui.betaLineEdit.setText("{}".format(cell[4]))
+        self.ui.gammaLineEdit.setText("{}".format(cell[5]))
 
-    def relocate(self):
-        self.ui.relocate_lineEdit.show()
+    def search(self, search_string):
+        pass
 
     def import_database(self):
         print('foo')
@@ -128,10 +133,11 @@ class StartStructureDB(QMainWindow):
                 strTree = QTreeWidgetItem(self.ui.cifList_treeWidget)
                 strTree.setText(0, filename)
                 strTree.setText(1, dirn)
+                strTree.setText(2, str(n))
                 n += 1
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.ui.cifList_treeWidget.resizeColumnToContents(1)
-        self.ui.relocate_lineEdit.hide()
+        #self.ui.relocate_lineEdit.hide()
         self.structures.database.commit_db("Committed")
 
 
