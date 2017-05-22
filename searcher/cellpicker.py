@@ -116,6 +116,11 @@ class Cif():
         A cif file parsing object optimized for speed and simplicity.
         :param file: input filename object
         :type file: object
+        
+        - find loops
+          - get loop header
+          - start and end
+        - fill for example atom loop dict with atoms
         """
         self.cif_data = {}
         self.essential_fields = essential_fields
