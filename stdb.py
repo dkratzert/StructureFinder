@@ -101,6 +101,10 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.resizeColumnToContents(1)
 
     def import_cif_dirs(self):
+        """
+        Imports cif files from a certain directory
+        :return: None
+        """
         fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         # fname = "D:/GitHub/StructureDB/test-data"
         # fname = os.path.abspath("/Users/daniel/Downloads")
