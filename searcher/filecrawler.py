@@ -12,7 +12,6 @@ Created on 09.02.2015
 """
 import os
 import fnmatch as fn
-from searcher.cellpicker import get_res_cell
 import sys
 
 
@@ -25,8 +24,8 @@ def create_file_list(searchpath='None', endings='cif'):
         print('search path {0} not found!'.format(searchpath))
         sys.exit()
     print('collecting files...')
-    #res = filewalker(searchpath, endings)
-    res = filewalker_walk(searchpath, endings)
+    res = filewalker(searchpath, endings)
+    #res = filewalker_walk(searchpath, endings)
     print('ready')
     return res
 
@@ -48,7 +47,11 @@ def filewalker(startdir, endings, add_excludes=[]):
     def scantree(path):
         """Recursively yield DirEntry objects for given directory."""
         for entry in os.scandir(path):
-            if entry.is_dir(follow_symlinks=False) and os.stat(entry.path, os.R_OK):
+            try:
+                os.stat(entry.path)
+            except OSError:
+                continue
+            if entry.is_dir(follow_symlinks=False):
                 yield from scantree(entry.path)
             else:
                 yield entry
@@ -77,7 +80,7 @@ def filewalker_walk(startdir, endings, add_excludes=[]):
             if fn.fnmatch(filen, '*.{0}'.format(endings)):
                 if os.stat(os.path.join(root, filen)).st_size == 0:
                     continue
-                filelist.append(os.path.join(root, filen))
+                filelist.append([os.path.join(root, filen), filen])
             else:
                 continue
             # TODO:
@@ -85,31 +88,12 @@ def filewalker_walk(startdir, endings, add_excludes=[]):
             #    return filelist
     return filelist
 
-def create_cells_table(structures):
-    print('filling cells into table...')
-    num = 0
-    numgut = 0
-    for n in range(1, len(structures)):
-        path = structures[n][0][0]
-        name = structures[n][0][1]
-        cell = get_res_cell(os.path.join(path, name))
-        if not cell:
-            num = num+1 
-            cell = [0.1, 0.1, 0.1, 90, 90, 90]  # dummy cell
-        else:
-            numgut = numgut+1
-        structures.fill_cell_table(n, cell)
-    if num > 0: 
-        print('{0} res files with invalid unit cells were found.'.format(num))
-        print('-> xd2006 .res files also count to the invalid unit cells.')
-    print('{0} res files with correct unit cells were found.'.format(numgut))
-    print('ready!')
-    print('Now you search in your database.')
+
     
 
 
 if __name__ == '__main__':
-    res = filewalker('c:\\Temp', 'res')
+    res = filewalker('D:\\', 'res')
     for i in res:
         print(i)
     #print(res)

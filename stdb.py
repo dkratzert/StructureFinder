@@ -112,9 +112,9 @@ class StartStructureDB(QMainWindow):
         # TODO: implement multiple cells in one cif file:
         n = 1
         for dirn in files:
-            #dirn = dirn[0]
-            filename = os.path.split(dirn)[-1]
-            path = os.path.dirname(dirn)
+            dir = dirn[0]
+            filename = dirn[1]
+            path = os.path.dirname(dir)
             structure_id = n
             """
             with open(dirn, mode='r') as f:
@@ -125,7 +125,7 @@ class StartStructureDB(QMainWindow):
                     print("No cell found. Trying next file...")
                     continue
             """
-            cif = Cif(dirn)
+            cif = Cif(dir)
             if not cif.ok:
                 continue
             #print(cif, '##')
@@ -135,7 +135,7 @@ class StartStructureDB(QMainWindow):
                 self.structures.fill_cell_table(structure_id, cif)
                 strTree = QTreeWidgetItem(self.ui.cifList_treeWidget)
                 strTree.setText(0, filename)
-                strTree.setText(1, dirn)
+                strTree.setText(1, dir)
                 strTree.setText(2, str(n))
                 n += 1
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
