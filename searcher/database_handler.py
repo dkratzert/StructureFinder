@@ -13,6 +13,7 @@ Created on 09.02.2015
 import sys
 
 from pymatgen.core.lattice import Lattice
+from searcher.misc import get_error_from_value
 
 __metaclass__ = type  # use new-style classes
 import sqlite3
@@ -66,7 +67,8 @@ class DatabaseRequest():
                         Id    INTEGER NOT NULL,
                         measurement INTEGER NOT NULL,
                         path  TEXT,
-                        name    VARCHAR(255),
+                        filename    VARCHAR(255),
+                        dataname    VARCHAR(255),
                         PRIMARY KEY(Id),
                           FOREIGN KEY(measurement)
                             REFERENCES structure(Id)
@@ -289,15 +291,15 @@ class StructureTable():
         if self.database.db_request(req):
             return True
 
-    def fill_structures_table(self, path, name, structure_id, measurement_id):
+    def fill_structures_table(self, path, filename, structure_id, measurement_id, dataname):
         """
         Fills a structure into the database.
         
         """
         req = '''
-              INSERT INTO structure (Id, measurement, name, path) VALUES(?, ?, ?, ?)
+              INSERT INTO structure (Id, measurement, filename, path) VALUES(?, ?, ?, ?, ?)
               '''
-        return self.database.db_request(req, structure_id, measurement_id, name, path)
+        return self.database.db_request(req, structure_id, measurement_id, filename, path, dataname)
 
     def fill_measuremnts_table(self, name, structure_id):
         """
@@ -309,7 +311,7 @@ class StructureTable():
               '''
         return self.database.db_request(req, structure_id, name)
 
-    def fill_cell_table(self, structure_id, cell):
+    def fill_cell_table(self, structure_id, cif):
         """
         fill the cell of structure(structureId) in the table
         cell = [a, b, c, alpha, beta, gamma]
@@ -317,7 +319,21 @@ class StructureTable():
         req = '''INSERT INTO cell (cellId, a, b, c, alpha, beta, gamma, 
                                    esda, esdb, esdc, esdalpha, esdbeta, esdgamma) 
                             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-        if self.database.db_request(req, structure_id, *cell):
+        a = cif.cif_data['_cell_length_a'].split('(')[0]
+        b = cif.cif_data['_cell_length_b'].split('(')[0]
+        c = cif.cif_data['_cell_length_c'].split('(')[0]
+        alpha = cif.cif_data['_cell_angle_alpha'].split('(')[0]
+        beta = cif.cif_data['_cell_angle_beta'].split('(')[0]
+        gamma = cif.cif_data['_cell_angle_gamma'].split('(')[0]
+        aerror = get_error_from_value(a)
+        berror = get_error_from_value(b)
+        cerror = get_error_from_value(c)
+        alphaerror = get_error_from_value(alpha)
+        betaerror = get_error_from_value(beta)
+        gammaerror = get_error_from_value(gamma)
+        #if self.database.db_request(req, structure_id, *cif)
+        if self.database.db_request(req, structure_id, a, b, c, alpha, beta, gamma,
+                                    aerror, berror, cerror, alphaerror, betaerror, gammaerror):
             return True
     
     def find_cell_by_abc(self, a=False, b=False, c=False):

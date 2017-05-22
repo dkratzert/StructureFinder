@@ -3,19 +3,17 @@ from __future__ import print_function
 import os
 import sys
 
-import PyQt5
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
-
-from searcher.cellpicker import get_res_cell, get_cif_cell, get_cif_cell_raw
+from searcher import filecrawler
+from stdb_main import Ui_stdbMainwindow
+from searcher.cellpicker import get_cif_cell_raw, Cif
 from searcher.database_handler import StructureTable, DatabaseRequest
 
 uic.compileUiDir('./')
-from searcher import filecrawler
-from stdb_main import Ui_stdbMainwindow
 
 
 
@@ -44,7 +42,7 @@ class StartStructureDB(QMainWindow):
         self.statusBar().showMessage('Ready')
         self.ui.cifList_treeWidget.show()
         self.ui.cifList_treeWidget.hideColumn(2)
-        #self.ui.cellSearchEdit.hide()
+        # self.ui.cellSearchEdit.hide()
         self.dbfilename = 'test.sqlite'
         print(self.dbfilename)
         try:
@@ -59,20 +57,20 @@ class StartStructureDB(QMainWindow):
     def connect_signals_and_slots(self):
         self.ui.importDatabaseButton.clicked.connect(self.import_database)
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
-        #self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
+        # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
         self.ui.cifList_treeWidget.clicked.connect(self.show_properties)
         # for later use to implement relocation of whole database:
         # das brauch ich nicht:
         # self.ui.cifList_treeWidget.doubleClicked.connect(self.relocate)
-        #self.ui.cifList_treeWidget.doubleClicked.connect(self.show_properties)
+        # self.ui.cifList_treeWidget.doubleClicked.connect(self.show_properties)
 
     def show_properties(self, item):
         """
         This slot show the properties of a cif file in the properties widget
         """
-        #self.ui.properties_treeWidget.show()
+        # self.ui.properties_treeWidget.show()
         cell = self.structures.get_cell_by_id(item.sibling(item.row(), 2).data())
-        #print(item.sibling(item.row(), 2).data())
+        # print(item.sibling(item.row(), 2).data())
         self.ui.aLineEdit.setText("{}".format(cell[0]))
         self.ui.bLineEdit.setText("{}".format(cell[1]))
         self.ui.cLineEdit.setText("{}".format(cell[2]))
@@ -93,21 +91,20 @@ class StartStructureDB(QMainWindow):
         if not self.structures:
             return False
         for i in self.structures.get_all_structure_names():
-            #print(i)
+            # print(i)
             str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
             str_tree.setText(0, i[1])  # name
             str_tree.setText(1, i[2])  # path
             str_tree.setData(2, 0, i[0])  # id
-            #if len(i[1]) > 10:
+            # if len(i[1]) > 10:
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.ui.cifList_treeWidget.resizeColumnToContents(1)
-
 
     def import_cif_dirs(self):
         fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         # fname = "D:/GitHub/StructureDB/test-data"
-        #fname = os.path.abspath("/Users/daniel/Downloads")
-        #fname = os.path.abspath("test-data")
+        # fname = os.path.abspath("/Users/daniel/Downloads")
+        # fname = os.path.abspath("test-data")
         if not fname:
             return False
         files = filecrawler.create_file_list(str(fname), endings='cif')
@@ -119,17 +116,20 @@ class StartStructureDB(QMainWindow):
             filename = os.path.split(dirn)[-1]
             path = os.path.dirname(dirn)
             structure_id = n
+            """
             with open(dirn, mode='r') as f:
-                #print(filename)
+                # print(filename)
                 try:
                     cell = get_cif_cell_raw(filename=f)[1:]
                 except (TypeError, IndexError):
                     print("No cell found. Trying next file...")
                     continue
-            if cell and filename and path:
+            """
+            cif = Cif(dirn)
+            if cif and filename and path:
                 measurement_id = self.structures.fill_measuremnts_table(filename, structure_id)
-                self.structures.fill_structures_table(path, filename, structure_id, measurement_id)
-                self.structures.fill_cell_table(structure_id, cell)
+                self.structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
+                self.structures.fill_cell_table(structure_id, cif)
                 strTree = QTreeWidgetItem(self.ui.cifList_treeWidget)
                 strTree.setText(0, filename)
                 strTree.setText(1, dirn)
@@ -137,7 +137,7 @@ class StartStructureDB(QMainWindow):
                 n += 1
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.ui.cifList_treeWidget.resizeColumnToContents(1)
-        #self.ui.relocate_lineEdit.hide()
+        # self.ui.relocate_lineEdit.hide()
         self.structures.database.commit_db("Committed")
 
 

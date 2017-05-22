@@ -12,9 +12,11 @@ Created on 09.02.2015
 """
 import codecs
 import os
+import sys
 
 import CifFile
 from searcher import misc
+from searcher.misc import get_error_from_value
 
 
 def get_cif_datablocks(filename):
@@ -107,65 +109,50 @@ def get_cif_cell_raw(filename):
 class Cif():
     def __init__(self, file):
         """
-        A cif file parsing object
+        A cif file parsing object optimized for speed and simplicity.
         :param file: input filename object
         :type file: object
-        It should return a dictionary where all entrys of a cif file are acessible through their cif names.
         """
-        self.file = file
-        self.cell = [None,  # 0 name
-                    None,  # 1 a
-                    None,  # 2 b
-                    None,  # 3 c
-                    None,  # 4 alpha
-                    None,  # 5 beta
-                    None,  # 6 gamma
-                    None,  # 7 esda
-                    None,  # 8 esdb
-                    None,  # 9 esdc
-                    None,  # 10 esdalpha
-                    None,  # 11 esdbeta
-                    None]  # 12 esdgamma
-        essentials = ('name', 'a', 'b', 'c', 'alpha', 'beta', 'gamma',
-                      'esda', 'esdb', 'esdc', 'esdalpha', 'esdbeta', 'esdgamma')
-        self.parmeters = [None,  # 0 _diffrn_ambient_temperature, Temperature
-                          None,  #
-                         ]
-    def parsefile(self):
-        for line in self.file:
-            if line.startswith('data_'):
+        self.cif_data = {}
+        self.fields = ('_cell_length_a', '_cell_length_b', '_cell_length_c', '_cell_angle_alpha', '_cell_angle_beta',
+                       '_cell_angle_gamma', '_diffrn_ambient_temperature')
+        with codecs.open(file, "r", encoding='ascii', errors='ignore') as f:
+            self.parsefile(f)
+
+
+    def parsefile(self, file):
+        data = False
+        for line in file:
+            if line.startswith('data_') and not data:
                 name = line.split('_')[1].strip('\n')
-                self.cell[0] = name
-            if line.startswith('_cell_length_a'):
-                a = line.split()[1].split('(')[0]
-                self.cell[1] = float(a)
-                self.cell[7] = get_error_from_value(a)
-            if line.startswith('_cell_length_b'):
-                b = line.split()[1].split('(')[0]
-                self.cell[2] = float(b)
-                self.cell[8] = get_error_from_value(b)
-            if line.startswith('_cell_length_c'):
-                c = line.split()[1].split('(')[0]
-                self.cell[3] = float(c)
-                self.cell[9] = get_error_from_value(c)
-            if line.startswith('_cell_angle_alpha'):
-                alpha = line.split()[1].split('(')[0]
-                self.cell[4] = float(alpha)
-                self.cell[10] = get_error_from_value(alpha)
-            if line.startswith('_cell_angle_beta'):
-                beta = line.split()[1].split('(')[0]
-                self.cell[5] = float(beta)
-                self.cell[11] = get_error_from_value(beta)
-            if line.startswith('_cell_angle_gamma'):
-                gamma = line.split()[1].split('(')[0]
-                self.cell[6] = float(gamma)
-                self.cell[12] = get_error_from_value(gamma)
-            if line.startswith('_diffrn_ambient_temperature'):
-                pass
+                self.cif_data['data'] = name
+                data = True
+            for x in self.fields:
+                test = line[:len(x)]
+                if test == x:
+                    self.cif_data[x] = line.split()[1]
+            if line.startswith("_shelx_hkl_file"):
+                break
+        return True
+
+    def __iter__(self):
+        """
+        an iterable for the Cif object
+        :return: cif entries
+        """
+        yield self.cif_data
+
+    @property
+    def cell_a(self):
+        a = self.cif_data['_cell_length_a']
+        a = a.split()[1].split('(')[0]
+        a = float(a)
+        return a, get_error_from_value(a)
 
 
 def get_cif_cell(filename):
     """
+    parses cif files with pyCifRW. This is dead slow.
     """
     try:
         cif = CifFile.ReadCif(filename)
@@ -201,28 +188,6 @@ def get_cif_cell(filename):
     return [data, a, b, c, alpha, beta, gamma, esda, esdb, esdc, esdalpha, esdbeta, esdgamma]
 
 
-def get_error_from_value(value):
-    """ 
-    :type value: str
-    >>> get_error_from_value("0.0123 (23)")
-    '0.0023'
-    >>> get_error_from_value("0.0123(23)")
-    '0.0023'
-    >>> get_error_from_value('0.0123')
-    '0.0'
-    """
-    try:
-        value = value.replace(" ", "")
-    except AttributeError:
-        return "0.0"
-    if "(" in value:
-        spl = value.split("(")
-        val = spl[0].split('.')
-        err = spl[1].strip(")")
-        return val[0]+"."+"0"*(len(val[1])-len(err))+err
-    else:
-        return '0.0'
-
 def get_res_cell(filename):
     """
     Returns the unit cell parameters from the list file as list:
@@ -247,10 +212,13 @@ def get_res_cell(filename):
         return False
     return cell
 
- 
-    
-    
+
 if __name__ == '__main__':
+
+    c = Cif("../test-data/p21c.cif")
+    for i in c:
+        print(i)
+    sys.exit()
     cells = get_cif_cell('c:/temp/c2c_final.cif')
     cellres = get_res_cell('c:/temp/c2c.res')
     for i in cells:

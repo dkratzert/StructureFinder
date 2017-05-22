@@ -49,3 +49,24 @@ def open_file_read(filename, asci=True):
             return binary
 
 
+def get_error_from_value(value):
+    """ 
+    :type value: str
+    >>> get_error_from_value("0.0123 (23)")
+    '0.0023'
+    >>> get_error_from_value("0.0123(23)")
+    '0.0023'
+    >>> get_error_from_value('0.0123')
+    '0.0'
+    """
+    try:
+        value = value.replace(" ", "")
+    except AttributeError:
+        return "0.0"
+    if "(" in value:
+        spl = value.split("(")
+        val = spl[0].split('.')
+        err = spl[1].strip(")")
+        return val[0]+"."+"0"*(len(val[1])-len(err))+err
+    else:
+        return '0.0'
