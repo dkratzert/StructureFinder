@@ -112,7 +112,7 @@ class StartStructureDB(QMainWindow):
         # TODO: implement multiple cells in one cif file:
         n = 1
         for dirn in files:
-            dirn = dirn[0]
+            #dirn = dirn[0]
             filename = os.path.split(dirn)[-1]
             path = os.path.dirname(dirn)
             structure_id = n
@@ -126,6 +126,9 @@ class StartStructureDB(QMainWindow):
                     continue
             """
             cif = Cif(dirn)
+            if not cif.ok:
+                continue
+            #print(cif, '##')
             if cif and filename and path:
                 measurement_id = self.structures.fill_measuremnts_table(filename, structure_id)
                 self.structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])

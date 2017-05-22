@@ -67,6 +67,9 @@ def get_error_from_value(value):
         spl = value.split("(")
         val = spl[0].split('.')
         err = spl[1].strip(")")
-        return val[0]+"."+"0"*(len(val[1])-len(err))+err
+        if len(val) > 0:
+            return "0"+"."+"0"*(len(val[1])-len(err))+err
+        else:
+            return err
     else:
         return '0.0'

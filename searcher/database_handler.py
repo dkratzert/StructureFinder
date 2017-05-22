@@ -42,6 +42,9 @@ class DatabaseRequest():
         """
         #self.con.execute("PRAGMA foreign_keys = ON")
         self.cur.execute("DROP TABLE IF EXISTS structure")
+        self.cur.execute("DROP TABLE IF EXISTS measurement")
+        self.cur.execute("DROP TABLE IF EXISTS cell")
+        self.cur.execute("DROP TABLE IF EXISTS niggli_cell")
         try:
             self.cur.execute("DROP INDEX cell")
         except:
@@ -297,7 +300,7 @@ class StructureTable():
         
         """
         req = '''
-              INSERT INTO structure (Id, measurement, filename, path) VALUES(?, ?, ?, ?, ?)
+              INSERT INTO structure (Id, measurement, filename, path, dataname) VALUES(?, ?, ?, ?, ?)
               '''
         return self.database.db_request(req, structure_id, measurement_id, filename, path, dataname)
 
@@ -319,18 +322,24 @@ class StructureTable():
         req = '''INSERT INTO cell (cellId, a, b, c, alpha, beta, gamma, 
                                    esda, esdb, esdc, esdalpha, esdbeta, esdgamma) 
                             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-        a = cif.cif_data['_cell_length_a'].split('(')[0]
-        b = cif.cif_data['_cell_length_b'].split('(')[0]
-        c = cif.cif_data['_cell_length_c'].split('(')[0]
-        alpha = cif.cif_data['_cell_angle_alpha'].split('(')[0]
-        beta = cif.cif_data['_cell_angle_beta'].split('(')[0]
-        gamma = cif.cif_data['_cell_angle_gamma'].split('(')[0]
+        a = cif.cif_data['_cell_length_a']
+        b = cif.cif_data['_cell_length_b']
+        c = cif.cif_data['_cell_length_c']
+        alpha = cif.cif_data['_cell_angle_alpha']
+        beta = cif.cif_data['_cell_angle_beta']
+        gamma = cif.cif_data['_cell_angle_gamma']
         aerror = get_error_from_value(a)
         berror = get_error_from_value(b)
         cerror = get_error_from_value(c)
         alphaerror = get_error_from_value(alpha)
         betaerror = get_error_from_value(beta)
         gammaerror = get_error_from_value(gamma)
+        a = a.split('(')[0]
+        b = b.split('(')[0]
+        c = c.split('(')[0]
+        alpha = alpha.split('(')[0]
+        beta = beta.split('(')[0]
+        gamma = gamma.split('(')[0]
         #if self.database.db_request(req, structure_id, *cif)
         if self.database.db_request(req, structure_id, a, b, c, alpha, beta, gamma,
                                     aerror, berror, cerror, alphaerror, betaerror, gammaerror):

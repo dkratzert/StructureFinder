@@ -18,6 +18,10 @@ import CifFile
 from searcher import misc
 from searcher.misc import get_error_from_value
 
+essential_fields = ('_cell_length_a', '_cell_length_b', '_cell_length_c', '_cell_angle_alpha', '_cell_angle_beta',
+                         '_cell_angle_gamma')
+fields = ('_diffrn_ambient_temperature', '_diffrn_reflns_av_R_equivalents', '_diffrn_reflns_av_unetI/netI',
+               '_diffrn_reflns_theta_max')
 
 def get_cif_datablocks(filename):
     """
@@ -114,25 +118,34 @@ class Cif():
         :type file: object
         """
         self.cif_data = {}
-        self.fields = ('_cell_length_a', '_cell_length_b', '_cell_length_c', '_cell_angle_alpha', '_cell_angle_beta',
-                       '_cell_angle_gamma', '_diffrn_ambient_temperature')
-        with codecs.open(file, "r", encoding='ascii', errors='ignore') as f:
-            self.parsefile(f)
-
+        self.essential_fields = essential_fields
+        self.fields = fields
+        self.all_fields = self.essential_fields + self.fields
+        self.ok = self.parsefile(file)
 
     def parsefile(self, file):
         data = False
-        for line in file:
-            if line.startswith('data_') and not data:
-                name = line.split('_')[1].strip('\n')
-                self.cif_data['data'] = name
-                data = True
-            for x in self.fields:
-                test = line[:len(x)]
-                if test == x:
-                    self.cif_data[x] = line.split()[1]
-            if line.startswith("_shelx_hkl_file"):
-                break
+        with codecs.open(file, "r", encoding='ascii', errors='ignore') as f:
+            for line in f:
+                if line.startswith('data_') and not data:
+                    name = line.split('_')[1].strip('\n\r')
+                    self.cif_data['data'] = name
+                    data = True
+                    continue
+                if line.startswith('data_') and data:
+                    break
+                for x in self.all_fields:
+                    test = line[:len(x)]
+                    if test == x:
+                        self.cif_data[x] = line.split()[1]
+                        continue
+                if line.startswith("_shelx_hkl_file"):
+                    break
+        for fi in self.essential_fields:
+            try:
+                self.cif_data[fi]
+            except KeyError:
+                return False
         return True
 
     def __iter__(self):
@@ -140,14 +153,17 @@ class Cif():
         an iterable for the Cif object
         :return: cif entries
         """
-        yield self.cif_data
+        if self.ok:
+            yield self.cif_data
+        else:
+            return False
 
-    @property
-    def cell_a(self):
-        a = self.cif_data['_cell_length_a']
-        a = a.split()[1].split('(')[0]
-        a = float(a)
-        return a, get_error_from_value(a)
+    #@property
+    #def cell_a(self):
+    #    a = self.cif_data['_cell_length_a']
+    #    a = a.split()[1].split('(')[0]
+    #    a = float(a)
+    #    return a, get_error_from_value(a)
 
 
 def get_cif_cell(filename):

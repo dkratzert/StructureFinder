@@ -25,8 +25,8 @@ def create_file_list(searchpath='None', endings='cif'):
         print('search path {0} not found!'.format(searchpath))
         sys.exit()
     print('collecting files...')
-    res = filewalker(searchpath, endings)
-    #res = filewalker_walk(searchpath, endings)
+    #res = filewalker(searchpath, endings)
+    res = filewalker_walk(searchpath, endings)
     print('ready')
     return res
 
@@ -77,7 +77,7 @@ def filewalker_walk(startdir, endings, add_excludes=[]):
             if fn.fnmatch(filen, '*.{0}'.format(endings)):
                 if os.stat(os.path.join(root, filen)).st_size == 0:
                     continue
-                filelist.append([root, filen])
+                filelist.append(os.path.join(root, filen))
             else:
                 continue
             # TODO:
