@@ -130,16 +130,48 @@ class Cif():
 
     def parsefile(self, file):
         data = False
+        loophead = []
+        loop = False
+        loopdata = []
+        atoms = {}
         with codecs.open(file, "r", encoding='ascii', errors='ignore') as f:
-            for line in f:
+            for num, line in enumerate(f):
+                loop = False  # for testing
+                if loop:
+                    l = line.lstrip().strip('\r\n ')
+                    if not l.strip():
+                        loop = False
+                        loophead.clear()
+                        loopdata.clear()
+                        continue
+                    if l[:1] == "_":
+                        loophead.append(l)
+                    else:
+                        loopitem = {}
+                        datline = l.split()
+                        # quick hack, have to unwrap lines:
+                        if len(datline) != len(loophead):
+                            print(loopdata)
+                            continue
+                        for n, item in enumerate(datline):
+                            loopitem[loophead[n]] = item
+                        # TODO: Add every item of the loops to a specific dict e.g. _atom
+                        # and structure the above loop with methods
+                        loopdata.append(loopitem)
+                        #print(loopdata)
+                # First find the start of the cif (the data tag)
                 if line.startswith('data_') and not data:
                     name = line.split('_')[1].strip('\n\r')
                     self.cif_data['data'] = name
                     data = True
                     continue
                 if line.startswith('data_') and data:
-                    break
-                for x in self.all_fields:
+                    break  # TODO: support multi cif
+                # Find the loop positions:
+                if line[:5] == "loop_":
+                    loop = True
+                    continue
+                for x in self.all_fields:  # TODO: has to be more general
                     test = line[:len(x)]
                     if test == x:
                         self.cif_data[x] = line.split()[1]
@@ -239,9 +271,3 @@ if __name__ == '__main__':
     c = Cif("../test-data/p21c.cif")
     for i in c:
         print(i)
-    sys.exit()
-    cells = get_cif_cell('c:/temp/c2c_final.cif')
-    cellres = get_res_cell('c:/temp/c2c.res')
-    for i in cells:
-        print(i)
-    print(cellres)
