@@ -129,7 +129,7 @@ class Cif():
         loop = False
         atoms = {}
         atkey = ''
-        with open(file, mode='r', buffering=True) as f:
+        with open(file, mode='r') as f:
             for num, line in enumerate(f):
                 #loop = False  # <- Disable to parse no loops
                 if loop:
@@ -183,24 +183,8 @@ class Cif():
                         self.cif_data[lsplit[0]] = lsplit[1]
                     except IndexError:
                         continue
-
-                """
-                for x in self.all_fields:  # TODO: has to be more general
-                    test = line[:len(x)]
-                    if test == x:
-                        self.cif_data[x] = line.split()[1]
-                        continue
-                """
                 if line[:15] == "_shelx_hkl_file":
                     break
-        """
-        for fi in self.essential_fields:
-            try:
-                self.cif_data[fi]
-            except KeyError:
-                print('No data found')
-                return False
-        """
         self.cif_data['_atom'] = atoms
         #pprint(self.cif_data)
         return True
