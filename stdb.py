@@ -114,6 +114,7 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.show()
         # TODO: implement multiple cells in one cif file:
         n = 1
+        times = []
         for dirn in files:
             dir = dirn[0]
             filename = dirn[1]
@@ -122,7 +123,9 @@ class StartStructureDB(QMainWindow):
             time1 = time.clock()
             cif = Cif(dir)
             time2 = time.clock()
-            print(round(time2 - time1, 4), 's')
+            diff = time2 - time1
+            times.append(diff)
+            print(round(diff, 4), 's')
             if not cif.ok:
                 continue
             #print(cif, '##')
@@ -135,6 +138,7 @@ class StartStructureDB(QMainWindow):
                 strTree.setText(1, dir)
                 strTree.setText(2, str(n))
                 n += 1
+        print('gesamt:', round(sum(times), 3), 's')
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.ui.cifList_treeWidget.resizeColumnToContents(1)
         # self.ui.relocate_lineEdit.hide()
