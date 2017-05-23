@@ -15,6 +15,8 @@ import os
 import time
 from pprint import pprint
 
+import sys
+
 import CifFile
 from searcher import misc
 from searcher.misc import get_error_from_value
@@ -135,7 +137,7 @@ class Cif():
         loop = False
         atoms = {}
         atkey = ''
-        with codecs.open(file, "r", encoding='ascii', errors='ignore') as f:
+        with open(file, mode='r') as f:
             for num, line in enumerate(f):
                 #loop = False  # <- Disable to parse no loops
                 if loop:
@@ -192,6 +194,7 @@ class Cif():
         for fi in self.essential_fields:
             try:
                 self.cif_data[fi]
+                self.cif_data['atoms'] = atoms
             except KeyError:
                 return False
         return True
@@ -280,7 +283,9 @@ def get_res_cell(filename):
 if __name__ == '__main__':
     time1 = time.clock()
     c = Cif("test-data/p21c.cif")
+    #c = CifFile.ReadCif("test-data/p21c.cif")
     time2 = time.clock()
     print(round(time2-time1, 4), 's')
-    #for i in c:
-    #    pprint(i)
+    #sys.exit()
+    for i in c:
+        pprint(i)
