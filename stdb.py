@@ -18,9 +18,7 @@ uic.compileUiDir('./')
 
 
 # TODO:
-# - more elaborate check if all data is there for the db
 # - make progress bar for indexer and file opener
-# - make text fields in properties widget. not enerving QTreewidget
 # - get atoms from cif
 # - store atoms in db
 # - structure code
@@ -71,12 +69,12 @@ class StartStructureDB(QMainWindow):
         # self.ui.properties_treeWidget.show()
         cell = self.structures.get_cell_by_id(item.sibling(item.row(), 2).data())
         # print(item.sibling(item.row(), 2).data())
-        self.ui.aLineEdit.setText("{}".format(cell[0]))
-        self.ui.bLineEdit.setText("{}".format(cell[1]))
-        self.ui.cLineEdit.setText("{}".format(cell[2]))
-        self.ui.alphaLineEdit.setText("{}".format(cell[3]))
-        self.ui.betaLineEdit.setText("{}".format(cell[4]))
-        self.ui.gammaLineEdit.setText("{}".format(cell[5]))
+        self.ui.aLineEdit.setText("{:>6.5f}".format(cell[0]))
+        self.ui.bLineEdit.setText("{:>6.5f}".format(cell[1]))
+        self.ui.cLineEdit.setText("{:>6.5f}".format(cell[2]))
+        self.ui.alphaLineEdit.setText("{:<6.4f}".format(cell[3]))
+        self.ui.betaLineEdit.setText("{:<6.4f}".format(cell[4]))
+        self.ui.gammaLineEdit.setText("{:<6.4f}".format(cell[5]))
 
     def search(self, search_string):
         pass
