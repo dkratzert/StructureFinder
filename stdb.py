@@ -112,7 +112,11 @@ class StartStructureDB(QMainWindow):
         # fname = os.path.abspath("test-data")
         if not fname:
             return False
+        time1 = time.clock()
         files = filecrawler.create_file_list(str(fname), endings='cif')
+        time2 = time.clock()
+        diff = time2 - time1
+        print("File list:", round(diff, 4), 's')
         self.ui.cifList_treeWidget.show()
         # TODO: implement multiple cells in one cif file:
         n = 1
@@ -146,7 +150,7 @@ class StartStructureDB(QMainWindow):
                 strTree.setText(1, dir)
                 strTree.setText(2, str(n))
                 n += 1
-        print('gesamt:', round(sum(times), 3), 's')
+        print('Parse cif files:', round(sum(times), 3), 's')
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         # self.ui.relocate_lineEdit.hide()
