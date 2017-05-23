@@ -242,7 +242,8 @@ class StructureTable():
         """
         returns all fragment names in the database, sorted by name
         """
-        req = '''SELECT structure.Id, structure.name, structure.path FROM structure'''
+        req = '''SELECT structure.Id, structure.measurement, structure.path, structure.filename, 
+                         structure.dataname FROM structure'''
         try:
             rows = [list(i) for i in self.database.db_request(req)]
         except TypeError:
@@ -314,7 +315,7 @@ class StructureTable():
               '''
         return self.database.db_request(req, structure_id, name)
 
-    def fill_cell_table(self, structure_id, cif):
+    def fill_cell_table(self, structure_id, a, b, c, alpha, beta, gamma):
         """
         fill the cell of structure(structureId) in the table
         cell = [a, b, c, alpha, beta, gamma]
@@ -322,12 +323,6 @@ class StructureTable():
         req = '''INSERT INTO cell (cellId, a, b, c, alpha, beta, gamma, 
                                    esda, esdb, esdc, esdalpha, esdbeta, esdgamma) 
                             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-        a = cif.cif_data['_cell_length_a']
-        b = cif.cif_data['_cell_length_b']
-        c = cif.cif_data['_cell_length_c']
-        alpha = cif.cif_data['_cell_angle_alpha']
-        beta = cif.cif_data['_cell_angle_beta']
-        gamma = cif.cif_data['_cell_angle_gamma']
         aerror = get_error_from_value(a)
         berror = get_error_from_value(b)
         cerror = get_error_from_value(c)

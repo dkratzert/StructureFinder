@@ -90,14 +90,16 @@ class StartStructureDB(QMainWindow):
         if not self.structures:
             return False
         for i in self.structures.get_all_structure_names():
+            """structure.Id, structure.measurement, structure.path, structure.filename, 
+                         structure.dataname"""
             # print(i)
             str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
-            str_tree.setText(0, i[1])  # name
+            str_tree.setText(0, i[3])  # name
             str_tree.setText(1, i[2])  # path
             str_tree.setData(2, 0, i[0])  # id
             # if len(i[1]) > 10:
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
 
     def import_cif_dirs(self):
         """
@@ -125,14 +127,20 @@ class StartStructureDB(QMainWindow):
             time2 = time.clock()
             diff = time2 - time1
             times.append(diff)
-            print(round(diff, 4), 's')
+            #print(round(diff, 4), 's')
             if not cif.ok:
                 continue
             #print(cif, '##')
             if cif and filename and path:
+                a = cif._cell_length_a
+                b = cif._cell_length_b
+                c = cif._cell_length_c
+                alpha = cif._cell_angle_alpha
+                beta = cif._cell_angle_beta
+                gamma = cif._cell_angle_gamma
                 measurement_id = self.structures.fill_measuremnts_table(filename, structure_id)
                 self.structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
-                self.structures.fill_cell_table(structure_id, cif)
+                self.structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma)
                 strTree = QTreeWidgetItem(self.ui.cifList_treeWidget)
                 strTree.setText(0, filename)
                 strTree.setText(1, dir)
@@ -140,7 +148,7 @@ class StartStructureDB(QMainWindow):
                 n += 1
         print('gesamt:', round(sum(times), 3), 's')
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         # self.ui.relocate_lineEdit.hide()
         self.structures.database.commit_db("Committed")
 

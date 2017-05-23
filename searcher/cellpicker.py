@@ -124,44 +124,55 @@ class Cif():
         self.ok = self.parsefile(file)
 
     def parsefile(self, file):
+        """
+        This method parses the cif file. Currently, only single items and atoms are supported.
+        
+        :param file: Cif file name
+        :type file: str
+        :return: cif file content
+        :rtype: dict
+        """
         data = False
-        loophead = []
+        loophead_list = []
         loop = False
         atoms = {}
         atkey = ''
-        with open(file, mode='r') as f:
+        with open(file, mode='r', encoding='ascii', errors="ignore") as f:
             for num, line in enumerate(f):
-                #loop = False  # <- Disable to parse no loops
+                line = line.lstrip().strip('\r\n ')
                 if loop:
-                    l = line.lstrip().strip('\r\n ')
                     # Do not parse atom type symbols:
-                    if l == "_atom_type_symbol":
+                    if line == "_atom_type_symbol":
                         loop = False
                         continue
-                    if l == '_atom_site_label':
+                    if line == '_atom_site_label':
                         atkey = '_atom_site_label'
-                    if l == '_atom_site_aniso_label':
+                    if line == '_atom_site_aniso_label':
                         atkey = '_atom_site_aniso_label'
-                    if not l:
+                    if not line:
                         loop = False
-                        loophead.clear()
+                        loophead_list.clear()
                         atkey = ''
                         continue
                     # collecting keywords from head:
-                    if l[:1] == "_":
-                        loophead.append(l)
+                    if line[:1] == "_":
+                        loophead_list.append(line)
                     # We are in a loop and the header ended, so we collect data:
                     else:
                         loopitem = {}
-                        datline = l.split()
+                        loop_data_line = line.split()
+                        atom = loop_data_line[0]
                         # quick hack, have to unwrap wrapped loop data:
-                        if len(datline) != len(loophead):
+                        if len(loop_data_line) != len(loophead_list):
+                            # parse lines until next _ at line start
                             continue
-                        for n, item in enumerate(datline):
-                            loopitem[loophead[n]] = item
+                        for n, item in enumerate(loop_data_line):
+                            loopitem[loophead_list[n]] = item
                         if atkey and loopitem[atkey] in atoms:
+                            # atom is already there not there, upating values
                             atoms[loopitem[atkey]].update(loopitem)
                         elif atkey:
+                            # atom is not there, creating key
                             atoms[loopitem[atkey]] = loopitem
                 # First find the start of the cif (the data tag)
                 if line[:5] == 'data_':
@@ -176,18 +187,23 @@ class Cif():
                 if line[:5] == "loop_":
                     loop = True
                     continue
-                #test = line.lstrip()
                 if line.startswith('_') and not loop:
-                    try:
-                        lsplit = line.split()
+                    lsplit = line.split()
+                    if len(lsplit) > 1:
                         self.cif_data[lsplit[0]] = lsplit[1]
-                    except IndexError:
-                        continue
                 if line[:15] == "_shelx_hkl_file":
+                    break
+                if line[:7] == "_refln_":
                     break
         self.cif_data['_atom'] = atoms
         #pprint(self.cif_data)
-        return True
+        if not data:
+            return False
+        if not atoms:
+            self.cif_data.clear()
+            return False
+        else:
+            return True
 
     def __iter__(self):
         """
@@ -198,6 +214,48 @@ class Cif():
             yield self.cif_data
         else:
             yield {}
+
+    @property
+    def _cell_length_a(self):
+        if "_cell_length_a" in self.cif_data:
+            return self.cif_data["_cell_length_a"]
+        else:
+            return ''
+
+    @property
+    def _cell_length_b(self):
+        if "_cell_length_b" in self.cif_data:
+            return self.cif_data["_cell_length_b"]
+        else:
+            return ''
+
+    @property
+    def _cell_length_c(self):
+        if "_cell_length_c" in self.cif_data:
+            return self.cif_data["_cell_length_c"]
+        else:
+            return ''
+
+    @property
+    def _cell_angle_alpha(self):
+        if "_cell_length_alpha" in self.cif_data:
+            return self.cif_data["_cell_length_alpha"]
+        else:
+            return ''
+
+    @property
+    def _cell_angle_beta(self):
+        if "_cell_length_beta" in self.cif_data:
+            return self.cif_data["_cell_length_beta"]
+        else:
+            return ''
+
+    @property
+    def _cell_angle_gamma(self):
+        if "_cell_length_gamma" in self.cif_data:
+            return self.cif_data["_cell_length_gamma"]
+        else:
+            return ''
 
 
 def get_res_cell(filename):
@@ -227,12 +285,16 @@ def get_res_cell(filename):
 
 if __name__ == '__main__':
     time1 = time.clock()
-    c = Cif("test-data/p21c.cif")
+    #c = Cif("test-data/p21c.cif")
     #import CifFile
     #c = CifFile.ReadCif("test-data/p21c.cif")
+    cifffile = "/Users/daniel/.olex2/data/3e30b45376c2d4175951f811f7137870/customisation/cif_templates/ALS_BL1131_post_07_2014.cif"
+    cif2 = "/Users/daniel/Documents/Strukturen/DK_ML7-66/DK_ML7-66-final-old.cif"
+    cif3 = "/Users/daniel/Downloads/.olex/originals/10000007.cif"
+    c = Cif(cif3)
     time2 = time.clock()
     diff = round(time2-time1, 4)
     print(diff, 's')
-    sys.exit()
+    #sys.exit()
     for i in c:
         pprint(i)
