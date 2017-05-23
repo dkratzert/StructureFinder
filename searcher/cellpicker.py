@@ -12,7 +12,8 @@ Created on 09.02.2015
 """
 import codecs
 import os
-import sys
+import time
+from pprint import pprint
 
 import CifFile
 from searcher import misc
@@ -132,33 +133,42 @@ class Cif():
         data = False
         loophead = []
         loop = False
-        loopdata = []
         atoms = {}
+        atkey = ''
         with codecs.open(file, "r", encoding='ascii', errors='ignore') as f:
             for num, line in enumerate(f):
-                loop = False  # for testing
+                #loop = False  # <- Disable to parse no loops
                 if loop:
                     l = line.lstrip().strip('\r\n ')
+                    # Do not parse atom type symbols:
+                    if l == "_atom_type_symbol":
+                        loop = False
+                        continue
+                    if l == '_atom_site_label':
+                        atkey = '_atom_site_label'
+                    if l == '_atom_site_aniso_label':
+                        atkey = '_atom_site_aniso_label'
                     if not l.strip():
                         loop = False
                         loophead.clear()
-                        loopdata.clear()
+                        atkey = ''
                         continue
+                    # collecting keywords from head:
                     if l[:1] == "_":
                         loophead.append(l)
+                    # We are in a loop and the header ended, so we collect data:
                     else:
                         loopitem = {}
                         datline = l.split()
-                        # quick hack, have to unwrap lines:
+                        # quick hack, have to unwrap wrapped loop data:
                         if len(datline) != len(loophead):
-                            print(loopdata)
                             continue
                         for n, item in enumerate(datline):
                             loopitem[loophead[n]] = item
-                        # TODO: Add every item of the loops to a specific dict e.g. _atom
-                        # and structure the above loop with methods
-                        loopdata.append(loopitem)
-                        #print(loopdata)
+                        if atkey and loopitem[atkey] in atoms:
+                            atoms[loopitem[atkey]].update(loopitem)
+                        elif atkey:
+                            atoms[loopitem[atkey]] = loopitem
                 # First find the start of the cif (the data tag)
                 if line.startswith('data_') and not data:
                     name = line.split('_')[1].strip('\n\r')
@@ -178,6 +188,7 @@ class Cif():
                         continue
                 if line.startswith("_shelx_hkl_file"):
                     break
+        #pprint(atoms)
         for fi in self.essential_fields:
             try:
                 self.cif_data[fi]
@@ -267,7 +278,9 @@ def get_res_cell(filename):
 
 
 if __name__ == '__main__':
-
-    c = Cif("../test-data/p21c.cif")
-    for i in c:
-        print(i)
+    time1 = time.clock()
+    c = Cif("test-data/p21c.cif")
+    time2 = time.clock()
+    print(round(time2-time1, 4), 's')
+    #for i in c:
+    #    pprint(i)

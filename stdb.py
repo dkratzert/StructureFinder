@@ -3,6 +3,7 @@ from __future__ import print_function
 import os
 import sys
 
+import time
 from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QFileDialog
@@ -118,16 +119,10 @@ class StartStructureDB(QMainWindow):
             filename = dirn[1]
             path = os.path.dirname(dir)
             structure_id = n
-            """
-            with open(dirn, mode='r') as f:
-                # print(filename)
-                try:
-                    cell = get_cif_cell_raw(filename=f)[1:]
-                except (TypeError, IndexError):
-                    print("No cell found. Trying next file...")
-                    continue
-            """
+            time1 = time.clock()
             cif = Cif(dir)
+            time2 = time.clock()
+            print(round(time2 - time1, 4), 's')
             if not cif.ok:
                 continue
             #print(cif, '##')
