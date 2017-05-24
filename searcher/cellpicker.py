@@ -104,100 +104,44 @@ def get_cif_cell_raw(filename):
                 return cell
     return []
 
-def delimit_line2(line):
+def delimit_line(line):
     """
     >>> line = " 'C'  'C'   0.0033   0.0016   'some text inside' \\"more text\\""
-    >>> delimit_line2(line)
+    >>> delimit_line(line)
     ['C', 'C', '0.0033', '0.0016', 'some text inside', 'more text']
-    >>> delimit_line2("123  123 sdf")
+    >>> delimit_line("123  123 sdf")
     ['123', '123', 'sdf']
-   
-    #>>> delimit_line2("'-2  34' '234'")
-    ['-2  34', '234']
+    >>> delimit_line("'-2  34' '234'")
+    ['-2 34', '234']
+    >>> delimit_line("'x, y, z'")
+    ['x, y, z']
     
     :param ilne: 
     :return: 
     """
     data = []
-    line = line.split('"')
-    for i in line:
-        if not "'" in i and i and not " " in i:
-            data.append(i)
-        elif i:
-            line2 = i.split("'")
-            if len(line2) == 1 and " " in line2[0]:
-                line3 = line2[0].split()
-                for k in line3:
-                    data.append(k)
-                continue
-            for n in line2:
-                if " " in n:
-                    n = n.strip()
-                    if n:
-                        data.append(n)
-                else:
-                    if n:
-                        data.append(n)
-    print(data)
-
-
-def delimit_line(line):
-    """
-    Returns a list where the items are the data fiels from a cif line.
-    Delimiters are ' " or space characters.
-    #>>> line = " 'C'  'C'   0.0033   0.0016   'some text inside' \\"more text\\""
-    #>>> delimit_line(line)
-    ['C', 'C', '0.0033', '0.0016', 'some text inside', 'more text']
-    #>>> delimit_line("123  123 sdf")
-    ['123', '123', 'sdf']
-    #>>> delimit_line("'2  34' '234'")
-    ['-2  34', '234']
-    
-    :type line: str
-    :rtype: list
-    :param line: 
-    :return: delimited line as list 
-    """
-    # " or ' delimited:
-    dstart = False
-    dstop = False
-    # space delimited:
-    sstart = False
-    sstop = False
-    data = []
+    line = line.split(' ')
     word = ''
-    for c in line:
-        # a delimited item starts or ends:
-        if c == "'" or c == '"':
-            sstart = False
-            if not dstart:
-                dstart = True
-                dstop = False
+    cont = False
+    for i in line:
+        if i:
+            if (i[0] == "'" or i[0] == '"') and (i[-1] == "'" or i[-1] == '"'):
+                data.append(i.strip(r"'\""))
                 continue
+            if i[0] == "'" or i[0] == '"':
+                word += i.strip(r"'\"")
+                cont = True
+                continue
+            if cont and not (i[-1] == "'" or i[-1] == '"'):
+                word += ' '+i
+                continue
+            if cont and (i[-1] == "'" or i[-1] == '"'):
+                word += ' '+i.strip(r"'\"")
+                data.append(word)
+                word = ''
+                cont = False
             else:
-                dstart = False
-                dstop = True
-                c = ''
-        if dstop and word and not sstart:
-            data.append(word)
-            word = ''
-            continue
-        if dstart and not sstart:
-            word += c
-            continue
-        if c == " ":
-            sstart = True
-            sstop = False
-        if sstart and c != " ":
-            word += c
-            continue
-        if sstop and word != ' ':
-            data.append(word)
-            word = ''
-            continue
-        if c == " " and word:
-            sstart = False
-            sstop = True
+                data.append(i)
     return data
 
 
@@ -267,18 +211,17 @@ class Cif():
                         atkey = '_atom_site_label'
                     if line == '_atom_site_aniso_label':
                         atkey = '_atom_site_aniso_label'
-
                     # collecting keywords from head:
                     if line[:1] == "_":
                         loophead_list.append(line)
                     # We are in a loop and the header ended, so we collect data:
                     else:
                         loopitem = {}
-                        loop_data_line = line.split()
+                        loop_data_line = delimit_line(line)#line.split()
                         # quick hack, have to unwrap wrapped loop data:
                         if len(loop_data_line) != len(loophead_list):
-                            #print(loop_data_line)
-                            #print(loophead_list)
+                            print(loop_data_line)
+                            print(loophead_list)
                             # parse lines until next _ at line start
                             continue
                         for n, item in enumerate(loop_data_line):
