@@ -104,17 +104,53 @@ def get_cif_cell_raw(filename):
                 return cell
     return []
 
+def delimit_line2(line):
+    """
+    >>> line = " 'C'  'C'   0.0033   0.0016   'some text inside' \\"more text\\""
+    >>> delimit_line2(line)
+    ['C', 'C', '0.0033', '0.0016', 'some text inside', 'more text']
+    >>> delimit_line2("123  123 sdf")
+    ['123', '123', 'sdf']
+   
+    #>>> delimit_line2("'-2  34' '234'")
+    ['-2  34', '234']
+    
+    :param ilne: 
+    :return: 
+    """
+    data = []
+    line = line.split('"')
+    for i in line:
+        if not "'" in i and i and not " " in i:
+            data.append(i)
+        elif i:
+            line2 = i.split("'")
+            if len(line2) == 1 and " " in line2[0]:
+                line3 = line2[0].split()
+                for k in line3:
+                    data.append(k)
+                continue
+            for n in line2:
+                if " " in n:
+                    n = n.strip()
+                    if n:
+                        data.append(n)
+                else:
+                    if n:
+                        data.append(n)
+    print(data)
+
 
 def delimit_line(line):
     """
     Returns a list where the items are the data fiels from a cif line.
     Delimiters are ' " or space characters.
-    >>> line = " 'C'  'C'   0.0033   0.0016   'some text inside' \\"more text\\""
-    >>> delimit_line(line)
+    #>>> line = " 'C'  'C'   0.0033   0.0016   'some text inside' \\"more text\\""
+    #>>> delimit_line(line)
     ['C', 'C', '0.0033', '0.0016', 'some text inside', 'more text']
-    >>> delimit_line("123  123 sdf")
+    #>>> delimit_line("123  123 sdf")
     ['123', '123', 'sdf']
-    >>> delimit_line("'2  34' '234'")
+    #>>> delimit_line("'2  34' '234'")
     ['-2  34', '234']
     
     :type line: str
