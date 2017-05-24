@@ -105,6 +105,66 @@ def get_cif_cell_raw(filename):
     return []
 
 
+def delimit_line(line):
+    """
+    Returns a list where the items are the data fiels from a cif line.
+    Delimiters are ' " or space characters.
+    >>> line = " 'C'  'C'   0.0033   0.0016   'some text inside' \\"more text\\""
+    >>> delimit_line(line)
+    ['C', 'C', '0.0033', '0.0016', 'some text inside', 'more text']
+    >>> delimit_line("123  123 sdf")
+    ['123', '123', 'sdf']
+    >>> delimit_line("'2  34' '234'")
+    ['-2  34', '234']
+    
+    :type line: str
+    :rtype: list
+    :param line: 
+    :return: delimited line as list 
+    """
+    # " or ' delimited:
+    dstart = False
+    dstop = False
+    # space delimited:
+    sstart = False
+    sstop = False
+    data = []
+    word = ''
+    for c in line:
+        # a delimited item starts or ends:
+        if c == "'" or c == '"':
+            sstart = False
+            if not dstart:
+                dstart = True
+                dstop = False
+                continue
+            else:
+                dstart = False
+                dstop = True
+                c = ''
+        if dstop and word and not sstart:
+            data.append(word)
+            word = ''
+            continue
+        if dstart and not sstart:
+            word += c
+            continue
+        if c == " ":
+            sstart = True
+            sstop = False
+        if sstart and c != " ":
+            word += c
+            continue
+        if sstop and word != ' ':
+            data.append(word)
+            word = ''
+            continue
+        if c == " " and word:
+            sstart = False
+            sstop = True
+    return data
+
+
 class Cif():
     def __init__(self, file):
         """
@@ -308,54 +368,11 @@ def get_res_cell(filename):
 
 
 if __name__ == '__main__':
+    import doctest
+    failed, attempted = doctest.testmod()  # verbose=True)
+    if failed == 0:
+        print('passed all {} tests!'.format(attempted))
 
-    line = " 'C'  'C'   0.0033   0.0016   'some text inside' \"more text\""
-    print(line, '\n')
-    # " or ' delimited:
-    dstart = False
-    dstop = False
-    # space delimited:
-    sstart = False
-    sstop = False
-    data = []
-    word = ''
-    for c in line:
-        # a delimited item starts or ends:
-        if c == "'" or c == '"':
-            sstart = False
-            if not dstart:
-                dstart = True
-                dstop = False
-                continue
-            else:
-                dstart = False
-                dstop = True
-                c = ''
-        if dstop and word and not sstart:
-            data.append(word)
-            word = ''
-            continue
-        if dstart and not sstart:
-            word += c
-            continue
-
-        if c == " ":
-            sstart = True
-            sstop = False
-        if sstart and c != " ":
-            word += c
-            continue
-        if sstop and word != ' ':
-            data.append(word)
-            word = ''
-            continue
-        if c == " " and word:
-            sstart = False
-            sstop = True
-
-
-    print(data)
-    sys.exit()
     time1 = time.clock()
     c = Cif("test-data/p21c.cif")
     #import CifFile
@@ -368,6 +385,6 @@ if __name__ == '__main__':
     diff = round(time2-time1, 4)
     print(diff, 's')
     #print(c.cif_data["_space_group_name_H-M_alt"])
-    #sys.exit()
+    sys.exit()
     for i in c:
         pprint(i)
