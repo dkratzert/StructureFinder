@@ -315,49 +315,44 @@ if __name__ == '__main__':
     dstart = False
     dstop = False
     # space delimited:
-    istart = False
-    istop = False
+    sstart = False
+    sstop = False
     data = []
     word = ''
-    for n, c in enumerate(line):
+    for c in line:
         # a delimited item starts or ends:
         if c == "'" or c == '"':
+            sstart = False
             if not dstart:
                 dstart = True
                 dstop = False
-                istart = False
-                istop = False
                 continue
             else:
-                istart = False
-                istop = False
                 dstart = False
                 dstop = True
                 c = ''
-        if c == " " and not dstart:
-            if istop:
-                istart = True
-                istop = True
-                continue
-        if istart:
-            if c != " ":
-                word += c
-                continue
-            if c == " ":
-                continue
-        if c == " " and istop:
-            istop = False
-            istart = False
+        if dstop and word and not sstart:
             data.append(word)
             word = ''
             continue
-        if dstop and word:
-            data.append(word)
-            word = ''
-            continue
-        if dstart:
+        if dstart and not sstart:
             word += c
             continue
+
+        if c == " ":
+            sstart = True
+            sstop = False
+        if sstart and c != " ":
+            word += c
+            continue
+        if sstop and word != ' ':
+            data.append(word)
+            word = ''
+            continue
+        if c == " " and word:
+            sstart = False
+            sstop = True
+
 
     print(data)
     sys.exit()
