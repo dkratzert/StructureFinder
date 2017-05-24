@@ -217,11 +217,12 @@ class Cif():
                     # We are in a loop and the header ended, so we collect data:
                     else:
                         loopitem = {}
-                        loop_data_line = delimit_line(line)#line.split()
+                        #loop_data_line = delimit_line(line)#line.split()
+                        loop_data_line = line.split()
                         # quick hack, have to unwrap wrapped loop data:
                         if len(loop_data_line) != len(loophead_list):
-                            print(loop_data_line)
-                            print(loophead_list)
+                            #print(loop_data_line)
+                            #print(loophead_list)
                             # parse lines until next _ at line start
                             continue
                         for n, item in enumerate(loop_data_line):
@@ -301,22 +302,22 @@ class Cif():
 
     @property
     def _cell_angle_alpha(self):
-        if "_cell_length_alpha" in self.cif_data:
-            return self.cif_data["_cell_length_alpha"]
+        if "_cell_angle_alpha" in self.cif_data:
+            return self.cif_data["_cell_angle_alpha"]
         else:
             return ''
 
     @property
     def _cell_angle_beta(self):
-        if "_cell_length_beta" in self.cif_data:
-            return self.cif_data["_cell_length_beta"]
+        if "_cell_angle_beta" in self.cif_data:
+            return self.cif_data["_cell_angle_beta"]
         else:
             return ''
 
     @property
     def _cell_angle_gamma(self):
-        if "_cell_length_gamma" in self.cif_data:
-            return self.cif_data["_cell_length_gamma"]
+        if "_cell_angle_gamma" in self.cif_data:
+            return self.cif_data["_cell_angle_gamma"]
         else:
             return ''
 
