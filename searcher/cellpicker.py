@@ -308,6 +308,59 @@ def get_res_cell(filename):
 
 
 if __name__ == '__main__':
+
+    line = " 'C'  'C'   0.0033   0.0016   'some text inside' \"more text\""
+    print(line, '\n')
+    # " or ' delimited:
+    dstart = False
+    dstop = False
+    # space delimited:
+    istart = False
+    istop = False
+    data = []
+    word = ''
+    for n, c in enumerate(line):
+        # a delimited item starts or ends:
+        if c == "'" or c == '"':
+            if not dstart:
+                dstart = True
+                dstop = False
+                istart = False
+                istop = False
+                continue
+            else:
+                istart = False
+                istop = False
+                dstart = False
+                dstop = True
+                c = ''
+        if c == " " and not dstart:
+            if istop:
+                istart = True
+                istop = True
+                continue
+        if istart:
+            if c != " ":
+                word += c
+                continue
+            if c == " ":
+                continue
+        if c == " " and istop:
+            istop = False
+            istart = False
+            data.append(word)
+            word = ''
+            continue
+        if dstop and word:
+            data.append(word)
+            word = ''
+            continue
+        if dstart:
+            word += c
+            continue
+
+    print(data)
+    sys.exit()
     time1 = time.clock()
     c = Cif("test-data/p21c.cif")
     #import CifFile
