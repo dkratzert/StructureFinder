@@ -1,0 +1,20 @@
+
+CIF:
+  Comments? DataBlock+
+;
+
+DataBlock:
+  DataBlockHeading DataItems*
+;
+
+DataBlockHeading:
+    DATA_/[^\s]+s/
+;
+
+DATA_:
+    /[d]|[D][a]|[A][t]|[T][a]|[A]/
+;
+
+DataItems:
+    hallos
+;
