@@ -36,17 +36,17 @@ Tag:
 ;
 
 Value:
-    '.' | '?' | NUMBER | <CharString> | <TextField> }
+    /('.' | '?' | NUMBER | CharString | TextField)/
 ;
 
 CharString:
-    <UnquotedString> | <SingleQuotedString> | <DoubleQuotedString>
+    /(UnquotedStringLineStart | UnquotedStringAfterKeyword | SingleQuotedString | DoubleQuotedString)/
 ;
 
-<eol>UnquotedString:
+UnquotedStringLineStart:
     <eol><OrdinaryChar> {<NonBlankChar>}*	
 ;    
-<noteol><UnquotedString>:
+UnquotedStringAfterKeyword:
     <noteol>{<OrdinaryChar>|';'} {<NonBlankChar>}*
 ;
 
