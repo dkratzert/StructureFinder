@@ -182,7 +182,7 @@ class Cif():
         atoms = {}
         atkey = ''
         wordlist = []
-        with open(file, mode='r', encoding='ascii', errors="ignore") as f:
+        with file.open(mode='r', encoding='ascii', errors="ignore") as f:
             for num, line in enumerate(f):
                 line = line.lstrip().strip('\r\n ')
                 if loop:

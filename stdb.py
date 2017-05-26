@@ -70,12 +70,19 @@ class StartStructureDB(QMainWindow):
         # self.ui.properties_treeWidget.show()
         cell = self.structures.get_cell_by_id(item.sibling(item.row(), 2).data())
         # print(item.sibling(item.row(), 2).data())
-        self.ui.aLineEdit.setText("{:>5.4f}".format(cell[0]))
-        self.ui.bLineEdit.setText("{:>5.4f}".format(cell[1]))
-        self.ui.cLineEdit.setText("{:>5.4f}".format(cell[2]))
-        self.ui.alphaLineEdit.setText("{:>5.4f}".format(cell[3]))
-        self.ui.betaLineEdit.setText("{:>5.4f}".format(cell[4]))
-        self.ui.gammaLineEdit.setText("{:>5.4f}".format(cell[5]))
+        a, b, c, alpha, beta, gamma = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5]
+        if a:
+            self.ui.aLineEdit.setText("{:>5.4f}".format(a))
+        if b:
+            self.ui.bLineEdit.setText("{:>5.4f}".format(b))
+        if c:
+            self.ui.cLineEdit.setText("{:>5.4f}".format(c))
+        if alpha:
+            self.ui.alphaLineEdit.setText("{:>5.4f}".format(alpha))
+        if beta:
+            self.ui.betaLineEdit.setText("{:>5.4f}".format(beta))
+        if gamma:
+            self.ui.gammaLineEdit.setText("{:>5.4f}".format(gamma))
 
     def search(self, search_string):
         pass
@@ -109,11 +116,11 @@ class StartStructureDB(QMainWindow):
         fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         # fname = "D:/GitHub/StructureDB/test-data"
         # fname = os.path.abspath("/Users/daniel/Downloads")
-        # fname = os.path.abspath("test-data")
+        # fname = os.path.abspath("../")
         if not fname:
             return False
         time1 = time.clock()
-        files = filecrawler.create_file_list(str(fname), endings='cif')
+        files = list(filecrawler.create_file_list(str(fname), endings='cif'))
         time2 = time.clock()
         diff = time2 - time1
         print("File list:", round(diff, 4), 's')
@@ -121,16 +128,15 @@ class StartStructureDB(QMainWindow):
         # TODO: implement multiple cells in one cif file:
         n = 1
         times = []
-        for dirn in files:
-            dir = dirn[0]
-            filename = dirn[1]
-            path = os.path.dirname(dir)
+        for filepth in files:
+            filename = filepth.name
+            path = str(filepth.parents[0])
             structure_id = n
-            time1 = time.clock()
-            cif = Cif(dir)
             time2 = time.clock()
-            diff = time2 - time1
-            times.append(diff)
+            cif = Cif(filepth)
+            time3 = time.clock()
+            diff2 = time3 - time2
+            times.append(diff2)
             #print(round(diff, 4), 's')
             if not cif.ok:
                 continue
@@ -147,7 +153,7 @@ class StartStructureDB(QMainWindow):
                 self.structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma)
                 strTree = QTreeWidgetItem(self.ui.cifList_treeWidget)
                 strTree.setText(0, filename)
-                strTree.setText(1, dir)
+                strTree.setText(1, path)
                 strTree.setText(2, str(n))
                 n += 1
         print('Parse cif files:', round(sum(times), 3), 's')

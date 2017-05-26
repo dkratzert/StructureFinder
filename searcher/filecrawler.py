@@ -26,62 +26,24 @@ def create_file_list(searchpath='None', endings='cif'):
         print('search path {0} not found!'.format(searchpath))
         sys.exit()
     print('collecting files...')
-    res = filewalker(searchpath, endings)
-    #res = filewalker_walk(searchpath, endings)
+    res = filewalker(searchpath)
     print('ready')
     return res
 
 
-def filewalker3(startdir, endings="*.cif"):
+def filewalker(startdir, endings="*.cif"):
     """
     file walker with pathlib
     :param startdir: 
     :param endings: 
     :return:
      
-    >>> filewalker3('../')
+    #>>> filewalker3('../')
     """
     p = Path(startdir)
     paths = p.rglob("*.cif")
-    for i in paths:
-        print(i)
+    return paths
 
-
-def filewalker(startdir, endings, add_excludes=[]):
-    """
-    walks through the filesystem starting from startdir and searches
-    for files with ending endings.
-    :type add_excludes: list
-    :type endings: str
-    :type startdir: str
-    """
-    filelist = []
-    # TODO: use excludes:
-    excludes = ['.olex', 'dsrsaves']
-    if add_excludes:
-        excludes.extend(add_excludes)
-    print('collecting files below ' + startdir)
-
-    def scantree(path):
-        """Recursively yield DirEntry objects for given directory."""
-        for entry in os.scandir(path):
-            try:
-                os.stat(entry.path)
-            except OSError:
-                continue
-            if entry.is_dir(follow_symlinks=False):
-                yield from scantree(entry.path)
-            else:
-                yield entry
-
-    for entry in scantree(startdir):
-        # if not entry.name.startswith('.') and entry.is_file():
-        # if entry.is_file():
-        if fn.fnmatch(entry.name, '*.{0}'.format(endings)):
-            filelist.append([entry.path, entry.name])
-        else:
-            continue
-    return filelist
 
 def filewalker_walk(startdir, endings, add_excludes=[]):
     """
