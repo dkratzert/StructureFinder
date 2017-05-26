@@ -58,9 +58,10 @@ UnquotedStringAfterKeyword:
     <double_quote> {<AnyPrintChar>}* <double_quote> <WhiteSpace>
 ;
 
-TextField:
-    SemiColonTextField
-;
+# Not neccesary
+#TextField:
+#    SemiColonTextField
+#;
 
 <eol><SemiColonTextField>:
     <eol>';' { {<AnyPrintChar>}* <eol>{{<TextLeadChar> {<AnyPrintChar>}*}? <eol>}*} ';'

@@ -13,6 +13,8 @@ Created on 09.02.2015
 import os
 import fnmatch as fn
 import sys
+from pathlib import Path
+from pprint import pprint
 
 
 def create_file_list(searchpath='None', endings='cif'):
@@ -28,6 +30,22 @@ def create_file_list(searchpath='None', endings='cif'):
     #res = filewalker_walk(searchpath, endings)
     print('ready')
     return res
+
+
+def filewalker3(startdir, endings="*.cif"):
+    """
+    file walker with pathlib
+    :param startdir: 
+    :param endings: 
+    :return:
+     
+    >>> filewalker3('../')
+    """
+    p = Path(startdir)
+    paths = p.rglob("*.cif")
+    for i in paths:
+        print(i)
+
 
 def filewalker(startdir, endings, add_excludes=[]):
     """
