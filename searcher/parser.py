@@ -53,9 +53,11 @@ CharString:
 
 
 if __name__ == '__main__':
-    mm = metamodel_from_str(grammar)
+    #mm = metamodel_from_str(grammar)
 
     # Meta-model knows how to parse and instantiate models.
-    model = mm.model_from_file('./test-data/p21c.cif')
+    #model = mm.model_from_file('./test-data/p21c.cif')
 
-    print(model)
+    #print(model)
+    tst = r""" 'C'  'C'   0.0033   0.0016
+ 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'"""

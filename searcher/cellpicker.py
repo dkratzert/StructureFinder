@@ -17,6 +17,8 @@ from pprint import pprint
 
 import sys
 
+import re
+
 from searcher import misc
 from searcher.misc import get_error_from_value
 
@@ -126,22 +128,23 @@ def delimit_line(line):
     cont = False
     for i in line:
         if i:
-            if (i[0] == "'" or i[0] == '"') and (i[-1] == "'" or i[-1] == '"'):
-                data.append(i.strip(r"'\""))
-                continue
             if i[0] == "'" or i[0] == '"':
-                word += i.strip(r"'\"")
+                if i[-1] == "'" or i[-1] == '"':
+                    data.append(i.strip("'").strip('"'))
+                    continue
+            if i.startswith("'") or i.startswith('"'):
+                word = i.strip("'").strip('"')+" "
                 cont = True
                 continue
-            if cont and not (i[-1] == "'" or i[-1] == '"'):
-                word += ' '+i
-                continue
-            if cont and (i[-1] == "'" or i[-1] == '"'):
-                word += ' '+i.strip(r"'\"")
+            if i.endswith("'") or i.endswith("'"):
+                word += i.strip("'").strip('"')
                 data.append(word)
-                word = ''
                 cont = False
-            else:
+                word = ''
+                continue
+            if cont:
+                word += i+" "
+            if not (i[0] == "'" or i[0] == '"') and not (i[-1] == "'" or i[-1] == '"'):
                 data.append(i)
     return data
 
