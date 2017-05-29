@@ -104,6 +104,7 @@ def get_cif_cell_raw(filename):
                 return cell
     return []
 
+
 def delimit_line(line):
     """
     >>> line = " 'C'  'C'   0.0033   0.0016   'some text inside' \\"more text\\""

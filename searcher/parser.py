@@ -1,7 +1,7 @@
 from textx.metamodel import metamodel_from_str
 from pathlib import Path
 
-grammar = """
+grammar = r"""
 CIF:
   Comment? DataBlock=DataBlock+
 ;
@@ -15,20 +15,24 @@ DataBlockHeading:
 ;
 
 DATA_:
-#    /[d]|[D][a]|[A][t]|[T][a]|[A]/
-    "data"|"DATA"|"Data"
+    /[d]|[D][a]|[A][t]|[T][a]|[A]/
+//    "data"|"DATA"|"Data"
 ;
 
 DataItems:
     Tag  /.*/
 ;
 
-Comment:
+WhiteSpace:
+    /( \s | \t | \r | \r\n | \n | TokenizedComments )+ /
+;
+
+Comments:
     /^#.*$/
 ;
 
 TokenizedComments:
-    	{ <SP> | <HT> | <eol> |}+ <Comments>
+    	/ ( \s | \t | \r | \r\n | \n )+ Comments /
 ;
 
 Tag:
@@ -44,10 +48,11 @@ CharString:
 ;
 
 UnquotedStringLineStart:
-    <eol><OrdinaryChar> {<NonBlankChar>}*	
-;    
+    / (\r | \n | \r\n )OrdinaryChar (NonBlankChar)* / 	
+;
+
 UnquotedStringAfterKeyword:
-    <noteol>{<OrdinaryChar>|';'} {<NonBlankChar>}*
+    / [^(\r | \n | \r\n )] (OrdinaryChar> | ;) NonBlankChar*
 ;
 
 <SingleQuotedString> <WhiteSpace>:
@@ -58,18 +63,15 @@ UnquotedStringAfterKeyword:
     <double_quote> {<AnyPrintChar>}* <double_quote> <WhiteSpace>
 ;
 
-# Not neccesary
-#TextField:
-#    SemiColonTextField
-#;
+// Not neccesary
+TextField:
+    SemiColonTextField
+;
 
 <eol><SemiColonTextField>:
     <eol>';' { {<AnyPrintChar>}* <eol>{{<TextLeadChar> {<AnyPrintChar>}*}? <eol>}*} ';'
 ;
 
-WhiteSpace:
-    { <SP> | <HT> | <eol> | <TokenizedComments>}+
-;
 
 <OrdinaryChar>:
      '!' | '%' | '&' | '(' | ')' | '*' | '+' | ',' | '-' | '.' | '/' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | ':' | '<' | '=' | '>' | '?' | '@' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z' | '\' | '^' | '`' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | '{' | '|' | '}' | '~' }
