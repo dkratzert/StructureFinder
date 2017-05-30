@@ -22,10 +22,204 @@ import re
 from searcher import misc
 from searcher.misc import get_error_from_value
 
-essential_fields = ('_cell_length_a', '_cell_length_b', '_cell_length_c', '_cell_angle_alpha', '_cell_angle_beta',
-                         '_cell_angle_gamma')
-fields = ('_diffrn_ambient_temperature', '_diffrn_reflns_av_R_equivalents', '_diffrn_reflns_av_unetI/netI',
-               '_diffrn_reflns_theta_max')
+
+class Cif():
+    def __init__(self, file):
+        """
+        A cif file parsing object optimized for speed and simplicity.
+        :param file: input filename object
+        :type file: object
+
+        - find loops
+          - get loop header
+          - start and end
+        - fill for example atom loop dict with atoms
+        """
+        self.cif_data = {}
+        self.fields = fields
+        self.ok = self.parsefile(file)
+
+    def parsefile(self, file):
+        """
+        This method parses the cif file. Currently, only single items and atoms are supported.
+        TODO: Implement multi line comments ";"
+        TODO: Implement line breaks in values
+
+        :param file: Cif file name
+        :type file: str
+        :return: cif file content
+        :rtype: dict
+        """
+        data = False
+        loop = False
+        hkl = False
+        loophead_list = []
+        save_frame = False
+        atoms = {}
+        atkey = ''
+        semi_colon_text_field = ''
+        semi_colon_text_list = []
+        cont = False  # continue to next line if True
+        with file.open(mode='r', encoding='ascii', errors="ignore") as f:
+            txt = f.readlines()
+            textlen = len(txt)
+            for num, line in enumerate(txt):
+                line = line.rstrip('\r\n ')
+                if loop:
+                    if not line:
+                        loop = False
+                        loophead_list.clear()
+                        atkey = ''
+                        continue
+                    line = line.lstrip()
+                    # leave out comments:
+                    if line[0] == '#':
+                        continue
+                    # Leave out save_ frames:
+                    if save_frame:
+                        continue
+                    if line[:5] == "save_":
+                        save_frame = True
+                        continue
+                    elif line[:5] == "save_" and save_frame:
+                        save_frame = False
+                    # to collect the two parts of an atom loop (have to do it more general):
+                    if line == '_atom_site_label':
+                        atkey = '_atom_site_label'
+                    if line == '_atom_site_aniso_label':
+                        atkey = '_atom_site_aniso_label'
+                    # if line == "_atom_type_symbol":
+                    #                        atkey = "_atom_type_symbol"
+                    #                    if line == "_atom_type_scat_dispersion_real":
+                    #                        atkey = "_atom_type_scat_dispersion_real"
+                    #                    if line == "_atom_type_scat_dispersion_imag":
+                    #                        atkey = "_atom_type_scat_dispersion_imag"
+                    #                    if line == "_atom_type_scat_source":
+                    #                        atkey = "_atom_type_scat_source"
+                    # collecting keywords from head:
+                    if line[:1] == "_":
+                        loophead_list.append(line)
+                        continue
+                    # We are in a loop and the header ended, so we collect data:
+                    else:
+                        loopitem = {}
+                        loop_data_line = delimit_line(line)
+                        # unwrap loop data:
+                        if len(loop_data_line) != len(loophead_list):
+                            if textlen - 1 > num:
+                                loop_data_line.extend(delimit_line(txt[num + 1]))
+                            continue
+                        for n, item in enumerate(loop_data_line):
+                            loopitem[loophead_list[n]] = item
+                        # TODO: make this general. Not only for atoms:
+                        if atkey and loopitem[atkey] in atoms:
+                            # atom is already there not there, upating values
+                            atoms[loopitem[atkey]].update(loopitem)
+                        elif atkey:
+                            # atom is not there, creating key
+                            atoms[loopitem[atkey]] = loopitem
+                # First find the start of the cif (the data tag)
+                if line[:5] == 'data_':
+                    if not data:
+                        name = line.split('_')[1].strip('\n\r')
+                        self.cif_data['data'] = name
+                        data = True
+                        continue
+                    else:
+                        break  # TODO: support multi cif
+                # Find the loop positions:
+                if line[:5] == "loop_":
+                    loop = True
+                    continue
+                # Collect all data items outside loops:
+                if line.startswith('_') and not loop:
+                    lsplit = line.split()
+                    if len(lsplit) > 1:
+                        self.cif_data[lsplit[0]] = " ".join(delimit_line(" ".join(lsplit[1:])))
+                if line.startswith("_shelx_hkl_file") or line.startswith("_refln_"):
+                    hkl = True
+                    continue
+                # Leave out hkl frames:
+                if hkl:
+                    break
+                    # continue  # use continue if data is behind hkl
+                if line.lstrip()[:1] == ";" and hkl:
+                    hkl = False
+                if semi_colon_text_field:
+                    if not line.lstrip().startswith(";"):
+                        semi_colon_text_list.append(line)
+                    if (textlen - 1 > num) and txt[num + 1][0] == ";":
+                        self.cif_data[semi_colon_text_field] = "{}".format(os.linesep).join(semi_colon_text_list)
+                        semi_colon_text_list.clear()
+                        semi_colon_text_field = ''
+                        continue
+                if (textlen - 1 > num) and txt[num + 1][0] == ";":
+                    if line.startswith("_shelx_res_file"):
+                        break
+                        # continue  # use continue if data is behind res file
+                    semi_colon_text_field = line
+                    continue
+        self.cif_data['_atom'] = atoms
+        # pprint(self.cif_data)  # slow
+        if not data:
+            return False
+        if not atoms:
+            self.cif_data.clear()
+            return False
+        else:
+            return True
+
+    def __iter__(self):
+        """
+        an iterable for the Cif object
+        :return: cif entries
+        """
+        if self.ok:
+            yield self.cif_data
+        else:
+            yield {}
+
+    @property
+    def _cell_length_a(self):
+        if "_cell_length_a" in self.cif_data:
+            return self.cif_data["_cell_length_a"]
+        else:
+            return ''
+
+    @property
+    def _cell_length_b(self):
+        if "_cell_length_b" in self.cif_data:
+            return self.cif_data["_cell_length_b"]
+        else:
+            return ''
+
+    @property
+    def _cell_length_c(self):
+        if "_cell_length_c" in self.cif_data:
+            return self.cif_data["_cell_length_c"]
+        else:
+            return ''
+
+    @property
+    def _cell_angle_alpha(self):
+        if "_cell_angle_alpha" in self.cif_data:
+            return self.cif_data["_cell_angle_alpha"]
+        else:
+            return ''
+
+    @property
+    def _cell_angle_beta(self):
+        if "_cell_angle_beta" in self.cif_data:
+            return self.cif_data["_cell_angle_beta"]
+        else:
+            return ''
+
+    @property
+    def _cell_angle_gamma(self):
+        if "_cell_angle_gamma" in self.cif_data:
+            return self.cif_data["_cell_angle_gamma"]
+        else:
+            return ''
 
 
 def get_cif_cell_raw(filename):
@@ -150,207 +344,6 @@ def delimit_line(line):
             else:
                 data.append(i)
     return data
-
-
-class Cif():
-    def __init__(self, file):
-        """
-        A cif file parsing object optimized for speed and simplicity.
-        :param file: input filename object
-        :type file: object
-        
-        - find loops
-          - get loop header
-          - start and end
-        - fill for example atom loop dict with atoms
-        """
-        self.cif_data = {}
-        self.essential_fields = essential_fields
-        self.fields = fields
-        self.all_fields = self.essential_fields + self.fields
-        self.ok = self.parsefile(file)
-
-    def parsefile(self, file):
-        """
-        This method parses the cif file. Currently, only single items and atoms are supported.
-        TODO: Implement multi line comments ";"
-        TODO: Implement line breaks in values
-        
-        :param file: Cif file name
-        :type file: str
-        :return: cif file content
-        :rtype: dict
-        """
-        data = False
-        loop = False
-        hkl = False
-        loophead_list = []
-        save_frame = False
-        atoms = {}
-        atkey = ''
-        semi_colon_text_field = ''
-        semi_colon_text_list = []
-        cont = False  # continue to next line if True
-        with file.open(mode='r', encoding='ascii', errors="ignore") as f:
-            txt = f.readlines()
-            textlen = len(txt)
-            for num, line in enumerate(txt):
-                line = line.rstrip('\r\n ')
-                if loop:
-                    if not line:
-                        loop = False
-                        loophead_list.clear()
-                        atkey = ''
-                        continue
-                    line = line.lstrip()
-                    # leave out comments:
-                    if line[0] == '#':
-                        continue
-                    # Leave out save_ frames:
-                    if save_frame:
-                        continue
-                    if line[:5] == "save_":
-                        save_frame = True
-                        continue
-                    elif line[:5] == "save_" and save_frame:
-                        save_frame = False
-                    # to collect the two parts of an atom loop (have to do it more general):
-                    if line == '_atom_site_label':
-                        atkey = '_atom_site_label'
-                    if line == '_atom_site_aniso_label':
-                        atkey = '_atom_site_aniso_label'
-#                    if line == "_atom_type_symbol":
-#                        atkey = "_atom_type_symbol"
-#                    if line == "_atom_type_scat_dispersion_real":
-#                        atkey = "_atom_type_scat_dispersion_real"
-#                    if line == "_atom_type_scat_dispersion_imag":
-#                        atkey = "_atom_type_scat_dispersion_imag"
-#                    if line == "_atom_type_scat_source":
-#                        atkey = "_atom_type_scat_source"
-                    # collecting keywords from head:
-                    if line[:1] == "_":
-                        loophead_list.append(line)
-                        continue
-                    # We are in a loop and the header ended, so we collect data:
-                    else:
-                        loopitem = {}
-                        loop_data_line = delimit_line(line)
-                        # unwrap loop data:
-                        if len(loop_data_line) != len(loophead_list):
-                            if textlen-1 > num:
-                                loop_data_line.extend(delimit_line(txt[num+1]))
-                            continue
-                        for n, item in enumerate(loop_data_line):
-                            loopitem[loophead_list[n]] = item
-                        # TODO: make this general. Not only for atoms:
-                        if atkey and loopitem[atkey] in atoms:
-                            # atom is already there not there, upating values
-                            atoms[loopitem[atkey]].update(loopitem)
-                        elif atkey:
-                            # atom is not there, creating key
-                            atoms[loopitem[atkey]] = loopitem
-                # First find the start of the cif (the data tag)
-                if line[:5] == 'data_':
-                    if not data:
-                        name = line.split('_')[1].strip('\n\r')
-                        self.cif_data['data'] = name
-                        data = True
-                        continue
-                    else:
-                        break  # TODO: support multi cif
-                # Find the loop positions:
-                if line[:5] == "loop_":
-                    loop = True
-                    continue
-                # Collect all data items outside loops:
-                if line.startswith('_') and not loop:
-                    lsplit = line.split()
-                    if len(lsplit) > 1:
-                        self.cif_data[lsplit[0]] = " ".join(delimit_line(" ".join(lsplit[1:])))
-                if line.startswith("_shelx_hkl_file") or line.startswith("_refln_"):
-                    hkl = True
-                    continue
-                # Leave out hkl frames:
-                if hkl:
-                    break
-                    #continue  # use continue if data is behind hkl
-                if line.lstrip()[:1] == ";" and hkl:
-                    hkl = False
-                if semi_colon_text_field:
-                    if not line.lstrip().startswith(";"):
-                        semi_colon_text_list.append(line)
-                    if (textlen-1 > num) and txt[num + 1][0] == ";":
-                        self.cif_data[semi_colon_text_field] = "{}".format(os.linesep).join(semi_colon_text_list)
-                        semi_colon_text_list.clear()
-                        semi_colon_text_field = ''
-                        continue
-                if (textlen-1 > num) and txt[num + 1][0] == ";":
-                    if line.startswith("_shelx_res_file"):
-                        break
-                        #continue  # use continue if data is behind res file
-                    semi_colon_text_field = line
-                    continue
-        self.cif_data['_atom'] = atoms
-        #pprint(self.cif_data)  # slow
-        if not data:
-            return False
-        if not atoms:
-            self.cif_data.clear()
-            return False
-        else:
-            return True
-
-    def __iter__(self):
-        """
-        an iterable for the Cif object
-        :return: cif entries
-        """
-        if self.ok:
-            yield self.cif_data
-        else:
-            yield {}
-
-    @property
-    def _cell_length_a(self):
-        if "_cell_length_a" in self.cif_data:
-            return self.cif_data["_cell_length_a"]
-        else:
-            return ''
-
-    @property
-    def _cell_length_b(self):
-        if "_cell_length_b" in self.cif_data:
-            return self.cif_data["_cell_length_b"]
-        else:
-            return ''
-
-    @property
-    def _cell_length_c(self):
-        if "_cell_length_c" in self.cif_data:
-            return self.cif_data["_cell_length_c"]
-        else:
-            return ''
-
-    @property
-    def _cell_angle_alpha(self):
-        if "_cell_angle_alpha" in self.cif_data:
-            return self.cif_data["_cell_angle_alpha"]
-        else:
-            return ''
-
-    @property
-    def _cell_angle_beta(self):
-        if "_cell_angle_beta" in self.cif_data:
-            return self.cif_data["_cell_angle_beta"]
-        else:
-            return ''
-
-    @property
-    def _cell_angle_gamma(self):
-        if "_cell_angle_gamma" in self.cif_data:
-            return self.cif_data["_cell_angle_gamma"]
-        else:
-            return ''
 
 
 def get_res_cell(filename):
