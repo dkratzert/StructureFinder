@@ -214,10 +214,6 @@ class Cif():
                         continue
                     elif line[:5] == "save_" and save_frame:
                         save_frame = False
-                    # Do not parse atom type symbols:
-                    #if line == "_atom_type_symbol":
-                    #    loop = False
-                    #    continue
                     # to collect the two parts of an atom loop (have to do it more general):
                     if line == '_atom_site_label':
                         atkey = '_atom_site_label'
@@ -234,13 +230,16 @@ class Cif():
                     # collecting keywords from head:
                     if line[:1] == "_":
                         loophead_list.append(line)
+                        continue
                     # We are in a loop and the header ended, so we collect data:
                     else:
                         loopitem = {}
                         loop_data_line = delimit_line(line)
                         # unwrap loop data:
                         if len(loop_data_line) != len(loophead_list):
-                            loop_data_line.extend(delimit_line(txt[num+1]))
+                            if textlen-1 > num:
+                                loop_data_line.extend(delimit_line(txt[num+1]))
+                            continue
                         for n, item in enumerate(loop_data_line):
                             loopitem[loophead_list[n]] = item
                         # TODO: make this general. Not only for atoms:
@@ -397,7 +396,7 @@ if __name__ == '__main__':
     #sys.exit()
     for i in c:
         pass
-        #pprint(i)
+        pprint(i)
         #for x in i:
         #    print(x), print(i[x])
 

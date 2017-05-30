@@ -120,7 +120,11 @@ class StartStructureDB(QMainWindow):
         if not fname:
             return False
         time1 = time.clock()
-        files = list(filecrawler.create_file_list(str(fname), endings='cif'))
+        try:
+            files = list(filecrawler.create_file_list(str(fname), endings='cif'))
+        except FileNotFoundError as e:
+            print(e)
+            return False
         time2 = time.clock()
         diff = time2 - time1
         print("File list:", round(diff, 4), 's')
@@ -131,6 +135,7 @@ class StartStructureDB(QMainWindow):
         for filepth in files:
             filename = filepth.name
             path = str(filepth.parents[0])
+            #print(filepth)  # print full file path
             structure_id = n
             time2 = time.clock()
             cif = Cif(filepth)
