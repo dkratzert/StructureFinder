@@ -124,7 +124,7 @@ def delimit_line(line):
     """
     data = []
     line = line.split(' ')
-    word = ''
+    word = []
     cont = False
     for i in line:
         if i:
@@ -132,19 +132,19 @@ def delimit_line(line):
                 if i[-1] == "'" or i[-1] == '"':
                     data.append(i.strip("'").strip('"'))
                     continue
-            if i.startswith("'") or i.startswith('"'):
-                word = i.strip("'").strip('"')+" "
+            if i[0] == "'" or i[0] == '"':
+                word.clear()
+                word.append(i.strip("'").strip('"'))
                 cont = True
                 continue
-            if i.endswith("'") or i.endswith("'"):
-                word += i.strip("'").strip('"')
-                data.append(word)
+            if i[-1] == "'" or i[-1] == '"':
+                word.append(i.strip("'").strip('"'))
+                data.append(' '.join(word))
                 cont = False
-                word = ''
                 continue
             if cont:
-                word += i+" "
-            if not (i[0] == "'" or i[0] == '"') and not (i[-1] == "'" or i[-1] == '"'):
+                word.append(i)
+            else:
                 data.append(i)
     return data
 
@@ -170,6 +170,8 @@ class Cif():
     def parsefile(self, file):
         """
         This method parses the cif file. Currently, only single items and atoms are supported.
+        TODO: Implement multi line comments ";"
+        TODO: Implement line breaks in values
         
         :param file: Cif file name
         :type file: str
@@ -196,7 +198,7 @@ class Cif():
                         atkey = ''
                         continue
                     # leave out comments:
-                    if line[:1] == '#':
+                    if line[0] == '#':
                         continue
                     # Leave out save_ frames:
                     if save_frame:
@@ -221,11 +223,11 @@ class Cif():
                     # We are in a loop and the header ended, so we collect data:
                     else:
                         loopitem = {}
-                        #loop_data_line = delimit_line(line)#line.split()
-                        loop_data_line = line.split()
+                        loop_data_line = delimit_line(line)#line.split()
+                        #loop_data_line = line.split()
                         # quick hack, have to unwrap wrapped loop data:
                         if len(loop_data_line) != len(loophead_list):
-                            #print(loop_data_line)
+                            print(loop_data_line)
                             #print(loophead_list)
                             # parse lines until next _ at line start
                             continue
@@ -254,7 +256,7 @@ class Cif():
                 if line.startswith('_') and not loop:
                     lsplit = line.split()
                     if len(lsplit) > 1:
-                        self.cif_data[lsplit[0]] = lsplit[1]
+                        self.cif_data[lsplit[0]] = " ".join(delimit_line(" ".join(lsplit[1:])))
                 # Leave out hkl frames:
                 if hkl:
                     continue
@@ -356,9 +358,9 @@ if __name__ == '__main__':
     failed, attempted = doctest.testmod()  # verbose=True)
     if failed == 0:
         print('passed all {} tests!'.format(attempted))
-
+    from pathlib import Path
     time1 = time.clock()
-    c = Cif("test-data/p21c.cif")
+    c = Cif(Path("./test-data/p21c.cif"))
     #import CifFile
     #c = CifFile.ReadCif("test-data/p21c.cif")
     #cifffile = "/Users/daniel/.olex2/data/3e30b45376c2d4175951f811f7137870/customisation/cif_templates/ALS_BL1131_post_07_2014.cif"

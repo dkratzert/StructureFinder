@@ -38,7 +38,7 @@ def filewalker(startdir, endings="*.cif"):
     :param endings: 
     :return:
      
-    #>>> filewalker3('../')
+    #>>> filewalker('../')
     """
     p = Path(startdir)
     paths = p.rglob("*.cif")
