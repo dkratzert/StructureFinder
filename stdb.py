@@ -11,8 +11,9 @@ from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
 from searcher import filecrawler
 from stdb_main import Ui_stdbMainwindow
-from searcher.fileparser import get_cif_cell_raw, Cif
+from searcher.fileparser import Cif
 from searcher.database_handler import StructureTable, DatabaseRequest
+from opengl.moleculegl import GLWidget
 
 uic.compileUiDir('./')
 
@@ -45,6 +46,11 @@ class StartStructureDB(QMainWindow):
         # self.ui.cellSearchEdit.hide()
         self.dbfilename = 'test.sqlite'
         print(self.dbfilename)
+        self.glWidget = GLWidget()
+        self.ui.openglVlayout.addWidget(self.glWidget)
+        #self.glWidget.setMinimumSize(250, 250)
+        self.ui.centralwidget.setMinimumSize(1200, 500)
+        self.showMaximized()
         try:
             os.remove(self.dbfilename)
         except:
