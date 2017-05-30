@@ -50,7 +50,6 @@ from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QOpenGLWidget
 
-
 class GLWidget(QOpenGLWidget):
     xRotationChanged = pyqtSignal(int)
     yRotationChanged = pyqtSignal(int)
@@ -98,6 +97,7 @@ class GLWidget(QOpenGLWidget):
         self.gl.initializeOpenGLFunctions()
         self.setClearColor(self.bgcolor.darker())
         self.object = self.makeObject()
+        self.cube = self.make_cube()
         self.gl.glShadeModel(self.gl.GL_FLAT)
         self.gl.glEnable(self.gl.GL_DEPTH_TEST)
         self.gl.glEnable(self.gl.GL_CULL_FACE)
@@ -111,6 +111,7 @@ class GLWidget(QOpenGLWidget):
         self.gl.glRotated(self.yRot / 16.0, 0.0, 1.0, 0.0)
         self.gl.glRotated(self.zRot / 16.0, 0.0, 0.0, 1.0)
         self.gl.glCallList(self.object)
+        self.gl.glCallList(self.cube)
 
     def resizeGL(self, width, height):
         side = min(width, height)
@@ -178,6 +179,45 @@ class GLWidget(QOpenGLWidget):
             self.quad(x5, y5, x6, y6, x7, y7, x8, y8)
             self.extrude(x6, y6, x7, y7)
             self.extrude(x8, y8, x5, y5)
+        self.gl.glEnd()
+        self.gl.glEndList()
+        return genList
+
+    def make_cube(self):
+        genList = self.gl.glGenLists(1)
+        self.gl.glNewList(genList, self.gl.GL_COMPILE)
+        self.gl.glBegin(self.gl.GL_QUADS)
+        self.gl.glColor3f(0, 1, 0)
+        # front
+        self.gl.glVertex3d(0.0, 0.0, 0.0)
+        self.gl.glVertex3d(0.2, 0.0, 0.0)
+        self.gl.glVertex3d(0.2, 0.2, 0.0)
+        self.gl.glVertex3d(0.0, 0.2, 0.0)
+        # back
+        self.gl.glVertex3d(0.0, 0.0, -0.2)
+        self.gl.glVertex3d(0.2, 0.0, -0.2)
+        self.gl.glVertex3d(0.2, 0.2, -0.2)
+        self.gl.glVertex3d(0.0, 0.2, -0.2)
+        # right
+        self.gl.glVertex3d(0.2, 0.0, 0.0)
+        self.gl.glVertex3d(0.2, 0.0, -0.2)
+        self.gl.glVertex3d(0.2, 0.2, -0.2)
+        self.gl.glVertex3d(0.2, 0.2, 0.0)
+        # left
+        self.gl.glVertex3d(0.0, 0.0, 0.0)
+        self.gl.glVertex3d(0.0, 0.0, -0.2)
+        self.gl.glVertex3d(0.0, 0.2, -0.2)
+        self.gl.glVertex3d(0.0, 0.2, 0.0)
+        # top
+        self.gl.glVertex3d(0.0, 0.2, 0.0)
+        self.gl.glVertex3d(0.2, 0.2, 0.0)
+        self.gl.glVertex3d(0.2, 0.2, -0.2)
+        self.gl.glVertex3d(0.0, 0.2, -0.2)
+        # bottom
+        self.gl.glVertex3d(0.0, 0.0, 0.0)
+        self.gl.glVertex3d(0.2, 0.0, 0.0)
+        self.gl.glVertex3d(0.2, 0.0, -0.2)
+        self.gl.glVertex3d(0.0, 0.0, -0.2)
         self.gl.glEnd()
         self.gl.glEndList()
         return genList
