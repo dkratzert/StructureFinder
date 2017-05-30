@@ -17,20 +17,21 @@ from searcher.database_handler import StructureTable, DatabaseRequest
 uic.compileUiDir('./')
 
 
-
-# TODO:
-# - make progress bar for indexer and file opener
-# - get atoms from cif
-# - store atoms in db
-# - structure code
-# - make file type more flexible. handle .res and .cif equally
-# - group structures in measurements
-# - list properties of a selected cif file
-# - implement relocate cifpath as file open dialog
-# - implement progress bar for indexing
-# - implement "save on close?" dialog
-# - add abort button
-
+"""
+TODO:
+- make progress bar for indexer and file opener
+- store atoms in db
+- structure code
+- make 3D model from atoms
+- make file type more flexible. handle .res and .cif equally
+- group structures in measurements
+- list properties of a selected cif file
+- implement relocate cifpath as file open dialog
+- implement progress bar for indexing
+- implement "save on close?" dialog
+- add abort button for indexer
+- recognize already indexed files
+"""
 
 class StartStructureDB(QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -88,7 +89,10 @@ class StartStructureDB(QMainWindow):
         pass
 
     def import_database(self):
-        print('foo')
+        """
+        Import a new database.
+        :return: 
+        """
         fname = QFileDialog.getOpenFileName(self, 'Open File', '')
         print(fname)
         self.dbfilename = fname[0]
@@ -99,14 +103,11 @@ class StartStructureDB(QMainWindow):
         for i in self.structures.get_all_structure_names():
             """structure.Id, structure.measurement, structure.path, structure.filename, 
                          structure.dataname"""
-            # print(i)
             str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
             str_tree.setText(0, i[3])  # name
             str_tree.setText(1, i[2])  # path
             str_tree.setData(2, 0, i[0])  # id
-            # if len(i[1]) > 10:
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
 
     def import_cif_dirs(self):
         """

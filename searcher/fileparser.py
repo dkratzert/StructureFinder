@@ -36,7 +36,6 @@ class Cif():
         - fill for example atom loop dict with atoms
         """
         self.cif_data = {}
-        self.fields = fields
         self.ok = self.parsefile(file)
 
     def parsefile(self, file):
@@ -160,6 +159,7 @@ class Cif():
                     semi_colon_text_field = line
                     continue
         self.cif_data['_atom'] = atoms
+        self.cif_data['file_length_lines'] = num+1
         # pprint(self.cif_data)  # slow
         if not data:
             return False
@@ -179,126 +179,29 @@ class Cif():
         else:
             yield {}
 
-    @property
-    def _cell_length_a(self):
-        if "_cell_length_a" in self.cif_data:
-            return self.cif_data["_cell_length_a"]
+    def __hash__(self):
+        return hash(self.cif_data)
+
+    def __getattr__(self, item):
+        """ 
+        Returns an attribute of the cif data dictionary.
+        """
+        if item in self.cif_data:
+            return self.cif_data[item]
         else:
             return ''
 
-    @property
-    def _cell_length_b(self):
-        if "_cell_length_b" in self.cif_data:
-            return self.cif_data["_cell_length_b"]
-        else:
-            return ''
-
-    @property
-    def _cell_length_c(self):
-        if "_cell_length_c" in self.cif_data:
-            return self.cif_data["_cell_length_c"]
-        else:
-            return ''
-
-    @property
-    def _cell_angle_alpha(self):
-        if "_cell_angle_alpha" in self.cif_data:
-            return self.cif_data["_cell_angle_alpha"]
-        else:
-            return ''
-
-    @property
-    def _cell_angle_beta(self):
-        if "_cell_angle_beta" in self.cif_data:
-            return self.cif_data["_cell_angle_beta"]
-        else:
-            return ''
-
-    @property
-    def _cell_angle_gamma(self):
-        if "_cell_angle_gamma" in self.cif_data:
-            return self.cif_data["_cell_angle_gamma"]
-        else:
-            return ''
-
-
-def get_cif_cell_raw(filename):
-    """
-    Get the cell of a cif file
-    _cell_length_a                    29.227(4)
-    _cell_length_b                    6.6568(8)
-    _cell_length_c                    11.8204(14)
-    _cell_angle_alpha                 90
-    _cell_angle_beta                  107.055(5)
-    _cell_angle_gamma                 90
-    and the respective error values
-    ...
-    _shelx_hkl_file
-    ;
-    hkl data
-    ;
-    Attention: This implementation currently uses only the first cell of a cif file
-    
-    - list of desired fileds
-    - cifdict = {}
-    for line in f:
-        for f in fields:
-            test = line[:len(f)]
-            if test == f:
-                cifdict[f] = test 
-    
-    """
-    name, a, b, c, alpha, beta, gamma, esda, esdb, esdc, esdalpha, esdbeta, esdgamma = \
-        None, None, None, None, None, None, None, None, None, None, None, None, None
-    filename = os.path.abspath(filename.name)
-    cell = [None,  # 0 name
-            None,  # 1 a
-            None,  # 2 b
-            None,  # 3 c
-            None,  # 4 alpha
-            None,  # 5 beta
-            None,  # 6 gamma
-            None,  # 7 esda
-            None,  # 8 esdb
-            None,  # 9 esdc
-            None,  # 10 esdalpha
-            None,  # 11 esdbeta
-            None]  # 12 esdgamma
-    with codecs.open(filename, "r", encoding='ascii', errors='ignore') as f:
-        for line in f:
-            if line.startswith('data_'):
-                name = line.split('_')[1].strip('\n')
-                cell[0] = name
-            if line.startswith('_cell_length_a'):
-                a = line.split()[1].split('(')[0]
-                cell[1] = float(a)
-                cell[7] = get_error_from_value(a)
-            if line.startswith('_cell_length_b'):
-                b = line.split()[1].split('(')[0]
-                cell[2] = float(b)
-                cell[8] = get_error_from_value(b)
-            if line.startswith('_cell_length_c'):
-                c = line.split()[1].split('(')[0]
-                cell[3] = float(c)
-                cell[9] = get_error_from_value(c)
-            if line.startswith('_cell_angle_alpha'):
-                alpha = line.split()[1].split('(')[0]
-                cell[4] = float(alpha)
-                cell[10] = get_error_from_value(alpha)
-            if line.startswith('_cell_angle_beta'):
-                beta = line.split()[1].split('(')[0]
-                cell[5] = float(beta)
-                cell[11] = get_error_from_value(beta)
-            if line.startswith('_cell_angle_gamma'):
-                gamma = line.split()[1].split('(')[0]
-                cell[6] = float(gamma)
-                cell[12] = get_error_from_value(gamma)
-            #if line.startswith("_shelx_hkl_file"):
-            #    return cell
-            if all(cell[n] for n, i in enumerate(cell)):
-                # contains 1+n cells. n=0-inf
-                return cell
-    return []
+    def __str__(self):
+        """ 
+        The string representation for print(self)
+        """
+        out = ''
+        for item in self.cif_data:
+            if item == '_atom':
+                out += "Atoms:         \t\t\t"+str(len(self.cif_data['_atom']))+'\n'
+                continue
+            out += item+':  \t'+"'"+str(self.cif_data[item])+"'"+'\n'
+        return out
 
 
 def delimit_line(line):
@@ -351,22 +254,22 @@ def get_res_cell(filename):
     Returns the unit cell parameters from the list file as list:
     ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
     """
-    file_list = misc.open_file_read(filename)
     cell = False
-    for line in file_list:
-        if line[:4] == 'CELL':
-            cell = line.split()[2:8]
-            try:
-                cell = [float(i) for i in cell]
-                if not len(cell) == 6:
-                    raise ValueError
-            except ValueError:
-                print('Bad cell parameters in {0}.'.format(filename))
-                return False
-            if line[:4] == 'UNIT':
-                break
+    with filename.open(mode='r', encoding='ascii', errors="ignore") as f:
+        for line in f:
+            if line[:4] == 'CELL':
+                cell = line.split()[2:8]
+                try:
+                    cell = [float(i) for i in cell]
+                    if not len(cell) == 6:
+                        raise ValueError
+                except ValueError:
+                    print('Bad cell parameters in {0}.'.format(filename))
+                    return False
+                if line[:4] == 'UNIT':
+                    break
     if not cell:
-        #print('Unable to find unit cell parameters in the file.')
+        # Unable to find unit cell parameters in the file.
         return False
     return cell
 
@@ -387,10 +290,14 @@ if __name__ == '__main__':
     diff = round(time2-time1, 4)
     #print(c.cif_data["_space_group_name_H-M_alt"])
     #sys.exit()
-    for i in c:
-        pass
-        pprint(i)
+    #for i in c:
+     #   pass
+      #  pprint(i)
         #for x in i:
         #    print(x), print(i[x])
-
+    print('-'*50)
+    #print(c._shelx_space_group_comment, '##')
+    #print(c._atom.keys(), '##')
+    print(c)
+    print('-' * 50)
     print(diff, 's')
