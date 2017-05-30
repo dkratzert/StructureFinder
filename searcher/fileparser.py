@@ -109,6 +109,7 @@ def get_cif_cell_raw(filename):
 
 def delimit_line(line):
     """
+    Searches for delimiters in a cif line and returns a list of the respective values.
     >>> line = " 'C'  'C'   0.0033   0.0016   'some text inside' \\"more text\\""
     >>> delimit_line(line)
     ['C', 'C', '0.0033', '0.0016', 'some text inside', 'more text']
@@ -119,8 +120,10 @@ def delimit_line(line):
     >>> delimit_line("'x, y, z'")
     ['x, y, z']
     
-    :param ilne: 
-    :return: 
+    :param line:
+    :type line: str
+    :return: list of values
+    :rtype: list
     """
     data = []
     line = line.split(' ')
@@ -183,20 +186,23 @@ class Cif():
         hkl = False
         loophead_list = []
         save_frame = False
-        loopline_wrap = True
-        wrapline = ""
         atoms = {}
         atkey = ''
-        wordlist = []
+        semi_colon_text_field = ''
+        semi_colon_text_list = []
+        cont = False  # continue to next line if True
         with file.open(mode='r', encoding='ascii', errors="ignore") as f:
-            for num, line in enumerate(f):
-                line = line.lstrip().strip('\r\n ')
+            txt = f.readlines()
+            textlen = len(txt)
+            for num, line in enumerate(txt):
+                line = line.rstrip('\r\n ')
                 if loop:
                     if not line:
                         loop = False
                         loophead_list.clear()
                         atkey = ''
                         continue
+                    line = line.lstrip()
                     # leave out comments:
                     if line[0] == '#':
                         continue
@@ -209,30 +215,35 @@ class Cif():
                     elif line[:5] == "save_" and save_frame:
                         save_frame = False
                     # Do not parse atom type symbols:
-                    if line == "_atom_type_symbol":
-                        loop = False
-                        continue
+                    #if line == "_atom_type_symbol":
+                    #    loop = False
+                    #    continue
                     # to collect the two parts of an atom loop (have to do it more general):
                     if line == '_atom_site_label':
                         atkey = '_atom_site_label'
                     if line == '_atom_site_aniso_label':
                         atkey = '_atom_site_aniso_label'
+#                    if line == "_atom_type_symbol":
+#                        atkey = "_atom_type_symbol"
+#                    if line == "_atom_type_scat_dispersion_real":
+#                        atkey = "_atom_type_scat_dispersion_real"
+#                    if line == "_atom_type_scat_dispersion_imag":
+#                        atkey = "_atom_type_scat_dispersion_imag"
+#                    if line == "_atom_type_scat_source":
+#                        atkey = "_atom_type_scat_source"
                     # collecting keywords from head:
                     if line[:1] == "_":
                         loophead_list.append(line)
                     # We are in a loop and the header ended, so we collect data:
                     else:
                         loopitem = {}
-                        loop_data_line = delimit_line(line)#line.split()
-                        #loop_data_line = line.split()
-                        # quick hack, have to unwrap wrapped loop data:
+                        loop_data_line = delimit_line(line)
+                        # unwrap loop data:
                         if len(loop_data_line) != len(loophead_list):
-                            print(loop_data_line)
-                            #print(loophead_list)
-                            # parse lines until next _ at line start
-                            continue
+                            loop_data_line.extend(delimit_line(txt[num+1]))
                         for n, item in enumerate(loop_data_line):
                             loopitem[loophead_list[n]] = item
+                        # TODO: make this general. Not only for atoms:
                         if atkey and loopitem[atkey] in atoms:
                             # atom is already there not there, upating values
                             atoms[loopitem[atkey]].update(loopitem)
@@ -257,16 +268,31 @@ class Cif():
                     lsplit = line.split()
                     if len(lsplit) > 1:
                         self.cif_data[lsplit[0]] = " ".join(delimit_line(" ".join(lsplit[1:])))
-                # Leave out hkl frames:
-                if hkl:
-                    continue
-                if line[:15] == "_shelx_hkl_file" or "_refln_":
+                if line.startswith("_shelx_hkl_file") or line.startswith("_refln_"):
                     hkl = True
                     continue
-                elif line[:1] == ";" and hkl:
+                # Leave out hkl frames:
+                if hkl:
+                    break
+                    #continue  # use continue if data is behind hkl
+                if line.lstrip()[:1] == ";" and hkl:
                     hkl = False
+                if semi_colon_text_field:
+                    if not line.lstrip().startswith(";"):
+                        semi_colon_text_list.append(line)
+                    if (textlen-1 > num) and txt[num + 1][0] == ";":
+                        self.cif_data[semi_colon_text_field] = "{}".format(os.linesep).join(semi_colon_text_list)
+                        semi_colon_text_list.clear()
+                        semi_colon_text_field = ''
+                        continue
+                if (textlen-1 > num) and txt[num + 1][0] == ";":
+                    if line.startswith("_shelx_res_file"):
+                        break
+                        #continue  # use continue if data is behind res file
+                    semi_colon_text_field = line
+                    continue
         self.cif_data['_atom'] = atoms
-        #pprint(self.cif_data)
+        #pprint(self.cif_data)  # slow
         if not data:
             return False
         if not atoms:
@@ -360,17 +386,19 @@ if __name__ == '__main__':
         print('passed all {} tests!'.format(attempted))
     from pathlib import Path
     time1 = time.clock()
-    c = Cif(Path("./test-data/p21c.cif"))
-    #import CifFile
-    #c = CifFile.ReadCif("test-data/p21c.cif")
-    #cifffile = "/Users/daniel/.olex2/data/3e30b45376c2d4175951f811f7137870/customisation/cif_templates/ALS_BL1131_post_07_2014.cif"
-    #cif2 = "/Users/daniel/Documents/Strukturen/DK_ML7-66/DK_ML7-66-final-old.cif"
-    #cif3 = "/Users/daniel/Downloads/.olex/originals/10000007.cif"
-    #c = Cif(cif3)
+    cif = "./test-data/p21c.cif"
+    #cif = "/Users/daniel/.olex2/data/3e30b45376c2d4175951f811f7137870/customisation/cif_templates/ALS_BL1131_post_07_2014.cif"
+    #cif = "/Users/daniel/Documents/Strukturen/DK_ML7-66/DK_ML7-66-final-old.cif"
+    #cif = "/Users/daniel/Downloads/.olex/originals/10000007.cif"
+    c = Cif(Path(cif))
     time2 = time.clock()
     diff = round(time2-time1, 4)
-    print(diff, 's')
     #print(c.cif_data["_space_group_name_H-M_alt"])
-    sys.exit()
+    #sys.exit()
     for i in c:
-        pprint(i)
+        pass
+        #pprint(i)
+        #for x in i:
+        #    print(x), print(i[x])
+
+    print(diff, 's')
