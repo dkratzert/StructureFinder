@@ -45,9 +45,10 @@
 import sys
 import math
 
+#import numpy as np
 from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt
 from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QApplication, QOpenGLWidget
+from PyQt5.QtWidgets import QOpenGLWidget
 
 
 class GLWidget(QOpenGLWidget):
@@ -63,7 +64,7 @@ class GLWidget(QOpenGLWidget):
         self.zRot = 0
         self.lastPos = QPoint()
         self.trolltechGreen = QColor.fromCmykF(0.40, 0.0, 1.0, 0.0)
-        self.trolltechPurple = QColor.fromCmykF(0.39, 0.39, 0.0, 0.0)
+        self.bgcolor = QColor.fromRgb(25, 25, 25, 1)
 
     def minimumSizeHint(self):
         return QSize(250, 250)
@@ -95,7 +96,7 @@ class GLWidget(QOpenGLWidget):
     def initializeGL(self):
         self.gl = self.context().versionFunctions()
         self.gl.initializeOpenGLFunctions()
-        self.setClearColor(self.trolltechPurple.darker())
+        self.setClearColor(self.bgcolor.darker())
         self.object = self.makeObject()
         self.gl.glShadeModel(self.gl.GL_FLAT)
         self.gl.glEnable(self.gl.GL_DEPTH_TEST)
@@ -120,13 +121,11 @@ class GLWidget(QOpenGLWidget):
         #self.gl.glViewport((width - side) // 2, (height - side) // 2, side, side)
         self.gl.glMatrixMode(self.gl.GL_PROJECTION)
         self.gl.glLoadIdentity()
-        #self.gl.glOrtho(-0.5, +0.5, +0.5, -0.5, 4.0, 15.0)
-        z = 0.4
-        #self.gl.glOrtho(-z*ar, z*ar, +z*ar, -z*ar, 4.0, 15.0)
-        if (width <= height):
-            self.gl.glOrtho(-z, z, z / ar, -z / ar, 4.0, 15.0)
+        zoom = 0.4
+        if width <= height:
+            self.gl.glOrtho(-zoom, zoom, zoom / ar, -zoom / ar, 4.0, 15.0)
         else:
-            self.gl.glOrtho(-z * ar, z * ar, z, -z, 4.0, 15.0)
+            self.gl.glOrtho(-zoom * ar, zoom * ar, zoom, -zoom, 4.0, 15.0)
         self.gl.glMatrixMode(self.gl.GL_MODELVIEW)
 
     def mousePressEvent(self, event):
@@ -213,6 +212,8 @@ class GLWidget(QOpenGLWidget):
 
     def setColor(self, c):
         self.gl.glColor4f(c.redF(), c.greenF(), c.blueF(), c.alphaF())
+
+
 
 
 if __name__ == '__main__':
