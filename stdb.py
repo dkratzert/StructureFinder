@@ -161,7 +161,7 @@ class StartStructureDB(QMainWindow):
                 strTree.setText(1, path)
                 strTree.setText(2, str(n))
                 n += 1
-        print('Parse cif files:', round(sum(times), 3), 's')
+        print('Parse cif files:', round(sum(times), 3), 's,', n, 'files')
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         # self.ui.relocate_lineEdit.hide()
