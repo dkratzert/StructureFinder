@@ -3,18 +3,54 @@
 import sys
 import math
 
-#import numpy as np
-from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt
-from PyQt5.QtGui import QColor, QOpenGLVersionProfile, QSurfaceFormat
+from PyQt5 import Qt3DCore, QtCore
+from PyQt5 import Qt3DExtras
+from PyQt5 import Qt3DInput
+from PyQt5 import Qt3DRender
+from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt, QObject
+from PyQt5.QtGui import QColor, QOpenGLVersionProfile, QSurfaceFormat, QVector3D
 from PyQt5.QtWidgets import QOpenGLWidget
 
+
+
+class OrbitTransformController(QObject):
+    targetChanged = pyqtSignal(int)
+    radiuschanged = pyqtSignal(int)
+
+    def __init__(self, transform):
+        super().__init__()
+        self.m_target = None
+        self.m_radius = 0
+        self.m_angle = 0
+        self.m_matrix = transform.matrix()
+
+    def setTarget(self, target):
+        if self.m_target != target:
+            self.m_target = target
+            self.targetChanged.emit(target)
+
+    def setRadius(self, radius):
+        self.m_radius = radius
+        self.updateMatrix()
+        #self.targetChanged.emit(radius)
+
+    def updateMatrix(self):
+        self.m_matrix.setToIdentity()
+        self.m_matrix.rotate(self.m_angle, QVector3D(0.0, 1.0, 0.0))
+        self.m_matrix.translate(self.m_radius, 0.0, 0.0)
+        self.m_target.setMatrix(self.m_matrix)
+
+
 class GLWidget(QOpenGLWidget):
-    xRotationChanged = pyqtSignal(int)
-    yRotationChanged = pyqtSignal(int)
-    zRotationChanged = pyqtSignal(int)
+    #xRotationChanged = pyqtSignal(int)
+    #yRotationChanged = pyqtSignal(int)
+    #zRotationChanged = pyqtSignal(int)
 
     def __init__(self, parent=None):
         super(GLWidget, self).__init__(parent)
+        # from old opengl code:
+        ##################################################
+        """
         self.object = 0
         self.xRot = 0
         self.yRot = 0
@@ -22,7 +58,42 @@ class GLWidget(QOpenGLWidget):
         self.lastPos = QPoint()
         self.trolltechGreen = QColor.fromCmykF(0.40, 0.0, 1.0, 0.0)
         self.bgcolor = QColor.fromRgb(25, 25, 25, 1)
+        """
+        ###################################################
+        view = Qt3DExtras.Qt3DWindow()
+        scene = self.createScene()
+        print('#scene')
+        #// Camera
+        camera = view.camera()
+        lens = Qt3DRender.QCameraLens()
+        lens.setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
+        camera.setPosition(QVector3D(0, 0, 40.0))
+        camera.setViewCenter(QVector3D(0, 0, 0))
 
+        #// For camera controls
+        camController = Qt3DExtras.QOrbitCameraController(scene)
+        camController.setLinearSpeed(50.0)
+        camController.setLookSpeed(180.0)
+        camController.setCamera(camera)
+        view.setRootEntity(scene)
+
+    def createScene(self):
+        rootEntity = Qt3DCore.QEntity()
+        material = Qt3DExtras.QPhongMaterial(rootEntity)
+        sphereEntity = Qt3DCore.QEntity(rootEntity)
+        sphereMesh = Qt3DExtras.QSphereMesh()
+        sphereMesh.setRadius(3)
+
+        sphereTransform = Qt3DCore.QTransform()
+        controller = OrbitTransformController(sphereTransform)
+        controller.setTarget(sphereTransform)
+        controller.setRadius(20.0)
+
+        sphereEntity.addComponent(sphereMesh)
+        sphereEntity.addComponent(sphereTransform)
+        sphereEntity.addComponent(material)
+
+    """
     def minimumSizeHint(self):
         return QSize(250, 250)
 
@@ -213,7 +284,7 @@ class GLWidget(QOpenGLWidget):
 
     def setColor(self, c):
         self.gl.glColor4f(c.redF(), c.greenF(), c.blueF(), c.alphaF())
-
+    """
 
 
 

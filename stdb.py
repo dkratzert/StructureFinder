@@ -4,7 +4,9 @@ import os
 import sys
 
 import time
-from PyQt5 import uic
+from PyQt5 import uic, Qt3DExtras, QtWidgets
+from PyQt5.QtCore import QSize
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
@@ -46,6 +48,7 @@ class StartStructureDB(QMainWindow):
         # self.ui.cellSearchEdit.hide()
         self.dbfilename = 'test.sqlite'
         print(self.dbfilename)
+
         self.glWidget = GLWidget()
         self.ui.openglVlayout.addWidget(self.glWidget)
         #self.glWidget.setMinimumSize(250, 250)
