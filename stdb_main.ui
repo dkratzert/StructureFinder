@@ -178,10 +178,16 @@
              <property name="sizeConstraint">
               <enum>QLayout::SetNoConstraint</enum>
              </property>
+             <property name="labelAlignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
              <item row="0" column="0">
               <widget class="QLabel" name="SPaceGrouplabel">
                <property name="text">
                 <string>Space Group</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -197,12 +203,18 @@
                <property name="text">
                 <string>Unit Cell:</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="2" column="0">
               <widget class="QLabel" name="aLabel">
                <property name="text">
                 <string>a</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -218,6 +230,9 @@
                <property name="text">
                 <string>b</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="3" column="1">
@@ -231,6 +246,9 @@
               <widget class="QLabel" name="cLabel">
                <property name="text">
                 <string>c</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -246,6 +264,9 @@
                <property name="text">
                 <string>alpha</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="5" column="1">
@@ -260,6 +281,9 @@
                <property name="text">
                 <string>beta</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="6" column="1">
@@ -269,6 +293,9 @@
               <widget class="QLabel" name="gammaLabel">
                <property name="text">
                 <string>gamma</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -280,6 +307,9 @@
                <property name="text">
                 <string>R1</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="8" column="1">
@@ -288,14 +318,33 @@
             </layout>
            </item>
            <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
             <layout class="QFormLayout" name="formLayout_3">
              <property name="sizeConstraint">
               <enum>QLayout::SetNoConstraint</enum>
+             </property>
+             <property name="labelAlignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
              <item row="0" column="0">
               <widget class="QLabel" name="wR2Label">
                <property name="text">
                 <string>wR2</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -307,6 +356,9 @@
                <property name="text">
                 <string>Temperature</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="1" column="1">
@@ -316,6 +368,9 @@
               <widget class="QLabel" name="sumFormulaLabel">
                <property name="text">
                 <string>Sum Formula</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -327,6 +382,9 @@
                <property name="text">
                 <string>Z</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="3" column="1">
@@ -336,6 +394,9 @@
               <widget class="QLabel" name="goofLabel">
                <property name="text">
                 <string>Goof</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -347,6 +408,9 @@
                <property name="text">
                 <string>Max Shift</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="5" column="1">
@@ -356,6 +420,9 @@
               <widget class="QLabel" name="peakLabel">
                <property name="text">
                 <string>Peak</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -367,6 +434,9 @@
                <property name="text">
                 <string>Rint</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="7" column="1">
@@ -377,6 +447,9 @@
                <property name="text">
                 <string>Rsigma</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="8" column="1">
@@ -385,11 +458,30 @@
             </layout>
            </item>
            <item>
+            <spacer name="horizontalSpacer_2">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
             <layout class="QFormLayout" name="formLayout">
+             <property name="labelAlignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
              <item row="0" column="0">
               <widget class="QLabel" name="dataReflnsLabel">
                <property name="text">
                 <string>dataReflns</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -401,6 +493,9 @@
                <property name="text">
                 <string>Parameters</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="1" column="1">
@@ -410,6 +505,9 @@
               <widget class="QLabel" name="numRestraintsLabel">
                <property name="text">
                 <string>Restraints</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -421,6 +519,9 @@
                <property name="text">
                 <string>reflTotal</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="3" column="1">
@@ -430,6 +531,9 @@
               <widget class="QLabel" name="thetaMaxLabel">
                <property name="text">
                 <string>thetaMax</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -441,6 +545,9 @@
                <property name="text">
                 <string>thetaFull</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="5" column="1">
@@ -450,6 +557,9 @@
               <widget class="QLabel" name="dLabel">
                <property name="text">
                 <string>d</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
@@ -461,6 +571,9 @@
                <property name="text">
                 <string>complete</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="7" column="1">
@@ -471,12 +584,28 @@
                <property name="text">
                 <string>Wavelength</string>
                </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
               </widget>
              </item>
              <item row="8" column="1">
               <widget class="QLineEdit" name="wavelengthLineEdit"/>
              </item>
             </layout>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_3">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
            </item>
            <item>
             <layout class="QHBoxLayout" name="openglVlayout"/>
@@ -553,7 +682,7 @@
      <x>0</x>
      <y>0</y>
      <width>958</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">
