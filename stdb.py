@@ -7,6 +7,7 @@ import time
 from PyQt5 import uic, Qt3DExtras, QtWidgets
 from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QColor
+from PyQt5.QtQml import QQmlApplicationEngine
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
@@ -50,7 +51,7 @@ class StartStructureDB(QMainWindow):
         print(self.dbfilename)
 
         self.glWidget = GLWidget()
-        self.ui.openglVlayout.addWidget(self.glWidget)
+        #self.ui.openglVlayout.addWidget(self.glWidget)
         #self.glWidget.setMinimumSize(250, 250)
         self.ui.centralwidget.setMinimumSize(1200, 500)
         self.showMaximized()
@@ -177,6 +178,19 @@ class StartStructureDB(QMainWindow):
         # self.ui.relocate_lineEdit.hide()
         self.structures.database.commit_db("Committed")
 
+
+
+class QmlAusgabe(object):
+    def __init__(self, pathToQmlFile="beispiel.qml"):
+
+        #QML-Engine
+        self.__appEngine = QQmlApplicationEngine()
+        self.__appEngine.load(pathToQmlFile)
+
+        self.__appWindow = self.__appEngine.rootObjects()[0]
+
+    def show(self):
+        self.__appWindow.show()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
