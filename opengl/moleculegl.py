@@ -9,6 +9,7 @@ from PyQt5 import Qt3DInput
 from PyQt5 import Qt3DRender
 from PyQt5.QtCore import pyqtSignal, QPoint, QSize, Qt, QObject
 from PyQt5.QtGui import QColor, QOpenGLVersionProfile, QSurfaceFormat, QVector3D
+from PyQt5.QtOpenGL import QGLWidget
 from PyQt5.QtWidgets import QOpenGLWidget
 
 
@@ -47,7 +48,7 @@ class GLWidget(QOpenGLWidget):
     #zRotationChanged = pyqtSignal(int)
 
     def __init__(self, parent=None):
-        super(GLWidget, self).__init__(parent)
+        super().__init__(parent)
         # from old opengl code:
         ##################################################
         """
@@ -69,13 +70,14 @@ class GLWidget(QOpenGLWidget):
         lens.setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
         camera.setPosition(QVector3D(0, 0, 40.0))
         camera.setViewCenter(QVector3D(0, 0, 0))
-
+        print('#camera')
         #// For camera controls
         camController = Qt3DExtras.QOrbitCameraController(scene)
         camController.setLinearSpeed(50.0)
         camController.setLookSpeed(180.0)
         camController.setCamera(camera)
         view.setRootEntity(scene)
+        print('view#')
 
     def createScene(self):
         rootEntity = Qt3DCore.QEntity()
@@ -83,15 +85,16 @@ class GLWidget(QOpenGLWidget):
         sphereEntity = Qt3DCore.QEntity(rootEntity)
         sphereMesh = Qt3DExtras.QSphereMesh()
         sphereMesh.setRadius(3)
-
+        print('##1')
         sphereTransform = Qt3DCore.QTransform()
         controller = OrbitTransformController(sphereTransform)
         controller.setTarget(sphereTransform)
         controller.setRadius(20.0)
-
+        print('##2')
         sphereEntity.addComponent(sphereMesh)
         sphereEntity.addComponent(sphereTransform)
         sphereEntity.addComponent(material)
+        return rootEntity
 
     """
     def minimumSizeHint(self):
