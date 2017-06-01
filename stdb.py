@@ -50,7 +50,7 @@ class StartStructureDB(QMainWindow):
         self.dbfilename = 'test.sqlite'
         print(self.dbfilename)
 
-        self.glWidget = GLWidget()
+        #self.glWidget = GLWidget()
         #self.ui.openglVlayout.addWidget(self.glWidget)
         #self.glWidget.setMinimumSize(250, 250)
         self.ui.centralwidget.setMinimumSize(1200, 500)
