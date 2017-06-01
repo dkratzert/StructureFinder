@@ -14,102 +14,95 @@ from PyQt5.QtGui import QGuiApplication, QQuaternion, QVector3D
 class OrbitTransformController(QObject):
     targetChanged = pyqtSignal(int)
     radiuschanged = pyqtSignal(int)
-    angleChanged = pyqtSignal(int)
+    angleChanged = pyqtSignal()
 
-    def __init__(self, transform):
-        super().__init__()
-        self.m_target = None
-        self.m_radius = 1
-        self.m_angle = 0
-        self.m_matrix = transform.matrix()
+    def __init__(self, parent, target=None, radius=1, angle=0):
+        super(OrbitTransformController, self).__init__(parent)
+        print('init')
+        self.m_target = target
+        self.m_radius = radius
+        self.m_angle = angle
+        self.m_matrix = parent.matrix()
+        print('hello')
 
     def setTarget(self, target):
         if self.m_target != target:
             self.m_target = target
             self.targetChanged.emit(target)
 
-    @property
     def target(self):
         return self.m_target
 
+    @pyqtSlot(bool, name='radius')
     def setRadius(self, radius):
         print('#radiuschnage')
-        if not QtCore.qFuzzyCompare(radius, self.m_radius):
-            self.m_radius = radius
-            self.updateMatrix()
-            self.radiuschanged.emit(radius)
+        #if not QtCore.qFuzzyCompare(radius, self.m_radius):
+        self.m_radius = radius
+        self.updateMatrix()
+        self.radiuschanged.emit(radius)
 
-    @property
     def radius(self):
         return self.m_radius
 
     def updateMatrix(self):
         print('matrix###')
         self.m_matrix.setToIdentity()
-        self.m_matrix.rotate(self.m_angle, QVector3D(0.0, 1.0, 0.0))
+        self.m_matrix.rotate(self.m_angle, QVector3D(1.0, 1.0, 0.0))
         #self.m_matrix.translate(self.m_radius, 0.0, 0.0)
         self.m_target.setMatrix(self.m_matrix)
 
     @pyqtSlot(bool, name='angle')
     def setAngle(self, angle):
         print('###angle')
-        if not QtCore.qFuzzyCompare(angle, self.m_angle):
-            self.m_angle = angle
-            self.updateMatrix()
-            self.angleChanged.emit(angle)
+        #if not QtCore.qFuzzyCompare(angle, self.m_angle):
+        print('###angle##')
+        self.m_angle = angle
+        self.updateMatrix()
+        self.angleChanged.emit()
 
-    #@pyqtSlot(bool, name='angle')
     def angle(self):
         print('###angle2')
         return self.m_angle
 
 
-def createScene():
-    rootEntity = Qt3DCore.QEntity()
-    material = Qt3DExtras.QPhongMaterial(rootEntity)
-    # Torus:
-    torusEntity = Qt3DCore.QEntity(rootEntity)
-    torusMesh = Qt3DExtras.QTorusMesh()
-    torusMesh.setRadius(5)
-    torusMesh.setMinorRadius(1)
-    torusMesh.setRings(100)
-    torusMesh.setSlices(20)
+class MyScene(Qt3DCore.QEntity):
+    def __init__(self, *arg, **args):
+        super(MyScene, self).__init__()
 
-    torusTransform = Qt3DCore.QTransform()
-    torusTransform.setScale3D(QVector3D(1.5, 1, 1.0))
-    #torusTransform.setRotation(QQuaternion.fromAxisAndAngle(QVector3D(1, 0, 0), 45.0))
-
-    torusEntity.addComponent(torusMesh)
-    torusEntity.addComponent(torusTransform)
-    torusEntity.addComponent(material)
-
-    # Sphere:
-    sphereEntity = Qt3DCore.QEntity(rootEntity)
-    sphereMesh = Qt3DExtras.QSphereMesh()
-    sphereMesh.setRadius(3)
-    print('##1')
-    sphereTransform = Qt3DCore.QTransform()
-    controller = OrbitTransformController(sphereTransform)
-    controller.setTarget(sphereTransform)
-    controller.setRadius(20.0)
-    print('###rotation: ###')
-    sphereRotateTransformAnimation = QtCore.QPropertyAnimation(sphereTransform)
-    sphereRotateTransformAnimation.setTargetObject(controller)
-    sphereRotateTransformAnimation.setPropertyName(b"angle")
-    sphereRotateTransformAnimation.setStartValue(QVariant(0))
-    sphereRotateTransformAnimation.setEndValue(QVariant(360))
-    sphereRotateTransformAnimation.setDuration(10000)
-    sphereRotateTransformAnimation.setLoopCount(-1)
-    #sphereRotateTransformAnimation.Paused = 0
-    #sphereRotateTransformAnimation.Stopped = 0
-    #sphereRotateTransformAnimation.Forward = 1
-    #sphereRotateTransformAnimation.Backward = 0
-    sphereRotateTransformAnimation.start()
-    print('##2')
-    sphereEntity.addComponent(sphereMesh)
-    sphereEntity.addComponent(sphereTransform)
-    sphereEntity.addComponent(material)
-    return rootEntity
+    def createScene(self):
+        rootEntity = Qt3DCore.QEntity()
+        material = Qt3DExtras.QPhongMaterial(rootEntity)
+        # Torus:
+        cylinderEntity = Qt3DCore.QEntity(rootEntity)
+        cylinderMesh = Qt3DExtras.QCylinderMesh()
+        cylinderMesh.setRadius(0.31)
+        cylinderMesh.setLength(20)
+        cylinderMesh.setRings(100)
+        cylinderMesh.setSlices(20)
+    
+        cylinderTransform = Qt3DCore.QTransform()
+        cylinderTransform.setScale3D(QVector3D(1, 1, 1.0))
+        cylinderTransform.setRotation(QQuaternion.fromAxisAndAngle(QVector3D(-1, -1, 0), 25.0))
+    
+        cylinderEntity.addComponent(cylinderMesh)
+        cylinderEntity.addComponent(cylinderTransform)
+        cylinderEntity.addComponent(material)
+    
+        # Sphere:
+        sphereEntity = Qt3DCore.QEntity(rootEntity)
+        sphereMesh = Qt3DExtras.QSphereMesh()
+        sphereMesh.setRadius(2)
+        print('##1')
+        sphereTransform = Qt3DCore.QTransform(sphereMesh)
+        controller = OrbitTransformController(sphereTransform)
+        controller.setTarget(sphereTransform)
+        print('rad:')
+        controller.setRadius(2.0)
+        print('##2')
+        sphereEntity.addComponent(sphereMesh)
+        sphereEntity.addComponent(sphereTransform)
+        sphereEntity.addComponent(material)
+        return rootEntity
 
 
 
@@ -117,7 +110,8 @@ if __name__ == '__main__':
     ###################################################
     app = QGuiApplication(sys.argv)
     view = Qt3DExtras.Qt3DWindow()
-    scene = createScene()
+    s = MyScene()
+    scene = s.createScene()
     print('#scene')
     # // Camera
     camera = view.camera()
@@ -133,6 +127,5 @@ if __name__ == '__main__':
     camController.setCamera(camera)
     view.setRootEntity(scene)
     print('view#')
-    view.setRootEntity(scene)
     view.show()
     app.exec()
