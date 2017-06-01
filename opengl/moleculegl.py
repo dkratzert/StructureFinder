@@ -8,10 +8,10 @@ from PyQt5 import Qt3DExtras
 from PyQt5 import Qt3DInput
 from PyQt5 import Qt3DRender
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QVector3D, QGuiApplication
+from PyQt5.QtGui import QGuiApplication, QQuaternion, QVector3D
 
 
-class OrbitTransformController(Qt3DCore.QTransform):
+class OrbitTransformController(QObject):
     targetChanged = pyqtSignal(int)
     radiuschanged = pyqtSignal(int)
     angleChanged = pyqtSignal(int)
@@ -28,31 +28,37 @@ class OrbitTransformController(Qt3DCore.QTransform):
             self.m_target = target
             self.targetChanged.emit(target)
 
+    @property
     def target(self):
         return self.m_target
 
     def setRadius(self, radius):
+        print('#radiuschnage')
         if not QtCore.qFuzzyCompare(radius, self.m_radius):
             self.m_radius = radius
             self.updateMatrix()
-            self.targetChanged.emit(radius)
+            self.radiuschanged.emit(radius)
 
+    @property
     def radius(self):
         return self.m_radius
 
     def updateMatrix(self):
+        print('matrix###')
         self.m_matrix.setToIdentity()
         self.m_matrix.rotate(self.m_angle, QVector3D(0.0, 1.0, 0.0))
-        self.m_matrix.translate(self.m_radius, 0.0, 0.0)
+        #self.m_matrix.translate(self.m_radius, 0.0, 0.0)
         self.m_target.setMatrix(self.m_matrix)
 
+    @pyqtSlot(bool, name='angle')
     def setAngle(self, angle):
         print('###angle')
-        if not QtCore.qFuzzyCompare(angle):
+        if not QtCore.qFuzzyCompare(angle, self.m_angle):
             self.m_angle = angle
             self.updateMatrix()
             self.angleChanged.emit(angle)
 
+    #@pyqtSlot(bool, name='angle')
     def angle(self):
         print('###angle2')
         return self.m_angle
@@ -61,6 +67,22 @@ class OrbitTransformController(Qt3DCore.QTransform):
 def createScene():
     rootEntity = Qt3DCore.QEntity()
     material = Qt3DExtras.QPhongMaterial(rootEntity)
+    # Torus:
+    torusEntity = Qt3DCore.QEntity(rootEntity)
+    torusMesh = Qt3DExtras.QTorusMesh()
+    torusMesh.setRadius(5)
+    torusMesh.setMinorRadius(1)
+    torusMesh.setRings(100)
+    torusMesh.setSlices(20)
+
+    torusTransform = Qt3DCore.QTransform()
+    torusTransform.setScale3D(QVector3D(1.5, 1, 1.0))
+    #torusTransform.setRotation(QQuaternion.fromAxisAndAngle(QVector3D(1, 0, 0), 45.0))
+
+    torusEntity.addComponent(torusMesh)
+    torusEntity.addComponent(torusTransform)
+    torusEntity.addComponent(material)
+
     # Sphere:
     sphereEntity = Qt3DCore.QEntity(rootEntity)
     sphereMesh = Qt3DExtras.QSphereMesh()
@@ -69,21 +91,20 @@ def createScene():
     sphereTransform = Qt3DCore.QTransform()
     controller = OrbitTransformController(sphereTransform)
     controller.setTarget(sphereTransform)
-    controller.setRadius(5.0)
+    controller.setRadius(20.0)
     print('###rotation: ###')
     sphereRotateTransformAnimation = QtCore.QPropertyAnimation(sphereTransform)
     sphereRotateTransformAnimation.setTargetObject(controller)
     sphereRotateTransformAnimation.setPropertyName(b"angle")
-    sphereRotateTransformAnimation.setStartValue(0)
-    sphereRotateTransformAnimation.setEndValue(360)
+    sphereRotateTransformAnimation.setStartValue(QVariant(0))
+    sphereRotateTransformAnimation.setEndValue(QVariant(360))
     sphereRotateTransformAnimation.setDuration(10000)
     sphereRotateTransformAnimation.setLoopCount(-1)
-    sphereRotateTransformAnimation.Paused = 0
-    sphereRotateTransformAnimation.Stopped = 0
-    sphereRotateTransformAnimation.Forward = 1
-    sphereRotateTransformAnimation.Backward = 0
+    #sphereRotateTransformAnimation.Paused = 0
+    #sphereRotateTransformAnimation.Stopped = 0
+    #sphereRotateTransformAnimation.Forward = 1
+    #sphereRotateTransformAnimation.Backward = 0
     sphereRotateTransformAnimation.start()
-
     print('##2')
     sphereEntity.addComponent(sphereMesh)
     sphereEntity.addComponent(sphereTransform)
@@ -102,7 +123,7 @@ if __name__ == '__main__':
     camera = view.camera()
     lens = Qt3DRender.QCameraLens()
     lens.setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
-    camera.setPosition(QVector3D(0, 0, 100.0))  # Entfernung
+    camera.setPosition(QVector3D(0, 0, 60.0))  # Entfernung
     camera.setViewCenter(QVector3D(0, 0, 0))
     print('#camera')
     # // For camera controls
