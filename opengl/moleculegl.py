@@ -8,7 +8,14 @@ from PyQt5 import Qt3DExtras
 from PyQt5 import Qt3DInput
 from PyQt5 import Qt3DRender
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QGuiApplication, QQuaternion, QVector3D
+from PyQt5.QtGui import QGuiApplication, QQuaternion, QVector3D, QColor
+
+"""
+TODO:
+- Add atom class
+- use fancy textures
+- use symmetry
+"""
 
 
 class OrbitTransformController(QObject):
@@ -16,7 +23,7 @@ class OrbitTransformController(QObject):
     radiuschanged = pyqtSignal(int)
     angleChanged = pyqtSignal()
 
-    def __init__(self, parent, target=None, radius=1, angle=0):
+    def __init__(self, parent, target=None, radius=0, angle=0):
         super(OrbitTransformController, self).__init__(parent)
         print('init')
         self.m_target = target
@@ -48,7 +55,7 @@ class OrbitTransformController(QObject):
         print('matrix###')
         self.m_matrix.setToIdentity()
         self.m_matrix.rotate(self.m_angle, QVector3D(1.0, 1.0, 0.0))
-        #self.m_matrix.translate(self.m_radius, 0.0, 0.0)
+        self.m_matrix.translate(self.m_radius, 0.0, 0.0)
         self.m_target.setMatrix(self.m_matrix)
 
     @pyqtSlot(bool, name='angle')
@@ -72,6 +79,14 @@ class MyScene(Qt3DCore.QEntity):
     def createScene(self):
         rootEntity = Qt3DCore.QEntity()
         material = Qt3DExtras.QPhongMaterial(rootEntity)
+        #material.setAmbient(QColor(170, 202, 0))
+        material.setAmbient(QColor('green'))
+        #url = QUrl()
+        #url.setPath("d:/tmp/foo.png")
+        #url.setScheme("file")
+        #tex = Qt3DRender.QTexture3D()
+
+
         # Torus:
         cylinderEntity = Qt3DCore.QEntity(rootEntity)
         cylinderMesh = Qt3DExtras.QCylinderMesh()
@@ -115,9 +130,11 @@ if __name__ == '__main__':
     print('#scene')
     # // Camera
     camera = view.camera()
-    lens = Qt3DRender.QCameraLens()
-    lens.setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
-    camera.setPosition(QVector3D(0, 0, 60.0))  # Entfernung
+    #lens = Qt3DRender.QCameraLens()
+    #lens.setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
+    camera.setProjectionType(Qt3DRender.QCameraLens.PerspectiveProjection)
+    camera.setUpVector(QVector3D(0, 1.0, 0))
+    camera.setPosition(QVector3D(0, 0, 80.0))  # Entfernung
     camera.setViewCenter(QVector3D(0, 0, 0))
     print('#camera')
     # // For camera controls
@@ -129,3 +146,34 @@ if __name__ == '__main__':
     print('view#')
     view.show()
     app.exec()
+
+
+"""
+// assume:
+// atoms with x, y, z coordinates (Angstrom) and elementSymbol
+// bonds with pointers/references to atoms at ends
+// table of colors for elementTypes
+// find limits of molecule in molecule coordinates as xMin, yMin, xMax, yMax
+scale = min(xScreenMax/(xMax-xMin), yScreenMax/(yMax-yMin))
+xOffset = -xMin * scale; yOffset = -yMin * scale
+for (bond in $bonds) {
+  atom0 = bond.getAtom(0)
+  atom1 = bond.getAtom(1)
+  x0 = xOffset+atom0.getX()*scale; y0 = yOffset+atom0.getY()*scale // (1)
+  x1 = xOffset+atom1.getX()*scale; y1 = yOffset+atom1.getY()*scale // (2)
+  x1 = atom1.getX();  y1 = atom1.getY()
+  drawLine (bondcolor, x0, y0, x1, y1)
+}
+for atom in atoms:
+    x = xOffset+atom.getX()*scale
+    y = yOffset+atom.getY()*scale
+    z = atom.getZ()*scale
+Note that this assumes the origin is in the bottom left corner of the screen, 
+with Y up the screen. Many graphics systems have the origin at the top left, 
+with Y down the screen. In this case the lines (1) and (2) should have the y 
+coordinate generation as:
+
+ y0 = yScreenMax -(yOffset+atom0.getY()*scale) // (1)
+ y1 = yScreenMax -(yOffset+atom1.getY()*scale) // (2)
+
+"""
