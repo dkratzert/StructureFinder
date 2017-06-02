@@ -18,7 +18,7 @@ TODO:
 """
 
 
-class OrbitTransformController(QObject):
+class OrbitTransformController(Qt3DCore.QComponent):
     targetChanged = pyqtSignal(int)
     radiuschanged = pyqtSignal(int)
     angleChanged = pyqtSignal()
@@ -78,7 +78,7 @@ class MyScene(Qt3DCore.QEntity):
 
     def createScene(self):
         rootEntity = Qt3DCore.QEntity()
-        material = Qt3DExtras.QPhongMaterial(rootEntity)
+        material = Qt3DExtras.QPhongAlphaMaterial(rootEntity)
         #material.setAmbient(QColor(170, 202, 0))
         material.setAmbient(QColor('green'))
         #url = QUrl()
@@ -106,13 +106,15 @@ class MyScene(Qt3DCore.QEntity):
         # Sphere:
         sphereEntity = Qt3DCore.QEntity(rootEntity)
         sphereMesh = Qt3DExtras.QSphereMesh()
-        sphereMesh.setRadius(2)
+        #sphereMesh
+        sphereMesh.setRadius(3)
         print('##1')
         sphereTransform = Qt3DCore.QTransform(sphereMesh)
         controller = OrbitTransformController(sphereTransform)
         controller.setTarget(sphereTransform)
+        sphereTransform.setTranslation(QVector3D(0.5, 0.2, 0.3))
         print('rad:')
-        controller.setRadius(2.0)
+        controller.setRadius(1.0)
         print('##2')
         sphereEntity.addComponent(sphereMesh)
         sphereEntity.addComponent(sphereTransform)
@@ -134,7 +136,7 @@ if __name__ == '__main__':
     #lens.setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
     camera.setProjectionType(Qt3DRender.QCameraLens.PerspectiveProjection)
     camera.setUpVector(QVector3D(0, 1.0, 0))
-    camera.setPosition(QVector3D(0, 0, 80.0))  # Entfernung
+    camera.setPosition(QVector3D(0, 0, 60.0))  # Entfernung
     camera.setViewCenter(QVector3D(0, 0, 0))
     print('#camera')
     # // For camera controls
