@@ -3,10 +3,11 @@
 import sys
 import math
 
-from PyQt5 import Qt3DCore, QtCore
+from PyQt5 import Qt3DCore, QtCore, QtWidgets
 from PyQt5 import Qt3DExtras
 from PyQt5 import Qt3DInput
 from PyQt5 import Qt3DRender
+#from PyQt5.Qt3DRender.QPickEvent import RightButton
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QGuiApplication, QQuaternion, QVector3D, QColor
 
@@ -55,7 +56,7 @@ class OrbitTransformController(Qt3DCore.QComponent):
         print('matrix###')
         self.m_matrix.setToIdentity()
         self.m_matrix.rotate(self.m_angle, QVector3D(1.0, 1.0, 0.0))
-        self.m_matrix.translate(self.m_radius, 0.0, 0.0)
+        #self.m_matrix.translate(self.m_radius, 0.0, 0.0)
         self.m_target.setMatrix(self.m_matrix)
 
     @pyqtSlot(bool, name='angle')
@@ -79,48 +80,76 @@ class MyScene(Qt3DCore.QEntity):
     def createScene(self):
         rootEntity = Qt3DCore.QEntity()
         material = Qt3DExtras.QPhongAlphaMaterial(rootEntity)
-        #material.setAmbient(QColor(170, 202, 0))
-        material.setAmbient(QColor('green'))
-        #url = QUrl()
-        #url.setPath("d:/tmp/foo.png")
-        #url.setScheme("file")
-        #tex = Qt3DRender.QTexture3D()
-
+        material.setAmbient(QColor('gray'))
 
         # Torus:
         cylinderEntity = Qt3DCore.QEntity(rootEntity)
         cylinderMesh = Qt3DExtras.QCylinderMesh()
-        cylinderMesh.setRadius(0.31)
-        cylinderMesh.setLength(20)
+        cylinderMesh.setRadius(0.21)
+        cylinderMesh.setLength(10)
         cylinderMesh.setRings(100)
         cylinderMesh.setSlices(20)
-    
         cylinderTransform = Qt3DCore.QTransform()
         cylinderTransform.setScale3D(QVector3D(1, 1, 1.0))
         cylinderTransform.setRotation(QQuaternion.fromAxisAndAngle(QVector3D(-1, -1, 0), 25.0))
-    
         cylinderEntity.addComponent(cylinderMesh)
         cylinderEntity.addComponent(cylinderTransform)
         cylinderEntity.addComponent(material)
-    
-        # Sphere:
+        """
+        C1    1    0.090610   -0.303414    0.513850
+        F1    3    0.045281   -0.252567    0.561932
+        F2    3    0.129932   -0.463873    0.548990
+        F3    3    0.055789   -0.388160    0.454486
+        """
+        #C1
+        self.add_sphere(rootEntity, QVector3D(0.090610, -0.303414, 0.513850)*QVector3D(10, 10, 10), 'green')
+        #F1
+        self.add_sphere(rootEntity, QVector3D(0.045281, -0.252567, 0.561932)*QVector3D(10, 10, 10), 'red')
+        #F2
+        self.add_sphere(rootEntity, QVector3D(0.129932, -0.463873, 0.548990)*QVector3D(10, 10, 10), 'blue')
+        #F3
+        self.add_sphere(rootEntity, QVector3D(0.055789, -0.388160, 0.454486)*QVector3D(10, 10, 10), 'yellow')
+        return rootEntity
+
+    def add_sphere(self, rootEntity, position, colour):
+        """ 
+        :type position: QVector3D
+        :type colour: string
+        """
+        # F3:
+        material = Qt3DExtras.QPhongAlphaMaterial(rootEntity)
+        material.setAmbient(QColor(colour))
         sphereEntity = Qt3DCore.QEntity(rootEntity)
         sphereMesh = Qt3DExtras.QSphereMesh()
-        #sphereMesh
-        sphereMesh.setRadius(3)
+        # sphereMesh
+        sphereMesh.setRadius(1)
         print('##1')
         sphereTransform = Qt3DCore.QTransform(sphereMesh)
-        controller = OrbitTransformController(sphereTransform)
-        controller.setTarget(sphereTransform)
-        sphereTransform.setTranslation(QVector3D(0.5, 0.2, 0.3))
+        #controller = OrbitTransformController(sphereTransform)
+        #controller.setTarget(sphereTransform)
+        sphereTransform.setTranslation(position)
         print('rad:')
-        controller.setRadius(1.0)
+        # controller.setRadius(1.0)
         print('##2')
         sphereEntity.addComponent(sphereMesh)
         sphereEntity.addComponent(sphereTransform)
         sphereEntity.addComponent(material)
-        return rootEntity
+        sphereTransform.matrix().setToIdentity()
 
+    def event(self, event):
+        handled = QtWidgets.QOpenGLWidget.event(event)
+        self.update()
+        return handled
+
+    def mousePressEvent(self, event):
+        button = 0
+        if event.button == "Qt::LeftButton":
+          button = 1
+        if event.button == "Qt::MiddleButton":
+          button = 2
+        if event.button == Qt.RightButton:
+          button = 3
+        return self.getEventQueue().mouseButtonPress(event.x(), event.y(), button)
 
 
 if __name__ == '__main__':
@@ -136,7 +165,7 @@ if __name__ == '__main__':
     #lens.setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
     camera.setProjectionType(Qt3DRender.QCameraLens.PerspectiveProjection)
     camera.setUpVector(QVector3D(0, 1.0, 0))
-    camera.setPosition(QVector3D(0, 0, 60.0))  # Entfernung
+    camera.setPosition(QVector3D(0, 0, 40.0))  # Entfernung
     camera.setViewCenter(QVector3D(0, 0, 0))
     print('#camera')
     # // For camera controls
@@ -177,5 +206,10 @@ coordinate generation as:
 
  y0 = yScreenMax -(yOffset+atom0.getY()*scale) // (1)
  y1 = yScreenMax -(yOffset+atom1.getY()*scale) // (2)
+
+C1    1    0.090610   -0.303414    0.513850
+F1    3    0.045281   -0.252567    0.561932
+F2    3    0.129932   -0.463873    0.548990
+F3    3    0.055789   -0.388160    0.454486
 
 """
