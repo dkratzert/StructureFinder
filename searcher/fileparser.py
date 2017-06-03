@@ -45,7 +45,7 @@ class Cif():
         TODO: Implement line breaks in values
 
         :param file: Cif file name
-        :type file: str
+        :type file: Path
         :return: cif file content
         :rtype: dict
         """
@@ -56,6 +56,7 @@ class Cif():
         save_frame = False
         atoms = {}
         atkey = ''
+        num = 0
         semi_colon_text_field = ''
         semi_colon_text_list = []
         cont = False  # continue to next line if True
@@ -87,14 +88,14 @@ class Cif():
                         atkey = '_atom_site_label'
                     if line == '_atom_site_aniso_label':
                         atkey = '_atom_site_aniso_label'
-                    # if line == "_atom_type_symbol":
-                    #                        atkey = "_atom_type_symbol"
-                    #                    if line == "_atom_type_scat_dispersion_real":
-                    #                        atkey = "_atom_type_scat_dispersion_real"
-                    #                    if line == "_atom_type_scat_dispersion_imag":
-                    #                        atkey = "_atom_type_scat_dispersion_imag"
-                    #                    if line == "_atom_type_scat_source":
-                    #                        atkey = "_atom_type_scat_source"
+                    #if line == "_atom_type_symbol":
+                    #    atkey = "_atom_type_symbol"
+                    #if line == "_atom_type_scat_dispersion_real":
+                    #    atkey = "_atom_type_scat_dispersion_real"
+                    #if line == "_atom_type_scat_dispersion_imag":
+                    #    atkey = "_atom_type_scat_dispersion_imag"
+                    #if line == "_atom_type_scat_source":
+                        atkey = "_atom_type_scat_source"
                     # collecting keywords from head:
                     if line[:1] == "_":
                         loophead_list.append(line)

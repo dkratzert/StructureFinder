@@ -23,7 +23,7 @@ def create_file_list(searchpath='None', endings='cif'):
     into a database
     """
     if not os.path.isdir(searchpath):
-        print('search path {0} not found!'.format(searchpath))
+        print('search path {0} not found! Or no directory!'.format(searchpath))
         sys.exit()
     print('collecting files...')
     res = filewalker(searchpath)

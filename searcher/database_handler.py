@@ -66,7 +66,7 @@ class DatabaseRequest():
                     ''')
 
         self.cur.execute('''
-                    CREATE TABLE structure (
+                    CREATE TABLE Structure (
                         Id    INTEGER NOT NULL,
                         measurement INTEGER NOT NULL,
                         path  TEXT,
@@ -74,16 +74,32 @@ class DatabaseRequest():
                         dataname    VARCHAR(255),
                         PRIMARY KEY(Id),
                           FOREIGN KEY(measurement)
-                            REFERENCES structure(Id)
+                            REFERENCES Structure(Id)
                               ON DELETE CASCADE
                               ON UPDATE NO ACTION);
+                    ''')
+
+        self.cur.execute('''
+                    CREATE TABLE Atoms (
+                        Id    INTEGER NOT NULL,
+                        StructureId    INTEGER NOT NULL,
+                        Name    VARCHAR(255),
+                        element    VARCHAR(2),
+                        x    FLOAT,
+                        y    FLOAT,
+                        z    FLOAT,
+                    PRIMARY KEY(Id),
+                      FOREIGN KEY(StructureId)
+                        REFERENCES Structure(Id)
+                          ON DELETE CASCADE
+                          ON UPDATE NO ACTION);
                     ''')
 
         self.cur.execute(
                     '''
                     CREATE TABLE cell (
                         Id        INTEGER NOT NULL,
-                        cellId    INTEGER NOT NULL,
+                        StructureId    INTEGER NOT NULL,
                         a    FLOAT,
                         b    FLOAT,
                         c    FLOAT,
@@ -97,8 +113,8 @@ class DatabaseRequest():
                         esdbeta    FLOAT,
                         esdgamma   FLOAT,
                     PRIMARY KEY(Id),
-                      FOREIGN KEY(cellId)
-                        REFERENCES cell(Id)
+                      FOREIGN KEY(StructureId)
+                        REFERENCES Structure(Id)
                           ON DELETE CASCADE
                           ON UPDATE NO ACTION);
                     '''
@@ -108,7 +124,7 @@ class DatabaseRequest():
                     '''
                     CREATE TABLE niggli_cell (
                                 Id        INTEGER NOT NULL,
-                                cellId    INTEGER NOT NULL,
+                                StructureId    INTEGER NOT NULL,
                                 a    FLOAT,
                                 b    FLOAT,
                                 c    FLOAT,
@@ -116,7 +132,7 @@ class DatabaseRequest():
                                 beta    FLOAT,
                                 gamma   FLOAT,
                             PRIMARY KEY(Id),
-                              FOREIGN KEY(cellId)
+                              FOREIGN KEY(StructureId)
                                 REFERENCES niggli_cell(Id)
                                   ON DELETE CASCADE
                                   ON UPDATE NO ACTION);
@@ -138,7 +154,7 @@ class DatabaseRequest():
         A push request will return the last row-Id.
         A pull request will return the requested rows
         :param request: sqlite database request like:
-                    '''SELECT structure.cell FROM structure'''
+                    '''SELECT Structure.cell FROM Structure'''
         :type request: str
         """
         # print('-'*30, 'start')
@@ -198,7 +214,7 @@ class StructureTable():
         
         :rtype: int
         """
-        req = '''SELECT structure.Id FROM structure'''
+        req = '''SELECT Structure.Id FROM Structure'''
         rows = self.database.db_request(req)
         if rows:
             return len(rows)
@@ -242,8 +258,8 @@ class StructureTable():
         """
         returns all fragment names in the database, sorted by name
         """
-        req = '''SELECT structure.Id, structure.measurement, structure.path, structure.filename, 
-                         structure.dataname FROM structure'''
+        req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
+                         Structure.dataname FROM Structure'''
         try:
             rows = [list(i) for i in self.database.db_request(req)]
         except TypeError:
@@ -254,8 +270,8 @@ class StructureTable():
         """
         returns the path of a res file in the db
         """
-        req_path = '''SELECT structure.name, structure.path FROM structure WHERE
-            structure.Id = {0}'''.format(structure_id)
+        req_path = '''SELECT Structure.name, Structure.path FROM Structure WHERE
+            Structure.Id = {0}'''.format(structure_id)
         path = self.database.db_request(req_path)[0]
         return path
 
@@ -265,7 +281,7 @@ class StructureTable():
         """
         if not structure_id:
             return False
-        req = '''SELECT a, b, c, alpha, beta, gamma FROM cell WHERE cellId = {0}'''.format(structure_id)
+        req = '''SELECT a, b, c, alpha, beta, gamma FROM cell WHERE StructureId = {0}'''.format(structure_id)
         cell = self.database.db_request(req)[0]
         return cell
 
@@ -282,7 +298,7 @@ class StructureTable():
         else:
             return False
 
-    def has_index(self, Id, table='structure'):
+    def has_index(self, Id, table='Structure'):
         """
         Returns True if db has index Id
         :param table: which db table to query
@@ -301,7 +317,7 @@ class StructureTable():
         
         """
         req = '''
-              INSERT INTO structure (Id, measurement, filename, path, dataname) VALUES(?, ?, ?, ?, ?)
+              INSERT INTO Structure (Id, measurement, filename, path, dataname) VALUES(?, ?, ?, ?, ?)
               '''
         return self.database.db_request(req, structure_id, measurement_id, filename, path, dataname)
 
@@ -320,7 +336,7 @@ class StructureTable():
         fill the cell of structure(structureId) in the table
         cell = [a, b, c, alpha, beta, gamma]
         """
-        req = '''INSERT INTO cell (cellId, a, b, c, alpha, beta, gamma, 
+        req = '''INSERT INTO cell (StructureId, a, b, c, alpha, beta, gamma, 
                                    esda, esdb, esdc, esdalpha, esdbeta, esdgamma) 
                             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
         aerror = get_error_from_value(a)
@@ -339,7 +355,16 @@ class StructureTable():
         if self.database.db_request(req, structure_id, a, b, c, alpha, beta, gamma,
                                     aerror, berror, cerror, alphaerror, betaerror, gammaerror):
             return True
-    
+
+    def fill_atoms_table(self, structure_id, name, element, x, y, z):
+        """
+        fill the atoms into structure(structureId) 
+        :TODO: Add bonds?
+        """
+        req = '''INSERT INTO Atoms (StructureId, name, element, x, y, z) VALUES(?, ?, ?, ?, ?, ?)'''
+        if self.database.db_request(req, structure_id, name, element, x, y, z):
+            return True
+
     def find_cell_by_abc(self, a=False, b=False, c=False):
         """
         finds a cell

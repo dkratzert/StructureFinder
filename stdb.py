@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+from pprint import pprint
 import sys
 
 import time
@@ -51,6 +52,7 @@ class StartStructureDB(QMainWindow):
         print(self.dbfilename)
 
         #######################################################
+        # TODO: pull this out:
         view = Qt3DExtras.Qt3DWindow()
         s = MyScene()
         scene = s.createScene()
@@ -82,6 +84,7 @@ class StartStructureDB(QMainWindow):
         self.ui.centralwidget.setMinimumSize(1200, 500)
         self.showMaximized()
         try:
+            # TODO: don't do in future:
             os.remove(self.dbfilename)
         except:
             pass
@@ -151,6 +154,7 @@ class StartStructureDB(QMainWindow):
         :return: None
         """
         fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        #fname = "/Users/daniel/Documents/Strukturen/Miriam/IKms_cf_08_Ni(mes)(cod)PF/FINAL/"
         # fname = "D:/GitHub/StructureDB/test-data"
         # fname = os.path.abspath("/Users/daniel/Downloads")
         # fname = os.path.abspath("../")
@@ -184,15 +188,7 @@ class StartStructureDB(QMainWindow):
                 continue
             #print(cif, '##')
             if cif and filename and path:
-                a = cif._cell_length_a
-                b = cif._cell_length_b
-                c = cif._cell_length_c
-                alpha = cif._cell_angle_alpha
-                beta = cif._cell_angle_beta
-                gamma = cif._cell_angle_gamma
-                measurement_id = self.structures.fill_measuremnts_table(filename, structure_id)
-                self.structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
-                self.structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma)
+                self.fill_tables(cif, filename, path, structure_id)
                 strTree = QTreeWidgetItem(self.ui.cifList_treeWidget)
                 strTree.setText(0, filename)
                 strTree.setText(1, path)
@@ -204,19 +200,48 @@ class StartStructureDB(QMainWindow):
         # self.ui.relocate_lineEdit.hide()
         self.structures.database.commit_db("Committed")
 
+    def fill_tables(self, cif, filename, path, structure_id):
+        """
+        FIll all info from cif file into the database tables 
+        :param cif: 
+        :param filename: 
+        :param path: 
+        :param structure_id: 
+        :return: 
+        """
+        a = cif._cell_length_a
+        b = cif._cell_length_b
+        c = cif._cell_length_c
+        alpha = cif._cell_angle_alpha
+        beta = cif._cell_angle_beta
+        gamma = cif._cell_angle_gamma
+        measurement_id = self.structures.fill_measuremnts_table(filename, structure_id)
+        self.structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
+        self.structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma)
+        #pprint(cif._atom)
+        for x in cif._atom:
+            try:
+                self.structures.fill_atoms_table(structure_id, x,
+                                             cif._atom[x]['_atom_site_type_symbol'],
+                                             cif._atom[x]['_atom_site_fract_x'].split('(')[0],
+                                             cif._atom[x]['_atom_site_fract_y'].split('(')[0],
+                                             cif._atom[x]['_atom_site_fract_z'].split('(')[0])
+            except KeyError as e:
+                print("Atom:", x, path, filename)
+                print(e)
+
 
 
 class QmlAusgabe(object):
     def __init__(self, pathToQmlFile="beispiel.qml"):
-
         #QML-Engine
         self.__appEngine = QQmlApplicationEngine()
         self.__appEngine.load(pathToQmlFile)
-
         self.__appWindow = self.__appEngine.rootObjects()[0]
 
     def show(self):
         self.__appWindow.show()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
