@@ -13,6 +13,8 @@ from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
+
+from lattice import lattice
 from searcher import filecrawler
 from stdb_main import Ui_stdbMainwindow
 from searcher.fileparser import Cif
@@ -125,7 +127,22 @@ class StartStructureDB(QMainWindow):
             self.ui.gammaLineEdit.setText("{:>5.4f}".format(gamma))
 
     def search(self, search_string):
-        pass
+        """
+        searches db for given cell via the cell volume
+        
+        8.4009  10.4848  11.8979  94.7910 103.0250 108.5480
+        
+        :param search_string: 
+        :return: 
+        """
+        cell = search_string.split()
+        if len(cell) != 6:
+            return False
+        else:
+            self.structures = StructureTable(self.dbfilename)
+            volume = lattice.vol_unitcell(*cell)
+            res = self.structures.find_by_volume(volume)
+            print(res)
 
     def import_database(self):
         """
@@ -227,8 +244,9 @@ class StartStructureDB(QMainWindow):
                                              cif._atom[x]['_atom_site_fract_y'].split('(')[0],
                                              cif._atom[x]['_atom_site_fract_z'].split('(')[0])
             except KeyError as e:
-                print("Atom:", x, path, filename)
-                print(e)
+                pass
+                #print("Atom:", x, path, filename)
+                #print(e)
 
 
 

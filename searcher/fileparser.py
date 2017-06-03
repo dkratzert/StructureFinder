@@ -95,7 +95,7 @@ class Cif():
                     #if line == "_atom_type_scat_dispersion_imag":
                     #    atkey = "_atom_type_scat_dispersion_imag"
                     #if line == "_atom_type_scat_source":
-                        atkey = "_atom_type_scat_source"
+                    #    atkey = "_atom_type_scat_source"
                     # collecting keywords from head:
                     if line[:1] == "_":
                         loophead_list.append(line)
@@ -104,13 +104,19 @@ class Cif():
                     else:
                         loopitem = {}
                         loop_data_line = delimit_line(line)
+                        if cont:
+                            cont = False
+                            continue
                         # unwrap loop data:
                         if len(loop_data_line) != len(loophead_list):
                             if textlen - 1 > num:
-                                loop_data_line.extend(delimit_line(txt[num + 1]))
+                                loop_data_line.extend(delimit_line(txt[num + 1].strip("\r\n ")))
+                                cont = True
                             continue
                         for n, item in enumerate(loop_data_line):
                             loopitem[loophead_list[n]] = item
+                        if cont:
+                            continue
                         # TODO: make this general. Not only for atoms:
                         if atkey and loopitem[atkey] in atoms:
                             # atom is already there not there, upating values

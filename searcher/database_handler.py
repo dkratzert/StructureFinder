@@ -12,6 +12,7 @@ Created on 09.02.2015
 """
 import sys
 
+from lattice import lattice
 from pymatgen.core.lattice import Lattice
 from searcher.misc import get_error_from_value
 
@@ -112,6 +113,7 @@ class DatabaseRequest():
                         esdalpha   FLOAT,
                         esdbeta    FLOAT,
                         esdgamma   FLOAT,
+                        volume     FLOAT,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
                         REFERENCES Structure(Id)
@@ -281,7 +283,7 @@ class StructureTable():
         """
         if not structure_id:
             return False
-        req = '''SELECT a, b, c, alpha, beta, gamma FROM cell WHERE StructureId = {0}'''.format(structure_id)
+        req = '''SELECT a, b, c, alpha, beta, gamma, volume FROM cell WHERE StructureId = {0}'''.format(structure_id)
         cell = self.database.db_request(req)[0]
         return cell
 
@@ -337,8 +339,8 @@ class StructureTable():
         cell = [a, b, c, alpha, beta, gamma]
         """
         req = '''INSERT INTO cell (StructureId, a, b, c, alpha, beta, gamma, 
-                                   esda, esdb, esdc, esdalpha, esdbeta, esdgamma) 
-                            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+                                   esda, esdb, esdc, esdalpha, esdbeta, esdgamma, volume) 
+                            VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
         aerror = get_error_from_value(a)
         berror = get_error_from_value(b)
         cerror = get_error_from_value(c)
@@ -351,9 +353,9 @@ class StructureTable():
         alpha = alpha.split('(')[0]
         beta = beta.split('(')[0]
         gamma = gamma.split('(')[0]
-        #if self.database.db_request(req, structure_id, *cif)
+        volume = lattice.vol_unitcell(float(a), float(b), float(c), float(alpha), float(beta), float(gamma))
         if self.database.db_request(req, structure_id, a, b, c, alpha, beta, gamma,
-                                    aerror, berror, cerror, alphaerror, betaerror, gammaerror):
+                                    aerror, berror, cerror, alphaerror, betaerror, gammaerror, volume):
             return True
 
     def fill_atoms_table(self, structure_id, name, element, x, y, z):
@@ -400,6 +402,19 @@ class StructureTable():
             sys.exit()
         return self.database.db_request(req)
 
+    def find_by_volume(self, volume):
+        """
+        Searches cells with volume between upper and lower limit
+        :param volume: the unit cell volume
+        :type volume: float
+        :return: list
+        """
+        upper_limit = volume+volume*0.05
+        lower_limit = volume + volume * 0.05
+        req = '''SELECT StructureId FROM cell WHERE cell.volume >= '{0}' AND cell.volume <= '{1}'  
+                            '''.format(lower_limit, upper_limit)
+        return self.database.db_request(req)
+
     def find_biggest_cell(self):
         """
         finds the structure with the biggest cell in the db
@@ -417,11 +432,13 @@ class StructureTable():
             
 if __name__ == '__main__':
     s = StructureTable("../test.sqlite")
-    latt = Lattice.from_string("10 20 30 90 91 92")
-    for x in range(1000):
-        cell = s.get_cell_by_id(2)[0]
-        #print(cell)
-        m = latt.find_mapping(Lattice.from_parameters(*cell))
-        #print(m)
-    print("ready")
+    res = s.find_by_volume(500)
+    print(res)
+    #latt = Lattice.from_string("10 20 30 90 91 92")
+    #for x in range(1000):
+    #    cell = s.get_cell_by_id(2)[0]
+    #    #print(cell)
+    #    m = latt.find_mapping(Lattice.from_parameters(*cell))
+    #    #print(m)
+    #print("ready")
 
