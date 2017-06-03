@@ -4,11 +4,11 @@ import os
 import sys
 
 import time
-from PyQt5 import uic, Qt3DExtras, QtWidgets
+from PyQt5 import uic, Qt3DExtras, QtWidgets, Qt3DRender
 from PyQt5.QtCore import QSize
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QVector3D
 from PyQt5.QtQml import QQmlApplicationEngine
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
@@ -16,7 +16,7 @@ from searcher import filecrawler
 from stdb_main import Ui_stdbMainwindow
 from searcher.fileparser import Cif
 from searcher.database_handler import StructureTable, DatabaseRequest
-from opengl.moleculegl import GLWidget
+from opengl.moleculegl import MyScene
 
 uic.compileUiDir('./')
 
@@ -50,9 +50,34 @@ class StartStructureDB(QMainWindow):
         self.dbfilename = 'test.sqlite'
         print(self.dbfilename)
 
-        #self.glWidget = GLWidget()
-        #self.ui.openglVlayout.addWidget(self.glWidget)
-        #self.glWidget.setMinimumSize(250, 250)
+        #######################################################
+        view = Qt3DExtras.Qt3DWindow()
+        s = MyScene()
+        scene = s.createScene()
+        print('#scene')
+        # // Camera
+        camera = view.camera()
+        lens = Qt3DRender.QCameraLens()
+        lens.setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
+        camera.setProjectionType(Qt3DRender.QCameraLens.PerspectiveProjection)
+        camera.setUpVector(QVector3D(0, 1.0, 0))
+        camera.setPosition(QVector3D(0, 0, 140.0))  # Entfernung
+        camera.setViewCenter(QVector3D(0, 0, 0))
+        print('#camera')
+        # // For camera controls
+        camController = Qt3DExtras.QOrbitCameraController(scene)
+        camController.setLinearSpeed(50.0)
+        camController.setLookSpeed(180.0)
+        camController.setCamera(camera)
+        #view.setRootEntity(scene)
+        print('view#')
+        container = QWidget.createWindowContainer(view)
+        screenSize = view.screen().size()
+        container.setMinimumSize(QSize(200, 100))
+        container.setMaximumSize(screenSize)
+        self.ui.openglVlayout.addWidget(container, 1)
+        #view.show()
+        #########################################
         self.ui.centralwidget.setMinimumSize(1200, 500)
         self.showMaximized()
         try:
