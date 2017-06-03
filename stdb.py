@@ -6,7 +6,7 @@ import sys
 
 import time
 from PyQt5 import uic, Qt3DExtras, QtWidgets, Qt3DRender
-from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QSize, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QColor, QVector3D
 from PyQt5.QtQml import QQmlApplicationEngine
 from PyQt5.QtWidgets import QApplication, QWidget
@@ -27,20 +27,22 @@ uic.compileUiDir('./')
 """
 TODO:
 - make progress bar for indexer and file opener
-- store atoms in db
 - structure code
 - make 3D model from atoms
 - make file type more flexible. handle .res and .cif equally
 - group structures in measurements
 - list properties of a selected cif file
-- implement relocate cifpath as file open dialog
 - implement progress bar for indexing
 - implement "save on close?" dialog
 - add abort button for indexer
 - recognize already indexed files
+- search for strings to get a result for a persons name, add person to db
 """
 
+
 class StartStructureDB(QMainWindow):
+    #changedValue = pyqtSignal('QString')
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ui = Ui_stdbMainwindow()
@@ -54,6 +56,7 @@ class StartStructureDB(QMainWindow):
         print(self.dbfilename)
 
         #######################################################
+        """
         # TODO: pull this out:
         view = Qt3DExtras.Qt3DWindow()
         s = MyScene()
@@ -83,6 +86,7 @@ class StartStructureDB(QMainWindow):
         self.ui.openglVlayout.addWidget(container, 1)
         view.show()
         #########################################
+        """
         self.ui.centralwidget.setMinimumSize(1200, 500)
         self.showMaximized()
         try:
@@ -98,6 +102,7 @@ class StartStructureDB(QMainWindow):
     def connect_signals_and_slots(self):
         self.ui.importDatabaseButton.clicked.connect(self.import_database)
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
+        self.ui.searchLineEDit.textChanged.connect(self.search_cell)
         # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
         self.ui.cifList_treeWidget.clicked.connect(self.show_properties)
         # for later use to implement relocation of whole database:
@@ -126,7 +131,8 @@ class StartStructureDB(QMainWindow):
         if gamma:
             self.ui.gammaLineEdit.setText("{:>5.4f}".format(gamma))
 
-    def search(self, search_string):
+    @pyqtSlot('QString')
+    def search_cell(self, search_string):
         """
         searches db for given cell via the cell volume
         
@@ -135,14 +141,19 @@ class StartStructureDB(QMainWindow):
         :param search_string: 
         :return: 
         """
-        cell = search_string.split()
+        try:
+            cell = [float(x) for x in search_string.split()]
+        except (TypeError, ValueError):
+            return False
         if len(cell) != 6:
             return False
-        else:
+        try:
             self.structures = StructureTable(self.dbfilename)
             volume = lattice.vol_unitcell(*cell)
             res = self.structures.find_by_volume(volume)
             print(res)
+        except ValueError:
+            return False
 
     def import_database(self):
         """

@@ -12,8 +12,9 @@ Created on 09.02.2015
 """
 import sys
 
+import searcher
 from lattice import lattice
-from pymatgen.core.lattice import Lattice
+from searcher import misc
 from searcher.misc import get_error_from_value
 
 __metaclass__ = type  # use new-style classes
@@ -353,7 +354,11 @@ class StructureTable():
         alpha = alpha.split('(')[0]
         beta = beta.split('(')[0]
         gamma = gamma.split('(')[0]
-        volume = lattice.vol_unitcell(float(a), float(b), float(c), float(alpha), float(beta), float(gamma))
+        volume = 0.0
+        try:
+            volume = lattice.vol_unitcell(float(a), float(b), float(c), float(alpha), float(beta), float(gamma))
+        except ValueError:
+            print(a, b, c, alpha, beta, gamma)
         if self.database.db_request(req, structure_id, a, b, c, alpha, beta, gamma,
                                     aerror, berror, cerror, alphaerror, betaerror, gammaerror, volume):
             return True
@@ -402,18 +407,21 @@ class StructureTable():
             sys.exit()
         return self.database.db_request(req)
 
-    def find_by_volume(self, volume):
+    def find_by_volume(self, volume, threshold = 0.03):
         """
         Searches cells with volume between upper and lower limit
         :param volume: the unit cell volume
         :type volume: float
         :return: list
         """
-        upper_limit = volume+volume*0.05
-        lower_limit = volume + volume * 0.05
+        upper_limit = volume + volume * threshold
+        lower_limit = volume - volume * threshold
         req = '''SELECT StructureId FROM cell WHERE cell.volume >= '{0}' AND cell.volume <= '{1}'  
                             '''.format(lower_limit, upper_limit)
-        return self.database.db_request(req)
+        try:
+            return searcher.misc.flatten([list(x) for x in self.database.db_request(req)])
+        except TypeError:
+            return 0
 
     def find_biggest_cell(self):
         """
@@ -432,7 +440,11 @@ class StructureTable():
             
 if __name__ == '__main__':
     s = StructureTable("../test.sqlite")
-    res = s.find_by_volume(500)
+    #vol = lattice.vol_unitcell(8.4009,  10.4848,  11.8979,  94.7910, 103.0250, 108.5480) # 954
+    # 8.40 10.48 11.99 94.78 103.0 108.55
+    vol = lattice.vol_unitcell(8.4, 10.5, 11.9, 95, 103, 109)  # 952
+    print(vol)
+    res = s.find_by_volume(vol)
     print(res)
     #latt = Lattice.from_string("10 20 30 90 91 92")
     #for x in range(1000):
