@@ -257,12 +257,16 @@ class StructureTable():
         else:
             return False
 
-    def get_all_structure_names(self):
+    def get_all_structure_names(self, ids=None):
         """
         returns all fragment names in the database, sorted by name
         """
-        req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
-                         Structure.dataname FROM Structure'''
+        if ids:
+            req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
+                         Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(tuple(ids))
+        else:
+            req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
+                                     Structure.dataname FROM Structure'''
         try:
             rows = [list(i) for i in self.database.db_request(req)]
         except TypeError:
@@ -421,7 +425,7 @@ class StructureTable():
         try:
             return searcher.misc.flatten([list(x) for x in self.database.db_request(req)])
         except TypeError:
-            return 0
+            return False
 
     def find_biggest_cell(self):
         """

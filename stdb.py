@@ -53,40 +53,7 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.hideColumn(2)
         # self.ui.cellSearchEdit.hide()
         self.dbfilename = 'test.sqlite'
-        print(self.dbfilename)
-
-        #######################################################
-        """
-        # TODO: pull this out:
-        view = Qt3DExtras.Qt3DWindow()
-        s = MyScene()
-        scene = s.createScene()
-        print('#scene')
-        # // Camera
-        camera = view.camera()
-        lens = Qt3DRender.QCameraLens()
-        lens.setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
-        camera.setProjectionType(Qt3DRender.QCameraLens.PerspectiveProjection)
-        camera.setUpVector(QVector3D(0, 1.0, 0))
-        camera.setPosition(QVector3D(0, 0, 140.0))  # Entfernung
-        camera.setViewCenter(QVector3D(0, 0, 0))
-        print('#camera')
-        # // For camera controls
-        camController = Qt3DExtras.QOrbitCameraController(scene)
-        camController.setLinearSpeed(50.0)
-        camController.setLookSpeed(180.0)
-        camController.setCamera(camera)
-        #view.setRootEntity(scene)
-        print('view#')
-        view.defaultFrameGraph().setClearColor(QColor('lightgray'))
-        container = QWidget.createWindowContainer(view)
-        screenSize = view.screen().size()
-        container.setMinimumSize(QSize(200, 100))
-        container.setMaximumSize(screenSize)
-        self.ui.openglVlayout.addWidget(container, 1)
-        view.show()
-        #########################################
-        """
+        self.display_molecule()
         self.ui.centralwidget.setMinimumSize(1200, 500)
         self.showMaximized()
         try:
@@ -97,7 +64,43 @@ class StartStructureDB(QMainWindow):
         self.structures = StructureTable(self.dbfilename)
         self.db = DatabaseRequest(self.dbfilename)
         self.db.initialize_db()
+        # The treewidget with the cif list:
+        self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         self.show()
+
+    def display_molecule(self):
+        # TODO: Make this work.
+        """
+                # TODO: pull this out:
+                view = Qt3DExtras.Qt3DWindow()
+                s = MyScene()
+                scene = s.createScene()
+                print('#scene')
+                # // Camera
+                camera = view.camera()
+                lens = Qt3DRender.QCameraLens()
+                lens.setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
+                camera.setProjectionType(Qt3DRender.QCameraLens.PerspectiveProjection)
+                camera.setUpVector(QVector3D(0, 1.0, 0))
+                camera.setPosition(QVector3D(0, 0, 140.0))  # Entfernung
+                camera.setViewCenter(QVector3D(0, 0, 0))
+                print('#camera')
+                # // For camera controls
+                camController = Qt3DExtras.QOrbitCameraController(scene)
+                camController.setLinearSpeed(50.0)
+                camController.setLookSpeed(180.0)
+                camController.setCamera(camera)
+                #view.setRootEntity(scene)
+                print('view#')
+                view.defaultFrameGraph().setClearColor(QColor('lightgray'))
+                container = QWidget.createWindowContainer(view)
+                screenSize = view.screen().size()
+                container.setMinimumSize(QSize(200, 100))
+                container.setMaximumSize(screenSize)
+                self.ui.openglVlayout.addWidget(container, 1)
+                view.show()
+                #########################################
+                """
 
     def connect_signals_and_slots(self):
         self.ui.importDatabaseButton.clicked.connect(self.import_database)
@@ -105,14 +108,12 @@ class StartStructureDB(QMainWindow):
         self.ui.searchLineEDit.textChanged.connect(self.search_cell)
         # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
         self.ui.cifList_treeWidget.clicked.connect(self.show_properties)
-        # for later use to implement relocation of whole database:
-        # das brauch ich nicht:
-        # self.ui.cifList_treeWidget.doubleClicked.connect(self.relocate)
         # self.ui.cifList_treeWidget.doubleClicked.connect(self.show_properties)
 
+    @pyqtSlot('QModelIndex')
     def show_properties(self, item):
         """
-        This slot show the properties of a cif file in the properties widget
+        This slot shows the properties of a cif file in the properties widget
         """
         # self.ui.properties_treeWidget.show()
         cell = self.structures.get_cell_by_id(item.sibling(item.row(), 2).data())
@@ -141,19 +142,30 @@ class StartStructureDB(QMainWindow):
         :param search_string: 
         :return: 
         """
+        # TODO: Hier aufräumen. Muss Bedingungen klarer ordnen:
         try:
             cell = [float(x) for x in search_string.split()]
         except (TypeError, ValueError):
             return False
         if len(cell) != 6:
+            self.show_full_list()
             return False
         try:
-            self.structures = StructureTable(self.dbfilename)
             volume = lattice.vol_unitcell(*cell)
-            res = self.structures.find_by_volume(volume)
-            print(res)
+            idlist = self.structures.find_by_volume(volume)
+            searchresult = self.structures.get_all_structure_names(idlist)
+            self.ui.cifList_treeWidget.clear()
+            self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         except ValueError:
+            self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
+            self.show_full_list()
             return False
+        for i in searchresult:
+            #                  column, text
+            self.str_tree.setText(0, i[3])  # name
+            self.str_tree.setText(1, i[2])  # path
+            self.str_tree.setData(2, 0, i[0])  # id
+        self.ui.cifList_treeWidget.resizeColumnToContents(0)
 
     def import_database(self):
         """
@@ -167,13 +179,19 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.show()
         if not self.structures:
             return False
+        self.show_full_list()
+
+    def show_full_list(self):
+        """
+        Displays the complete list of structures
+        :return: 
+        """
         for i in self.structures.get_all_structure_names():
             """structure.Id, structure.measurement, structure.path, structure.filename, 
                          structure.dataname"""
-            str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
-            str_tree.setText(0, i[3])  # name
-            str_tree.setText(1, i[2])  # path
-            str_tree.setData(2, 0, i[0])  # id
+            self.str_tree.setText(0, i[3])  # name
+            self.str_tree.setText(1, i[2])  # path
+            self.str_tree.setData(2, 0, i[0])  # id
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
 
     def import_cif_dirs(self):
@@ -216,11 +234,12 @@ class StartStructureDB(QMainWindow):
                 continue
             #print(cif, '##')
             if cif and filename and path:
-                self.fill_tables(cif, filename, path, structure_id)
-                strTree = QTreeWidgetItem(self.ui.cifList_treeWidget)
-                strTree.setText(0, filename)
-                strTree.setText(1, path)
-                strTree.setText(2, str(n))
+                self.fill_db_tables(cif, filename, path, structure_id)
+                # This QTreeWidgetItem is one row:
+                self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
+                self.str_tree.setText(0, filename)
+                self.str_tree.setText(1, path)
+                self.str_tree.setText(2, str(n))
                 n += 1
         print('Parse cif files:', round(sum(times), 3), 's,', n, 'files')
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
@@ -228,9 +247,9 @@ class StartStructureDB(QMainWindow):
         # self.ui.relocate_lineEdit.hide()
         self.structures.database.commit_db("Committed")
 
-    def fill_tables(self, cif, filename, path, structure_id):
+    def fill_db_tables(self, cif, filename, path, structure_id):
         """
-        FIll all info from cif file into the database tables 
+        Fill all info from cif file into the database tables 
         :param cif: 
         :param filename: 
         :param path: 
