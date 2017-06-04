@@ -1,25 +1,23 @@
 from __future__ import print_function
 
 import os
-from pprint import pprint
 import sys
-
 import time
-from PyQt5 import uic, Qt3DExtras, QtWidgets, Qt3DRender
-from PyQt5.QtCore import QSize, pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QColor, QVector3D
+
+from PyQt5 import uic
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtQml import QQmlApplicationEngine
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
 
 from lattice import lattice
 from searcher import filecrawler
-from stdb_main import Ui_stdbMainwindow
-from searcher.fileparser import Cif
 from searcher.database_handler import StructureTable, DatabaseRequest
-from opengl.moleculegl import MyScene
+from searcher.filecrawler import fill_db_tables
+from searcher.fileparser import Cif
+from stdb_main import Ui_stdbMainwindow
 
 uic.compileUiDir('./')
 
@@ -236,7 +234,7 @@ class StartStructureDB(QMainWindow):
                 continue
             #print(cif, '##')
             if cif and filename and path:
-                self.fill_db_tables(cif, filename, path, structure_id)
+                fill_db_tables(cif, filename, path, structure_id, self.structures)
                 # TODO: use add_table_row() here:
                 self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
                 self.str_tree.setText(0, filename)
@@ -248,38 +246,6 @@ class StartStructureDB(QMainWindow):
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         # self.ui.relocate_lineEdit.hide()
         self.structures.database.commit_db("Committed")
-
-    def fill_db_tables(self, cif, filename, path, structure_id):
-        """
-        Fill all info from cif file into the database tables 
-        :param cif: 
-        :param filename: 
-        :param path: 
-        :param structure_id: 
-        :return: 
-        """
-        a = cif._cell_length_a
-        b = cif._cell_length_b
-        c = cif._cell_length_c
-        alpha = cif._cell_angle_alpha
-        beta = cif._cell_angle_beta
-        gamma = cif._cell_angle_gamma
-        measurement_id = self.structures.fill_measuremnts_table(filename, structure_id)
-        self.structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
-        self.structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma)
-        #pprint(cif._atom)
-        for x in cif._atom:
-            try:
-                self.structures.fill_atoms_table(structure_id, x,
-                                             cif._atom[x]['_atom_site_type_symbol'],
-                                             cif._atom[x]['_atom_site_fract_x'].split('(')[0],
-                                             cif._atom[x]['_atom_site_fract_y'].split('(')[0],
-                                             cif._atom[x]['_atom_site_fract_z'].split('(')[0])
-            except KeyError as e:
-                pass
-                #print("Atom:", x, path, filename)
-                #print(e)
-
 
 
 class QmlAusgabe(object):

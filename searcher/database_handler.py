@@ -46,6 +46,7 @@ class DatabaseRequest():
         self.cur.execute("DROP TABLE IF EXISTS structure")
         self.cur.execute("DROP TABLE IF EXISTS measurement")
         self.cur.execute("DROP TABLE IF EXISTS cell")
+        self.cur.execute("DROP TABLE IF EXISTS Atoms")
         self.cur.execute("DROP TABLE IF EXISTS niggli_cell")
         try:
             self.cur.execute("DROP INDEX cell")
