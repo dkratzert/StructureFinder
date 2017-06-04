@@ -149,23 +149,25 @@ class StartStructureDB(QMainWindow):
             return False
         if len(cell) != 6:
             self.show_full_list()
-            return False
+            return True
         try:
             volume = lattice.vol_unitcell(*cell)
             idlist = self.structures.find_by_volume(volume)
             searchresult = self.structures.get_all_structure_names(idlist)
-            self.ui.cifList_treeWidget.clear()
-            self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         except ValueError:
-            self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
             self.show_full_list()
             return False
+        self.ui.cifList_treeWidget.clear()
         for i in searchresult:
             #                  column, text
-            self.str_tree.setText(0, i[3])  # name
-            self.str_tree.setText(1, i[2])  # path
-            self.str_tree.setData(2, 0, i[0])  # id
+            self.add_table_row(i)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
+
+    def add_table_row(self, i):
+        self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
+        self.str_tree.setText(0, i[3])  # name
+        self.str_tree.setText(1, i[2])  # path
+        self.str_tree.setData(2, 0, i[0])  # id
 
     def import_database(self):
         """
@@ -176,22 +178,22 @@ class StartStructureDB(QMainWindow):
         print(fname)
         self.dbfilename = fname[0]
         self.structures = StructureTable(self.dbfilename)
-        self.ui.cifList_treeWidget.show()
+        #self.ui.cifList_treeWidget.show()
+        self.show_full_list()
         if not self.structures:
             return False
-        self.show_full_list()
 
     def show_full_list(self):
         """
         Displays the complete list of structures
         :return: 
         """
+        self.ui.cifList_treeWidget.clear()
+        self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         for i in self.structures.get_all_structure_names():
             """structure.Id, structure.measurement, structure.path, structure.filename, 
                          structure.dataname"""
-            self.str_tree.setText(0, i[3])  # name
-            self.str_tree.setText(1, i[2])  # path
-            self.str_tree.setData(2, 0, i[0])  # id
+            self.add_table_row(i)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
 
     def import_cif_dirs(self):
@@ -235,7 +237,7 @@ class StartStructureDB(QMainWindow):
             #print(cif, '##')
             if cif and filename and path:
                 self.fill_db_tables(cif, filename, path, structure_id)
-                # This QTreeWidgetItem is one row:
+                # TODO: use add_table_row() here:
                 self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
                 self.str_tree.setText(0, filename)
                 self.str_tree.setText(1, path)
