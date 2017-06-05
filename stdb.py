@@ -151,21 +151,31 @@ class StartStructureDB(QMainWindow):
         try:
             volume = lattice.vol_unitcell(*cell)
             idlist = self.structures.find_by_volume(volume)
+            # print(idlist)
             searchresult = self.structures.get_all_structure_names(idlist)
         except ValueError:
             self.show_full_list()
             return False
         self.ui.cifList_treeWidget.clear()
         for i in searchresult:
-            #                  column, text
-            self.add_table_row(i)
+            name = i[3]  # .decode("utf-8", "surrogateescape")
+            path = i[2]  # .decode("utf-8", "surrogateescape")
+            id = i[0]
+            self.add_table_row(name, path, id)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
 
-    def add_table_row(self, i):
+    def add_table_row(self, name, path, id):
+        """
+        Adds a line to the search results table
+        :type name: str
+        :type path: str
+        :type id: str
+        :return: None
+        """
         self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
-        self.str_tree.setText(0, i[3])  # name
-        self.str_tree.setText(1, i[2])  # path
-        self.str_tree.setData(2, 0, i[0])  # id
+        self.str_tree.setText(0, name)  # name
+        self.str_tree.setText(1, path)  # path
+        self.str_tree.setData(2, 0, id)  # id
 
     def import_database(self):
         """
@@ -189,9 +199,10 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.clear()
         self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         for i in self.structures.get_all_structure_names():
-            """structure.Id, structure.measurement, structure.path, structure.filename, 
-                         structure.dataname"""
-            self.add_table_row(i)
+            name = i[3]
+            path = i[2]#.decode("utf-8", "surrogateescape")
+            id = i[0]
+            self.add_table_row(name, path, id)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
 
     def import_cif_dirs(self):
@@ -220,31 +231,27 @@ class StartStructureDB(QMainWindow):
         n = 1
         times = []
         for filepth in files:
-            filename = filepth.name
-            path = str(filepth.parents[0])
-            #print(filepth)  # print full file path
+            if not filepth.is_file():
+                continue
+            filename = filepth.name#.decode("utf-8", "surrogateescape")
+            path = str(filepth.parents[0])#.decode("utf-8", "surrogateescape")
             structure_id = n
             time2 = time.clock()
             cif = Cif(filepth)
             time3 = time.clock()
             diff2 = time3 - time2
             times.append(diff2)
-            #print(round(diff, 4), 's')
             if not cif.ok:
                 continue
-            #print(cif, '##')
             if cif and filename and path:
                 fill_db_tables(cif, filename, path, structure_id, self.structures)
-                # TODO: use add_table_row() here:
-                self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
-                self.str_tree.setText(0, filename)
-                self.str_tree.setText(1, path)
-                self.str_tree.setText(2, str(n))
+                self.add_table_row(filename, path, str(n))
                 n += 1
-        print('Parse cif files:', round(sum(times), 3), 's,', n, 'files')
+                if n % 200 == 0:
+                    self.structures.database.commit_db(".")
+        print('Parsed {} cif files in: {} s'.format(n, round(sum(times), 2)))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
-        # self.ui.relocate_lineEdit.hide()
         self.structures.database.commit_db("Committed")
 
 

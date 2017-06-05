@@ -86,11 +86,13 @@ def put_cifs_in_db(searchpath):
         return False
     time2 = time.clock()
     diff = time2 - time1
-    print("File list:", round(diff, 4), 's')
+    print("File list:", round(diff, 3), 's')
     # TODO: implement multiple cells in one cif file:
     n = 1
     times = []
     for filepth in files:
+        if not filepth.is_file():
+            continue
         filename = filepth.name
         path = str(filepth.parents[0])
         # print(filepth)  # print full file path
@@ -102,12 +104,14 @@ def put_cifs_in_db(searchpath):
         times.append(diff2)
         # print(round(diff, 4), 's')
         if not cif.ok:
-            print('no cif')
+            #print('no cif')
             continue
         if cif and filename and path:
             fill_db_tables(cif, filename, path, structure_id, structures)
             n += 1
-    print('Parsed cif files in:', round(sum(times), 3), 's,', n, 'files')
+        if n % 200 == 0:
+            structures.database.commit_db(".")
+    print('\nParsed {} cif files in: {} s'.format(n, round(sum(times), 2)))
     structures.database.commit_db("Committed")
 
 def fill_db_tables(cif, filename, path, structure_id, structures):

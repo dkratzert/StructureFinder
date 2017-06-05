@@ -190,7 +190,7 @@ class DatabaseRequest():
     def commit_db(self, comment=""):
         self.con.commit()
         if comment:
-            print(comment)
+            print(comment, end='')
 
 ##################################################################
 
@@ -327,6 +327,9 @@ class StructureTable():
         req = '''
               INSERT INTO Structure (Id, measurement, filename, path, dataname) VALUES(?, ?, ?, ?, ?)
               '''
+        filename = filename.encode("utf-8", "surrogateescape")
+        path = path.encode("utf-8", "surrogateescape")
+        dataname = dataname.encode("utf-8", "surrogateescape")
         return self.database.db_request(req, structure_id, measurement_id, filename, path, dataname)
 
     def fill_measuremnts_table(self, name, structure_id):
@@ -337,6 +340,7 @@ class StructureTable():
         req = '''
               INSERT INTO measurement (Id, name) VALUES(?, ?)
               '''
+        name = name.encode("utf-8", "surrogateescape")
         return self.database.db_request(req, structure_id, name)
 
     def fill_cell_table(self, structure_id, a, b, c, alpha, beta, gamma):
