@@ -53,7 +53,6 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.hideColumn(2)
         # self.ui.cellSearchEdit.hide()
         self.dbfilename = 'test.sqlite'
-        #self.display_molecule()
         self.ui.centralwidget.setMinimumSize(1200, 500)
         self.showMaximized()
         try:
@@ -67,11 +66,18 @@ class StartStructureDB(QMainWindow):
         # The treewidget with the cif list:
         self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         self.show()
+        #self.display_molecule()
         self.full_list = True  # indicator if the full structures list is shown
 
     def display_molecule(self):
         # TODO: Make this work.
         view = Qt3DExtras.Qt3DWindow()
+        view.defaultFrameGraph().setClearColor(QColor('lightgray'))
+        q3dWidget = QWidget.createWindowContainer(view)
+        screenSize = view.screen().size()
+        q3dWidget.setMinimumSize(QSize(100, 100))
+        q3dWidget.setMaximumSize(screenSize)
+        self.ui.openglVlayout.addWidget(q3dWidget)
         s = MyScene()
         scene = s.createScene()
         print('#scene')
@@ -91,12 +97,6 @@ class StartStructureDB(QMainWindow):
         camController.setCamera(camera)
         view.setRootEntity(scene)
         print('view#')
-        #view.defaultFrameGraph().setClearColor(QColor('lightgray'))
-        container = QWidget.createWindowContainer(view)
-        screenSize = view.screen().size()
-        container.setMinimumSize(QSize(100, 100))
-        container.setMaximumSize(screenSize)
-        self.ui.openglVlayout.addWidget(container, 1)
         view.show()
 
 
