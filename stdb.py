@@ -4,15 +4,17 @@ import os
 import sys
 import time
 
-from PyQt5 import uic
-from PyQt5.QtCore import pyqtSlot
+from PyQt5 import uic, Qt3DExtras
+from PyQt5.QtCore import pyqtSlot, QSize
+from PyQt5.QtGui import QColor, QVector3D, QSurface
 from PyQt5.QtQml import QQmlApplicationEngine
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
 
 from lattice import lattice
+from opengl.moleculegl import MyScene
 from searcher import filecrawler
 from searcher.database_handler import StructureTable, DatabaseRequest
 from searcher.filecrawler import fill_db_tables
@@ -51,7 +53,7 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.hideColumn(2)
         # self.ui.cellSearchEdit.hide()
         self.dbfilename = 'test.sqlite'
-        self.display_molecule()
+        #self.display_molecule()
         self.ui.centralwidget.setMinimumSize(1200, 500)
         self.showMaximized()
         try:
@@ -69,37 +71,34 @@ class StartStructureDB(QMainWindow):
 
     def display_molecule(self):
         # TODO: Make this work.
-        """
-                # TODO: pull this out:
-                view = Qt3DExtras.Qt3DWindow()
-                s = MyScene()
-                scene = s.createScene()
-                print('#scene')
-                # // Camera
-                camera = view.camera()
-                lens = Qt3DRender.QCameraLens()
-                lens.setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
-                camera.setProjectionType(Qt3DRender.QCameraLens.PerspectiveProjection)
-                camera.setUpVector(QVector3D(0, 1.0, 0))
-                camera.setPosition(QVector3D(0, 0, 140.0))  # Entfernung
-                camera.setViewCenter(QVector3D(0, 0, 0))
-                print('#camera')
-                # // For camera controls
-                camController = Qt3DExtras.QOrbitCameraController(scene)
-                camController.setLinearSpeed(50.0)
-                camController.setLookSpeed(180.0)
-                camController.setCamera(camera)
-                #view.setRootEntity(scene)
-                print('view#')
-                view.defaultFrameGraph().setClearColor(QColor('lightgray'))
-                container = QWidget.createWindowContainer(view)
-                screenSize = view.screen().size()
-                container.setMinimumSize(QSize(200, 100))
-                container.setMaximumSize(screenSize)
-                self.ui.openglVlayout.addWidget(container, 1)
-                view.show()
-                #########################################
-                """
+        view = Qt3DExtras.Qt3DWindow()
+        s = MyScene()
+        scene = s.createScene()
+        print('#scene')
+        # // Camera
+        camera = view.camera()
+        # lens = Qt3DRender.QCameraLens()
+        #camera.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
+        camera.lens().setOrthographicProjection(-16.0, 16.0, -9.0, 9.0, -1.0, 600.0)
+        # camera.setUpVector(QVector3D(0, 1.0, 0))
+        camera.setPosition(QVector3D(0, 0, 140.0))  # Entfernung
+        camera.setViewCenter(QVector3D(0, 0, 0))
+        print('#camera')
+        # // For camera controls
+        camController = Qt3DExtras.QOrbitCameraController(scene)
+        camController.setLinearSpeed(-30.0)
+        camController.setLookSpeed(-480.0)
+        camController.setCamera(camera)
+        view.setRootEntity(scene)
+        print('view#')
+        #view.defaultFrameGraph().setClearColor(QColor('lightgray'))
+        container = QWidget.createWindowContainer(view)
+        screenSize = view.screen().size()
+        container.setMinimumSize(QSize(100, 100))
+        container.setMaximumSize(screenSize)
+        self.ui.openglVlayout.addWidget(container, 1)
+        view.show()
+
 
     def connect_signals_and_slots(self):
         self.ui.importDatabaseButton.clicked.connect(self.import_database)
@@ -234,8 +233,8 @@ class StartStructureDB(QMainWindow):
         for filepth in filecrawler.create_file_list(str(fname), endings='cif'):
             if not filepth.is_file():
                 continue
-            filename = filepth.name#.decode("utf-8", "surrogateescape")
-            path = str(filepth.parents[0])#.decode("utf-8", "surrogateescape")
+            filename = filepth.name
+            path = str(filepth.parents[0])
             structure_id = n
             time2 = time.clock()
             cif = Cif(filepth)

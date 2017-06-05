@@ -79,9 +79,9 @@ class MyScene(Qt3DCore.QEntity):
 
     def createScene(self):
         rootEntity = Qt3DCore.QEntity()
+        """
         material = Qt3DExtras.QPhongAlphaMaterial(rootEntity)
         material.setAmbient(QColor('gray'))
-
         # Torus:
         cylinderEntity = Qt3DCore.QEntity(rootEntity)
         cylinderMesh = Qt3DExtras.QCylinderMesh()
@@ -95,6 +95,7 @@ class MyScene(Qt3DCore.QEntity):
         cylinderEntity.addComponent(cylinderMesh)
         cylinderEntity.addComponent(cylinderTransform)
         cylinderEntity.addComponent(material)
+        """
         """
         C1    1    0.090610   -0.303414    0.513850
         F1    3    0.045281   -0.252567    0.561932
@@ -117,7 +118,7 @@ class MyScene(Qt3DCore.QEntity):
         :type colour: string
         """
         # F3:
-        material = Qt3DExtras.QPhongAlphaMaterial(rootEntity)
+        material = Qt3DExtras.QPhongMaterial(rootEntity)
         material.setAmbient(QColor(colour))
         sphereEntity = Qt3DCore.QEntity(rootEntity)
         sphereMesh = Qt3DExtras.QSphereMesh()
@@ -162,16 +163,16 @@ if __name__ == '__main__':
     # // Camera
     camera = view.camera()
     #lens = Qt3DRender.QCameraLens()
-    #lens.setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
-    camera.setProjectionType(Qt3DRender.QCameraLens.PerspectiveProjection)
-    camera.setUpVector(QVector3D(0, 1.0, 0))
-    camera.setPosition(QVector3D(0, 0, 40.0))  # Entfernung
+    #camera.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
+    camera.lens().setOrthographicProjection(-16.0, 16.0, -9.0, 9.0, -1.0, 600.0)
+    #camera.setUpVector(QVector3D(0, 1.0, 0))
+    camera.setPosition(QVector3D(0, 0, 140.0))  # Entfernung
     camera.setViewCenter(QVector3D(0, 0, 0))
     print('#camera')
     # // For camera controls
     camController = Qt3DExtras.QOrbitCameraController(scene)
-    camController.setLinearSpeed(50.0)
-    camController.setLookSpeed(180.0)
+    camController.setLinearSpeed(-30.0)
+    camController.setLookSpeed(-480.0)
     camController.setCamera(camera)
     view.setRootEntity(scene)
     print('view#')
