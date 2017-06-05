@@ -65,6 +65,7 @@ class StartStructureDB(QMainWindow):
         # The treewidget with the cif list:
         self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         self.show()
+        self.full_list = True  # indicator if the full structures list is shown
 
     def display_molecule(self):
         # TODO: Make this work.
@@ -140,13 +141,14 @@ class StartStructureDB(QMainWindow):
         :param search_string: 
         :return: 
         """
-        # TODO: Hier aufräumen. Muss Bedingungen klarer ordnen:
+        # TODO: If len(cell) = 1: search for filename and or data_
         try:
             cell = [float(x) for x in search_string.split()]
         except (TypeError, ValueError):
             return False
         if len(cell) != 6:
-            self.show_full_list()
+            if not self.full_list:
+                self.show_full_list()
             return True
         try:
             volume = lattice.vol_unitcell(*cell)
@@ -154,9 +156,11 @@ class StartStructureDB(QMainWindow):
             # print(idlist)
             searchresult = self.structures.get_all_structure_names(idlist)
         except ValueError:
-            self.show_full_list()
+            if not self.full_list:
+                self.show_full_list()
             return False
         self.ui.cifList_treeWidget.clear()
+        self.full_list = False
         for i in searchresult:
             name = i[3]  # .decode("utf-8", "surrogateescape")
             path = i[2]  # .decode("utf-8", "surrogateescape")
@@ -167,11 +171,15 @@ class StartStructureDB(QMainWindow):
     def add_table_row(self, name, path, id):
         """
         Adds a line to the search results table
-        :type name: str
-        :type path: str
+        :type name: str, bytes
+        :type path: str, bytes
         :type id: str
         :return: None
         """
+        if isinstance(name, bytes):
+            name = name.decode("utf-8", "surrogateescape")
+        if isinstance(path, bytes):
+            path = path.decode("utf-8", "surrogateescape")
         self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         self.str_tree.setText(0, name)  # name
         self.str_tree.setText(1, path)  # path
@@ -183,7 +191,7 @@ class StartStructureDB(QMainWindow):
         :return: 
         """
         fname = QFileDialog.getOpenFileName(self, 'Open File', '')
-        print(fname)
+        print("Opened {}". format(fname[0]))
         self.dbfilename = fname[0]
         self.structures = StructureTable(self.dbfilename)
         #self.ui.cifList_treeWidget.show()
@@ -203,7 +211,9 @@ class StartStructureDB(QMainWindow):
             path = i[2]#.decode("utf-8", "surrogateescape")
             id = i[0]
             self.add_table_row(name, path, id)
+        print("Loaded {} entries.".format(id))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        self.full_list = True
 
     def import_cif_dirs(self):
         """
@@ -217,20 +227,20 @@ class StartStructureDB(QMainWindow):
         # fname = os.path.abspath("../")
         if not fname:
             return False
-        time1 = time.clock()
-        try:
-            files = list(filecrawler.create_file_list(str(fname), endings='cif'))
-        except FileNotFoundError as e:
-            print(e)
-            return False
-        time2 = time.clock()
-        diff = time2 - time1
-        print("File list:", round(diff, 4), 's')
+#        time1 = time.clock()
+#        try:
+#            files = list(filecrawler.create_file_list(str(fname), endings='cif'))
+#        except FileNotFoundError as e:
+#            print(e)
+#            return False
+#        time2 = time.clock()
+#        diff = time2 - time1
+#        print("File list:", round(diff, 4), 's')
         self.ui.cifList_treeWidget.show()
         # TODO: implement multiple cells in one cif file:
         n = 1
         times = []
-        for filepth in files:
+        for filepth in filecrawler.create_file_list(str(fname), endings='cif'):
             if not filepth.is_file():
                 continue
             filename = filepth.name#.decode("utf-8", "surrogateescape")
