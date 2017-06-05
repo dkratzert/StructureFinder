@@ -227,15 +227,6 @@ class StartStructureDB(QMainWindow):
         # fname = os.path.abspath("../")
         if not fname:
             return False
-#        time1 = time.clock()
-#        try:
-#            files = list(filecrawler.create_file_list(str(fname), endings='cif'))
-#        except FileNotFoundError as e:
-#            print(e)
-#            return False
-#        time2 = time.clock()
-#        diff = time2 - time1
-#        print("File list:", round(diff, 4), 's')
         self.ui.cifList_treeWidget.show()
         # TODO: implement multiple cells in one cif file:
         n = 1

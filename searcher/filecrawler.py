@@ -19,6 +19,7 @@ from pprint import pprint
 import time
 from searcher.database_handler import StructureTable, DatabaseRequest
 from searcher.fileparser import Cif
+from searcher.spinner import Spinner
 
 
 def create_file_list(searchpath='None', endings='cif'):
@@ -67,9 +68,6 @@ def filewalker_walk(startdir, endings, add_excludes=[]):
                 filelist.append([os.path.join(root, filen), filen])
             else:
                 continue
-            # TODO:
-            #if num%100:
-            #    return filelist
     return filelist
 
 
@@ -78,41 +76,32 @@ def put_cifs_in_db(searchpath):
     db = DatabaseRequest(dbfilename)
     db.initialize_db()
     structures = StructureTable(dbfilename)
-    time1 = time.clock()
-    try:
-        files = list(create_file_list(str(searchpath), endings='cif'))
-    except FileNotFoundError as e:
-        print(e)
-        return False
-    time2 = time.clock()
-    diff = time2 - time1
-    print("File list:", round(diff, 3), 's')
-    # TODO: implement multiple cells in one cif file:
     n = 1
     times = []
-    for filepth in files:
+    spinner = Spinner()
+    spinner.start()
+    for filepth in create_file_list(str(searchpath), endings='cif'):
         if not filepth.is_file():
             continue
         filename = filepth.name
         path = str(filepth.parents[0])
-        # print(filepth)  # print full file path
         structure_id = n
-        time2 = time.clock()
+        time1 = time.clock()
         cif = Cif(filepth)
-        time3 = time.clock()
-        diff2 = time3 - time2
-        times.append(diff2)
-        # print(round(diff, 4), 's')
+        time2 = time.clock()
+        diff = time2 - time1
+        times.append(diff)
         if not cif.ok:
-            #print('no cif')
             continue
         if cif and filename and path:
             fill_db_tables(cif, filename, path, structure_id, structures)
             n += 1
-        if n % 200 == 0:
-            structures.database.commit_db(".")
+        if n % 300 == 0:
+            structures.database.commit_db()
+    spinner.stop()
     print('\nParsed {} cif files in: {} s'.format(n, round(sum(times), 2)))
     structures.database.commit_db("Committed")
+
 
 def fill_db_tables(cif, filename, path, structure_id, structures):
     """

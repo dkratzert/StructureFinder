@@ -174,7 +174,7 @@ class DatabaseRequest():
             self.cur.execute(request, args)
             last_rowid = self.cur.lastrowid
         except OperationalError as e:
-            print(e)
+            #print(e)
             return False
         rows = self.cur.fetchall()
         if not rows:
@@ -190,7 +190,7 @@ class DatabaseRequest():
     def commit_db(self, comment=""):
         self.con.commit()
         if comment:
-            print(comment, end='')
+            print(comment)
 
 ##################################################################
 
