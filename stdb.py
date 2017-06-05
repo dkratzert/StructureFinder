@@ -250,7 +250,7 @@ class StartStructureDB(QMainWindow):
                 n += 1
                 if n % 200 == 0:
                     self.structures.database.commit_db(".")
-        print('Parsed {} cif files in: {} s'.format(n, round(sum(times), 2)))
+        print('Parsed {} cif files in {} s'.format(n, round(sum(times), 2)))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.structures.database.commit_db("Committed")

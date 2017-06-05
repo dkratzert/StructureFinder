@@ -77,20 +77,16 @@ def put_cifs_in_db(searchpath):
     db.initialize_db()
     structures = StructureTable(dbfilename)
     n = 1
-    times = []
     spinner = Spinner()
     spinner.start()
+    time1 = time.clock()
     for filepth in create_file_list(str(searchpath), endings='cif'):
         if not filepth.is_file():
             continue
         filename = filepth.name
         path = str(filepth.parents[0])
         structure_id = n
-        time1 = time.clock()
         cif = Cif(filepth)
-        time2 = time.clock()
-        diff = time2 - time1
-        times.append(diff)
         if not cif.ok:
             continue
         if cif and filename and path:
@@ -98,8 +94,10 @@ def put_cifs_in_db(searchpath):
             n += 1
         if n % 300 == 0:
             structures.database.commit_db()
+    time2 = time.clock()
+    diff = time2 - time1
     spinner.stop()
-    print('\nParsed {} cif files in: {} s'.format(n, round(sum(times), 2)))
+    print('\nAdded {} cif files to database in: {} s'.format(n, round(diff, 2)))
     structures.database.commit_db("Committed")
 
 
