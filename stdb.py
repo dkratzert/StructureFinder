@@ -112,6 +112,8 @@ class StartStructureDB(QMainWindow):
     def show_properties(self, item):
         """
         This slot shows the properties of a cif file in the properties widget
+
+        _space_group_symop_operation_xyz oder _symmetry_equiv_pos_as_xyz
         """
         # self.ui.properties_treeWidget.show()
         cell = self.structures.get_cell_by_id(item.sibling(item.row(), 2).data())
@@ -129,6 +131,25 @@ class StartStructureDB(QMainWindow):
             self.ui.betaLineEdit.setText("{:>5.4f}".format(beta))
         if gamma:
             self.ui.gammaLineEdit.setText("{:>5.4f}".format(gamma))
+        """
+        _cell_formula_units_Z	
+        _cell_volume	
+        _space_group_name_H-M_alt oder _symmetry_space_group_name_H-M
+        _diffrn_radiation_type
+        _exptl_absorpt_coefficient_mu
+        _diffrn_measurement_device_type
+        _diffrn_reflns_theta_max
+        _diffrn_reflns_theta_full
+        _diffrn_reflns_av_R_equivalents Rint
+        _refine_ls_R_factor_gt  :  R factor of F for reflections > threshold
+        _refine_ls_wR_factor_ref :	R factor of coefficient for refinement reflections
+        _refine_ls_goodness_of_fit_ref	Goodness of fit S for refinement reflections
+        _refine_ls_number_reflns	Number of reflections used in refinement
+        _refine_ls_number_parameters	
+        _refine_ls_number_restraints
+        _refine_ls_shift/su_max or _refine_ls_shift/esd_max
+        _refine_ls_abs_structure_Flack
+        """
 
     @pyqtSlot('QString')
     def search_cell(self, search_string):

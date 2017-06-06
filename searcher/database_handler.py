@@ -98,6 +98,22 @@ class DatabaseRequest():
                           ON UPDATE NO ACTION);
                     ''')
 
+        self.cur.execute('''
+                    CREATE TABLE Residuals (
+                        Id    INTEGER NOT NULL,
+                        StructureId     INTEGER NOT NULL,
+                        space_group     VARCHAR(255),
+                        crystal_system  VARCHAR(2),
+                        x               FLOAT,
+                        y               FLOAT,
+                        z               FLOAT,
+                    PRIMARY KEY(Id),
+                      FOREIGN KEY(StructureId)
+                        REFERENCES Structure(Id)
+                          ON DELETE CASCADE
+                          ON UPDATE NO ACTION);
+                    ''')
+
         self.cur.execute(
                     '''
                     CREATE TABLE cell (

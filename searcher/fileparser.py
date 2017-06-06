@@ -189,12 +189,15 @@ class Cif():
     def __hash__(self):
         return hash(self.cif_data)
 
-    def __getattr__(self, item):
+    def __getattr__(self, item, item_alt=''):
         """ 
         Returns an attribute of the cif data dictionary.
         """
-        if item in self.cif_data:
-            return self.cif_data[item]
+        if item in self.cif_data or item_alt in self.cif_data:
+            try:
+                return self.cif_data[item_alt]
+            except KeyError:
+                return self.cif_data[item]
         else:
             return ''
 

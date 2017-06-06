@@ -132,6 +132,8 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
             pass
             #print("Atom:", x, path, filename)
             #print(e)
+    sp_grp = cif.__getattr__("_symmetry_space_group_name_H-M", "_space_group_name_H-M_alt")
+    #print(sp_grp)
 
 
 if __name__ == '__main__':
