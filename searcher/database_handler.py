@@ -11,6 +11,7 @@ Created on 09.02.2015
 @author: daniel
 """
 import sys
+from pprint import pprint
 
 import searcher
 from lattice import lattice
@@ -48,6 +49,7 @@ class DatabaseRequest():
         self.cur.execute("DROP TABLE IF EXISTS cell")
         self.cur.execute("DROP TABLE IF EXISTS Atoms")
         self.cur.execute("DROP TABLE IF EXISTS niggli_cell")
+        self.cur.execute("DROP TABLE IF EXISTS Residuals")
         try:
             self.cur.execute("DROP INDEX cell")
         except:
@@ -104,9 +106,22 @@ class DatabaseRequest():
                         StructureId     INTEGER NOT NULL,
                         space_group     VARCHAR(255),
                         crystal_system  VARCHAR(2),
-                        x               FLOAT,
-                        y               FLOAT,
-                        z               FLOAT,
+                        Z               FLOAT,
+                        ambient_temperature  FLOAT,
+                        radiation_type       FLOAT,
+                        Rint                 FLOAT,
+                        Rsigma               FLOAT,
+                        R1sigm               FLOAT,
+                        R1                   FLOAT,
+                        wR2                  FLOAT,
+                        wR2sig               FLOAT,
+                        reflns_number_total  FLOAT,
+                        computing_structure_refinement  VARCHAR(255),
+                        goodness_of_fit_ref    FLOAT,
+                        shift_su_max            FLOAT,
+                        diff_density_max       FLOAT,
+                        diff_density_min       FLOAT,
+                        number_of_atoms        FLOAT,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
                         REFERENCES Structure(Id)
@@ -190,7 +205,7 @@ class DatabaseRequest():
             self.cur.execute(request, args)
             last_rowid = self.cur.lastrowid
         except OperationalError as e:
-            #print(e)
+            print(e, "\nDB execution error")
             return False
         rows = self.cur.fetchall()
         if not rows:
@@ -396,6 +411,23 @@ class StructureTable():
         req = '''INSERT INTO Atoms (StructureId, name, element, x, y, z) VALUES(?, ?, ?, ?, ?, ?)'''
         if self.database.db_request(req, structure_id, name, element, x, y, z):
             return True
+
+    def fill_residuals_table(self, structure_id, data):
+        """
+        Fill the table with residuals of the refinement.
+        :param structure_id:
+        :param param:
+        :return:
+        """
+        print(data, structure_id)
+        for i in data:
+            req = '''INSERT INTO Residuals (StructureId, {}) VALUES(?, ?)'''.format(i)
+            result = self.database.db_request(req, [structure_id, data[i]])
+        if result:
+            return True
+        else:
+            print('Failed to insert residuel {}'.format(i))
+            return False
 
     def find_cell_by_abc(self, a=False, b=False, c=False):
         """

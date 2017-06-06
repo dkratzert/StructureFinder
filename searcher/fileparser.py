@@ -195,9 +195,9 @@ class Cif():
         """
         if item in self.cif_data or item_alt in self.cif_data:
             try:
-                return self.cif_data[item_alt]
-            except KeyError:
                 return self.cif_data[item]
+            except KeyError:
+                return self.cif_data[item_alt]
         else:
             return ''
 

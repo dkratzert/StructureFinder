@@ -103,13 +103,13 @@ class MyScene(Qt3DCore.QEntity):
         F3    3    0.055789   -0.388160    0.454486
         """
         #C1
-        self.add_sphere(rootEntity, QVector3D(0.090610, -0.303414, 0.513850)*QVector3D(10, 10, 10), 'green')
+        self.add_sphere(rootEntity, QVector3D(0.0906, -0.3034, 0.5138)*QVector3D(10, 10, 10), 'gray')
         #F1
-        self.add_sphere(rootEntity, QVector3D(0.045281, -0.252567, 0.561932)*QVector3D(10, 10, 10), 'red')
+        self.add_sphere(rootEntity, QVector3D(0.0452, -0.2525, 0.5619)*QVector3D(10, 10, 10), 'red')
         #F2
-        self.add_sphere(rootEntity, QVector3D(0.129932, -0.463873, 0.548990)*QVector3D(10, 10, 10), 'blue')
+        self.add_sphere(rootEntity, QVector3D(0.1299, -0.4638, 0.5489)*QVector3D(10, 10, 10), 'blue')
         #F3
-        self.add_sphere(rootEntity, QVector3D(0.055789, -0.388160, 0.454486)*QVector3D(10, 10, 10), 'yellow')
+        self.add_sphere(rootEntity, QVector3D(0.0557, -0.3881, 0.4544)*QVector3D(10, 10, 10), 'yellow')
         return rootEntity
 
     def add_sphere(self, rootEntity, position, colour):
