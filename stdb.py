@@ -210,8 +210,10 @@ class StartStructureDB(QMainWindow):
         Import a new database.
         :return: 
         """
-        fname = QFileDialog.getOpenFileName(self, 'Open File', '')
-        print("Opened {}". format(fname[0]))
+        fname = QFileDialog.getOpenFileName(self, caption='Open File', directory='./')
+        if not fname[0]:
+            return False
+        print("Opened {}.". format(fname[0]))
         self.dbfilename = fname[0]
         self.structures = StructureTable(self.dbfilename)
         #self.ui.cifList_treeWidget.show()
