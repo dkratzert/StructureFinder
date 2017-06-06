@@ -74,9 +74,9 @@ class DatabaseRequest():
                     CREATE TABLE Structure (
                         Id    INTEGER NOT NULL,
                         measurement INTEGER NOT NULL,
-                        path  TEXT,
-                        filename    VARCHAR(255),
-                        dataname    VARCHAR(255),
+                        path          TEXT,
+                        filename      TEXT,
+                        dataname      TEXT,
                         PRIMARY KEY(Id),
                           FOREIGN KEY(measurement)
                             REFERENCES Structure(Id)
@@ -88,11 +88,11 @@ class DatabaseRequest():
                     CREATE TABLE Atoms (
                         Id    INTEGER NOT NULL,
                         StructureId    INTEGER NOT NULL,
-                        Name    VARCHAR(255),
-                        element    VARCHAR(2),
-                        x    FLOAT,
-                        y    FLOAT,
-                        z    FLOAT,
+                        Name       TEXT,
+                        element    TEXT,
+                        x          FLOAT,
+                        y          FLOAT,
+                        z          FLOAT,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
                         REFERENCES Structure(Id)
@@ -103,25 +103,55 @@ class DatabaseRequest():
         self.cur.execute('''
                     CREATE TABLE Residuals (
                         Id    INTEGER NOT NULL,
-                        StructureId     INTEGER NOT NULL,
-                        space_group     VARCHAR(255),
-                        crystal_system  VARCHAR(2),
-                        Z               FLOAT,
-                        ambient_temperature  FLOAT,
-                        radiation_type       FLOAT,
-                        Rint                 FLOAT,
-                        Rsigma               FLOAT,
-                        R1sigm               FLOAT,
-                        R1                   FLOAT,
-                        wR2                  FLOAT,
-                        wR2sig               FLOAT,
-                        reflns_number_total  FLOAT,
-                        computing_structure_refinement  VARCHAR(255),
-                        goodness_of_fit_ref    FLOAT,
-                        shift_su_max            FLOAT,
-                        diff_density_max       FLOAT,
-                        diff_density_min       FLOAT,
-                        number_of_atoms        FLOAT,
+                        StructureId         INTEGER NOT NULL,
+                        _cell_formula_units_Z           INTEGER,
+                        _space_group_name_H_M_alt       TEXT,
+                        _space_group_name_Hall          TEXT,
+                        _space_group_IT_number          REAL,
+                        _space_group_crystal_system     TEXT,
+                        _audit_creation_method          TEXT,
+                        _chemical_formula_sum           TEXT,
+                        _chemical_formula_weight        TEXT,
+                        _exptl_crystal_description      TEXT,
+                        _exptl_crystal_colour           TEXT,
+                        _exptl_crystal_size_max                 REAL,
+                        _exptl_crystal_size_mid 		    	REAL,
+                        _exptl_crystal_size_min 				REAL,
+                        _exptl_absorpt_coefficient_mu 			REAL,
+                        _exptl_absorpt_correction_type			TEXT,
+                        _diffrn_ambient_temperature 			REAL,
+                        _diffrn_radiation_wavelength 			REAL,
+                        _diffrn_radiation_type 					TEXT,
+                        _diffrn_source 							TEXT,
+                        _diffrn_measurement_device_type 		TEXT,
+                        _diffrn_reflns_number 					INTEGER,
+                        _diffrn_reflns_av_R_equivalents 		INTEGER,
+                        _diffrn_reflns_theta_min 				REAL,
+                        _diffrn_reflns_theta_max 				REAL,
+                        _diffrn_reflns_theta_full 				REAL,
+                        _diffrn_measured_fraction_theta_max 	REAL,
+                        _diffrn_measured_fraction_theta_full 	REAL,
+                        _reflns_number_total 					REAL,
+                        _reflns_number_gt 					    REAL,
+                        _reflns_threshold_expression 			TEXT,
+                        _reflns_Friedel_coverage 				REAL,
+                        _computing_structure_solution 			TEXT,
+                        _computing_structure_refinement 		TEXT,
+                        _refine_special_details 				TEXT,
+                        _refine_ls_structure_factor_coef 		TEXT,
+                        _refine_ls_weighting_details 			TEXT,
+                        _refine_ls_number_reflns 				INTEGER,
+                        _refine_ls_number_parameters 			INTEGER,
+                        _refine_ls_number_restraints 			INTEGER,
+                        _refine_ls_R_factor_all 				REAL,
+                        _refine_ls_R_factor_gt             		REAL,
+                        _refine_ls_wR_factor_ref       			REAL,
+                        _refine_ls_wR_factor_gt         		REAL,
+                        _refine_ls_goodness_of_fit_ref      	REAL,
+                        _refine_ls_restrained_S_all        		REAL,
+                        _refine_ls_shift_su_max            		REAL,
+                        _refine_ls_shift_su_mean           		REAL,
+                        number_of_atoms                         INTEGER,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
                         REFERENCES Structure(Id)
@@ -277,7 +307,7 @@ class StructureTable():
         Returns the Id and the Name as tuple.
   
         >>> dbfile = 'test-data/test.sqlite'
-        >>> db = FragmentTable(dbfile)
+        >>> db = StructureTable(dbfile)
         >>> for num, i in enumerate(db):
         ...   print(i)
         ...   if num > 1:
@@ -379,6 +409,7 @@ class StructureTable():
         fill the cell of structure(structureId) in the table
         cell = [a, b, c, alpha, beta, gamma]
         """
+        # TODO: Only calc volume if not in cif:
         req = '''INSERT INTO cell (StructureId, a, b, c, alpha, beta, gamma, 
                                    esda, esdb, esdc, esdalpha, esdbeta, esdgamma, volume) 
                             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
@@ -419,6 +450,7 @@ class StructureTable():
         :param param:
         :return:
         """
+        result = False
         print(data, structure_id)
         for i in data:
             req = '''INSERT INTO Residuals (StructureId, {}) VALUES(?, ?)'''.format(i)
@@ -428,41 +460,6 @@ class StructureTable():
         else:
             print('Failed to insert residuel {}'.format(i))
             return False
-
-    def find_cell_by_abc(self, a=False, b=False, c=False):
-        """
-        finds a cell
-        """
-        if a and not b and not c:    
-            req = '''SELECT * FROM cell WHERE cell.a GLOB '{0}*' 
-                    '''.format(a)
-        elif b and not a and not  c:    
-            req = '''SELECT * FROM cell WHERE cell.b GLOB '{0}*' 
-                    '''.format(b)
-        elif c and not a and not b:    
-            req = '''SELECT * FROM cell WHERE cell.c GLOB '{0}*' 
-                    '''.format(c)
-        elif a and b and not c:    
-            req = '''SELECT * FROM cell WHERE cell.a GLOB '{0}*' AND 
-                                              cell.b GLOB '{1}*'
-                    '''.format(a, b)
-        elif a and c and not b:
-            req = '''SELECT * FROM cell WHERE cell.a GLOB '{0}*' AND 
-                                              cell.c GLOB '{1}*'
-                    '''.format(a, c)
-        elif b and c and not a:
-            req = '''SELECT * FROM cell WHERE cell.b GLOB '{0}*' AND 
-                                              cell.c GLOB '{1}*'
-                    '''.format(b, c)    
-        elif a and b and c:
-            req = '''SELECT * FROM cell WHERE 
-                    cell.a GLOB '{0}*' AND 
-                    cell.b GLOB '{1}*' AND 
-                    cell.c GLOB '{2}*'    '''.format(a, b, c)
-        else:
-            print('wrong search request: a={}, b={}, c={}'.format(a, b, c))
-            sys.exit()
-        return self.database.db_request(req)
 
     def find_by_volume(self, volume, threshold = 0.03):
         """
