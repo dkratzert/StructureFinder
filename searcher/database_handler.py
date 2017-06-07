@@ -446,6 +446,14 @@ class StructureTable():
     def fill_residuals_table(self, structure_id, data):
         """
         Fill the table with residuals of the refinement.
+
+        c.execute('CREATE TABLE {tn} ({nf} {ft} PRIMARY KEY)'\
+        .format(tn=table_name2, nf=new_field, ft=field_type))
+        http://sebastianraschka.com/Articles/2014_sqlite_in_python_tutorial.html
+        # A) Adding a new column without a row value
+        c.execute("ALTER TABLE {tn} ADD COLUMN '{cn}' {ct}"\
+        .format(tn=table_name, cn=new_column1, ct=column_type))
+
         :param structure_id:
         :param param:
         :return:
@@ -460,6 +468,14 @@ class StructureTable():
         else:
             print('Failed to insert residuel {}'.format(i))
             return False
+
+    def clean_name(some_var):
+        """
+        Make shure only alphanumerical characters are in the name
+        :type some_var: str
+        :rtype: str
+        """
+        return ''.join(char for char in some_var if char.isalnum())
 
     def find_by_volume(self, volume, threshold = 0.03):
         """
