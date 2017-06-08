@@ -133,10 +133,7 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
             #print("Atom:", x, path, filename)
             #print(e)
     sp_grp = cif.__getattr__("_symmetry_space_group_name_H-M", "_space_group_name_H-M_alt")
-    data = {}
-    data['space_group'] = sp_grp
-    data['crystal_system'] = cif.__getattr__("_space_group_crystal_system")
-    structures.fill_residuals_table(structure_id, data)
+    structures.fill_residuals_table(structure_id, cif)
 
 
 if __name__ == '__main__':
