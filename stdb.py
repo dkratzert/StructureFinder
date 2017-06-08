@@ -37,6 +37,13 @@ TODO:
 - add abort button for indexer
 - recognize already indexed files
 - search for strings to get a result for a persons name, add person to db
+------------
+- Cif() should always return the complete dictionary
+- the alternate cif keywords should contain the same as the new ones
+- Cif() is given to the database handler and the handler goes through all the items and
+  does SQL = '''insert into residuals (?)
+                values (cifkeys)
+                '''.format('?, '*len(keys())
 """
 
 
