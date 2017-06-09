@@ -102,18 +102,18 @@ class DatabaseRequest():
 
         self.cur.execute('''
                     CREATE TABLE Residuals (
-                        Id    INTEGER NOT NULL,
-                        StructureId         INTEGER NOT NULL,
-                        _cell_formula_units_Z           INTEGER,
-                        _space_group_name_H_M_alt       TEXT,
-                        _space_group_name_Hall          TEXT,
-                        _space_group_IT_number          REAL,
-                        _space_group_crystal_system     TEXT,
-                        _audit_creation_method          TEXT,
-                        _chemical_formula_sum           TEXT,
-                        _chemical_formula_weight        TEXT,
-                        _exptl_crystal_description      TEXT,
-                        _exptl_crystal_colour           TEXT,
+                        Id                                      INTEGER NOT NULL,
+                        StructureId                             INTEGER NOT NULL,
+                        _cell_formula_units_Z                   INTEGER,
+                        _space_group_name_H_M_alt               TEXT,
+                        _space_group_name_Hall                  TEXT,
+                        _space_group_IT_number                  REAL,
+                        _space_group_crystal_system             TEXT,
+                        _audit_creation_method                  TEXT,
+                        _chemical_formula_sum                   TEXT,
+                        _chemical_formula_weight                TEXT,
+                        _exptl_crystal_description              TEXT,
+                        _exptl_crystal_colour                   TEXT,
                         _exptl_crystal_size_max                 REAL,
                         _exptl_crystal_size_mid 		    	REAL,
                         _exptl_crystal_size_min 				REAL,
@@ -212,7 +212,7 @@ class DatabaseRequest():
         row = self.cur.fetchone()
         return row
 
-    def db_request(self, request, *args):
+    def db_request(self, request, *args, many=False):
         """
         Performs a SQLite3 database request with "request" and optional arguments
         to insert parameters via "?" into the database request.
@@ -232,7 +232,11 @@ class DatabaseRequest():
         except IndexError:
             pass
         try:
-            self.cur.execute(request, args)
+            if many:
+                #print(args[0])
+                self.cur.executemany(request, args)
+            else:
+                self.cur.execute(request, args)
             last_rowid = self.cur.lastrowid
         except OperationalError as e:
             print(e, "\nDB execution error")
@@ -465,24 +469,11 @@ class StructureTable():
         :param param:
         :return:
         """
-        '''
-        SQL = """insert into task (details, priority, status, deadline, project)
-                values (:details, :priority, 'active', :deadline, :project)
-                """
-
-        with open(data_filename, 'rt') as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            
-        with sqlite3.connect(db_filename) as conn:
-            cursor = conn.cursor()
-            cursor.executemany(SQL, csv_reader)
-            
-        '''
         req = '''INSERT INTO Residuals 
                     (Id,
                     StructureId,    
-                    _cell_formula_units_Z,        
-                    _space_group_name_H_M_alt,    
+                    _cell_formula_units_Z,
+                    _space_group_name_H_M_alt,  
                     _space_group_name_Hall,   
                     _space_group_IT_number,       
                     _space_group_crystal_system,  
@@ -500,7 +491,7 @@ class StructureTable():
                     _diffrn_radiation_wavelength, 		
                     _diffrn_radiation_type, 				
                     _diffrn_source, 						
-                    _diffrn_measurement_device_type, 	
+                    _diffrn_measurement_device_type,
                     _diffrn_reflns_number, 				
                     _diffrn_reflns_av_R_equivalents, 	
                     _diffrn_reflns_theta_min, 			
@@ -527,13 +518,62 @@ class StructureTable():
                     _refine_ls_goodness_of_fit_ref,   
                     _refine_ls_restrained_S_all,
                     _refine_ls_shift_su_max,
-                    _refine_ls_shift_su_mean,
-                    number_of_atoms   
+                    _refine_ls_shift_su_mean
                     ) 
                 VALUES
-                    ()
-                '''
-        result = self.database.db_request(req, structure_id, *cif)
+                    (
+                    NULL,
+                    {},
+                    ":_cell_formula_units_Z",
+                    ":_space_group_name_H-M_alt",
+                    ":_space_group_name_Hall",
+                    ":_space_group_IT_number",
+                    ":_space_group_crystal_system",
+                    ":_audit_creation_method",
+                    ":_chemical_formula_sum",
+                    ":_chemical_formula_weight",
+                    ":_exptl_crystal_description",
+                    ":_exptl_crystal_colour",
+                    ":_exptl_crystal_size_max",
+                    ":_exptl_crystal_size_mid",
+                    ":_exptl_crystal_size_min",
+                    ":_exptl_absorpt_coefficient_mu",
+                    ":_exptl_absorpt_correction_type",
+                    ":_diffrn_ambient_temperature",
+                    ":_diffrn_radiation_wavelength",
+                    ":_diffrn_radiation_type",
+                    ":_diffrn_source",
+                    ":_diffrn_measurement_device_type",
+                    ":_diffrn_reflns_number",
+                    ":_diffrn_reflns_av_R_equivalents",
+                    ":_diffrn_reflns_theta_min",
+                    ":_diffrn_reflns_theta_max",
+                    ":_diffrn_reflns_theta_full",
+                    ":_diffrn_measured_fraction_theta_max",
+                    ":_diffrn_measured_fraction_theta_full",
+                    ":_reflns_number_total",
+                    ":_reflns_number_gt",
+                    ":_reflns_threshold_expression",
+                    ":_reflns_Friedel_coverage",
+                    ":_computing_structure_solution",
+                    ":_computing_structure_refinement",
+                    ":_refine_special_details",
+                    ":_refine_ls_structure_factor_coef",
+                    ":_refine_ls_weighting_details",
+                    ":_refine_ls_number_reflns",
+                    ":_refine_ls_number_parameters",
+                    ":_refine_ls_number_restraints",
+                    ":_refine_ls_R_factor_all",
+                    ":_refine_ls_R_factor_gt",
+                    ":_refine_ls_wR_factor_ref",
+                    ":_refine_ls_wR_factor_gt",
+                    ":_refine_ls_goodness_of_fit_ref",
+                    ":_refine_ls_restrained_S_all",
+                    ":_refine_ls_shift/su_max",
+                    ":_refine_ls_shift/su_mean"
+                    );
+                '''.format(structure_id)
+        result = self.database.db_request(req, cif.cif_data, many=True)
 
 
     def clean_name(some_var):

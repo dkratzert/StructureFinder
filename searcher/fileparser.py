@@ -36,17 +36,10 @@ class Cif():
         - fill for example atom loop dict with atoms
         """
         self.cif_data = {
-            "_space_group_name_H-M_alt": "",
-            "_symmetry_space_group_name_H-M": '',  # old
-            "_diffrn_measurement_device_type": '',
-            "_diffrn_measurement_device": '',   # alt
-            "_refine_ls_shift/su_max": '',
-            "_refine_ls_shift/esd_max": '',  # old
-            "_refine_ls_shift/su_mean": '',
             "_cell_formula_units_Z": '',
+            "_space_group_name_H-M_alt": '',
             "_space_group_name_Hall": '',
             "_space_group_IT_number": '',
-            "_symmetry_Int_Tables_number": '',
             "_space_group_crystal_system": '',
             "_audit_creation_method": '',
             "_chemical_formula_sum": '',
@@ -62,6 +55,7 @@ class Cif():
             "_diffrn_radiation_wavelength": '',
             "_diffrn_radiation_type": '',
             "_diffrn_source": '',
+            "_diffrn_measurement_device_type": '',
             "_diffrn_reflns_number": '',
             "_diffrn_reflns_av_R_equivalents": '',
             "_diffrn_reflns_theta_min": '',
@@ -86,7 +80,9 @@ class Cif():
             "_refine_ls_wR_factor_ref": '',
             "_refine_ls_wR_factor_gt": '',
             "_refine_ls_goodness_of_fit_ref": '',
-            "_refine_ls_restrained_S_all": ''
+            "_refine_ls_restrained_S_all": '',
+            "_refine_ls_shift/su_max": '',
+            "_refine_ls_shift/su_mean": ''
             }
         self.ok = self.parsefile(file)
 
@@ -235,18 +231,20 @@ class Cif():
         Makes the old and new cif values equal
         :return:
         """
-        if self.cif_data["_symmetry_space_group_name_H-M"]:
+        if "_symmetry_space_group_name_H-M" in self.cif_data:
             self.cif_data["_space_group_name_H-M_alt"] = self.cif_data["_symmetry_space_group_name_H-M"]
-        if self.cif_data["_diffrn_measurement_device"]:
+        if "_diffrn_measurement_device" in self.cif_data:
             self.cif_data["_diffrn_measurement_device_type"] = self.cif_data["_diffrn_measurement_device"]
-        if self.cif_data["_refine_ls_shift/esd_max"]:
+        if "_refine_ls_shift/esd_max" in self.cif_data:
             self.cif_data["_refine_ls_shift/su_max"] = self.cif_data["_refine_ls_shift/esd_max"]
-        #if self.cif_data[]:
-        #    self.cif_data[] = self.cif_data[]
-        #if self.cif_data[]:
-        #    self.cif_data[] = self.cif_data[]
-        #if self.cif_data[]:
-        #    self.cif_data[] = self.cif_data[]
+        if "_diffrn_measurement_device" in self.cif_data:
+            self.cif_data["_diffrn_measurement_device_type"] = self.cif_data["_diffrn_measurement_device"]
+        if "_refine_ls_shift/esd_max" in self.cif_data:
+            self.cif_data["_refine_ls_shift/su_max"] = self.cif_data["_refine_ls_shift/esd_max"]
+        if '_symmetry_space_group_name_Hall' in self.cif_data:
+            self.cif_data['_space_group_name_Hall'] = self.cif_data['_symmetry_space_group_name_Hall']
+        if '_symmetry_Int_Tables_number' in self.cif_data:
+            self.cif_data['_space_group_IT_number'] = self.cif_data['_symmetry_Int_Tables_number']
 
 
     def __iter__(self):

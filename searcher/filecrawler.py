@@ -130,9 +130,6 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
                                          cif._atom[x]['_atom_site_fract_z'].split('(')[0])
         except KeyError as e:
             pass
-            #print("Atom:", x, path, filename)
-            #print(e)
-    sp_grp = cif.__getattr__("_symmetry_space_group_name_H-M", "_space_group_name_H-M_alt")
     structures.fill_residuals_table(structure_id, cif)
 
 
