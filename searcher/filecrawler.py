@@ -93,6 +93,7 @@ def put_cifs_in_db(searchpath):
             fill_db_tables(cif, filename, path, structure_id, structures)
             n += 1
         if n % 300 == 0:
+            print('{} files ...'.format(n))
             structures.database.commit_db()
     time2 = time.clock()
     diff = time2 - time1
@@ -131,6 +132,7 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
         except KeyError as e:
             pass
     structures.fill_residuals_table(structure_id, cif)
+    return True
 
 
 if __name__ == '__main__':
