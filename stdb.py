@@ -146,10 +146,16 @@ class StartStructureDB(QMainWindow):
             self.ui.betaLineEdit.setText("{:>5.4f}".format(beta))
         if gamma:
             self.ui.gammaLineEdit.setText("{:>5.4f}".format(gamma))
-        self.ui.wR2LineEdit.setText("{:>5.4f}".format(
-            self.structures.get_residuals(structure_id, '_refine_ls_wR_factor_ref')))
-        self.ui.r1LineEdit.setText("{:>5.4f}".format(
-            self.structures.get_residuals(structure_id, '_refine_ls_R_factor_gt')))
+        try:
+            self.ui.wR2LineEdit.setText("{:>5.4f}".format(
+                self.structures.get_residuals(structure_id, '_refine_ls_wR_factor_ref')))
+        except ValueError:
+            pass
+        try:
+            self.ui.r1LineEdit.setText("{:>5.4f}".format(
+                self.structures.get_residuals(structure_id, '_refine_ls_R_factor_gt')))
+        except ValueError:
+            pass
         self.ui.zLineEdit.setText("{}".format(
             self.structures.get_residuals(structure_id, '_cell_formula_units_Z')))
         self.ui.sumFormulaLineEdit.setText("{}".format(
@@ -247,7 +253,6 @@ class StartStructureDB(QMainWindow):
         print("Loaded {} entries.".format(id))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.full_list = True
-        self.ui.cifList_treeWidget.itemChanged.connect(self.show_properties)
 
     def import_cif_dirs(self):
         """
