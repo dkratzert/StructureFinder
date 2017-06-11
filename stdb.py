@@ -76,6 +76,7 @@ class StartStructureDB(QMainWindow):
         #self.display_molecule()
         self.full_list = True  # indicator if the full structures list is shown
 
+
     def display_molecule(self):
         # TODO: Make this work.
         view = Qt3DExtras.Qt3DWindow()
@@ -113,7 +114,9 @@ class StartStructureDB(QMainWindow):
         self.ui.searchLineEDit.textChanged.connect(self.search_cell)
         # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
         self.ui.cifList_treeWidget.clicked.connect(self.show_properties)
-        # self.ui.cifList_treeWidget.doubleClicked.connect(self.show_properties)
+        self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.show_properties)
+        #self.ui.cifList_treeWidget.doubleClicked.connect(self.show_properties)
+
 
     @pyqtSlot('QModelIndex')
     def show_properties(self, item):
@@ -124,10 +127,13 @@ class StartStructureDB(QMainWindow):
         """
         # self.ui.properties_treeWidget.show()
         structure_id = item.sibling(item.row(), 2).data()
-        print(structure_id)
+        self.show_props(structure_id)
+
+    def show_props(self, structure_id):
         cell = self.structures.get_cell_by_id(structure_id)
-        # print(item.sibling(item.row(), 2).data())
-        a, b, c, alpha, beta, gamma = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5]
+        a, b, c, alpha, beta, gamma = 0, 0, 0, 0, 0, 0
+        if cell:
+            a, b, c, alpha, beta, gamma = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5]
         if a:
             self.ui.aLineEdit.setText("{:>5.4f}".format(a))
         if b:
@@ -154,7 +160,6 @@ class StartStructureDB(QMainWindow):
             self.structures.get_residuals(structure_id, '_refine_ls_goodness_of_fit_ref')))
         self.ui.SpaceGroupLineEdit.setText("{}".format(
             self.structures.get_residuals(structure_id, '_space_group_name_H_M_alt')))
-
 
     @pyqtSlot('QString')
     def search_cell(self, search_string):
@@ -233,6 +238,7 @@ class StartStructureDB(QMainWindow):
         """
         self.ui.cifList_treeWidget.clear()
         self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
+        id = 0
         for i in self.structures.get_all_structure_names():
             name = i[3]
             path = i[2]#.decode("utf-8", "surrogateescape")
@@ -241,6 +247,7 @@ class StartStructureDB(QMainWindow):
         print("Loaded {} entries.".format(id))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.full_list = True
+        self.ui.cifList_treeWidget.itemChanged.connect(self.show_properties)
 
     def import_cif_dirs(self):
         """
