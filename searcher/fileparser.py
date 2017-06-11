@@ -10,32 +10,71 @@ Created on 09.02.2015
 
 @author: daniel
 """
-import codecs
 import os
 import time
 from pprint import pprint
-
-import sys
-
-import re
-
-from searcher import misc
-from searcher.misc import get_error_from_value
-
 
 class Cif():
     def __init__(self, file):
         """
         A cif file parsing object optimized for speed and simplicity.
         :param file: input filename object
-        :type file: object
+        :type file: Path
 
         - find loops
           - get loop header
           - start and end
         - fill for example atom loop dict with atoms
         """
-        self.cif_data = {}
+        self.cif_data = {
+            "_cell_formula_units_Z": '',
+            "_space_group_name_H-M_alt": '',
+            "_space_group_name_Hall": '',
+            "_space_group_IT_number": '',
+            "_space_group_crystal_system": '',
+            "_audit_creation_method": '',
+            "_chemical_formula_sum": '',
+            "_chemical_formula_weight": '',
+            "_exptl_crystal_description": '',
+            "_exptl_crystal_colour": '',
+            "_exptl_crystal_size_max": '',
+            "_exptl_crystal_size_mid": '',
+            "_exptl_crystal_size_min": '',
+            "_exptl_absorpt_coefficient_mu": '',
+            "_exptl_absorpt_correction_type": '',
+            "_diffrn_ambient_temperature": '',
+            "_diffrn_radiation_wavelength": '',
+            "_diffrn_radiation_type": '',
+            "_diffrn_source": '',
+            "_diffrn_measurement_device_type": '',
+            "_diffrn_reflns_number": '',
+            "_diffrn_reflns_av_R_equivalents": '',
+            "_diffrn_reflns_theta_min": '',
+            "_diffrn_reflns_theta_max": '',
+            "_diffrn_reflns_theta_full": '',
+            "_diffrn_measured_fraction_theta_max": '',
+            "_diffrn_measured_fraction_theta_full": '',
+            "_reflns_number_total": '',
+            "_reflns_number_gt": '',
+            "_reflns_threshold_expression": '',
+            "_reflns_Friedel_coverage": '',
+            "_computing_structure_solution": '',
+            "_computing_structure_refinement": '',
+            "_refine_special_details": '',
+            "_refine_ls_structure_factor_coef": '',
+            "_refine_ls_weighting_details": '',
+            "_refine_ls_number_reflns": '',
+            "_refine_ls_number_parameters": '',
+            "_refine_ls_number_restraints": '',
+            "_refine_ls_R_factor_all": '',
+            "_refine_ls_R_factor_gt": '',
+            "_refine_ls_wR_factor_ref": '',
+            "_refine_ls_wR_factor_gt": '',
+            "_refine_ls_goodness_of_fit_ref": '',
+            "_refine_ls_restrained_S_all": '',
+            "_refine_ls_shift/su_max": '',
+            "_refine_ls_shift/su_mean": ''
+            }
         self.ok = self.parsefile(file)
 
     def parsefile(self, file):
@@ -174,7 +213,29 @@ class Cif():
             self.cif_data.clear()
             return False
         else:
+            self.handle_deprecates()
             return True
+
+
+    def handle_deprecates(self):
+        """
+        Makes the old and new cif values equal
+        :return:
+        """
+        if "_symmetry_space_group_name_H-M" in self.cif_data:
+            self.cif_data["_space_group_name_H-M_alt"] = self.cif_data["_symmetry_space_group_name_H-M"]
+        if "_diffrn_measurement_device" in self.cif_data:
+            self.cif_data["_diffrn_measurement_device_type"] = self.cif_data["_diffrn_measurement_device"]
+        if "_refine_ls_shift/esd_max" in self.cif_data:
+            self.cif_data["_refine_ls_shift/su_max"] = self.cif_data["_refine_ls_shift/esd_max"]
+        if "_diffrn_measurement_device" in self.cif_data:
+            self.cif_data["_diffrn_measurement_device_type"] = self.cif_data["_diffrn_measurement_device"]
+        if "_refine_ls_shift/esd_max" in self.cif_data:
+            self.cif_data["_refine_ls_shift/su_max"] = self.cif_data["_refine_ls_shift/esd_max"]
+        if '_symmetry_space_group_name_Hall' in self.cif_data:
+            self.cif_data['_space_group_name_Hall'] = self.cif_data['_symmetry_space_group_name_Hall']
+        if '_symmetry_Int_Tables_number' in self.cif_data:
+            self.cif_data['_space_group_IT_number'] = self.cif_data['_symmetry_Int_Tables_number']
 
     def __iter__(self):
         """

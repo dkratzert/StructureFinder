@@ -74,9 +74,9 @@ class DatabaseRequest():
                     CREATE TABLE Structure (
                         Id    INTEGER NOT NULL,
                         measurement INTEGER NOT NULL,
-                        path  TEXT,
-                        filename    VARCHAR(255),
-                        dataname    VARCHAR(255),
+                        path          TEXT,
+                        filename      TEXT,
+                        dataname      TEXT,
                         PRIMARY KEY(Id),
                           FOREIGN KEY(measurement)
                             REFERENCES Structure(Id)
@@ -88,11 +88,11 @@ class DatabaseRequest():
                     CREATE TABLE Atoms (
                         Id    INTEGER NOT NULL,
                         StructureId    INTEGER NOT NULL,
-                        Name    VARCHAR(255),
-                        element    VARCHAR(2),
-                        x    FLOAT,
-                        y    FLOAT,
-                        z    FLOAT,
+                        Name       TEXT,
+                        element    TEXT,
+                        x          FLOAT,
+                        y          FLOAT,
+                        z          FLOAT,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
                         REFERENCES Structure(Id)
@@ -102,26 +102,56 @@ class DatabaseRequest():
 
         self.cur.execute('''
                     CREATE TABLE Residuals (
-                        Id    INTEGER NOT NULL,
-                        StructureId     INTEGER NOT NULL,
-                        space_group     VARCHAR(255),
-                        crystal_system  VARCHAR(2),
-                        Z               FLOAT,
-                        ambient_temperature  FLOAT,
-                        radiation_type       FLOAT,
-                        Rint                 FLOAT,
-                        Rsigma               FLOAT,
-                        R1sigm               FLOAT,
-                        R1                   FLOAT,
-                        wR2                  FLOAT,
-                        wR2sig               FLOAT,
-                        reflns_number_total  FLOAT,
-                        computing_structure_refinement  VARCHAR(255),
-                        goodness_of_fit_ref    FLOAT,
-                        shift_su_max            FLOAT,
-                        diff_density_max       FLOAT,
-                        diff_density_min       FLOAT,
-                        number_of_atoms        FLOAT,
+                        Id                                      INTEGER NOT NULL,
+                        StructureId                             INTEGER NOT NULL,
+                        _cell_formula_units_Z                   INTEGER,
+                        _space_group_name_H_M_alt               TEXT,
+                        _space_group_name_Hall                  TEXT,
+                        _space_group_IT_number                  INTEGER,
+                        _space_group_crystal_system             TEXT,
+                        _audit_creation_method                  TEXT,
+                        _chemical_formula_sum                   TEXT,
+                        _chemical_formula_weight                TEXT,
+                        _exptl_crystal_description              TEXT,
+                        _exptl_crystal_colour                   TEXT,
+                        _exptl_crystal_size_max                 REAL,
+                        _exptl_crystal_size_mid 		    	REAL,
+                        _exptl_crystal_size_min 				REAL,
+                        _exptl_absorpt_coefficient_mu 			REAL,
+                        _exptl_absorpt_correction_type			TEXT,
+                        _diffrn_ambient_temperature 			REAL,
+                        _diffrn_radiation_wavelength 			REAL,
+                        _diffrn_radiation_type 					TEXT,
+                        _diffrn_source 							TEXT,
+                        _diffrn_measurement_device_type 		TEXT,
+                        _diffrn_reflns_number 					INTEGER,
+                        _diffrn_reflns_av_R_equivalents 		INTEGER,
+                        _diffrn_reflns_theta_min 				REAL,
+                        _diffrn_reflns_theta_max 				REAL,
+                        _diffrn_reflns_theta_full 				REAL,
+                        _diffrn_measured_fraction_theta_max 	REAL,
+                        _diffrn_measured_fraction_theta_full 	REAL,
+                        _reflns_number_total 					REAL,
+                        _reflns_number_gt 					    REAL,
+                        _reflns_threshold_expression 			TEXT,
+                        _reflns_Friedel_coverage 				REAL,
+                        _computing_structure_solution 			TEXT,
+                        _computing_structure_refinement 		TEXT,
+                        _refine_special_details 				TEXT,
+                        _refine_ls_structure_factor_coef 		TEXT,
+                        _refine_ls_weighting_details 			TEXT,
+                        _refine_ls_number_reflns 				INTEGER,
+                        _refine_ls_number_parameters 			INTEGER,
+                        _refine_ls_number_restraints 			INTEGER,
+                        _refine_ls_R_factor_all 				REAL,
+                        _refine_ls_R_factor_gt             		REAL,
+                        _refine_ls_wR_factor_ref       			REAL,
+                        _refine_ls_wR_factor_gt         		REAL,
+                        _refine_ls_goodness_of_fit_ref      	REAL,
+                        _refine_ls_restrained_S_all        		REAL,
+                        _refine_ls_shift_su_max            		REAL,
+                        _refine_ls_shift_su_mean           		REAL,
+                        number_of_atoms                         INTEGER,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
                         REFERENCES Structure(Id)
@@ -182,7 +212,7 @@ class DatabaseRequest():
         row = self.cur.fetchone()
         return row
 
-    def db_request(self, request, *args):
+    def db_request(self, request, *args, many=False):
         """
         Performs a SQLite3 database request with "request" and optional arguments
         to insert parameters via "?" into the database request.
@@ -202,7 +232,11 @@ class DatabaseRequest():
         except IndexError:
             pass
         try:
-            self.cur.execute(request, args)
+            if many:
+                #print(args[0])
+                self.cur.executemany(request, args)
+            else:
+                self.cur.execute(request, args)
             last_rowid = self.cur.lastrowid
         except OperationalError as e:
             print(e, "\nDB execution error")
@@ -277,7 +311,7 @@ class StructureTable():
         Returns the Id and the Name as tuple.
   
         >>> dbfile = 'test-data/test.sqlite'
-        >>> db = FragmentTable(dbfile)
+        >>> db = StructureTable(dbfile)
         >>> for num, i in enumerate(db):
         ...   print(i)
         ...   if num > 1:
@@ -379,6 +413,7 @@ class StructureTable():
         fill the cell of structure(structureId) in the table
         cell = [a, b, c, alpha, beta, gamma]
         """
+        # TODO: Only calc volume if not in cif:
         req = '''INSERT INTO cell (StructureId, a, b, c, alpha, beta, gamma, 
                                    esda, esdb, esdc, esdalpha, esdbeta, esdgamma, volume) 
                             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
@@ -412,57 +447,155 @@ class StructureTable():
         if self.database.db_request(req, structure_id, name, element, x, y, z):
             return True
 
-    def fill_residuals_table(self, structure_id, data):
+    def get_residuals(self, structure_id, residual):
+        """
+
+        """
+        if not structure_id:
+            return False
+        req = '''SELECT {0} FROM Residuals WHERE StructureId = {1}'''.format(residual, structure_id)
+        res = self.database.db_request(req)[0][0]
+        return res
+
+
+    def fill_residuals_table(self, structure_id, cif):
         """
         Fill the table with residuals of the refinement.
+
+        c.execute('CREATE TABLE {tn} ({nf} {ft} PRIMARY KEY)'\
+        .format(tn=table_name2, nf=new_field, ft=field_type))
+        http://sebastianraschka.com/Articles/2014_sqlite_in_python_tutorial.html
+        # A) Adding a new column without a row value
+        c.execute("ALTER TABLE {tn} ADD COLUMN '{cn}' {ct}"\
+        .format(tn=table_name, cn=new_column1, ct=column_type))
+
+        intab = "aeiou"
+        outtab = "12345"
+        trantab = maketrans(intab, outtab)
+
+        str = "this is string example....wow!!!";
+        print str.translate(trantab)
+        :param cif:
         :param structure_id:
         :param param:
         :return:
         """
-        print(data, structure_id)
-        for i in data:
-            req = '''INSERT INTO Residuals (StructureId, {}) VALUES(?, ?)'''.format(i)
-            result = self.database.db_request(req, [structure_id, data[i]])
-        if result:
-            return True
-        else:
-            print('Failed to insert residuel {}'.format(i))
-            return False
+        req = '''INSERT INTO Residuals 
+                    (
+                    StructureId,
+                    _cell_formula_units_Z,
+                    _space_group_name_H_M_alt,  
+                    _space_group_name_Hall,
+                    _space_group_IT_number,
+                    _space_group_crystal_system,
+                    _chemical_formula_sum,
+                    _chemical_formula_weight,
+                    _exptl_crystal_description,
+                    _exptl_crystal_colour,
+                    _exptl_crystal_size_max,
+                    _exptl_crystal_size_mid,
+                    _exptl_crystal_size_min,
+                    _audit_creation_method,
+                    _exptl_absorpt_coefficient_mu,
+                    _exptl_absorpt_correction_type,
+                    _diffrn_ambient_temperature,
+                    _diffrn_radiation_wavelength,
+                    _diffrn_radiation_type,
+                    _diffrn_source,
+                    _diffrn_measurement_device_type,
+                    _diffrn_reflns_number,
+                    _diffrn_reflns_av_R_equivalents,
+                    _diffrn_reflns_theta_min,
+                    _diffrn_reflns_theta_max,
+                    _diffrn_reflns_theta_full,
+                    _diffrn_measured_fraction_theta_max,
+                    _diffrn_measured_fraction_theta_full,
+                    _reflns_number_total,
+                    _reflns_number_gt,
+                    _reflns_threshold_expression,
+                    _reflns_Friedel_coverage,
+                    _computing_structure_solution,
+                    _computing_structure_refinement,
+                    _refine_special_details,
+                    _refine_ls_structure_factor_coef,
+                    _refine_ls_weighting_details,
+                    _refine_ls_number_reflns,
+                    _refine_ls_number_parameters,
+                    _refine_ls_number_restraints,
+                    _refine_ls_R_factor_all,
+                    _refine_ls_R_factor_gt,
+                    _refine_ls_wR_factor_ref,
+                    _refine_ls_wR_factor_gt,
+                    _refine_ls_goodness_of_fit_ref,
+                    _refine_ls_restrained_S_all,
+                    _refine_ls_shift_su_max,
+                    _refine_ls_shift_su_mean
+                    ) 
+                VALUES
+                    (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    );
+                '''
+        result = self.database.db_request(req,
+                    structure_id,
+                    cif.cif_data['_cell_formula_units_Z'],
+                    cif.cif_data['_space_group_name_H-M_alt'],
+                    cif.cif_data['_space_group_name_Hall'],
+                    cif.cif_data['_space_group_IT_number'],
+                    cif.cif_data['_space_group_crystal_system'],
+                    cif.cif_data['_chemical_formula_sum'],
+                    cif.cif_data['_chemical_formula_weight'],
+                    cif.cif_data['_exptl_crystal_description'],
+                    cif.cif_data['_exptl_crystal_colour'],
+                    cif.cif_data['_exptl_crystal_size_max'],
+                    cif.cif_data['_exptl_crystal_size_mid'],
+                    cif.cif_data['_exptl_crystal_size_min'],
+                    cif.cif_data['_audit_creation_method'],
+                    cif.cif_data['_exptl_absorpt_coefficient_mu'],
+                    cif.cif_data['_exptl_absorpt_correction_type'],
+                    cif.cif_data['_diffrn_ambient_temperature'],
+                    cif.cif_data['_diffrn_radiation_wavelength'],
+                    cif.cif_data['_diffrn_radiation_type'],
+                    cif.cif_data['_diffrn_source'],
+                    cif.cif_data['_diffrn_measurement_device_type'],
+                    cif.cif_data['_diffrn_reflns_number'],
+                    cif.cif_data['_diffrn_reflns_av_R_equivalents'],
+                    cif.cif_data['_diffrn_reflns_theta_min'],
+                    cif.cif_data['_diffrn_reflns_theta_max'],
+                    cif.cif_data['_diffrn_reflns_theta_full'],
+                    cif.cif_data['_diffrn_measured_fraction_theta_max'],
+                    cif.cif_data['_diffrn_measured_fraction_theta_full'],
+                    cif.cif_data['_reflns_number_total'],
+                    cif.cif_data['_reflns_number_gt'],
+                    cif.cif_data['_reflns_threshold_expression'],
+                    cif.cif_data['_reflns_Friedel_coverage'],
+                    cif.cif_data['_computing_structure_solution'],
+                    cif.cif_data['_computing_structure_refinement'],
+                    cif.cif_data['_refine_special_details'],
+                    cif.cif_data['_refine_ls_structure_factor_coef'],
+                    cif.cif_data['_refine_ls_weighting_details'],
+                    cif.cif_data['_refine_ls_number_reflns'],
+                    cif.cif_data['_refine_ls_number_parameters'],
+                    cif.cif_data['_refine_ls_number_restraints'],
+                    cif.cif_data['_refine_ls_R_factor_all'],
+                    cif.cif_data['_refine_ls_R_factor_gt'],
+                    cif.cif_data['_refine_ls_wR_factor_ref'],
+                    cif.cif_data['_refine_ls_wR_factor_gt'],
+                    cif.cif_data['_refine_ls_goodness_of_fit_ref'],
+                    cif.cif_data['_refine_ls_restrained_S_all'],
+                    cif.cif_data['_refine_ls_shift/su_max'],
+                    cif.cif_data['_refine_ls_shift/su_mean']
+                    )
+        return result
 
-    def find_cell_by_abc(self, a=False, b=False, c=False):
+    def clean_name(some_var):
         """
-        finds a cell
+        Make shure only alphanumerical characters are in the name
+        :type some_var: str
+        :rtype: str
         """
-        if a and not b and not c:    
-            req = '''SELECT * FROM cell WHERE cell.a GLOB '{0}*' 
-                    '''.format(a)
-        elif b and not a and not  c:    
-            req = '''SELECT * FROM cell WHERE cell.b GLOB '{0}*' 
-                    '''.format(b)
-        elif c and not a and not b:    
-            req = '''SELECT * FROM cell WHERE cell.c GLOB '{0}*' 
-                    '''.format(c)
-        elif a and b and not c:    
-            req = '''SELECT * FROM cell WHERE cell.a GLOB '{0}*' AND 
-                                              cell.b GLOB '{1}*'
-                    '''.format(a, b)
-        elif a and c and not b:
-            req = '''SELECT * FROM cell WHERE cell.a GLOB '{0}*' AND 
-                                              cell.c GLOB '{1}*'
-                    '''.format(a, c)
-        elif b and c and not a:
-            req = '''SELECT * FROM cell WHERE cell.b GLOB '{0}*' AND 
-                                              cell.c GLOB '{1}*'
-                    '''.format(b, c)    
-        elif a and b and c:
-            req = '''SELECT * FROM cell WHERE 
-                    cell.a GLOB '{0}*' AND 
-                    cell.b GLOB '{1}*' AND 
-                    cell.c GLOB '{2}*'    '''.format(a, b, c)
-        else:
-            print('wrong search request: a={}, b={}, c={}'.format(a, b, c))
-            sys.exit()
-        return self.database.db_request(req)
+        return ''.join(char for char in some_var if char.isalnum())
 
     def find_by_volume(self, volume, threshold = 0.03):
         """
