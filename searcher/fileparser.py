@@ -10,18 +10,9 @@ Created on 09.02.2015
 
 @author: daniel
 """
-import codecs
 import os
 import time
 from pprint import pprint
-
-import sys
-
-import re
-
-from searcher import misc
-from searcher.misc import get_error_from_value
-
 
 class Cif():
     def __init__(self, file):
@@ -245,7 +236,6 @@ class Cif():
             self.cif_data['_space_group_name_Hall'] = self.cif_data['_symmetry_space_group_name_Hall']
         if '_symmetry_Int_Tables_number' in self.cif_data:
             self.cif_data['_space_group_IT_number'] = self.cif_data['_symmetry_Int_Tables_number']
-
 
     def __iter__(self):
         """

@@ -447,6 +447,17 @@ class StructureTable():
         if self.database.db_request(req, structure_id, name, element, x, y, z):
             return True
 
+    def get_residuals(self, structure_id, residual):
+        """
+
+        """
+        if not structure_id:
+            return False
+        req = '''SELECT {0} FROM Residuals WHERE StructureId = {1}'''.format(residual, structure_id)
+        res = self.database.db_request(req)[0][0]
+        return res
+
+
     def fill_residuals_table(self, structure_id, cif):
         """
         Fill the table with residuals of the refinement.
@@ -527,57 +538,56 @@ class StructureTable():
                     );
                 '''
         result = self.database.db_request(req,
-                                        structure_id,
-                                        cif.cif_data['_cell_formula_units_Z'],
-                                        cif.cif_data['_space_group_name_H-M_alt'],
-                                        cif.cif_data['_space_group_name_Hall'],
-                                        cif.cif_data['_space_group_IT_number'],
-                                        cif.cif_data['_space_group_crystal_system'],
-                                        cif.cif_data['_chemical_formula_sum'],
-                                        cif.cif_data['_chemical_formula_weight'],
-                                        cif.cif_data['_exptl_crystal_description'],
-                                        cif.cif_data['_exptl_crystal_colour'],
-                                        cif.cif_data['_exptl_crystal_size_max'],
-                                        cif.cif_data['_exptl_crystal_size_mid'],
-                                        cif.cif_data['_exptl_crystal_size_min'],
-                                        cif.cif_data['_audit_creation_method'],
-                                        cif.cif_data['_exptl_absorpt_coefficient_mu'],
-                                        cif.cif_data['_exptl_absorpt_correction_type'],
-                                        cif.cif_data['_diffrn_ambient_temperature'],
-                                        cif.cif_data['_diffrn_radiation_wavelength'],
-                                        cif.cif_data['_diffrn_radiation_type'],
-                                        cif.cif_data['_diffrn_source'],
-                                        cif.cif_data['_diffrn_measurement_device_type'],
-                                        cif.cif_data['_diffrn_reflns_number'],
-                                        cif.cif_data['_diffrn_reflns_av_R_equivalents'],
-                                        cif.cif_data['_diffrn_reflns_theta_min'],
-                                        cif.cif_data['_diffrn_reflns_theta_max'],
-                                        cif.cif_data['_diffrn_reflns_theta_full'],
-                                        cif.cif_data['_diffrn_measured_fraction_theta_max'],
-                                        cif.cif_data['_diffrn_measured_fraction_theta_full'],
-                                        cif.cif_data['_reflns_number_total'],
-                                        cif.cif_data['_reflns_number_gt'],
-                                        cif.cif_data['_reflns_threshold_expression'],
-                                        cif.cif_data['_reflns_Friedel_coverage'],
-                                        cif.cif_data['_computing_structure_solution'],
-                                        cif.cif_data['_computing_structure_refinement'],
-                                        cif.cif_data['_refine_special_details'],
-                                        cif.cif_data['_refine_ls_structure_factor_coef'],
-                                        cif.cif_data['_refine_ls_weighting_details'],
-                                        cif.cif_data['_refine_ls_number_reflns'],
-                                        cif.cif_data['_refine_ls_number_parameters'],
-                                        cif.cif_data['_refine_ls_number_restraints'],
-                                        cif.cif_data['_refine_ls_R_factor_all'],
-                                        cif.cif_data['_refine_ls_R_factor_gt'],
-                                        cif.cif_data['_refine_ls_wR_factor_ref'],
-                                        cif.cif_data['_refine_ls_wR_factor_gt'],
-                                        cif.cif_data['_refine_ls_goodness_of_fit_ref'],
-                                        cif.cif_data['_refine_ls_restrained_S_all'],
-                                        cif.cif_data['_refine_ls_shift/su_max'],
-                                        cif.cif_data['_refine_ls_shift/su_mean']
-                                          )
+                    structure_id,
+                    cif.cif_data['_cell_formula_units_Z'],
+                    cif.cif_data['_space_group_name_H-M_alt'],
+                    cif.cif_data['_space_group_name_Hall'],
+                    cif.cif_data['_space_group_IT_number'],
+                    cif.cif_data['_space_group_crystal_system'],
+                    cif.cif_data['_chemical_formula_sum'],
+                    cif.cif_data['_chemical_formula_weight'],
+                    cif.cif_data['_exptl_crystal_description'],
+                    cif.cif_data['_exptl_crystal_colour'],
+                    cif.cif_data['_exptl_crystal_size_max'],
+                    cif.cif_data['_exptl_crystal_size_mid'],
+                    cif.cif_data['_exptl_crystal_size_min'],
+                    cif.cif_data['_audit_creation_method'],
+                    cif.cif_data['_exptl_absorpt_coefficient_mu'],
+                    cif.cif_data['_exptl_absorpt_correction_type'],
+                    cif.cif_data['_diffrn_ambient_temperature'],
+                    cif.cif_data['_diffrn_radiation_wavelength'],
+                    cif.cif_data['_diffrn_radiation_type'],
+                    cif.cif_data['_diffrn_source'],
+                    cif.cif_data['_diffrn_measurement_device_type'],
+                    cif.cif_data['_diffrn_reflns_number'],
+                    cif.cif_data['_diffrn_reflns_av_R_equivalents'],
+                    cif.cif_data['_diffrn_reflns_theta_min'],
+                    cif.cif_data['_diffrn_reflns_theta_max'],
+                    cif.cif_data['_diffrn_reflns_theta_full'],
+                    cif.cif_data['_diffrn_measured_fraction_theta_max'],
+                    cif.cif_data['_diffrn_measured_fraction_theta_full'],
+                    cif.cif_data['_reflns_number_total'],
+                    cif.cif_data['_reflns_number_gt'],
+                    cif.cif_data['_reflns_threshold_expression'],
+                    cif.cif_data['_reflns_Friedel_coverage'],
+                    cif.cif_data['_computing_structure_solution'],
+                    cif.cif_data['_computing_structure_refinement'],
+                    cif.cif_data['_refine_special_details'],
+                    cif.cif_data['_refine_ls_structure_factor_coef'],
+                    cif.cif_data['_refine_ls_weighting_details'],
+                    cif.cif_data['_refine_ls_number_reflns'],
+                    cif.cif_data['_refine_ls_number_parameters'],
+                    cif.cif_data['_refine_ls_number_restraints'],
+                    cif.cif_data['_refine_ls_R_factor_all'],
+                    cif.cif_data['_refine_ls_R_factor_gt'],
+                    cif.cif_data['_refine_ls_wR_factor_ref'],
+                    cif.cif_data['_refine_ls_wR_factor_gt'],
+                    cif.cif_data['_refine_ls_goodness_of_fit_ref'],
+                    cif.cif_data['_refine_ls_restrained_S_all'],
+                    cif.cif_data['_refine_ls_shift/su_max'],
+                    cif.cif_data['_refine_ls_shift/su_mean']
+                    )
         return result
-
 
     def clean_name(some_var):
         """

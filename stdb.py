@@ -123,7 +123,9 @@ class StartStructureDB(QMainWindow):
         _space_group_symop_operation_xyz oder _symmetry_equiv_pos_as_xyz
         """
         # self.ui.properties_treeWidget.show()
-        cell = self.structures.get_cell_by_id(item.sibling(item.row(), 2).data())
+        structure_id = item.sibling(item.row(), 2).data()
+        print(structure_id)
+        cell = self.structures.get_cell_by_id(structure_id)
         # print(item.sibling(item.row(), 2).data())
         a, b, c, alpha, beta, gamma = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5]
         if a:
@@ -138,25 +140,21 @@ class StartStructureDB(QMainWindow):
             self.ui.betaLineEdit.setText("{:>5.4f}".format(beta))
         if gamma:
             self.ui.gammaLineEdit.setText("{:>5.4f}".format(gamma))
-        """
-        _cell_formula_units_Z	
-        _cell_volume	
-        _space_group_name_H-M_alt oder _symmetry_space_group_name_H-M
-        _diffrn_radiation_type
-        _exptl_absorpt_coefficient_mu
-        _diffrn_measurement_device_type
-        _diffrn_reflns_theta_max
-        _diffrn_reflns_theta_full
-        _diffrn_reflns_av_R_equivalents Rint
-        _refine_ls_R_factor_gt  :  R factor of F for reflections > threshold
-        _refine_ls_wR_factor_ref :	R factor of coefficient for refinement reflections
-        _refine_ls_goodness_of_fit_ref	Goodness of fit S for refinement reflections
-        _refine_ls_number_reflns	Number of reflections used in refinement
-        _refine_ls_number_parameters	
-        _refine_ls_number_restraints
-        _refine_ls_shift/su_max or _refine_ls_shift/esd_max
-        _refine_ls_abs_structure_Flack
-        """
+        self.ui.wR2LineEdit.setText("{:>5.4f}".format(
+            self.structures.get_residuals(structure_id, '_refine_ls_wR_factor_ref')))
+        self.ui.r1LineEdit.setText("{:>5.4f}".format(
+            self.structures.get_residuals(structure_id, '_refine_ls_R_factor_gt')))
+        self.ui.zLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_cell_formula_units_Z')))
+        self.ui.sumFormulaLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_chemical_formula_sum')))
+        self.ui.reflTotalLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_diffrn_reflns_number')))
+        self.ui.goofLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_refine_ls_goodness_of_fit_ref')))
+        self.ui.SpaceGroupLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_space_group_name_H_M_alt')))
+
 
     @pyqtSlot('QString')
     def search_cell(self, search_string):

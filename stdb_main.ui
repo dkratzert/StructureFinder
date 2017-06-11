@@ -182,7 +182,7 @@
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
              <item row="0" column="0">
-              <widget class="QLabel" name="SPaceGrouplabel">
+              <widget class="QLabel" name="SpaceGrouplabel">
                <property name="text">
                 <string>Space Group</string>
                </property>
@@ -192,7 +192,7 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QLineEdit" name="SaceGroupLineEdit">
+              <widget class="QLineEdit" name="SpaceGroupLineEdit">
                <property name="readOnly">
                 <bool>true</bool>
                </property>
@@ -478,7 +478,7 @@
              <item row="0" column="0">
               <widget class="QLabel" name="dataReflnsLabel">
                <property name="text">
-                <string>dataReflns</string>
+                <string>data/param</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -682,7 +682,7 @@
      <x>0</x>
      <y>0</y>
      <width>958</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">
