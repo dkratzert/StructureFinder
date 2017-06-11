@@ -369,6 +369,6 @@ if __name__ == '__main__':
     print('-'*50)
     #print(c._shelx_space_group_comment, '##')
     #print(c._atom.keys(), '##')
-    print(c)
+    #print(c)
     print('-' * 50)
     print(diff, 's')
