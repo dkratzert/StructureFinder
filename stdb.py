@@ -38,7 +38,12 @@ TODO:
 - add abort button for indexer
 - recognize already indexed files
 - search for strings to get a result for a persons name, add person to db
-
+- add an advanced search tab where you can search for sum formula, only elements, names, users, ... 
+- add a file browser where you can match the local path 
+- add progress bar for cell search
+- add a tab where you can match path name parts to usernames
+- the filecrawler should collect the bruker base file name, also for Rigaku? And STOE?
+- pressing search in advanced tab will return to base tab with results
 """
 
 
