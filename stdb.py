@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
+from math import radians, sin
 
 from lattice import lattice
 from opengl.moleculegl import MyScene
@@ -146,7 +147,7 @@ class StartStructureDB(QMainWindow):
         except ValueError:
             pass
         try:
-            self.ui.r1LineEdit.setText("{:>5.4f}".format(
+            self.ui.r1LineEdit.setText("{:>5.4f}".format(  # R1
                 self.structures.get_residuals(structure_id, '_refine_ls_R_factor_gt')))
         except ValueError:
             pass
@@ -160,6 +161,43 @@ class StartStructureDB(QMainWindow):
             self.structures.get_residuals(structure_id, '_refine_ls_goodness_of_fit_ref')))
         self.ui.SpaceGroupLineEdit.setText("{}".format(
             self.structures.get_residuals(structure_id, '_space_group_name_H_M_alt')))
+        self.ui.temperatureLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_diffrn_ambient_temperature')))
+        self.ui.maxShiftLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_refine_ls_shift_su_max')))
+        self.ui.peakLineEdit.setText("{} / {}".format(
+            self.structures.get_residuals(structure_id, '_refine_diff_density_max'),
+            self.structures.get_residuals(structure_id, '_refine_diff_density_min')))
+        self.ui.rintLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_diffrn_reflns_av_R_equivalents')))
+        self.ui.rsigmaLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_diffrn_reflns_av_unetI_netI')))
+        try:
+            dat_param = self.structures.get_residuals(structure_id, '_refine_ls_number_reflns') / self.structures.get_residuals(structure_id, '_refine_ls_number_parameters')
+        except (ValueError, ZeroDivisionError):
+            dat_param = 0.0
+        self.ui.maxShiftLineEdit.setText("{:5.3f}".format(dat_param))
+        self.ui.rsigmaLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_refine_ls_number_parameters')))
+        wavelen = self.structures.get_residuals(structure_id, '_diffrn_radiation_wavelength')
+        thetamax = self.structures.get_residuals(structure_id, '_diffrn_reflns_theta_max')
+        # d = lambda/2sin(theta):
+        try:
+            d = wavelen/(2*sin(radians(thetamax)))
+        except ZeroDivisionError:
+            d = 0.0
+        self.ui.numRestraintsLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_refine_ls_number_restraints')))
+        self.ui.thetaMaxLineEdit.setText("{}".format(thetamax))
+        self.ui.thetaFullLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_diffrn_reflns_theta_full')))
+        self.ui.dLineEdit.setText("{:5.3f}".format(d))
+        self.ui.thetaMaxLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_diffrn_measured_fraction_theta_max')))
+        self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
+
+
+
 
     @pyqtSlot('QString')
     def search_cell(self, search_string):

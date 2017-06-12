@@ -419,7 +419,7 @@
              <item row="6" column="0">
               <widget class="QLabel" name="peakLabel">
                <property name="text">
-                <string>Peak</string>
+                <string>Peak / Hole</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -430,7 +430,7 @@
               <widget class="QLineEdit" name="peakLineEdit"/>
              </item>
              <item row="7" column="0">
-              <widget class="QLabel" name="rintLabel_2">
+              <widget class="QLabel" name="rintLabel">
                <property name="text">
                 <string>Rint</string>
                </property>
@@ -440,10 +440,10 @@
               </widget>
              </item>
              <item row="7" column="1">
-              <widget class="QLineEdit" name="rintLineEdit_2"/>
+              <widget class="QLineEdit" name="rintLineEdit"/>
              </item>
              <item row="8" column="0">
-              <widget class="QLabel" name="rsigmaLabel_2">
+              <widget class="QLabel" name="rsigmaLabel">
                <property name="text">
                 <string>Rsigma</string>
                </property>
@@ -453,7 +453,7 @@
               </widget>
              </item>
              <item row="8" column="1">
-              <widget class="QLineEdit" name="rsigmaLineEdit_2"/>
+              <widget class="QLineEdit" name="rsigmaLineEdit"/>
              </item>
             </layout>
            </item>
@@ -682,7 +682,7 @@
      <x>0</x>
      <y>0</y>
      <width>958</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">

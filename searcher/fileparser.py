@@ -73,7 +73,8 @@ class Cif():
             "_refine_ls_goodness_of_fit_ref": '',
             "_refine_ls_restrained_S_all": '',
             "_refine_ls_shift/su_max": '',
-            "_refine_ls_shift/su_mean": ''
+            "_refine_ls_shift/su_mean": '',
+            "_diffrn_reflns_av_unetI/netI": ''
             }
         self.ok = self.parsefile(file)
 
