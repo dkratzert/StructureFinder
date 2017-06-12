@@ -174,7 +174,7 @@ class StartStructureDB(QMainWindow):
             self.structures.get_residuals(structure_id, '_diffrn_reflns_av_unetI_netI')))
         try:
             dat_param = self.structures.get_residuals(structure_id, '_refine_ls_number_reflns') / self.structures.get_residuals(structure_id, '_refine_ls_number_parameters')
-        except (ValueError, ZeroDivisionError):
+        except (ValueError, ZeroDivisionError, TypeError):
             dat_param = 0.0
         self.ui.maxShiftLineEdit.setText("{:5.3f}".format(dat_param))
         self.ui.rsigmaLineEdit.setText("{}".format(
@@ -184,7 +184,7 @@ class StartStructureDB(QMainWindow):
         # d = lambda/2sin(theta):
         try:
             d = wavelen/(2*sin(radians(thetamax)))
-        except ZeroDivisionError:
+        except(ZeroDivisionError, TypeError):
             d = 0.0
         self.ui.numRestraintsLineEdit.setText("{}".format(
             self.structures.get_residuals(structure_id, '_refine_ls_number_restraints')))
@@ -192,8 +192,8 @@ class StartStructureDB(QMainWindow):
         self.ui.thetaFullLineEdit.setText("{}".format(
             self.structures.get_residuals(structure_id, '_diffrn_reflns_theta_full')))
         self.ui.dLineEdit.setText("{:5.3f}".format(d))
-        self.ui.thetaMaxLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_diffrn_measured_fraction_theta_max')))
+        self.ui.completeLineEdit.setText("{}".format(
+            self.structures.get_residuals(structure_id, '_diffrn_measured_fraction_theta_max')*100))
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
 
 

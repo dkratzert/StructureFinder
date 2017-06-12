@@ -74,7 +74,9 @@ class Cif():
             "_refine_ls_restrained_S_all": '',
             "_refine_ls_shift/su_max": '',
             "_refine_ls_shift/su_mean": '',
-            "_diffrn_reflns_av_unetI/netI": ''
+            "_diffrn_reflns_av_unetI/netI": '',
+            "_refine_diff_density_max": '',
+            "_refine_diff_density_min": ''
             }
         self.ok = self.parsefile(file)
 

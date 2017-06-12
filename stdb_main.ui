@@ -303,9 +303,9 @@
               <widget class="QLineEdit" name="gammaLineEdit"/>
              </item>
              <item row="8" column="0">
-              <widget class="QLabel" name="r1Label">
+              <widget class="QLabel" name="zLabel">
                <property name="text">
-                <string>R1</string>
+                <string>Z</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -313,7 +313,14 @@
               </widget>
              </item>
              <item row="8" column="1">
-              <widget class="QLineEdit" name="r1LineEdit"/>
+              <widget class="QLineEdit" name="zLineEdit"/>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>[Å], deg.</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -338,36 +345,10 @@
              <property name="labelAlignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
-             <item row="0" column="0">
-              <widget class="QLabel" name="wR2Label">
-               <property name="text">
-                <string>wR2</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="wR2LineEdit"/>
-             </item>
-             <item row="1" column="0">
+             <item row="2" column="0">
               <widget class="QLabel" name="temperatureLabel">
                <property name="text">
-                <string>Temperature</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="temperatureLineEdit"/>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="sumFormulaLabel">
-               <property name="text">
-                <string>Sum Formula</string>
+                <string>Temperature [K]</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -375,22 +356,29 @@
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QLineEdit" name="sumFormulaLineEdit"/>
+              <widget class="QLineEdit" name="temperatureLineEdit"/>
              </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="zLabel">
+             <item row="4" column="0">
+              <widget class="QLabel" name="r1Label">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <italic>false</italic>
+                 <bold>true</bold>
+                </font>
+               </property>
                <property name="text">
-                <string>Z</string>
+                <string>R1</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
               </widget>
              </item>
-             <item row="3" column="1">
-              <widget class="QLineEdit" name="zLineEdit"/>
+             <item row="4" column="1">
+              <widget class="QLineEdit" name="r1LineEdit"/>
              </item>
-             <item row="4" column="0">
+             <item row="5" column="0">
               <widget class="QLabel" name="goofLabel">
                <property name="text">
                 <string>Goof</string>
@@ -400,26 +388,13 @@
                </property>
               </widget>
              </item>
-             <item row="4" column="1">
+             <item row="5" column="1">
               <widget class="QLineEdit" name="goofLineEdit"/>
              </item>
-             <item row="5" column="0">
+             <item row="6" column="0">
               <widget class="QLabel" name="maxShiftLabel">
                <property name="text">
-                <string>Max Shift</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="1">
-              <widget class="QLineEdit" name="maxShiftLineEdit"/>
-             </item>
-             <item row="6" column="0">
-              <widget class="QLabel" name="peakLabel">
-               <property name="text">
-                <string>Peak / Hole</string>
+                <string>Max Shift/esd</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -427,12 +402,12 @@
               </widget>
              </item>
              <item row="6" column="1">
-              <widget class="QLineEdit" name="peakLineEdit"/>
+              <widget class="QLineEdit" name="maxShiftLineEdit"/>
              </item>
              <item row="7" column="0">
-              <widget class="QLabel" name="rintLabel">
+              <widget class="QLabel" name="peakLabel">
                <property name="text">
-                <string>Rint</string>
+                <string>Peak / Hole [e/Å^3]</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -440,12 +415,18 @@
               </widget>
              </item>
              <item row="7" column="1">
-              <widget class="QLineEdit" name="rintLineEdit"/>
+              <widget class="QLineEdit" name="peakLineEdit"/>
              </item>
              <item row="8" column="0">
-              <widget class="QLabel" name="rsigmaLabel">
+              <widget class="QLabel" name="rintLabel">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
                <property name="text">
-                <string>Rsigma</string>
+                <string>R(int)</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -453,7 +434,53 @@
               </widget>
              </item>
              <item row="8" column="1">
+              <widget class="QLineEdit" name="rintLineEdit"/>
+             </item>
+             <item row="9" column="0">
+              <widget class="QLabel" name="rsigmaLabel">
+               <property name="text">
+                <string>R(σ)</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="1">
               <widget class="QLineEdit" name="rsigmaLineEdit"/>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="sumFormulaLineEdit"/>
+             </item>
+             <item row="3" column="1">
+              <widget class="QLineEdit" name="wR2LineEdit"/>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="sumFormulaLabel">
+               <property name="text">
+                <string>Sum Formula</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="wR2Label">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <italic>false</italic>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>wR2</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -477,6 +504,12 @@
              </property>
              <item row="0" column="0">
               <widget class="QLabel" name="dataReflnsLabel">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
                <property name="text">
                 <string>data/param</string>
                </property>
@@ -517,7 +550,7 @@
              <item row="3" column="0">
               <widget class="QLabel" name="reflTotalLabel">
                <property name="text">
-                <string>reflTotal</string>
+                <string>Total num. Refl.</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -530,7 +563,7 @@
              <item row="4" column="0">
               <widget class="QLabel" name="thetaMaxLabel">
                <property name="text">
-                <string>thetaMax</string>
+                <string>thetaMax [°]</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -543,7 +576,7 @@
              <item row="5" column="0">
               <widget class="QLabel" name="thetaFullLabel">
                <property name="text">
-                <string>thetaFull</string>
+                <string>thetaFull [°]</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -555,8 +588,14 @@
              </item>
              <item row="6" column="0">
               <widget class="QLabel" name="dLabel">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
                <property name="text">
-                <string>d</string>
+                <string>d [Å]</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -568,8 +607,14 @@
              </item>
              <item row="7" column="0">
               <widget class="QLabel" name="completeLabel">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
                <property name="text">
-                <string>complete</string>
+                <string>complete [%]</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -582,7 +627,7 @@
              <item row="8" column="0">
               <widget class="QLabel" name="wavelengthLabel">
                <property name="text">
-                <string>Wavelength</string>
+                <string>Wavelength [Å]</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
