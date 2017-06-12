@@ -35,7 +35,6 @@ TODO:
 - make file type more flexible. handle .res and .cif equally
 - group structures in measurements
 - implement progress bar for indexing
-- implement "save on close?" dialog
 - add abort button for indexer
 - recognize already indexed files
 - search for strings to get a result for a persons name, add person to db
@@ -171,8 +170,8 @@ class StartStructureDB(QMainWindow):
             dat_param = dic['_refine_ls_number_reflns'] / dic['_refine_ls_number_parameters']
         except (ValueError, ZeroDivisionError, TypeError):
             dat_param = 0.0
-        self.ui.maxShiftLineEdit.setText("{:5.3f}".format(dat_param))
-        self.ui.rsigmaLineEdit.setText("{}".format(dic['_refine_ls_number_parameters']))
+        self.ui.dataReflnsLineEdit.setText("{:<5.1f}".format(dat_param))
+        self.ui.numParametersLineEdit.setText("{}".format(dic['_refine_ls_number_parameters']))
         wavelen = dic['_diffrn_radiation_wavelength']
         thetamax = dic['_diffrn_reflns_theta_max']
         # d = lambda/2sin(theta):
@@ -185,7 +184,13 @@ class StartStructureDB(QMainWindow):
         self.ui.thetaFullLineEdit.setText("{}".format(dic['_diffrn_reflns_theta_full']))
         self.ui.dLineEdit.setText("{:5.3f}".format(d))
         # TODO: round number to two digits:
-        self.ui.completeLineEdit.setText("{}".format(dic['_diffrn_measured_fraction_theta_max']*100))
+        try:
+            compl = dic['_diffrn_measured_fraction_theta_max'] * 100
+            if not compl:
+                compl = 0.0
+        except TypeError:
+            compl = 0.0
+        self.ui.completeLineEdit.setText("{:<5.1f}".format(compl))
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
         return True
 
@@ -193,8 +198,6 @@ class StartStructureDB(QMainWindow):
     def search_cell(self, search_string):
         """
         searches db for given cell via the cell volume
-        
-        8.4009  10.4848  11.8979  94.7910 103.0250 108.5480
         
         :param search_string: 
         :return: 
@@ -296,10 +299,6 @@ class StartStructureDB(QMainWindow):
         :return: None
         """
         fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
-        #fname = "/Users/daniel/Documents/Strukturen/Miriam/IKms_cf_08_Ni(mes)(cod)PF/FINAL/"
-        # fname = "D:/GitHub/StructureDB/test-data"
-        # fname = os.path.abspath("/Users/daniel/Downloads")
-        # fname = os.path.abspath("../")
         if not fname:
             return False
         self.ui.cifList_treeWidget.show()

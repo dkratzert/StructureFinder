@@ -503,15 +503,9 @@
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
              </property>
              <item row="0" column="0">
-              <widget class="QLabel" name="dataReflnsLabel">
-               <property name="font">
-                <font>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                </font>
-               </property>
+              <widget class="QLabel" name="reflTotalLabel">
                <property name="text">
-                <string>data/param</string>
+                <string>Total num. Refl.</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -519,7 +513,7 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QLineEdit" name="dataReflnsLineEdit"/>
+              <widget class="QLineEdit" name="reflTotalLineEdit"/>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="numParametersLabel">
@@ -535,6 +529,25 @@
               <widget class="QLineEdit" name="numParametersLineEdit"/>
              </item>
              <item row="2" column="0">
+              <widget class="QLabel" name="dataReflnsLabel">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>data/param</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="dataReflnsLineEdit"/>
+             </item>
+             <item row="3" column="0">
               <widget class="QLabel" name="numRestraintsLabel">
                <property name="text">
                 <string>Restraints</string>
@@ -544,26 +557,13 @@
                </property>
               </widget>
              </item>
-             <item row="2" column="1">
-              <widget class="QLineEdit" name="numRestraintsLineEdit"/>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="reflTotalLabel">
-               <property name="text">
-                <string>Total num. Refl.</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
              <item row="3" column="1">
-              <widget class="QLineEdit" name="reflTotalLineEdit"/>
+              <widget class="QLineEdit" name="numRestraintsLineEdit"/>
              </item>
              <item row="4" column="0">
               <widget class="QLabel" name="thetaMaxLabel">
                <property name="text">
-                <string>thetaMax [°]</string>
+                <string>θ(max) [°]</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -576,7 +576,7 @@
              <item row="5" column="0">
               <widget class="QLabel" name="thetaFullLabel">
                <property name="text">
-                <string>thetaFull [°]</string>
+                <string>θ(full) [°]</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -727,7 +727,7 @@
      <x>0</x>
      <y>0</y>
      <width>958</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">

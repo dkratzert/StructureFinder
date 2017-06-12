@@ -233,8 +233,6 @@ class Cif():
             self.cif_data["_refine_ls_shift/su_max"] = self.cif_data["_refine_ls_shift/esd_max"]
         if "_diffrn_measurement_device" in self.cif_data:
             self.cif_data["_diffrn_measurement_device_type"] = self.cif_data["_diffrn_measurement_device"]
-        if "_refine_ls_shift/esd_max" in self.cif_data:
-            self.cif_data["_refine_ls_shift/su_max"] = self.cif_data["_refine_ls_shift/esd_max"]
         if '_symmetry_space_group_name_Hall' in self.cif_data:
             self.cif_data['_space_group_name_Hall'] = self.cif_data['_symmetry_space_group_name_Hall']
         if '_symmetry_Int_Tables_number' in self.cif_data:
