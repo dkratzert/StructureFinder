@@ -211,7 +211,10 @@ class DatabaseRequest():
         """
         fetches one db entry
         """
-        self.cur.execute(request)
+        try:
+            self.cur.execute(request)
+        except OperationalError:
+            return False
         row = self.cur.fetchone()
         return row
 
@@ -249,6 +252,12 @@ class DatabaseRequest():
             return last_rowid
         else:
             return rows
+
+    def dict_factory(self, cursor, row):
+        d = {}
+        for idx, col in enumerate(cursor.description):
+            d[col[0]] = row[idx]
+        return d
 
     def __del__(self):
         # commit is very slow:
@@ -452,7 +461,7 @@ class StructureTable():
 
     def get_residuals(self, structure_id, residual):
         """
-
+        Get the value of a single residual from the residuals table.
         """
         if not structure_id:
             return False
@@ -607,11 +616,25 @@ class StructureTable():
 
     def clean_name(some_var):
         """
-        Make shure only alphanumerical characters are in the name
+        Make sure only alphanumerical characters are in the name
         :type some_var: str
         :rtype: str
         """
         return ''.join(char for char in some_var if char.isalnum())
+
+    def get_row_as_dict(self, request):
+        """
+        Returns a database row as dictionary
+        """
+        # setting row_factory to dict for the cif keys:
+        self.database.con.row_factory = self.database.dict_factory
+        self.database.cur = self.database.con.cursor()
+        dic = self.database.db_fetchone(request)
+        self.database.cur.close()
+        # setting row_factory back to regular touple base requests:
+        self.database.con.row_factory = None
+        self.database.cur = self.database.con.cursor()
+        return dic
 
     def find_by_volume(self, volume, threshold = 0.03):
         """

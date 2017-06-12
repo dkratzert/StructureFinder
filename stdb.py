@@ -4,6 +4,7 @@ import os
 import sys
 import time
 
+import sqlite3
 from PyQt5 import uic, Qt3DExtras
 from PyQt5.QtCore import pyqtSlot, QSize
 from PyQt5.QtGui import QColor, QVector3D, QSurface
@@ -16,6 +17,7 @@ from math import radians, sin
 
 from lattice import lattice
 from opengl.moleculegl import MyScene
+from pymatgen.core.mat_lattice import Lattice
 from searcher import filecrawler
 from searcher.database_handler import StructureTable, DatabaseRequest
 from searcher.filecrawler import fill_db_tables
@@ -32,7 +34,6 @@ TODO:
 - make 3D model from atoms
 - make file type more flexible. handle .res and .cif equally
 - group structures in measurements
-- list properties of a selected cif file
 - implement progress bar for indexing
 - implement "save on close?" dialog
 - add abort button for indexer
@@ -108,13 +109,13 @@ class StartStructureDB(QMainWindow):
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
         self.ui.searchLineEDit.textChanged.connect(self.search_cell)
         # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
-        self.ui.cifList_treeWidget.clicked.connect(self.show_properties)
-        self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.show_properties)
-        #self.ui.cifList_treeWidget.doubleClicked.connect(self.show_properties)
+        self.ui.cifList_treeWidget.clicked.connect(self.get_properties)
+        self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
+        #self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
 
 
     @pyqtSlot('QModelIndex')
-    def show_properties(self, item):
+    def get_properties(self, item):
         """
         This slot shows the properties of a cif file in the properties widget
 
@@ -122,10 +123,17 @@ class StartStructureDB(QMainWindow):
         """
         # self.ui.properties_treeWidget.show()
         structure_id = item.sibling(item.row(), 2).data()
-        self.show_props(structure_id)
+        request = """select * from residuals where StructureId = {}""".format(structure_id)
+        dic = self.structures.get_row_as_dict(request)
+        self.display_properties(structure_id, dic)
 
-    def show_props(self, structure_id):
+    def display_properties(self, structure_id, dic):
+        """
+        Displays the residuals from the properties
+        """
         cell = self.structures.get_cell_by_id(structure_id)
+        if not dic:
+            return False
         a, b, c, alpha, beta, gamma = 0, 0, 0, 0, 0, 0
         if cell:
             a, b, c, alpha, beta, gamma = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5]
@@ -142,62 +150,44 @@ class StartStructureDB(QMainWindow):
         if gamma:
             self.ui.gammaLineEdit.setText("{:>5.4f}".format(gamma))
         try:
-            self.ui.wR2LineEdit.setText("{:>5.4f}".format(
-                self.structures.get_residuals(structure_id, '_refine_ls_wR_factor_ref')))
+            self.ui.wR2LineEdit.setText("{:>5.4f}".format(dic['_refine_ls_wR_factor_ref']))
         except ValueError:
             pass
-        try:
-            self.ui.r1LineEdit.setText("{:>5.4f}".format(  # R1
-                self.structures.get_residuals(structure_id, '_refine_ls_R_factor_gt')))
+        try:  # R1:
+            self.ui.r1LineEdit.setText("{:>5.4f}".format(dic['_refine_ls_R_factor_gt']))
         except ValueError:
             pass
-        self.ui.zLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_cell_formula_units_Z')))
-        self.ui.sumFormulaLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_chemical_formula_sum')))
-        self.ui.reflTotalLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_diffrn_reflns_number')))
-        self.ui.goofLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_refine_ls_goodness_of_fit_ref')))
-        self.ui.SpaceGroupLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_space_group_name_H_M_alt')))
-        self.ui.temperatureLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_diffrn_ambient_temperature')))
-        self.ui.maxShiftLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_refine_ls_shift_su_max')))
-        self.ui.peakLineEdit.setText("{} / {}".format(
-            self.structures.get_residuals(structure_id, '_refine_diff_density_max'),
-            self.structures.get_residuals(structure_id, '_refine_diff_density_min')))
-        self.ui.rintLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_diffrn_reflns_av_R_equivalents')))
-        self.ui.rsigmaLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_diffrn_reflns_av_unetI_netI')))
+        self.ui.zLineEdit.setText("{}".format(dic['_cell_formula_units_Z']))
+        self.ui.sumFormulaLineEdit.setText("{}".format(dic['_chemical_formula_sum']))
+        self.ui.reflTotalLineEdit.setText("{}".format(dic['_diffrn_reflns_number']))
+        self.ui.goofLineEdit.setText("{}".format(dic['_refine_ls_goodness_of_fit_ref']))
+        self.ui.SpaceGroupLineEdit.setText("{}".format(dic['_space_group_name_H_M_alt']))
+        self.ui.temperatureLineEdit.setText("{}".format(dic['_diffrn_ambient_temperature']))
+        self.ui.maxShiftLineEdit.setText("{}".format(dic['_refine_ls_shift_su_max']))
+        self.ui.peakLineEdit.setText("{} / {}".format(dic['_refine_diff_density_max'], dic['_refine_diff_density_min']))
+        self.ui.rintLineEdit.setText("{}".format(dic['_diffrn_reflns_av_R_equivalents']))
+        self.ui.rsigmaLineEdit.setText("{}".format(dic['_diffrn_reflns_av_unetI_netI']))
         try:
-            dat_param = self.structures.get_residuals(structure_id, '_refine_ls_number_reflns') / self.structures.get_residuals(structure_id, '_refine_ls_number_parameters')
+            dat_param = dic['_refine_ls_number_reflns'] / dic['_refine_ls_number_parameters']
         except (ValueError, ZeroDivisionError, TypeError):
             dat_param = 0.0
         self.ui.maxShiftLineEdit.setText("{:5.3f}".format(dat_param))
-        self.ui.rsigmaLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_refine_ls_number_parameters')))
-        wavelen = self.structures.get_residuals(structure_id, '_diffrn_radiation_wavelength')
-        thetamax = self.structures.get_residuals(structure_id, '_diffrn_reflns_theta_max')
+        self.ui.rsigmaLineEdit.setText("{}".format(dic['_refine_ls_number_parameters']))
+        wavelen = dic['_diffrn_radiation_wavelength']
+        thetamax = dic['_diffrn_reflns_theta_max']
         # d = lambda/2sin(theta):
         try:
             d = wavelen/(2*sin(radians(thetamax)))
         except(ZeroDivisionError, TypeError):
             d = 0.0
-        self.ui.numRestraintsLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_refine_ls_number_restraints')))
+        self.ui.numRestraintsLineEdit.setText("{}".format(dic['_refine_ls_number_restraints']))
         self.ui.thetaMaxLineEdit.setText("{}".format(thetamax))
-        self.ui.thetaFullLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_diffrn_reflns_theta_full')))
+        self.ui.thetaFullLineEdit.setText("{}".format(dic['_diffrn_reflns_theta_full']))
         self.ui.dLineEdit.setText("{:5.3f}".format(d))
-        self.ui.completeLineEdit.setText("{}".format(
-            self.structures.get_residuals(structure_id, '_diffrn_measured_fraction_theta_max')*100))
+        # TODO: round number to two digits:
+        self.ui.completeLineEdit.setText("{}".format(dic['_diffrn_measured_fraction_theta_max']*100))
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
-
-
-
+        return True
 
     @pyqtSlot('QString')
     def search_cell(self, search_string):
@@ -220,13 +210,27 @@ class StartStructureDB(QMainWindow):
             return True
         try:
             volume = lattice.vol_unitcell(*cell)
-            idlist = self.structures.find_by_volume(volume)
-            # print(idlist)
-            searchresult = self.structures.get_all_structure_names(idlist)
+            # First a list of structures where the volume is similar:
+            idlist = self.structures.find_by_volume(volume, threshold=0.03)
         except ValueError:
             if not self.full_list:
                 self.show_full_list()
             return False
+        # Get a smaller list where only cells are included that have a proper mapping to the input cell:
+        idlist2 = []
+        if idlist:
+            lattice1 = Lattice.from_parameters(*cell)
+            # TODO: make a progress bar for that:
+            for i in idlist:
+                request = """select * from cell where StructureId = {}""".format(i)
+                dic = self.structures.get_row_as_dict(request)
+                cell2 = [dic['a'], dic['b'], dic['c'], dic['alpha'], dic['beta'], dic['gamma']]
+                cell2 = [float(x) for x in cell2]
+                lattice2 = Lattice.from_parameters(*cell2)
+                map = lattice1.find_mapping(lattice2, ltol=1.0, atol=1, skip_rotation_matrix=True)
+                if map:
+                    idlist2.append(i)
+        searchresult = self.structures.get_all_structure_names(idlist2)
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for i in searchresult:
