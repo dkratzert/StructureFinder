@@ -235,7 +235,7 @@ class StartStructureDB(QMainWindow):
                 cell2 = [dic['a'], dic['b'], dic['c'], dic['alpha'], dic['beta'], dic['gamma']]
                 cell2 = [float(x) for x in cell2]
                 lattice2 = Lattice.from_parameters(*cell2)
-                map = lattice1.find_mapping(lattice2, ltol=1.0, atol=1, skip_rotation_matrix=True)
+                map = lattice1.find_mapping(lattice2, ltol=0.2, atol=1, skip_rotation_matrix=True)
                 if map:
                     idlist2.append(i)
         searchresult = self.structures.get_all_structure_names(idlist2)
