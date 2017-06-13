@@ -228,10 +228,10 @@ class DatabaseRequest():
                     '''SELECT Structure.cell FROM Structure'''
         :type request: str
         """
-        # print('-'*30, 'start')
-        # print('request:', request)
-        # print('args:', args)
-        # print('_' * 30, 'end')
+        #print('-'*30, 'start')
+        #print('request:', request)
+        #print('args:', args)
+        #print('_' * 30, 'end')
         try:
             if isinstance(args[0], (list, tuple)):
                 args = args[0]
@@ -340,8 +340,13 @@ class StructureTable():
         returns all fragment names in the database, sorted by name
         """
         if ids:
-            req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
-                         Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(tuple(ids))
+            if len(ids) > 2:
+                ids = tuple(ids)
+                req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
+                         Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
+            else:
+                req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
+                            Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(ids[0])
         else:
             req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
                                      Structure.dataname FROM Structure'''
