@@ -445,7 +445,7 @@ class Ui_stdbMainwindow(object):
         self.r1Label.setText(_translate("stdbMainwindow", "R1"))
         self.goofLabel.setText(_translate("stdbMainwindow", "Goof"))
         self.maxShiftLabel.setText(_translate("stdbMainwindow", "Max Shift/esd"))
-        self.peakLabel.setText(_translate("stdbMainwindow", "Peak / Hole [e/Å^3]"))
+        self.peakLabel.setText(_translate("stdbMainwindow", "<html><head/><body><p>Peak / Hole [eÅ<span style=\" vertical-align:super;\">-3</span>]</p></body></html>"))
         self.rintLabel.setText(_translate("stdbMainwindow", "R(int)"))
         self.rsigmaLabel.setText(_translate("stdbMainwindow", "R(σ)"))
         self.sumFormulaLabel.setText(_translate("stdbMainwindow", "Sum Formula"))

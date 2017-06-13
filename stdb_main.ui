@@ -425,7 +425,7 @@ border-color: rgb(53, 53, 53);</string>
              <item row="7" column="0">
               <widget class="QLabel" name="peakLabel">
                <property name="text">
-                <string>Peak / Hole [e/Å^3]</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Peak / Hole [eÅ&lt;span style=&quot; vertical-align:super;&quot;&gt;-3&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
