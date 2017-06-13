@@ -4,16 +4,17 @@ import os
 import sys
 import time
 
-import sqlite3
-from PyQt5 import uic, Qt3DExtras
+from PyQt5 import uic, Qt3DExtras, QtGui, QtWidgets
 from PyQt5.QtCore import pyqtSlot, QSize
-from PyQt5.QtGui import QColor, QVector3D, QSurface
+from PyQt5.QtGui import QColor, QVector3D
 from PyQt5.QtQml import QQmlApplicationEngine
 from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
 from math import radians, sin
+
+from numpy.testing.tests.test_utils import TestAlmostEqual
 
 from lattice import lattice
 from opengl.moleculegl import MyScene
@@ -29,26 +30,29 @@ uic.compileUiDir('./')
 
 """
 TODO:
-- make progress bar for indexer and file opener
+- make cell field looking like cell in APEX3
+- allow to scan more than one directory. Just add to previous data
+- Add save button.
 - structure code
 - make 3D model from atoms
 - make file type more flexible. handle .res and .cif equally
 - group structures in measurements
-- implement progress bar for indexing
 - add abort button for indexer
-- recognize already indexed files
+- recognize already indexed files. Add a hash for each file. Make a database search with executemany()
+  to get a list of files where hashes exist. Remove results from file crawler. May I need a hash run over 
+  all files before the cif parsing run? Or just calc hash, search in db and then decide to parse cif or not? 
 - search for strings to get a result for a persons name, add person to db
 - add an advanced search tab where you can search for sum formula, only elements, names, users, ... 
 - add a file browser where you can match the local path 
 - add progress bar for cell search
 - add a tab where you can match path name parts to usernames
 - the filecrawler should collect the bruker base file name, also for Rigaku? And STOE?
+- add measurement specific data to the db, e.g. machine from frame, temp from frame, 
 - pressing search in advanced tab will return to base tab with results
 """
 
 
 class StartStructureDB(QMainWindow):
-    #changedValue = pyqtSignal('QString')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -58,7 +62,6 @@ class StartStructureDB(QMainWindow):
         self.statusBar().showMessage('Ready')
         self.ui.cifList_treeWidget.show()
         self.ui.cifList_treeWidget.hideColumn(2)
-        # self.ui.cellSearchEdit.hide()
         self.dbfilename = 'test.sqlite'
         self.ui.centralwidget.setMinimumSize(1200, 500)
         self.showMaximized()
@@ -67,6 +70,8 @@ class StartStructureDB(QMainWindow):
             os.remove(self.dbfilename)
         except:
             pass
+        self.progress = QtWidgets.QProgressBar(self)
+        self.ui.statusbar.addWidget(self.progress)
         self.structures = StructureTable(self.dbfilename)
         self.db = DatabaseRequest(self.dbfilename)
         self.db.initialize_db()
@@ -75,7 +80,9 @@ class StartStructureDB(QMainWindow):
         self.show()
         #self.display_molecule()
         self.full_list = True  # indicator if the full structures list is shown
-
+        self.ui.cellLabel2.setText("""<table>
+                                <tr> <td align=right> a = </td> <td> 12.0123 &Aring;</td>, <td> &alpha; = </td> </tr>
+                                  </table>""")
 
     def display_molecule(self):
         # TODO: Make this work.
@@ -92,8 +99,8 @@ class StartStructureDB(QMainWindow):
         # // Camera
         camera = view.camera()
         # lens = Qt3DRender.QCameraLens()
-        #camera.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
-        camera.lens().setOrthographicProjection(-16.0, 16.0, -9.0, 9.0, -1.0, 600.0)
+        camera.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
+        #camera.lens().setOrthographicProjection(-16.0, 16.0, -9.0, 9.0, -1.0, 600.0)
         # camera.setUpVector(QVector3D(0, 1.0, 0))
         camera.setPosition(QVector3D(0, 0, 140.0))  # Entfernung
         camera.setViewCenter(QVector3D(0, 0, 0))
@@ -117,6 +124,15 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         #self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
 
+    def progressbar(self, curr, min, max):
+        """
+        """
+        self.progress.setValue(curr)
+        self.progress.setMaximum(max)
+        self.progress.setMinimum(min)
+        self.progress.show()
+        if curr == max:
+            self.progress.hide()
 
     @pyqtSlot('QModelIndex')
     def get_properties(self, item):
@@ -133,7 +149,7 @@ class StartStructureDB(QMainWindow):
 
     def display_properties(self, structure_id, dic):
         """
-        Displays the residuals from the properties
+        Displays the residuals from the cif file
         """
         cell = self.structures.get_cell_by_id(structure_id)
         if not dic:
@@ -188,7 +204,6 @@ class StartStructureDB(QMainWindow):
         self.ui.thetaMaxLineEdit.setText("{}".format(thetamax))
         self.ui.thetaFullLineEdit.setText("{}".format(dic['_diffrn_reflns_theta_full']))
         self.ui.dLineEdit.setText("{:5.3f}".format(d))
-        # TODO: round number to two digits:
         try:
             compl = dic['_diffrn_measured_fraction_theta_max'] * 100
             if not compl:
@@ -228,8 +243,8 @@ class StartStructureDB(QMainWindow):
         idlist2 = []
         if idlist:
             lattice1 = Lattice.from_parameters(*cell)
-            # TODO: make a progress bar for that:
-            for i in idlist:
+            for num, i in enumerate(idlist):
+                self.progressbar(num, 0, len(idlist)-1)
                 request = """select * from cell where StructureId = {}""".format(i)
                 dic = self.structures.get_row_as_dict(request)
                 cell2 = [dic['a'], dic['b'], dic['c'], dic['alpha'], dic['beta'], dic['gamma']]
@@ -303,24 +318,25 @@ class StartStructureDB(QMainWindow):
         Imports cif files from a certain directory
         :return: None
         """
+        # TODO: support excludes: mit filepath.parent in excludes = ('.olex', 'report', 'Report')
         fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         if not fname:
             return False
         self.ui.cifList_treeWidget.show()
         # TODO: implement multiple cells in one cif file:
         n = 1
-        times = []
-        for filepth in filecrawler.create_file_list(str(fname), endings='cif'):
+        min = 0
+        time1 = time.clock()
+        for num, filepth in enumerate(filecrawler.create_file_list(str(fname), endings='cif')):
+            if num == 20:
+                num = 0
+            self.progressbar(num, min, 20)
             if not filepth.is_file():
                 continue
             filename = filepth.name
             path = str(filepth.parents[0])
             structure_id = n
-            time2 = time.clock()
             cif = Cif(filepth)
-            time3 = time.clock()
-            diff2 = time3 - time2
-            times.append(diff2)
             if not cif.ok:
                 continue
             if cif and filename and path:
@@ -329,9 +345,12 @@ class StartStructureDB(QMainWindow):
                 n += 1
                 if n % 200 == 0:
                     self.structures.database.commit_db(".")
-        print('Parsed {} cif files in {} s'.format(n, round(sum(times), 2)))
+        time2 = time.clock()
+        diff = time2 - time1
+        self.progress.hide()
+        self.ui.statusbar.showMessage('Parsed {} cif files in {} s'.format(n, round(diff, 2)))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.structures.database.commit_db("Committed")
 
 

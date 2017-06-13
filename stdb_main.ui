@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>958</width>
-    <height>722</height>
+    <width>1030</width>
+    <height>751</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -208,6 +208,13 @@
                </property>
               </widget>
              </item>
+             <item row="1" column="1">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>[Å], deg.</string>
+               </property>
+              </widget>
+             </item>
              <item row="2" column="0">
               <widget class="QLabel" name="aLabel">
                <property name="text">
@@ -315,10 +322,21 @@
              <item row="8" column="1">
               <widget class="QLineEdit" name="zLineEdit"/>
              </item>
-             <item row="1" column="1">
-              <widget class="QLabel" name="label">
+             <item row="9" column="1">
+              <widget class="QLabel" name="cellLabel2">
+               <property name="styleSheet">
+                <string notr="true">background-color: rgb(255, 255, 255);
+border-color: rgb(53, 53, 53);</string>
+               </property>
                <property name="text">
-                <string>[Å], deg.</string>
+                <string>TextLabel</string>
+               </property>
+              </widget>
+             </item>
+             <item row="9" column="0">
+              <widget class="QLabel" name="label_2">
+               <property name="text">
+                <string>Unit cell</string>
                </property>
               </widget>
              </item>
@@ -726,8 +744,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>958</width>
-     <height>22</height>
+     <width>1030</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">

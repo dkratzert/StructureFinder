@@ -31,9 +31,10 @@ def create_file_list(searchpath='None', endings='cif'):
         print('search path {0} not found! Or no directory!'.format(searchpath))
         sys.exit()
     print('collecting files...')
-    res = filewalker(searchpath)
+    p = Path(searchpath)
+    paths = p.rglob("*.cif")
     print('ready')
-    return res
+    return paths
 
 
 def filewalker(startdir, endings="*.cif"):
@@ -45,8 +46,7 @@ def filewalker(startdir, endings="*.cif"):
      
     #>>> filewalker('../')
     """
-    p = Path(startdir)
-    paths = p.rglob("*.cif")
+
     return paths
 
 
