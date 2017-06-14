@@ -4,28 +4,23 @@ import os
 import sys
 import time
 
-from PyQt5 import uic, Qt3DExtras, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSlot, QSize
-from PyQt5.QtGui import QColor, QVector3D
+from PyQt5 import uic, QtWidgets
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtQml import QQmlApplicationEngine
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
 from math import radians, sin
 
-from numpy.testing.tests.test_utils import TestAlmostEqual
-
 from lattice import lattice
-from opengl.moleculegl import MyScene
 from pymatgen.core.mat_lattice import Lattice
 from searcher import filecrawler
 from searcher.database_handler import StructureTable, DatabaseRequest
 from searcher.filecrawler import fill_db_tables
 from searcher.fileparser import Cif
-from stdb_main import Ui_stdbMainwindow
-
 uic.compileUiDir('./')
+from stdb_main import Ui_stdbMainwindow
 
 
 """
@@ -49,6 +44,37 @@ TODO:
 - the filecrawler should collect the bruker base file name, also for Rigaku? And STOE?
 - add measurement specific data to the db, e.g. machine from frame, temp from frame, 
 - pressing search in advanced tab will return to base tab with results
+
+- Fix the 3D crap:
+    def display_molecule(self):
+        # TODO: Make this work.
+        view = Qt3DExtras.Qt3DWindow()
+        view.defaultFrameGraph().setClearColor(QColor('lightgray'))
+        q3dWidget = QWidget.createWindowContainer(view)
+        screenSize = view.screen().size()
+        q3dWidget.setMinimumSize(QSize(100, 100))
+        q3dWidget.setMaximumSize(screenSize)
+        self.ui.openglVlayout.addWidget(q3dWidget)
+        s = MyScene()
+        scene = s.createScene()
+        print('#scene')
+        # // Camera
+        camera = view.camera()
+        # lens = Qt3DRender.QCameraLens()
+        camera.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
+        #camera.lens().setOrthographicProjection(-16.0, 16.0, -9.0, 9.0, -1.0, 600.0)
+        # camera.setUpVector(QVector3D(0, 1.0, 0))
+        camera.setPosition(QVector3D(0, 0, 140.0))  # Entfernung
+        camera.setViewCenter(QVector3D(0, 0, 0))
+        print('#camera')
+        # // For camera controls
+        camController = Qt3DExtras.QOrbitCameraController(scene)
+        camController.setLinearSpeed(-30.0)
+        camController.setLookSpeed(-480.0)
+        camController.setCamera(camera)
+        view.setRootEntity(scene)
+        print('view#')
+        view.show()
 """
 
 
@@ -80,42 +106,12 @@ class StartStructureDB(QMainWindow):
         self.show()
         #self.display_molecule()
         self.full_list = True  # indicator if the full structures list is shown
-        self.ui.cellLabel2.setText("""<table>
-                                <tr> <td align=right> a = </td> <td> 12.0123 &Aring;</td>, <td> &alpha; = </td> </tr>
-                                  </table>""")
-
-    def display_molecule(self):
-        # TODO: Make this work.
-        view = Qt3DExtras.Qt3DWindow()
-        view.defaultFrameGraph().setClearColor(QColor('lightgray'))
-        q3dWidget = QWidget.createWindowContainer(view)
-        screenSize = view.screen().size()
-        q3dWidget.setMinimumSize(QSize(100, 100))
-        q3dWidget.setMaximumSize(screenSize)
-        self.ui.openglVlayout.addWidget(q3dWidget)
-        s = MyScene()
-        scene = s.createScene()
-        print('#scene')
-        # // Camera
-        camera = view.camera()
-        # lens = Qt3DRender.QCameraLens()
-        camera.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
-        #camera.lens().setOrthographicProjection(-16.0, 16.0, -9.0, 9.0, -1.0, 600.0)
-        # camera.setUpVector(QVector3D(0, 1.0, 0))
-        camera.setPosition(QVector3D(0, 0, 140.0))  # Entfernung
-        camera.setViewCenter(QVector3D(0, 0, 0))
-        print('#camera')
-        # // For camera controls
-        camController = Qt3DExtras.QOrbitCameraController(scene)
-        camController.setLinearSpeed(-30.0)
-        camController.setLookSpeed(-480.0)
-        camController.setCamera(camera)
-        view.setRootEntity(scene)
-        print('view#')
-        view.show()
-
 
     def connect_signals_and_slots(self):
+        """
+        Connects the signals and slot.
+        The actionExit signal is connected in the ui file.
+        """
         self.ui.importDatabaseButton.clicked.connect(self.import_database)
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
         self.ui.searchLineEDit.textChanged.connect(self.search_cell)
@@ -123,6 +119,7 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.clicked.connect(self.get_properties)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         #self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
+
 
     def progressbar(self, curr, min, max):
         """
@@ -134,7 +131,7 @@ class StartStructureDB(QMainWindow):
         if curr == max:
             self.progress.hide()
 
-    @pyqtSlot('QModelIndex')
+    @pyqtSlot('QModelIndex', name="get_properties")
     def get_properties(self, item):
         """
         This slot shows the properties of a cif file in the properties widget
@@ -147,65 +144,81 @@ class StartStructureDB(QMainWindow):
         dic = self.structures.get_row_as_dict(request)
         self.display_properties(structure_id, dic)
 
-    def display_properties(self, structure_id, dic):
+    def display_properties(self, structure_id, cif_dic):
         """
         Displays the residuals from the cif file
         """
         cell = self.structures.get_cell_by_id(structure_id)
-        if not dic:
+        if not cif_dic:
             return False
-        a, b, c, alpha, beta, gamma = 0, 0, 0, 0, 0, 0
+        a, b, c, alpha, beta, gamma, volume = 0, 0, 0, 0, 0, 0, 0
         if cell:
-            a, b, c, alpha, beta, gamma = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5]
-        if a:
-            self.ui.aLineEdit.setText("{:>5.4f}".format(a))
-        if b:
-            self.ui.bLineEdit.setText("{:>5.4f}".format(b))
-        if c:
-            self.ui.cLineEdit.setText("{:>5.4f}".format(c))
-        if alpha:
-            self.ui.alphaLineEdit.setText("{:>5.4f}".format(alpha))
-        if beta:
-            self.ui.betaLineEdit.setText("{:>5.4f}".format(beta))
-        if gamma:
-            self.ui.gammaLineEdit.setText("{:>5.4f}".format(gamma))
+            a, b, c, alpha, beta, gamma, volume = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6]
+        self.ui.cellField.setText(
+            r"""
+            <html><head/><body>
+            <table border="0" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;" 
+                   cellspacing="2" cellpadding="2">
+                <tr>
+                    <td><p align="left" ><span style=" font-style:italic;">a</span> = </p></td>
+                    <td><p align="right">{:>8.3f} Å, </p></td>
+                    <td><p align="left"><span style="font-style:italic;">&alpha;</span> = </p></td> 
+                    <td><p align="right">{:<8.3f}° </p></td>
+                </tr>
+                <tr>
+                    <td><p align="left"><span style=" font-style:italic;">b</span> = </p></td>
+                    <td><p align="right">{:>8.3f} Å, </p></td>
+                    <td><p align="left"><span style=" font-style:italic;">&beta;</span> = </p></td> 
+                    <td><p align="right">{:<8.3f}° </p></td>
+                </tr>
+                <tr>
+                    <td><p align="left"><span style=" font-style:italic;">c</span> = </p></td>
+                    <td><p align="right">{:>8.3f} Å, </p></td>
+                    <td><p align="left"><span style=" font-style:italic;">&gamma;</span> = </p></td> 
+                    <td><p align="right">{:<8.3f}° </p></td>
+                </tr>
+            </table>
+            Volume = {:8.3f} Å
+            </body></html>
+            """.format(a, alpha, b, beta, c, gamma, volume, '')
+        )
         try:
-            self.ui.wR2LineEdit.setText("{:>5.4f}".format(dic['_refine_ls_wR_factor_ref']))
+            self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
         except ValueError:
             pass
         try:  # R1:
-            self.ui.r1LineEdit.setText("{:>5.4f}".format(dic['_refine_ls_R_factor_gt']))
+            self.ui.r1LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_R_factor_gt']))
         except ValueError:
             pass
-        self.ui.zLineEdit.setText("{}".format(dic['_cell_formula_units_Z']))
-        self.ui.sumFormulaLineEdit.setText("{}".format(dic['_chemical_formula_sum']))
-        self.ui.reflTotalLineEdit.setText("{}".format(dic['_diffrn_reflns_number']))
-        self.ui.goofLineEdit.setText("{}".format(dic['_refine_ls_goodness_of_fit_ref']))
-        self.ui.SpaceGroupLineEdit.setText("{}".format(dic['_space_group_name_H_M_alt']))
-        self.ui.temperatureLineEdit.setText("{}".format(dic['_diffrn_ambient_temperature']))
-        self.ui.maxShiftLineEdit.setText("{}".format(dic['_refine_ls_shift_su_max']))
-        self.ui.peakLineEdit.setText("{} / {}".format(dic['_refine_diff_density_max'], dic['_refine_diff_density_min']))
-        self.ui.rintLineEdit.setText("{}".format(dic['_diffrn_reflns_av_R_equivalents']))
-        self.ui.rsigmaLineEdit.setText("{}".format(dic['_diffrn_reflns_av_unetI_netI']))
+        self.ui.zLineEdit.setText("{}".format(cif_dic['_cell_formula_units_Z']))
+        self.ui.sumFormulaLineEdit.setText("{}".format(cif_dic['_chemical_formula_sum']))
+        self.ui.reflTotalLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_number']))
+        self.ui.goofLineEdit.setText("{}".format(cif_dic['_refine_ls_goodness_of_fit_ref']))
+        self.ui.SpaceGroupLineEdit.setText("{}".format(cif_dic['_space_group_name_H_M_alt']))
+        self.ui.temperatureLineEdit.setText("{}".format(cif_dic['_diffrn_ambient_temperature']))
+        self.ui.maxShiftLineEdit.setText("{}".format(cif_dic['_refine_ls_shift_su_max']))
+        self.ui.peakLineEdit.setText("{} / {}".format(cif_dic['_refine_diff_density_max'], cif_dic['_refine_diff_density_min']))
+        self.ui.rintLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_av_R_equivalents']))
+        self.ui.rsigmaLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_av_unetI_netI']))
         try:
-            dat_param = dic['_refine_ls_number_reflns'] / dic['_refine_ls_number_parameters']
+            dat_param = cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters']
         except (ValueError, ZeroDivisionError, TypeError):
             dat_param = 0.0
         self.ui.dataReflnsLineEdit.setText("{:<5.1f}".format(dat_param))
-        self.ui.numParametersLineEdit.setText("{}".format(dic['_refine_ls_number_parameters']))
-        wavelen = dic['_diffrn_radiation_wavelength']
-        thetamax = dic['_diffrn_reflns_theta_max']
+        self.ui.numParametersLineEdit.setText("{}".format(cif_dic['_refine_ls_number_parameters']))
+        wavelen = cif_dic['_diffrn_radiation_wavelength']
+        thetamax = cif_dic['_diffrn_reflns_theta_max']
         # d = lambda/2sin(theta):
         try:
             d = wavelen/(2*sin(radians(thetamax)))
         except(ZeroDivisionError, TypeError):
             d = 0.0
-        self.ui.numRestraintsLineEdit.setText("{}".format(dic['_refine_ls_number_restraints']))
+        self.ui.numRestraintsLineEdit.setText("{}".format(cif_dic['_refine_ls_number_restraints']))
         self.ui.thetaMaxLineEdit.setText("{}".format(thetamax))
-        self.ui.thetaFullLineEdit.setText("{}".format(dic['_diffrn_reflns_theta_full']))
+        self.ui.thetaFullLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_theta_full']))
         self.ui.dLineEdit.setText("{:5.3f}".format(d))
         try:
-            compl = dic['_diffrn_measured_fraction_theta_max'] * 100
+            compl = cif_dic['_diffrn_measured_fraction_theta_max'] * 100
             if not compl:
                 compl = 0.0
         except TypeError:

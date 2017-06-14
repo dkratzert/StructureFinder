@@ -37,20 +37,7 @@ def create_file_list(searchpath='None', endings='cif'):
     return paths
 
 
-def filewalker(startdir, endings="*.cif"):
-    """
-    file walker with pathlib
-    :param startdir: 
-    :param endings: 
-    :return:
-     
-    #>>> filewalker('../')
-    """
-
-    return paths
-
-
-def filewalker_walk(startdir, endings, add_excludes=[]):
+def filewalker_walk(startdir, endings, add_excludes=''):
     """
     walks through the filesystem starting from startdir and searches
     for files with ending endings.
@@ -118,9 +105,10 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
     alpha = cif._cell_angle_alpha
     beta = cif._cell_angle_beta
     gamma = cif._cell_angle_gamma
+    volume = cif._cell_volume
     measurement_id = structures.fill_measuremnts_table(filename, structure_id)
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
-    structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma)
+    structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma, volume)
     #pprint(cif._atom)
     for x in cif._atom:
         try:

@@ -425,7 +425,7 @@ class StructureTable():
         name = name.encode("utf-8", "surrogateescape")
         return self.database.db_request(req, structure_id, name)
 
-    def fill_cell_table(self, structure_id, a, b, c, alpha, beta, gamma):
+    def fill_cell_table(self, structure_id, a, b, c, alpha, beta, gamma, volume):
         """
         fill the cell of structure(structureId) in the table
         cell = [a, b, c, alpha, beta, gamma]
@@ -440,19 +440,21 @@ class StructureTable():
         alphaerror = get_error_from_value(alpha)
         betaerror = get_error_from_value(beta)
         gammaerror = get_error_from_value(gamma)
+        volerror = get_error_from_value(volume)
         a = a.split('(')[0]
         b = b.split('(')[0]
         c = c.split('(')[0]
         alpha = alpha.split('(')[0]
         beta = beta.split('(')[0]
         gamma = gamma.split('(')[0]
-        volume = 0.0
-        try:
-            volume = lattice.vol_unitcell(float(a), float(b), float(c), float(alpha), float(beta), float(gamma))
-        except ValueError:
-            print(a, b, c, alpha, beta, gamma)
+        vol = volume.split('(')[0]
+        #volume = 0.0
+        #try:
+        #    volume = lattice.vol_unitcell(float(a), float(b), float(c), float(alpha), float(beta), float(gamma))
+        #except ValueError:
+        #    print(a, b, c, alpha, beta, gamma)
         if self.database.db_request(req, structure_id, a, b, c, alpha, beta, gamma,
-                                    aerror, berror, cerror, alphaerror, betaerror, gammaerror, volume):
+                                    aerror, berror, cerror, alphaerror, betaerror, gammaerror, vol):
             return True
 
     def fill_atoms_table(self, structure_id, name, element, x, y, z):

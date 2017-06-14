@@ -27,6 +27,7 @@ class Cif():
         - fill for example atom loop dict with atoms
         """
         self.cif_data = {
+            "_cell_volume": '',
             "_cell_formula_units_Z": '',
             "_space_group_name_H-M_alt": '',
             "_space_group_name_Hall": '',
