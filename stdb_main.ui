@@ -753,6 +753,7 @@
     <addaction name="actionImport_directory"/>
     <addaction name="actionImport_file"/>
     <addaction name="actionExport_Database_s"/>
+    <addaction name="actionClose_Database"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -821,6 +822,11 @@
   <action name="actionAbout_StructureDB">
    <property name="text">
     <string>About StructureDB</string>
+   </property>
+  </action>
+  <action name="actionClose_Database">
+   <property name="text">
+    <string>Close Database</string>
    </property>
   </action>
  </widget>

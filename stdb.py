@@ -99,8 +99,7 @@ class StartStructureDB(QMainWindow):
         self.progress = QtWidgets.QProgressBar(self)
         self.ui.statusbar.addWidget(self.progress)
         self.structures = StructureTable(self.dbfilename)
-        self.db = DatabaseRequest(self.dbfilename)
-        self.db.initialize_db()
+        self.structures.database.initialize_db()
         # The treewidget with the cif list:
         self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         self.show()
@@ -119,7 +118,9 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.clicked.connect(self.get_properties)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         #self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
-
+        self.ui.actionClose_Database.triggered.connect(self.close_db)
+        self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
+        self.ui.actionImport_file.triggered.connect(self.import_database)
 
     def progressbar(self, curr, min, max):
         """
@@ -130,6 +131,17 @@ class StartStructureDB(QMainWindow):
         self.progress.show()
         if curr == max:
             self.progress.hide()
+
+    @pyqtSlot(name="close_db")
+    def close_db(self):
+        """
+        Closed the current database and erases the list.
+        """
+        self.structures.database.cur.close()
+        self.structures.database.con.close()
+        #self.structures = StructureTable(self.dbfilename)
+        #self.structures.database.initialize_db()
+        self.ui.cifList_treeWidget.clear()
 
     @pyqtSlot('QModelIndex', name="get_properties")
     def get_properties(self, item):

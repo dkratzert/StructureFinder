@@ -390,9 +390,12 @@ class Ui_stdbMainwindow(object):
         self.actionAdvanced_Search.setObjectName("actionAdvanced_Search")
         self.actionAbout_StructureDB = QtWidgets.QAction(stdbMainwindow)
         self.actionAbout_StructureDB.setObjectName("actionAbout_StructureDB")
+        self.actionClose_Database = QtWidgets.QAction(stdbMainwindow)
+        self.actionClose_Database.setObjectName("actionClose_Database")
         self.fileMenu.addAction(self.actionImport_directory)
         self.fileMenu.addAction(self.actionImport_file)
         self.fileMenu.addAction(self.actionExport_Database_s)
+        self.fileMenu.addAction(self.actionClose_Database)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.actionExit)
         self.menuEdit.addSeparator()
@@ -458,4 +461,5 @@ class Ui_stdbMainwindow(object):
         self.actionOptions.setText(_translate("stdbMainwindow", "Options"))
         self.actionAdvanced_Search.setText(_translate("stdbMainwindow", "Advanced Search"))
         self.actionAbout_StructureDB.setText(_translate("stdbMainwindow", "About StructureDB"))
+        self.actionClose_Database.setText(_translate("stdbMainwindow", "Close Database"))
 

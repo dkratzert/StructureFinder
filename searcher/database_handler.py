@@ -261,8 +261,14 @@ class DatabaseRequest():
 
     def __del__(self):
         # commit is very slow:
-        self.con.commit()
-        self.con.close()
+        try:
+            self.con.commit()
+        except sqlite3.ProgrammingError:
+            pass
+        try:
+            self.con.close()
+        except sqlite3.ProgrammingError:
+            pass
 
     def commit_db(self, comment=""):
         self.con.commit()
