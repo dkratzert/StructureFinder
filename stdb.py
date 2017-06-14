@@ -90,7 +90,7 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.hideColumn(2)
         self.dbfilename = 'test.sqlite'
         self.ui.centralwidget.setMinimumSize(1200, 500)
-        self.showMaximized()
+        #self.showMaximized()
         try:
             # TODO: don't do in future:
             os.remove(self.dbfilename)
