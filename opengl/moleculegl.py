@@ -9,9 +9,11 @@ from PyQt5 import Qt3DInput
 from PyQt5 import Qt3DRender
 #from PyQt5.Qt3DRender.QPickEvent import RightButton
 from PyQt5.Qt3DCore import QEntity
-from PyQt5.Qt3DRender import QPointLight
+from PyQt5.Qt3DInput import QMouseDevice
+from PyQt5.Qt3DRender import QPointLight, QCamera
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QGuiApplication, QQuaternion, QVector3D, QColor
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QApplication
 
 """
 TODO:
@@ -145,8 +147,10 @@ class Molecule3D(Qt3DCore.QEntity):
         :type position: QVector3D
         :type colour: string
         """
-        material = Qt3DExtras.QPhongMaterial(rootEntity)
-        material.setAmbient(QColor(colour))
+        material = Qt3DExtras.QGoochMaterial(rootEntity)
+        #material.setAmbient(QColor(colour))
+        material.setDiffuse(QColor(colour))
+        material.setShininess(30)
         sphere_entity = Qt3DCore.QEntity(rootEntity)
         sphere_mesh = Qt3DExtras.QSphereMesh()
         # sphere_mesh
@@ -186,14 +190,28 @@ class Cylinder():
 
 if __name__ == '__main__':
     ###################################################
-    app = QGuiApplication(sys.argv)
+    app = QApplication(sys.argv)
     view = Qt3DExtras.Qt3DWindow()
+    #view.defaultFrameGraph().setClearColor(QColor(0x4d4d4f))
+    #container = QWidget.createWindowContainer(view)
+    #screenSize = view.screen().size()
+    #container.setMinimumSize(QSize(200, 100))
+    #container.setMaximumSize(screenSize)
+    #widget = QWidget()
+    #hLayout = QHBoxLayout(widget)
+    #vLayout = QVBoxLayout()
+    #vLayout.setAlignment(Qt.AlignTop)
+    #hLayout.addWidget(container, 1)
+    #hLayout.addLayout(vLayout)
+    #widget.setWindowTitle("Basic shapes")
+
     s = Molecule3D()
     rootEntity = s.create_molecule()
     print('#scene')
     # // Camera
     camera = view.camera()
     lens = Qt3DRender.QCameraLens()
+
     lens.setOrthographicProjection(-50, 50.0, -50.0, 50.0, -1.0, 500.0)
     camera.setUpVector(QVector3D(0, 1.0, 0))
     camera.setPosition(QVector3D(0, 0, 80.0))  # Entfernung

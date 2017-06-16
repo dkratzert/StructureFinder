@@ -43,6 +43,22 @@ TODO:
 - add measurement specific data to the db, e.g. machine from frame, temp from frame, 
 - pressing search in advanced tab will return to base tab with results
 
+
+- Für jede einzelne Datenbank (ob file oder scaped dir):
+
+conn = sqlite3.connect('example.db')
+    # eventuell hier verzeichnisse suchen und datenbak füllen
+# für ale:
+cur = conn.cursor()
+cur.execute('''CREATE TABLE stocks
+             (date text, trans text, symbol text, qty real, price real)''')
+#am ende:
+cur.commit()
+conn.close()
+
+- d.h. falls man ein verzeichnis durchsuchen will muss erst die db (im tmpdir) erstellt werden
+- für alle weiteren aktionen cur.commit(), conn.close()
+- dann conn = sqlite.connect....
 """
 
 
