@@ -80,8 +80,8 @@ class Molecule3D(Qt3DCore.QEntity):
     def __init__(self, *arg, **args):
         super(Molecule3D, self).__init__()
         self.mid = QVector3D(0, 0, 0)
-        atlist = "2.85359    2.63232    0.48588; 2.01243    2.18253    1.10514; 0.92388    1.60218    1.87814; " \
-                 "0.20347   -1.99886    9.07608; -0.70305   -1.66389    9.92535; 0.78718   -3.05595    9.69676; " \
+        #atlist = "2.85359    2.63232    0.48588; 2.01243    2.18253    1.10514; 0.92388    1.60218    1.87814; " \
+        atlist =          "0.20347   -1.99886    9.07608; -0.70305   -1.66389    9.92535; 0.78718   -3.05595    9.69676; " \
                  "-0.23894   -2.55716    8.02754".split(';')
         self.atlist = [QVector3D(*[float(x) for x in i.split()]) for i in atlist]
 
@@ -92,7 +92,7 @@ class Molecule3D(Qt3DCore.QEntity):
         """
         self.atlist = [QVector3D(x) for x in atlist]
 
-    def create_molecule(self, color=False):
+    def create_molecule(self, color=True):
         """
         C1    6     0.20347   -1.99886    9.07608
         F1    9    -0.70305   -1.66389    9.92535
@@ -101,7 +101,7 @@ class Molecule3D(Qt3DCore.QEntity):
         """
         rootEntity = Qt3DCore.QEntity()
         multvec = QVector3D(2, 2, 2)
-        cololist = ['gray', 'red', 'blue', 'gray', 'green', 'green', 'green', 'green']
+        cololist = ['gray', 'green', 'green', 'green', 'green', 'red', 'blue', 'gray']
         xsum = 0
         ysum = 0
         zsum = 0

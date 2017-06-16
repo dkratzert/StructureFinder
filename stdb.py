@@ -4,23 +4,19 @@ import os
 import sys
 import time
 
-from PyQt5 import uic, QtWidgets, Qt3DExtras, Qt3DRender, Qt3DCore
-from PyQt5.Qt3DCore import QEntity
-from PyQt5.Qt3DRender import QPointLight
-from PyQt5.QtCore import pyqtSlot, QSize
-from PyQt5.QtGui import QColor, QVector3D
+from PyQt5 import uic, QtWidgets
+from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtQml import QQmlApplicationEngine
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
 from math import radians, sin
 
 from lattice import lattice
-from opengl.moleculegl import Molecule3D
 from pymatgen.core.mat_lattice import Lattice
 from searcher import filecrawler
-from searcher.database_handler import StructureTable, DatabaseRequest
+from searcher.database_handler import StructureTable
 from searcher.filecrawler import fill_db_tables
 from searcher.fileparser import Cif
 uic.compileUiDir('./')
@@ -29,7 +25,6 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
-- make cell field looking like cell in APEX3
 - allow to scan more than one directory. Just add to previous data
 - Add save button.
 - structure code
@@ -43,43 +38,13 @@ TODO:
 - search for strings to get a result for a persons name, add person to db
 - add an advanced search tab where you can search for sum formula, only elements, names, users, ... 
 - add a file browser where you can match the local path 
-- add progress bar for cell search
 - add a tab where you can match path name parts to usernames
 - the filecrawler should collect the bruker base file name, also for Rigaku? And STOE?
 - add measurement specific data to the db, e.g. machine from frame, temp from frame, 
 - pressing search in advanced tab will return to base tab with results
 
-- Fix the 3D crap:
-    def display_molecule(self):
-        # TODO: Make this work.
-        view = Qt3DExtras.Qt3DWindow()
-        view.defaultFrameGraph().setClearColor(QColor('lightgray'))
-        q3dWidget = QWidget.createWindowContainer(view)
-        screenSize = view.screen().size()
-        q3dWidget.setMinimumSize(QSize(100, 100))
-        q3dWidget.setMaximumSize(screenSize)
-        self.ui.openglVlayout.addWidget(q3dWidget)
-        s = Molecule3D()
-        scene = s.create_molecule()
-        print('#scene')
-        # // Camera
-        camera = view.camera()
-        # lens = Qt3DRender.QCameraLens()
-        camera.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
-        #camera.lens().setOrthographicProjection(-16.0, 16.0, -9.0, 9.0, -1.0, 600.0)
-        # camera.setUpVector(QVector3D(0, 1.0, 0))
-        camera.setPosition(QVector3D(0, 0, 140.0))  # Entfernung
-        camera.setViewCenter(QVector3D(0, 0, 0))
-        print('#camera')
-        # // For camera controls
-        camController = Qt3DExtras.QOrbitCameraController(scene)
-        camController.setLinearSpeed(-30.0)
-        camController.setLookSpeed(-480.0)
-        camController.setCamera(camera)
-        view.setRootEntity(scene)
-        print('view#')
-        view.show()
 """
+
 
 
 class StartStructureDB(QMainWindow):
@@ -107,17 +72,7 @@ class StartStructureDB(QMainWindow):
         # The treewidget with the cif list:
         self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         self.show()
-        #self.display_molecule()
         self.full_list = True  # indicator if the full structures list is shown
-
-        self.view = Qt3DExtras.Qt3DWindow()
-        self.view.defaultFrameGraph().setClearColor(QColor(250, 250, 250))
-        container = QWidget.createWindowContainer(self.view)
-        screenSize = self.view.screen().size()
-        container.setMinimumSize(QSize(300, 300))
-        container.setMaximumSize(screenSize)
-        # Use Qt3Dwidget in Qtcreator?:
-        self.ui.openglVlayout.addWidget(container)
 
     def connect_signals_and_slots(self):
         """
@@ -134,37 +89,6 @@ class StartStructureDB(QMainWindow):
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
         self.ui.actionImport_file.triggered.connect(self.import_database)
-
-    def display_molecule(self):
-        """
-        """
-        # TODO: Make this work.
-        s = Molecule3D()
-        root_entity = s.create_molecule()
-        # // Camera
-        camera = self.view.camera()
-        lens = Qt3DRender.QCameraLens()
-        lens.setOrthographicProjection(-50, 50.0, -50.0, 50.0, 0, 500.0)
-        camera.setUpVector(QVector3D(0, 1.0, 0))
-        camera.setPosition(QVector3D(0, 0, 80.0))  # Entfernung
-        camera.setViewCenter(s.mid)
-        # camera.setfieldOfView = 45
-        # For camera controls:
-        camController = Qt3DExtras.QOrbitCameraController(root_entity)
-        camController.setLinearSpeed(-30.0)
-        camController.setLookSpeed(-480.0)
-        camController.setCamera(camera)
-        # camController.setZoomInLimit(1)
-        lightEntity = QEntity(root_entity)
-        light = QPointLight(lightEntity)
-        light.setColor(QColor(150, 150, 100))
-        light.setIntensity(0.5)
-        lightEntity.addComponent(light)
-        lightTransform = Qt3DCore.QTransform(lightEntity)
-        lightTransform.setTranslation(QVector3D(0, 0, 80.0))
-        lightEntity.addComponent(lightTransform)
-        self.view.setRootEntity(root_entity)
-        self.view.show()
 
     def progressbar(self, curr, min, max):
         """
@@ -199,7 +123,6 @@ class StartStructureDB(QMainWindow):
         request = """select * from residuals where StructureId = {}""".format(structure_id)
         dic = self.structures.get_row_as_dict(request)
         self.display_properties(structure_id, dic)
-        self.display_molecule()
 
     def display_properties(self, structure_id, cif_dic):
         """
