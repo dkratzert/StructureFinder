@@ -4,16 +4,20 @@ import os
 import sys
 import time
 
-from PyQt5 import uic, QtWidgets
-from PyQt5.QtCore import pyqtSlot
+from PyQt5 import uic, QtWidgets, Qt3DExtras, Qt3DRender, Qt3DCore
+from PyQt5.Qt3DCore import QEntity
+from PyQt5.Qt3DRender import QPointLight
+from PyQt5.QtCore import pyqtSlot, QSize
+from PyQt5.QtGui import QColor, QVector3D
 from PyQt5.QtQml import QQmlApplicationEngine
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
 from math import radians, sin
 
 from lattice import lattice
+from opengl.moleculegl import Molecule3D
 from pymatgen.core.mat_lattice import Lattice
 from searcher import filecrawler
 from searcher.database_handler import StructureTable, DatabaseRequest
@@ -55,8 +59,8 @@ TODO:
         q3dWidget.setMinimumSize(QSize(100, 100))
         q3dWidget.setMaximumSize(screenSize)
         self.ui.openglVlayout.addWidget(q3dWidget)
-        s = MyScene()
-        scene = s.createScene()
+        s = Molecule3D()
+        scene = s.create_molecule()
         print('#scene')
         # // Camera
         camera = view.camera()
@@ -106,6 +110,15 @@ class StartStructureDB(QMainWindow):
         #self.display_molecule()
         self.full_list = True  # indicator if the full structures list is shown
 
+        self.view = Qt3DExtras.Qt3DWindow()
+        self.view.defaultFrameGraph().setClearColor(QColor(250, 250, 250))
+        container = QWidget.createWindowContainer(self.view)
+        screenSize = self.view.screen().size()
+        container.setMinimumSize(QSize(300, 300))
+        container.setMaximumSize(screenSize)
+        # Use Qt3Dwidget in Qtcreator?:
+        self.ui.openglVlayout.addWidget(container)
+
     def connect_signals_and_slots(self):
         """
         Connects the signals and slot.
@@ -121,6 +134,37 @@ class StartStructureDB(QMainWindow):
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
         self.ui.actionImport_file.triggered.connect(self.import_database)
+
+    def display_molecule(self):
+        """
+        """
+        # TODO: Make this work.
+        s = Molecule3D()
+        root_entity = s.create_molecule()
+        # // Camera
+        camera = self.view.camera()
+        lens = Qt3DRender.QCameraLens()
+        lens.setOrthographicProjection(-50, 50.0, -50.0, 50.0, 0, 500.0)
+        camera.setUpVector(QVector3D(0, 1.0, 0))
+        camera.setPosition(QVector3D(0, 0, 80.0))  # Entfernung
+        camera.setViewCenter(s.mid)
+        # camera.setfieldOfView = 45
+        # For camera controls:
+        camController = Qt3DExtras.QOrbitCameraController(root_entity)
+        camController.setLinearSpeed(-30.0)
+        camController.setLookSpeed(-480.0)
+        camController.setCamera(camera)
+        # camController.setZoomInLimit(1)
+        lightEntity = QEntity(root_entity)
+        light = QPointLight(lightEntity)
+        light.setColor(QColor(150, 150, 100))
+        light.setIntensity(0.5)
+        lightEntity.addComponent(light)
+        lightTransform = Qt3DCore.QTransform(lightEntity)
+        lightTransform.setTranslation(QVector3D(0, 0, 80.0))
+        lightEntity.addComponent(lightTransform)
+        self.view.setRootEntity(root_entity)
+        self.view.show()
 
     def progressbar(self, curr, min, max):
         """
@@ -155,6 +199,7 @@ class StartStructureDB(QMainWindow):
         request = """select * from residuals where StructureId = {}""".format(structure_id)
         dic = self.structures.get_row_as_dict(request)
         self.display_properties(structure_id, dic)
+        self.display_molecule()
 
     def display_properties(self, structure_id, cif_dic):
         """

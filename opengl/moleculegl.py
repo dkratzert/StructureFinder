@@ -76,111 +76,97 @@ class OrbitTransformController(Qt3DCore.QComponent):
 
 
 
-class MyScene(Qt3DCore.QEntity):
+class Molecule3D(Qt3DCore.QEntity):
     def __init__(self, *arg, **args):
-        super(MyScene, self).__init__()
-        self.mid = QVector3D(0, 0 ,0)
+        super(Molecule3D, self).__init__()
+        self.mid = QVector3D(0, 0, 0)
+        atlist = "2.85359    2.63232    0.48588; 2.01243    2.18253    1.10514; 0.92388    1.60218    1.87814; " \
+                 "0.20347   -1.99886    9.07608; -0.70305   -1.66389    9.92535; 0.78718   -3.05595    9.69676; " \
+                 "-0.23894   -2.55716    8.02754".split(';')
+        self.atlist = [QVector3D(*[float(x) for x in i.split()]) for i in atlist]
 
-    def createScene(self):
+    def add_atoms(self, atlist):
         """
-        material = Qt3DExtras.QPhongAlphaMaterial(rootEntity)
-        material.setAmbient(QColor('gray'))
-        # Torus:
-        cylinderEntity = Qt3DCore.QEntity(rootEntity)
-        cylinderMesh = Qt3DExtras.QCylinderMesh()
-        cylinderMesh.setRadius(0.21)
-        cylinderMesh.setLength(10)
-        cylinderMesh.setRings(100)
-        cylinderMesh.setSlices(20)
-        cylinderTransform = Qt3DCore.QTransform()
-        cylinderTransform.setScale3D(QVector3D(1, 1, 1.0))
-        cylinderTransform.setRotation(QQuaternion.fromAxisAndAngle(QVector3D(-1, -1, 0), 25.0))
-        cylinderEntity.addComponent(cylinderMesh)
-        cylinderEntity.addComponent(cylinderTransform)
-        cylinderEntity.addComponent(material)
+        Adds atoms to the scene
+        :type atlist: list
         """
+        self.atlist = [QVector3D(x) for x in atlist]
+
+    def create_molecule(self, color=False):
         """
-        C1    1    0.090610   -0.303414    0.513850
-        F1    3    0.045281   -0.252567    0.561932
-        F2    3    0.129932   -0.463873    0.548990
-        F3    3    0.055789   -0.388160    0.454486
+        C1    6     0.20347   -1.99886    9.07608
+        F1    9    -0.70305   -1.66389    9.92535
+        F2    9     0.78718   -3.05595    9.69676
+        F3    9    -0.23894   -2.55716    8.02754
         """
         rootEntity = Qt3DCore.QEntity()
         multvec = QVector3D(2, 2, 2)
         cololist = ['gray', 'red', 'blue', 'gray', 'green', 'green', 'green', 'green']
-        #atlist = [QVector3D(0.0906, -0.3034, 0.5138), QVector3D(0.0452, -0.2525, 0.5619), QVector3D(0.1299, -0.4638, 0.5489),
-        #          QVector3D(0.0557, -0.3881, 0.4544)]
-        atlist = "2.85359    2.63232    0.48588; 2.01243    2.18253    1.10514; 0.92388    1.60218    1.87814; " \
-                 "0.20347   -1.99886    9.07608; -0.70305   -1.66389    9.92535; 0.78718   -3.05595    9.69676; " \
-                 "-0.23894   -2.55716    8.02754"
-        atlist = atlist.split(';')
-        atlist = [QVector3D(*[float(x) for x in i.split()]) for i in atlist]
         xsum = 0
         ysum = 0
         zsum = 0
-        for n, at in enumerate(atlist):
+        for n, at in enumerate(self.atlist):
             at = at*multvec
-            self.add_sphere(rootEntity, at, cololist[n])
+            if color:
+                self.add_sphere(rootEntity, at, cololist[n])
+            else:
+                self.add_sphere(rootEntity, at, 'black')
             xsum += at.x()
             ysum += at.y()
             zsum += at.z()
-            #self.add_bond(rootEntity, at, atlist[0]*multvec, 'gray')
-        self.mid = QVector3D(xsum / len(atlist), ysum / len(atlist), zsum / len(atlist))
+            #self.add_bond(rootEntity, at, at2, 'gray')
+        # calculate the mid point of the atoms:
+        self.mid = QVector3D(xsum / len(self.atlist), ysum / len(self.atlist), zsum / len(self.atlist))
         return rootEntity
 
     def add_bond(self, rootEntity, pos1, pos2, color):
         """
+        This should draw bonds, but it does not work atm.
         https://github.com/GarageGames/Qt/blob/master/qt-5/qt3d/examples/qt3d/custom-mesh-cpp/main.cpp
         """
         material = Qt3DExtras.QPhongMaterial(rootEntity)
         material.setAmbient(QColor('gray'))
         # Torus:
-        cylinderEntity = Qt3DCore.QEntity(rootEntity)
-        cylinderMesh = Qt3DExtras.QCylinderMesh()
-        cylinderMesh.setRadius(0.2)
-        cylinderMesh.setLength(20)
-        cylinderMesh.setRings(100)
-        cylinderMesh.setSlices(20)
+        cylinder_entity = Qt3DCore.QEntity(rootEntity)
+        cylinder_mesh = Qt3DExtras.QCylinderMesh()
+        cylinder_mesh.setRadius(0.2)
+        cylinder_mesh.setLength(pos1.distanceToPoint(pos2))
+        cylinder_mesh.setRings(100)
+        cylinder_mesh.setSlices(20)
         cylinderTransform = Qt3DCore.QTransform()
-        cylinderTransform.setScale3D(QVector3D(1, 1, 1.0))
-        cylinderTransform.setTranslation(pos1)
-        cylinderTransform.setRotation(QQuaternion.fromAxisAndAngle(pos2, 25.0))
-        cylinderEntity.addComponent(cylinderMesh)
-        cylinderEntity.addComponent(cylinderTransform)
-        cylinderEntity.addComponent(material)
+        cylinderTransform.setScale3D(QVector3D(1, 1, 1))
+        cylinderTransform.setRotation(QQuaternion.fromDirection(pos2, pos1))
+        cylinder_entity.addComponent(cylinder_mesh)
+        cylinder_entity.addComponent(cylinderTransform)
+        cylinder_entity.addComponent(material)
 
     def add_sphere(self, rootEntity, position, colour):
         """ 
         :type position: QVector3D
         :type colour: string
         """
-        # F3:
         material = Qt3DExtras.QPhongMaterial(rootEntity)
         material.setAmbient(QColor(colour))
-        sphereEntity = Qt3DCore.QEntity(rootEntity)
-        sphereMesh = Qt3DExtras.QSphereMesh()
-        # sphereMesh
-        sphereMesh.setRadius(1)
-        print('##1')
-        sphereTransform = Qt3DCore.QTransform(sphereMesh)
-        #controller = OrbitTransformController(sphereTransform)
-        #controller.setTarget(sphereTransform)
-        sphereTransform.setTranslation(position)
-        print('rad:')
-        # controller.setRadius(1.0)
-        print('##2')
-        sphereEntity.addComponent(sphereTransform)
-        sphereEntity.addComponent(sphereMesh)
-        sphereEntity.addComponent(material)
-        #sphereTransform.matrix().setToIdentity()
+        sphere_entity = Qt3DCore.QEntity(rootEntity)
+        sphere_mesh = Qt3DExtras.QSphereMesh()
+        # sphere_mesh
+        sphere_mesh.setRadius(0.8)
+        sphere_transform = Qt3DCore.QTransform(sphere_mesh)
+        sphere_transform.setTranslation(position)
+        sphere_entity.addComponent(sphere_transform)
+        sphere_entity.addComponent(sphere_mesh)
+        sphere_entity.addComponent(material)
+        sphere_transform.matrix().setToIdentity()
 
     def event(self, event):
         handled = QtWidgets.QOpenGLWidget.event(event)
         self.update()
+        print('foo')
         return handled
 
     def mousePressEvent(self, event):
         button = 0
+        print(event)
         if event.button == "Qt::LeftButton":
           button = 1
         if event.button == "Qt::MiddleButton":
@@ -190,26 +176,30 @@ class MyScene(Qt3DCore.QEntity):
         return self.getEventQueue().mouseButtonPress(event.x(), event.y(), button)
 
 
+class Cylinder():
+    def __init__(self):
+        """
+        """
+        pass
+
+
+
 if __name__ == '__main__':
     ###################################################
     app = QGuiApplication(sys.argv)
     view = Qt3DExtras.Qt3DWindow()
-    s = MyScene()
-    rootEntity = s.createScene()
+    s = Molecule3D()
+    rootEntity = s.create_molecule()
     print('#scene')
     # // Camera
     camera = view.camera()
     lens = Qt3DRender.QCameraLens()
-    #camera.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
     lens.setOrthographicProjection(-50, 50.0, -50.0, 50.0, -1.0, 500.0)
     camera.setUpVector(QVector3D(0, 1.0, 0))
-    camera.setPosition(QVector3D(0, 0, 100.0))  # Entfernung
+    camera.setPosition(QVector3D(0, 0, 80.0))  # Entfernung
     camera.setViewCenter(s.mid)
-    #camera.setViewCenter(QVector3D(0, 0, 0))
     #camera.setfieldOfView = 45
-    #print(camera.fieldOfView())
-    print('#camera')
-    # // For camera controls
+    # For camera controls:
     camController = Qt3DExtras.QOrbitCameraController(rootEntity)
     camController.setLinearSpeed(-30.0)
     camController.setLookSpeed(-480.0)
@@ -217,15 +207,13 @@ if __name__ == '__main__':
     #camController.setZoomInLimit(1)
     lightEntity = QEntity(rootEntity)
     light = QPointLight(lightEntity)
-    light.setColor(QColor("white"))
+    light.setColor(QColor(150, 150, 100))
     light.setIntensity(0.5)
     lightEntity.addComponent(light)
     lightTransform = Qt3DCore.QTransform(lightEntity)
-    lightTransform.setTranslation(QVector3D(0.5, 0.5, 0))
-    #lightEntity.addComponent(lightTransform)
+    lightTransform.setTranslation(QVector3D(0, 0, 80.0))
+    lightEntity.addComponent(lightTransform)
     view.setRootEntity(rootEntity)
-
-    print('view#')
     view.show()
     app.exec()
 
