@@ -109,7 +109,7 @@ class MyScene(Qt3DCore.QEntity):
         #F2
         self.add_sphere(rootEntity, QVector3D(0.1299, -0.4638, 0.5489)*QVector3D(10, 10, 10), 'blue')
         #F3
-        self.add_sphere(rootEntity, QVector3D(0.0557, -0.3881, 0.4544)*QVector3D(10, 10, 10), 'yellow')
+        self.add_sphere(rootEntity, QVector3D(0.0557, -0.3881, 0.4544)*QVector3D(10, 10, 10), 'green')
         return rootEntity
 
     def add_sphere(self, rootEntity, position, colour):
@@ -164,9 +164,9 @@ if __name__ == '__main__':
     camera = view.camera()
     #lens = Qt3DRender.QCameraLens()
     #camera.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
-    camera.lens().setOrthographicProjection(-16.0, 16.0, -9.0, 9.0, -1.0, 600.0)
-    #camera.setUpVector(QVector3D(0, 1.0, 0))
-    camera.setPosition(QVector3D(0, 0, 140.0))  # Entfernung
+    camera.lens().setOrthographicProjection(-26.0, 26.0, -29.0, 29.0, -1.0, 600.0)
+    camera.setUpVector(QVector3D(0, 1.0, 0))
+    camera.setPosition(QVector3D(0, 0, 40.0))  # Entfernung
     camera.setViewCenter(QVector3D(0, 0, 0))
     print('#camera')
     # // For camera controls
@@ -174,6 +174,8 @@ if __name__ == '__main__':
     camController.setLinearSpeed(-30.0)
     camController.setLookSpeed(-480.0)
     camController.setCamera(camera)
+    camController.setZoomInLimit(1)
+
     view.setRootEntity(scene)
     print('view#')
     view.show()
