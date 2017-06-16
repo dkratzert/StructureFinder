@@ -79,6 +79,7 @@ class OrbitTransformController(Qt3DCore.QComponent):
 class MyScene(Qt3DCore.QEntity):
     def __init__(self, *arg, **args):
         super(MyScene, self).__init__()
+        self.mid = QVector3D(0, 0 ,0)
 
     def createScene(self):
         """
@@ -104,7 +105,6 @@ class MyScene(Qt3DCore.QEntity):
         F2    3    0.129932   -0.463873    0.548990
         F3    3    0.055789   -0.388160    0.454486
         """
-        mid = QVector3D(0.0, 0.0, 0.0)
         rootEntity = Qt3DCore.QEntity()
         multvec = QVector3D(2, 2, 2)
         cololist = ['gray', 'red', 'blue', 'gray', 'green', 'green', 'green', 'green']
@@ -115,20 +115,17 @@ class MyScene(Qt3DCore.QEntity):
                  "-0.23894   -2.55716    8.02754"
         atlist = atlist.split(';')
         atlist = [QVector3D(*[float(x) for x in i.split()]) for i in atlist]
-        mid = mid * (-1.0 / len(atlist))
-        """
-        #C1
-        self.add_sphere(rootEntity, QVector3D(0.0906, -0.3034, 0.5138)*multvec, 'gray')
-        #F1
-        self.add_sphere(rootEntity, QVector3D(0.0452, -0.2525, 0.5619)*multvec, 'red')
-        #F2
-        self.add_sphere(rootEntity, QVector3D(0.1299, -0.4638, 0.5489)*multvec, 'blue')
-        #F3
-        """
+        xsum = 0
+        ysum = 0
+        zsum = 0
         for n, at in enumerate(atlist):
             at = at*multvec
             self.add_sphere(rootEntity, at, cololist[n])
-            self.add_bond(rootEntity, at, atlist[0]*multvec, 'gray')
+            xsum += at.x()
+            ysum += at.y()
+            zsum += at.z()
+            #self.add_bond(rootEntity, at, atlist[0]*multvec, 'gray')
+        self.mid = QVector3D(xsum / len(atlist), ysum / len(atlist), zsum / len(atlist))
         return rootEntity
 
     def add_bond(self, rootEntity, pos1, pos2, color):
@@ -207,7 +204,8 @@ if __name__ == '__main__':
     lens.setOrthographicProjection(-50, 50.0, -50.0, 50.0, -1.0, 500.0)
     camera.setUpVector(QVector3D(0, 1.0, 0))
     camera.setPosition(QVector3D(0, 0, 100.0))  # Entfernung
-    camera.setViewCenter(QVector3D(0, 0, 0))
+    camera.setViewCenter(s.mid)
+    #camera.setViewCenter(QVector3D(0, 0, 0))
     #camera.setfieldOfView = 45
     #print(camera.fieldOfView())
     print('#camera')
