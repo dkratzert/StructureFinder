@@ -4,16 +4,20 @@ import os
 import sys
 import time
 
-from PyQt5 import uic, QtWidgets
-from PyQt5.QtCore import pyqtSlot
+from PyQt5 import uic, QtWidgets, Qt3DExtras, Qt3DRender, Qt3DCore
+from PyQt5.Qt3DCore import QEntity
+from PyQt5.Qt3DRender import QPointLight
+from PyQt5.QtCore import pyqtSlot, QSize
+from PyQt5.QtGui import QVector3D, QColor
 from PyQt5.QtQml import QQmlApplicationEngine
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
 from math import radians, sin
 
 from lattice import lattice
+from opengl.moleculegl import Molecule3D
 from pymatgen.core.mat_lattice import Lattice
 from searcher import filecrawler
 from searcher.database_handler import StructureTable
@@ -89,6 +93,7 @@ class StartStructureDB(QMainWindow):
         self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         self.show()
         self.full_list = True  # indicator if the full structures list is shown
+        #self.show_molecule()
 
     def connect_signals_and_slots(self):
         """
@@ -150,6 +155,8 @@ class StartStructureDB(QMainWindow):
         a, b, c, alpha, beta, gamma, volume = 0, 0, 0, 0, 0, 0, 0
         if cell:
             a, b, c, alpha, beta, gamma, volume = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6]
+        if not all((a, b, c, alpha, beta, gamma)):
+            return False
         self.ui.cellField.setText(
             r"""
             <html><head/><body>
@@ -361,6 +368,45 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.structures.database.commit_db("Committed")
+
+    def show_molecule(self):
+        """
+        """
+        view = Qt3DExtras.Qt3DWindow()
+        # view.defaultFrameGraph().setClearColor(QColor(0x4d4d4f))
+        container = QWidget.createWindowContainer(view)
+        # screenSize = view.screen().size()
+        #container.setMinimumSize(QSize(200, 200))
+        s = Molecule3D()
+        rootEntity = s.create_molecule()
+
+        # // Camera
+        camera = view.camera()
+        lens = Qt3DRender.QCameraLens()
+        lens.setOrthographicProjection(-50, 50.0, -50.0, 50.0, -1.0, 500.0)
+        camera.setUpVector(QVector3D(0, 1.0, 0))
+        camera.setPosition(QVector3D(0, 0, 80.0))  # Entfernung
+        camera.setViewCenter(s.mid)
+        # camera.setfieldOfView = 45
+        # For camera controls:
+        camController = Qt3DExtras.QOrbitCameraController(rootEntity)
+        camController.setLinearSpeed(-30.0)
+        camController.setLookSpeed(-480.0)
+        camController.setCamera(camera)
+        # camController.setZoomInLimit(1)
+        lightEntity = QEntity(rootEntity)
+        light = QPointLight(lightEntity)
+        light.setColor(QColor(150, 150, 100))
+        light.setIntensity(0.5)
+        lightEntity.addComponent(light)
+        lightTransform = Qt3DCore.QTransform(lightEntity)
+        lightTransform.setTranslation(QVector3D(0, 0, 80.0))
+        lightEntity.addComponent(lightTransform)
+        view.setRootEntity(rootEntity)
+        container.show()
+        #self.ui.oglLayout.addWidget(container)
+        #view.show()
+
 
 
 class QmlAusgabe(object):

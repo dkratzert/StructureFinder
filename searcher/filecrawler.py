@@ -106,6 +106,8 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
     beta = cif._cell_angle_beta
     gamma = cif._cell_angle_gamma
     volume = cif._cell_volume
+    if not all((a, b, c, alpha, beta, gamma)):
+        return False
     measurement_id = structures.fill_measuremnts_table(filename, structure_id)
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
     structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma, volume)

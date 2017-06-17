@@ -7,7 +7,6 @@ from PyQt5 import Qt3DCore, QtCore, QtWidgets
 from PyQt5 import Qt3DExtras
 from PyQt5 import Qt3DInput
 from PyQt5 import Qt3DRender
-#from PyQt5.Qt3DRender.QPickEvent import RightButton
 from PyQt5.Qt3DCore import QEntity
 from PyQt5.Qt3DInput import QMouseDevice
 from PyQt5.Qt3DRender import QPointLight, QCamera
@@ -78,7 +77,7 @@ class OrbitTransformController(Qt3DCore.QComponent):
 
 
 
-class Molecule3D(Qt3DCore.QEntity):
+class Molecule3D(Qt3DCore.QNode):
     def __init__(self, *arg, **args):
         super(Molecule3D, self).__init__()
         self.mid = QVector3D(0, 0, 0)
@@ -147,8 +146,8 @@ class Molecule3D(Qt3DCore.QEntity):
         :type position: QVector3D
         :type colour: string
         """
-        material = Qt3DExtras.QGoochMaterial(rootEntity)
-        #material.setAmbient(QColor(colour))
+        material = Qt3DExtras.QPhongMaterial(rootEntity)
+        material.setAmbient(QColor(colour))
         material.setDiffuse(QColor(colour))
         material.setShininess(30)
         sphere_entity = Qt3DCore.QEntity(rootEntity)
@@ -193,9 +192,9 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     view = Qt3DExtras.Qt3DWindow()
     #view.defaultFrameGraph().setClearColor(QColor(0x4d4d4f))
-    #container = QWidget.createWindowContainer(view)
+    container = QWidget.createWindowContainer(view)
     #screenSize = view.screen().size()
-    #container.setMinimumSize(QSize(200, 100))
+    #container.setMinimumSize(QSize(200, 200))
     #container.setMaximumSize(screenSize)
     #widget = QWidget()
     #hLayout = QHBoxLayout(widget)
@@ -204,6 +203,7 @@ if __name__ == '__main__':
     #hLayout.addWidget(container, 1)
     #hLayout.addLayout(vLayout)
     #widget.setWindowTitle("Basic shapes")
+
 
     s = Molecule3D()
     rootEntity = s.create_molecule()
@@ -232,7 +232,8 @@ if __name__ == '__main__':
     lightTransform.setTranslation(QVector3D(0, 0, 80.0))
     lightEntity.addComponent(lightTransform)
     view.setRootEntity(rootEntity)
-    view.show()
+    #view.show()
+    container.show()
     app.exec()
 
 
