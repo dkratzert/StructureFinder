@@ -108,6 +108,10 @@ class Molecule3D(Qt3DCore.QNode):
         zsum = 0
         for n, at in enumerate(self.atlist):
             at = at*multvec
+            try:
+                at2 = self.atlist[n+1] * multvec
+            except IndexError:
+                at2 = self.atlist[n - 1] * multvec
             if color:
                 self.add_sphere(rootEntity, at, cololist[n])
             else:
@@ -115,7 +119,7 @@ class Molecule3D(Qt3DCore.QNode):
             xsum += at.x()
             ysum += at.y()
             zsum += at.z()
-            #self.add_bond(rootEntity, at, at2, 'gray')
+            self.add_bond(rootEntity, at, at2, 'gray')
         # calculate the mid point of the atoms:
         self.mid = QVector3D(xsum / len(self.atlist), ysum / len(self.atlist), zsum / len(self.atlist))
         return rootEntity
@@ -124,6 +128,12 @@ class Molecule3D(Qt3DCore.QNode):
         """
         This should draw bonds, but it does not work atm.
         https://github.com/GarageGames/Qt/blob/master/qt-5/qt3d/examples/qt3d/custom-mesh-cpp/main.cpp
+
+        /** Make a rotation Quat which will rotate vec1 to vec2.
+        Generally take a dot product to get the angle between these
+        and then use a cross product to get the rotation axis
+        Watch out for the two special cases when the vectors
+        are co-incident or opposite in direction.*/
         """
         material = Qt3DExtras.QPhongMaterial(rootEntity)
         material.setAmbient(QColor('gray'))
@@ -131,12 +141,20 @@ class Molecule3D(Qt3DCore.QNode):
         cylinder_entity = Qt3DCore.QEntity(rootEntity)
         cylinder_mesh = Qt3DExtras.QCylinderMesh()
         cylinder_mesh.setRadius(0.2)
-        cylinder_mesh.setLength(pos1.distanceToPoint(pos2))
+        vlen = pos1.distanceToPoint(pos2)
+        cylinder_mesh.setLength(vlen)
         cylinder_mesh.setRings(100)
         cylinder_mesh.setSlices(20)
         cylinderTransform = Qt3DCore.QTransform()
-        cylinderTransform.setScale3D(QVector3D(1, 1, 1))
-        cylinderTransform.setRotation(QQuaternion.fromDirection(pos2, pos1))
+        v1 = QVector3D(pos2-pos1).normalized()
+        v2 = QVector3D(0, 1, 0)
+        axis = QVector3D.crossProduct(v1, v2).normalized()
+        angle = QVector3D.dotProduct(v1, v2)
+        print(angle)
+        quat = QQuaternion.fromAxisAndAngle(axis, -math.pi/2 + angle)
+        cylinderTransform.setRotation(quat)
+        #cylinderTransform.setScale3D(QVector3D(1, 1, 1))
+        cylinderTransform.setTranslation(pos1)
         cylinder_entity.addComponent(cylinder_mesh)
         cylinder_entity.addComponent(cylinderTransform)
         cylinder_entity.addComponent(material)
