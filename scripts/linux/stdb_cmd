@@ -1,0 +1,3 @@
+#/usr/bin/bash
+
+python3 stdb_cmd.py $1

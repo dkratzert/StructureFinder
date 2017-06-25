@@ -10,8 +10,6 @@ This module provides utilities for basic math operations.
 
 import collections
 
-#from six.moves import zip
-
 
 def abs_cap(val, max_abs_val=1):
     """
