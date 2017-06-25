@@ -55,29 +55,13 @@ TODO:
   to get a list of files where hashes exist. Remove results from file crawler. May I need a hash run over 
   all files before the cif parsing run? Or just calc hash, search in db and then decide to parse cif or not? 
 - search for strings to get a result for a persons name, add person to db
-- add an advanced search tab where you can search for sum formula, only elements, names, users, ... 
+- add an advanced search tab where you can search for sum formula, twinning, only elements, names, users, ... 
 - add a file browser where you can match the local path 
 - add a tab where you can match path name parts to usernames
 - the filecrawler should collect the bruker base file name, also for Rigaku? And STOE?
 - add measurement specific data to the db, e.g. machine from frame, temp from frame, 
 - pressing search in advanced tab will return to base tab with results
-
-
-- Für jede einzelne Datenbank (ob file oder scaped dir):
-
-conn = sqlite3.connect('example.db')
-    # eventuell hier verzeichnisse suchen und datenbak füllen
-# für ale:
-cur = conn.cursor()
-cur.execute('''CREATE TABLE stocks
-             (date text, trans text, symbol text, qty real, price real)''')
-#am ende:
-cur.commit()
-conn.close()
-
-- d.h. falls man ein verzeichnis durchsuchen will muss erst die db (im tmpdir) erstellt werden
-- für alle weiteren aktionen cur.commit(), conn.close()
-- dann conn = sqlite.connect....
+- add save db button, create db as tmpfile and move to target.
 """
 
 
@@ -95,15 +79,9 @@ class StartStructureDB(QMainWindow):
         self.dbfilename = 'test.sqlite'
         self.ui.centralwidget.setMinimumSize(1200, 500)
         #self.showMaximized()
-        try:
-            # TODO: don't do in future:
-            os.remove(self.dbfilename)
-        except:
-            pass
         self.progress = QtWidgets.QProgressBar(self)
         self.ui.statusbar.addWidget(self.progress)
-        self.structures = StructureTable(self.dbfilename)
-        self.structures.database.initialize_db()
+        self.structures = None
         # The treewidget with the cif list:
         self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         self.show()
@@ -141,11 +119,23 @@ class StartStructureDB(QMainWindow):
         """
         Closed the current database and erases the list.
         """
-        self.structures.database.cur.close()
-        self.structures.database.con.close()
-        #self.structures = StructureTable(self.dbfilename)
-        #self.structures.database.initialize_db()
         self.ui.cifList_treeWidget.clear()
+        #self.ui.cifList_treeWidget.show()
+        try:
+            self.structures.database.cur.close()
+        except:
+            pass
+        try:
+            self.structures.database.con.close()
+        except:
+            pass
+
+    def start_db(self):
+        """
+        Initializes the database.
+        """
+        self.structures = StructureTable(self.dbfilename)
+        self.structures.database.initialize_db()
 
     @pyqtSlot('QModelIndex', name="get_properties")
     def get_properties(self, item):
@@ -154,11 +144,13 @@ class StartStructureDB(QMainWindow):
 
         _space_group_symop_operation_xyz oder _symmetry_equiv_pos_as_xyz
         """
-        # self.ui.properties_treeWidget.show()
+        if not self.structures.database.cur:
+            return False
         structure_id = item.sibling(item.row(), 2).data()
         request = """select * from residuals where StructureId = {}""".format(structure_id)
         dic = self.structures.get_row_as_dict(request)
         self.display_properties(structure_id, dic)
+        return True
 
     def display_properties(self, structure_id, cif_dic):
         """
@@ -261,6 +253,7 @@ class StartStructureDB(QMainWindow):
         if len(cell) != 6:
             if not self.full_list:
                 self.show_full_list()
+                self.statusBar().showMessage('Not a valid unit cell!')
             return True
         try:
             volume = lattice.vol_unitcell(*cell)
@@ -269,6 +262,7 @@ class StartStructureDB(QMainWindow):
         except ValueError:
             if not self.full_list:
                 self.show_full_list()
+                self.statusBar().showMessage('Found 0 cells.')
             return False
         # Get a smaller list where only cells are included that have a proper mapping to the input cell:
         idlist2 = []
@@ -279,12 +273,16 @@ class StartStructureDB(QMainWindow):
                 request = """select * from cell where StructureId = {}""".format(i)
                 dic = self.structures.get_row_as_dict(request)
                 cell2 = [dic['a'], dic['b'], dic['c'], dic['alpha'], dic['beta'], dic['gamma']]
-                cell2 = [float(x) for x in cell2]
+                try:
+                    cell2 = [float(x) for x in cell2]
+                except ValueError:
+                    continue
                 lattice2 = Lattice.from_parameters(*cell2)
                 map = lattice1.find_mapping(lattice2, ltol=0.2, atol=1, skip_rotation_matrix=True)
                 if map:
                     idlist2.append(i)
         searchresult = self.structures.get_all_structure_names(idlist2)
+        self.statusBar().showMessage('Found {} cells. {}'.format(len(idlist2), idlist2))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for i in searchresult:
@@ -314,18 +312,19 @@ class StartStructureDB(QMainWindow):
     def import_database(self):
         """
         Import a new database.
-        :return: 
+        :rtype: bool
         """
+        self.close_db()
         fname = QFileDialog.getOpenFileName(self, caption='Open File', directory='./')
         if not fname[0]:
             return False
         print("Opened {}.". format(fname[0]))
         self.dbfilename = fname[0]
         self.structures = StructureTable(self.dbfilename)
-        #self.ui.cifList_treeWidget.show()
         self.show_full_list()
         if not self.structures:
             return False
+        return True
 
     def show_full_list(self):
         """
@@ -340,8 +339,10 @@ class StartStructureDB(QMainWindow):
             path = i[2]#.decode("utf-8", "surrogateescape")
             id = i[0]
             self.add_table_row(name, path, id)
-        print("Loaded {} entries.".format(id))
+        mess = "Loaded {} entries.".format(id)
+        self.statusBar().showMessage(mess)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
 
     def import_cif_dirs(self):
@@ -349,6 +350,14 @@ class StartStructureDB(QMainWindow):
         Imports cif files from a certain directory
         :return: None
         """
+        self.close_db()
+        self.dbfilename = 'test.sqlite'
+        try:
+            # TODO: don't do in future:
+            os.remove(self.dbfilename)
+        except:
+            pass
+        self.start_db()
         # TODO: support excludes: mit filepath.parent in excludes = ('.olex', 'report', 'Report')
         fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         if not fname:
@@ -421,6 +430,7 @@ class StartStructureDB(QMainWindow):
         container.show()
         #self.ui.oglLayout.addWidget(container)
         #view.show()
+
 
 
 

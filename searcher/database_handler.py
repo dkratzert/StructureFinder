@@ -650,9 +650,11 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return dic
 
-    def find_by_volume(self, volume, threshold = 0.03):
+    def find_by_volume(self, volume, threshold=0.03):
         """
         Searches cells with volume between upper and lower limit
+        :param threshold: Volume uncertaincy where to search
+        :type threshold: float
         :param volume: the unit cell volume
         :type volume: float
         :return: list
