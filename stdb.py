@@ -1,3 +1,17 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+"""
+Created on 09.02.2015
+
+ ----------------------------------------------------------------------------
+* "THE BEER-WARE LICENSE" (Revision 42):
+* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this
+* notice you can do whatever you want with this stuff. If we meet some day, and
+* you think this stuff is worth it, you can buy me a beer in return.
+* ----------------------------------------------------------------------------
+
+@author: Daniel Kratzert
+"""
 from __future__ import print_function
 
 import os
@@ -29,6 +43,7 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
+- try to find a .p4p file to decide if it is a twin, also try to find a TWIN instruction in the cif file
 - allow to scan more than one directory. Just add to previous data
 - Add save button.
 - structure code

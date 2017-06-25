@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 """
 Created on 09.02.2015
 
@@ -8,7 +10,7 @@ Created on 09.02.2015
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
 
-@author: daniel
+@author: Daniel Kratzert
 """
 import os
 import fnmatch as fn
