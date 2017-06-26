@@ -35,7 +35,6 @@ def create_file_list(searchpath='None', endings='cif'):
     print('collecting files...')
     p = Path(searchpath)
     paths = p.rglob("*.cif")
-    print('ready')
     return paths
 
 

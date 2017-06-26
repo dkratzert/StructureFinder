@@ -30,12 +30,12 @@ from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
 from math import radians, sin
 
+
 from lattice import lattice
 from opengl.moleculegl import Molecule3D
 from pymatgen.core.mat_lattice import Lattice
 from searcher import filecrawler
 from searcher.database_handler import StructureTable
-from searcher.filecrawler import fill_db_tables
 from searcher.fileparser import Cif
 uic.compileUiDir('./')
 from stdb_main import Ui_stdbMainwindow
@@ -72,21 +72,24 @@ class StartStructureDB(QMainWindow):
         super().__init__(*args, **kwargs)
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
-        self.connect_signals_and_slots()
         self.statusBar().showMessage('Ready')
         self.ui.cifList_treeWidget.show()
         self.ui.cifList_treeWidget.hideColumn(2)
         self.dbfilename = 'test.sqlite'
         self.ui.centralwidget.setMinimumSize(1200, 500)
-        #self.showMaximized()
+        self.abort_import_button = QtWidgets.QPushButton("Abort (takes a while)")
         self.progress = QtWidgets.QProgressBar(self)
         self.ui.statusbar.addWidget(self.progress)
+        self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
         # The treewidget with the cif list:
         self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         self.show()
         self.full_list = True  # indicator if the full structures list is shown
+
+        self.decide_import = True
         #self.show_molecule()
+        self.connect_signals_and_slots()
 
     def connect_signals_and_slots(self):
         """
@@ -103,6 +106,7 @@ class StartStructureDB(QMainWindow):
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
         self.ui.actionImport_file.triggered.connect(self.import_database)
+        self.abort_import_button.clicked.connect(self.abort_import)
 
     def progressbar(self, curr, min, max):
         """
@@ -129,6 +133,10 @@ class StartStructureDB(QMainWindow):
             self.structures.database.con.close()
         except:
             pass
+
+    @pyqtSlot(name="abort_import")
+    def abort_import(self):
+        self.decide_import = False
 
     def start_db(self):
         """
@@ -164,13 +172,15 @@ class StartStructureDB(QMainWindow):
             a, b, c, alpha, beta, gamma, volume = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6]
         if not all((a, b, c, alpha, beta, gamma)):
             return False
+        self.ui.cellField.setMinimumWidth(180)
         self.ui.cellField.setText(
+            # TODO: refrator as separate module od method:
             r"""
             <html><head/><body>
             <table border="0" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;" 
                    cellspacing="2" cellpadding="2">
                 <tr>
-                    <td><p align="left" ><span style=" font-style:italic;">a</span> = </p></td>
+                    <td><p align="left"><span style=" font-style:italic;">a</span> = </p></td>
                     <td><p align="right">{:>8.3f} Å, </p></td>
                     <td><p align="left"><span style="font-style:italic;">&alpha;</span> = </p></td> 
                     <td><p align="right">{:<8.3f}° </p></td>
@@ -188,7 +198,7 @@ class StartStructureDB(QMainWindow):
                     <td><p align="right">{:<8.3f}° </p></td>
                 </tr>
             </table>
-            Volume = {:8.3f} Å
+            Volume = {:8.2f} Å
             </body></html>
             """.format(a, alpha, b, beta, c, gamma, volume, '')
         )
@@ -350,6 +360,7 @@ class StartStructureDB(QMainWindow):
         Imports cif files from a certain directory
         :return: None
         """
+        self.abort_import_button.show()
         self.close_db()
         self.dbfilename = 'test.sqlite'
         try:
@@ -366,8 +377,9 @@ class StartStructureDB(QMainWindow):
         # TODO: implement multiple cells in one cif file:
         n = 1
         min = 0
+        num = 0
         time1 = time.clock()
-        for num, filepth in enumerate(filecrawler.create_file_list(str(fname), endings='cif')):
+        for filepth in filecrawler.create_file_list(str(fname), endings='cif'):
             if num == 20:
                 num = 0
             self.progressbar(num, min, 20)
@@ -380,11 +392,16 @@ class StartStructureDB(QMainWindow):
             if not cif.ok:
                 continue
             if cif and filename and path:
-                fill_db_tables(cif, filename, path, structure_id, self.structures)
+                filecrawler.fill_db_tables(cif, filename, path, structure_id, self.structures)
                 self.add_table_row(filename, path, str(n))
                 n += 1
                 if n % 200 == 0:
-                    self.structures.database.commit_db(".")
+                    self.structures.database.commit_db()
+            num += 1
+            if not self.decide_import:
+                self.abort_import_button.hide()
+                self.decide_import = True
+                break
         time2 = time.clock()
         diff = time2 - time1
         self.progress.hide()
@@ -392,6 +409,7 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.structures.database.commit_db("Committed")
+        self.abort_import_button.hide()
 
     def show_molecule(self):
         """
