@@ -19,11 +19,14 @@ import sys
 import time
 
 from PyQt5 import uic, QtWidgets, Qt3DExtras, Qt3DRender, Qt3DCore
+from PyQt5.QtWebChannel import QWebChannel
+from PyQt5.QtWebEngine import QtWebEngine
 from PyQt5.Qt3DCore import QEntity
 from PyQt5.Qt3DRender import QPointLight
-from PyQt5.QtCore import pyqtSlot, QSize
+from PyQt5.QtCore import pyqtSlot, QSize, QUrl
 from PyQt5.QtGui import QVector3D, QColor
 from PyQt5.QtQml import QQmlApplicationEngine
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
@@ -86,10 +89,20 @@ class StartStructureDB(QMainWindow):
         self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         self.show()
         self.full_list = True  # indicator if the full structures list is shown
-
         self.decide_import = True
-        #self.show_molecule()
         self.connect_signals_and_slots()
+        self.view = QWebEngineView()
+        channel = QWebChannel()
+        self.view.page().setWebChannel(channel)
+        channel.registerObject("loadStruct", self)
+        #channel.registerObject("path", self)
+        channel.path = os.path.abspath("../test-data/breit_tb13_85.cif")
+        QtWebEngine.initialize()
+        self.view.load(QUrl.fromLocalFile(os.path.abspath("./opengl/jmolview.html")))
+        self.view.setMaximumWidth(230)
+        self.view.setMaximumHeight(230)
+        self.ui.glvert.addWidget(self.view)
+        self.view.show()
 
     def connect_signals_and_slots(self):
         """
@@ -124,7 +137,6 @@ class StartStructureDB(QMainWindow):
         Closed the current database and erases the list.
         """
         self.ui.cifList_treeWidget.clear()
-        #self.ui.cifList_treeWidget.show()
         try:
             self.structures.database.cur.close()
         except:
@@ -164,6 +176,8 @@ class StartStructureDB(QMainWindow):
         """
         Displays the residuals from the cif file
         """
+
+        self.view.page().runJavaScript('loadStruct')
         cell = self.structures.get_cell_by_id(structure_id)
         if not cif_dic:
             return False
@@ -172,36 +186,34 @@ class StartStructureDB(QMainWindow):
             a, b, c, alpha, beta, gamma, volume = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6]
         if not all((a, b, c, alpha, beta, gamma)):
             return False
-        self.ui.cellField.setMinimumWidth(180)
-        self.ui.cellField.setText(
-            # TODO: refrator as separate module od method:
-            r"""
-            <html><head/><body>
-            <table border="0" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;" 
-                   cellspacing="2" cellpadding="2">
-                <tr>
-                    <td><p align="left"><span style=" font-style:italic;">a</span> = </p></td>
-                    <td><p align="right">{:>8.3f} Å, </p></td>
-                    <td><p align="left"><span style="font-style:italic;">&alpha;</span> = </p></td> 
-                    <td><p align="right">{:<8.3f}° </p></td>
-                </tr>
-                <tr>
-                    <td><p align="left"><span style=" font-style:italic;">b</span> = </p></td>
-                    <td><p align="right">{:>8.3f} Å, </p></td>
-                    <td><p align="left"><span style=" font-style:italic;">&beta;</span> = </p></td> 
-                    <td><p align="right">{:<8.3f}° </p></td>
-                </tr>
-                <tr>
-                    <td><p align="left"><span style=" font-style:italic;">c</span> = </p></td>
-                    <td><p align="right">{:>8.3f} Å, </p></td>
-                    <td><p align="left"><span style=" font-style:italic;">&gamma;</span> = </p></td> 
-                    <td><p align="right">{:<8.3f}° </p></td>
-                </tr>
-            </table>
-            Volume = {:8.2f} Å
-            </body></html>
-            """.format(a, alpha, b, beta, c, gamma, volume, '')
-        )
+        #self.ui.cellField.setMinimumWidth(180)
+        celltxt = r"""
+           <html><head/><body>
+           <table border="0" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;" 
+                  cellspacing="1" cellpadding="1">
+               <tr>
+                   <td><p align="left"><span style=" font-style:italic;">a</span> = &#09;</p></td>
+                   <td><p align="right">{:>8.3f} Å, </p></td>
+                   <td><p align="right"><span style="font-style:italic;">&alpha;</span> = </p></td> 
+                   <td><p align="right">{:>8.3f}° </p></td>
+               </tr>
+               <tr>
+                   <td><p align="left"><span style=" font-style:italic;">b</span> = &#09;</p></td>
+                   <td><p align="right">{:>8.3f} Å, </p></td>
+                   <td><p align="right"><span style=" font-style:italic;">&beta;</span> = </p></td> 
+                   <td><p align="right">{:>8.3f}° </p></td>
+               </tr>
+               <tr>
+                   <td><p align="left"><span style=" font-style:italic;">c</span> = &#09;</p></td>
+                   <td><p align="right">{:>8.3f} Å, </p></td>
+                   <td><p align="right"><span style=" font-style:italic;">&gamma;</span> = </p></td> 
+                   <td><p align="right">{:>8.3f}° </p></td>
+               </tr>
+           </table>
+           Volume = {:8.2f} Å<sup>3</sup>
+           </body></html>
+           """.format(a, alpha, b, beta, c, gamma, volume, '')
+        self.ui.cellField.setText(celltxt)
         try:
             self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
         except ValueError:

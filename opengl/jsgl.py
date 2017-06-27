@@ -1,4 +1,5 @@
 #!python3
+import os
 import sys
 
 from PyQt5.QtCore import QUrl, QFile, QIODevice
@@ -22,7 +23,7 @@ class JSGl(QMainWindow):
         view = QWebEngineView()
         QtWebEngine.initialize()
         #view.load(QUrl("http://www.heise.de"))
-        view.load(QUrl.fromLocalFile("/Users/daniel/GitHub/StructureDB/opengl/jmolview.html"))
+        view.load(QUrl.fromLocalFile(os.path.abspath("./opengl/jmolview.html")))
         #f = QFile(QUrl("/Users/daniel/GitHub/StructureDB/opengl/jmolview.html").path())
         #f.open(QIODevice.ReadOnly | QIODevice.Text)
         #print(f.readAll())

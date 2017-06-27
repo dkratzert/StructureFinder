@@ -655,19 +655,16 @@
               </layout>
              </item>
              <item>
-              <widget class="QWidget" name="openglview" native="true">
+              <widget class="QGroupBox" name="openglview">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
-               <layout class="QHBoxLayout" name="openglVlayout">
-                <property name="sizeConstraint">
-                 <enum>QLayout::SetMinimumSize</enum>
-                </property>
+               <layout class="QVBoxLayout" name="verticalLayout_8">
                 <item>
-                 <layout class="QGridLayout" name="oglLayout"/>
+                 <layout class="QVBoxLayout" name="glvert"/>
                 </item>
                </layout>
               </widget>
