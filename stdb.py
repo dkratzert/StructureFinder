@@ -92,17 +92,18 @@ class StartStructureDB(QMainWindow):
         self.decide_import = True
         self.connect_signals_and_slots()
         self.view = QWebEngineView()
-        channel = QWebChannel()
-        self.view.page().setWebChannel(channel)
-        channel.registerObject("loadStruct", self)
-        #channel.registerObject("path", self)
-        channel.path = os.path.abspath("../test-data/breit_tb13_85.cif")
         QtWebEngine.initialize()
         self.view.load(QUrl.fromLocalFile(os.path.abspath("./opengl/jmolview.html")))
         self.view.setMaximumWidth(230)
         self.view.setMaximumHeight(230)
         self.ui.glvert.addWidget(self.view)
         self.view.show()
+        channel = QWebChannel(self.view)
+        self.view.page().setWebChannel(channel)
+        channel.registerObject("loadStruct", self.view.page())
+        channel.registerObject("jshelper", self.view.page())
+        channel.jshelper = os.path.abspath("../test-data/breit_tb13_85.cif")
+
 
     def connect_signals_and_slots(self):
         """
@@ -176,7 +177,6 @@ class StartStructureDB(QMainWindow):
         """
         Displays the residuals from the cif file
         """
-
         self.view.page().runJavaScript('loadStruct')
         cell = self.structures.get_cell_by_id(structure_id)
         if not cif_dic:

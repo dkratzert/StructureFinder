@@ -9,6 +9,7 @@
 
 //Jmol._isAsync = true;
 var jmolApplet; // set up in HTML table, below
+var jshelper;
 
 var options = {
     width: 200,
@@ -29,12 +30,14 @@ var options = {
 
 new QWebChannel(qt.webChannelTransport, function (channel) {
     // now you retrieve your object
-    var JSpath = channel.objects.strpath;
+    jshelper = channel.objects.jshelper;
+    alert('webchannel');
 });
 
 function loadStruct() {
     var myIntInJSside= JSobject.myIntInCppSide;
-    Jmol.script(jmolApplet, 'load '+JSpath );
+    Jmol.script(jmolApplet, 'load '+jshelper );
+    alert('struct');
 }
 
 </script>
