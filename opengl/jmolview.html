@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script type="text/javascript" src="./JSmol.min.js"></script>
+
+<script type="text/javascript">
+
+Jmol._isAsync = false;
+var jmolApplet0; // set up in HTML table, below
+
+var Info = {
+	width: 420,
+	height: 300,
+	debug: false,
+	color: "0xFFFFFF",
+	//addSelectionOptions: true,
+	use: "HTML5",   // JAVA HTML5 WEBGL are all options
+	j2sPath: "./j2s",
+	script: "set zoomlarge false;set antialiasDisplay",
+    //loadFile: "./test-data/p21c.cif",
+	disableJ2SLoadMonitor: true,
+    disableInitialConsole: true,
+    allowJavaScript: true,
+	console: "none" // default will be jmolApplet0_infodiv, but you can designate another div here or "none"
+}
+</script>
+</head>
+
+<body>
+    <script type="text/javascript">
+        jmolApplet0 = Jmol.getApplet("jmolApplet0", Info);
+        Jmol.script(jmolApplet0, 'load "../test-data/p21c.cif"' );
+    </script>
+</body>
+</html>
+
+
+

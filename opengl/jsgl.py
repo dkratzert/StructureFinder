@@ -1,7 +1,7 @@
 #!python3
 import sys
 
-from PyQt5.QtCore import QUrl
+from PyQt5.QtCore import QUrl, QFile, QIODevice
 from PyQt5.QtQml import QJSEngine
 from PyQt5.QtWebEngine import QtWebEngine
 from PyQt5.QtWebEngineWidgets import QWebEngineView
@@ -11,17 +11,6 @@ from PyQt5.QtWidgets import QApplication, QMainWindow
 http://3dmol.csb.pitt.edu/
 
 
-HTML5
------
-
-JSmol.min.js   required if no other jQuery
-or
-JSmol.min.nojq.js  required if you provide jQuery
-
-j2s/     required (JavaScript files)
-idioma/  recommended (adds language localization)
-
-<script type="text/javascript" src="js/JSmol.js"></script>
 """
 
 class JSGl(QMainWindow):
@@ -32,7 +21,11 @@ class JSGl(QMainWindow):
         #print(three.toNumber())
         view = QWebEngineView()
         QtWebEngine.initialize()
-        view.load(QUrl("http://gleborgne.github.io/molvwr/#cyanocobalamin"))
+        #view.load(QUrl("http://www.heise.de"))
+        view.load(QUrl.fromLocalFile("/Users/daniel/GitHub/StructureDB/opengl/jmolview.html"))
+        #f = QFile(QUrl("/Users/daniel/GitHub/StructureDB/opengl/jmolview.html").path())
+        #f.open(QIODevice.ReadOnly | QIODevice.Text)
+        #print(f.readAll())
         view.show()
         self.setCentralWidget(view)
 
