@@ -35,9 +35,10 @@ new QWebChannel(qt.webChannelTransport, function (channel) {
 });
 
 function loadStruct() {
+    alert('struct1');
     var myIntInJSside= JSobject.myIntInCppSide;
     Jmol.script(jmolApplet, 'load '+jshelper );
-    alert('struct');
+    alert('struct2');
 }
 
 </script>

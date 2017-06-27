@@ -100,8 +100,8 @@ class StartStructureDB(QMainWindow):
         self.view.show()
         channel = QWebChannel(self.view)
         self.view.page().setWebChannel(channel)
-        channel.registerObject("loadStruct", self.view.page())
-        channel.registerObject("jshelper", self.view.page())
+        channel.registerObject("loadStruct", self)
+        channel.registerObject("jshelper", self)
         channel.jshelper = os.path.abspath("../test-data/breit_tb13_85.cif")
 
 
