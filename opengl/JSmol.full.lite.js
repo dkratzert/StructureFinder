@@ -13554,7 +13554,8 @@ proto._parseSDF = function(sdf) {
 		var d = tm._distance(a1.xyz, xyz); 
 		var p1 = (a1.radius < d ? tm._getPointAlong(a1.xyz, xyz, a1.radius/d) : [0, 0, 99999]);
 		var p2 = (a2.radius < d ? tm._getPointAlong(a2.xyz, xyz, a2.radius/d) : [0, 0, 99999]);
-		this.elements[ept++] = this.bonds[i] = {type:1, atoms: [a1, a2], xyz:xyz, pts:[p1,p2], sxyz:[0, 0, 0], spts:[[0,0,0],[0,0,0]], order: 1, color: "#FFBF00"};
+		//color: "#FFBF00"
+		this.elements[ept++] = this.bonds[i] = {type:1, atoms: [a1, a2], xyz:xyz, pts:[p1,p2], sxyz:[0, 0, 0], spts:[[0,0,0],[0,0,0]], order: 1, color: "#DF7401"};
 	}
 	//alert(this.atoms.length + " atoms " + this.bonds.length + " bonds")
 }

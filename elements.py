@@ -333,7 +333,7 @@ class ElementsDict(object):
                 return self._list[slice(start - 1, stop - 1, step)]
             except:
                 raise KeyError
-
+# TODO: Handle Deuterium!
 
 ELEMENTS = ElementsDict(
     Element(

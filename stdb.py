@@ -37,7 +37,6 @@ from math import radians, sin
 
 import mol_file_writer
 from lattice import lattice
-from opengl.moleculegl import Molecule3D
 from pymatgen.core.mat_lattice import Lattice
 from searcher import filecrawler, misc
 from searcher.database_handler import StructureTable
@@ -176,6 +175,9 @@ class StartStructureDB(QMainWindow):
         Displays the residuals from the cif file
         """
         cell = self.structures.get_cell_by_id(structure_id)
+        if not cell:
+            self.statusBar().showMessage('Not a valid unit cell!')
+            return False
         tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6])
         mol = tst.make_mol()
         p = Path("./opengl/jsmol-template.htm")

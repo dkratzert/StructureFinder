@@ -381,8 +381,11 @@ class StructureTable():
         if not structure_id:
             return False
         req = '''SELECT a, b, c, alpha, beta, gamma, volume FROM cell WHERE StructureId = {0}'''.format(structure_id)
-        cell = self.database.db_request(req)[0]
-        return cell
+        cell = self.database.db_request(req)
+        if cell and len(cell) > 0:
+            return cell[0]
+        else:
+            return cell
 
     def __contains__(self, str_id):
         """
