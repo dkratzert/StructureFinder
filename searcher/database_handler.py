@@ -14,6 +14,8 @@ Created on 09.02.2015
 import sys
 from pprint import pprint
 
+import numpy as np
+
 import searcher
 from lattice import lattice
 from searcher import misc
@@ -472,6 +474,25 @@ class StructureTable():
         req = '''INSERT INTO Atoms (StructureId, name, element, x, y, z) VALUES(?, ?, ?, ?, ?, ?)'''
         if self.database.db_request(req, structure_id, name, element, x, y, z):
             return True
+
+    def get_atoms_table(self, structure_id, cell, cartesian=False):
+        """
+        returns the atoms of structure with structure_id
+        """
+        req = """SELECT Name, element, x, y, z FROM Atoms WHERE StructureId = ?"""
+        result = self.database.db_request(req, structure_id)
+        if cartesian:
+            cartesian_coords = []
+            a = lattice.A(cell).orthogonal_matrix
+            for at in result:
+                coord = np.matrix([at[2], at[3], at[4]])
+                coords = (a * coord.reshape(3, 1)).tolist()
+                cartesian_coords.append(coords.extend()) # TODO: Hier müssen noch weider name und Atomtyp dazu
+            return cartesian_coords
+        if result:
+            return result
+        else:
+            return False
 
     def get_residuals(self, structure_id, residual):
         """

@@ -33,11 +33,11 @@ from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
 from math import radians, sin
 
-
+import mol_file_writer
 from lattice import lattice
 from opengl.moleculegl import Molecule3D
 from pymatgen.core.mat_lattice import Lattice
-from searcher import filecrawler
+from searcher import filecrawler, misc
 from searcher.database_handler import StructureTable
 from searcher.fileparser import Cif
 uic.compileUiDir('./')
@@ -173,7 +173,9 @@ class StartStructureDB(QMainWindow):
         """
         Displays the residuals from the cif file
         """
-        cell = self.structures.get_cell_by_id(structure_id)
+        cell = self.structures.get_cell_by_id(structure_id)[:6]
+        tst = mol_file_writer.MolFile(structure_id, self.structures, cell)
+        print(len(tst.get_conntable_from_atoms()))
         if not cif_dic:
             return False
         a, b, c, alpha, beta, gamma, volume = 0, 0, 0, 0, 0, 0, 0

@@ -105,3 +105,15 @@ def flatten(lis):
         else:
             new_lis.append(item)
     return new_lis
+
+def distance(x1, y1, z1, x2, y2, z2):
+    """
+    distance between two points in space for orthogonal axes.
+    >>> distance(1, 1, 1, 2, 2, 2, 4)
+    1.7321
+    >>> distance(1, 0, 0, 2, 0, 0, 4)
+    1.0
+    """
+    import math as m
+    d = m.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
+    return d
