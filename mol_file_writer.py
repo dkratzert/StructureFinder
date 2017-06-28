@@ -92,8 +92,6 @@ class MolFile():
                 if d <= (ele1.covrad + ele2.covrad) + extra_param and d > (ele1.covrad or ele2.covrad):
                     conlist.append([num1, num2])
                     #print(num1, num2, d)
-                    if len(conlist) == 99:
-                        return conlist
                     if [num2, num1] or [num1, num2] in conlist:
                         continue
         return conlist
