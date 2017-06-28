@@ -1,33 +1,5 @@
 """
-benzene
-ACD/Labs0812062058
-
- 6  6  0  0  0  0  0  0  0  0  1 V2000
-   1.9050   -0.7932    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   1.9050   -2.1232    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   0.7531   -0.1282    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-   0.7531   -2.7882    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-  -0.3987   -0.7932    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-  -0.3987   -2.1232    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
- 2  1  1  0  0  0  0
- 3  1  2  0  0  0  0
- 4  2  2  0  0  0  0
- 5  3  1  0  0  0  0
- 6  4  1  0  0  0  0
- 6  5  2  0  0  0  0
-M  END
-$$$$
-
-1-3	  Header
-1		        Molecule name ("benzene")
-2		        User/Program/Date/etc information
-3		        Comment (blank)
-4-17  Connection table (Ctab)
-4		        Counts line: 6 atoms, 6 bonds, ..., V2000 standard
-5-10		    Atom block (1 line for each atom): x, y, z (in angstroms), element, etc.
-11-16		    Bond block (1 line for each bond): 1st atom, 2nd atom, type, etc.
-17		        Properties block (empty)
-18	  $$$$
+MOl V3000 format
 """
 import os
 
@@ -55,9 +27,9 @@ class MolFile():
 
     def connection_table(self) -> str:
         """
-          6  6  0  0  0  0  0  0  0  0  1 V2000
+          6  6  0  0  0  0  0  0  0  0  1 V3000
         """
-        tab = " {0}  {1}  {2}  {3}  {4}  {5}  {6}  {7}  {8}  {9}  {10} {11}".format(self.atomscount,
+        tab = "{0}  {1}  {2}  {3}  {4}  {5}  {6}  {7}  {8}  {9}  {10} {11}".format(self.atomscount,
                                             self.bondscount, 0, 0, 0, 0, 0, 0, 0, 0, "0999", "V2000")
         return tab
 
@@ -73,15 +45,16 @@ class MolFile():
             y = at[3]
             z = at[4]
             element = at[1]
-            atoms.append("{:>10.4f}{:>10.4f}{:>10.4f} {:<2s}  {}".format(x, y, z, element, zeros))
+            atoms.append("{:>10.4f}{:>10.4f}{:>10.4f} {:<2s}".format(x, y, z, element, zeros))
         return '\n'.join(atoms)
 
     def get_bonds_string(self) -> str:
         """
+        This is not like the file standard. The original standard wants to have fixed format 3 digitss for the bonds.
         """
         blist = []
         for bo in self.bonds:
-            blist.append("{:>3d}{:>3d}  1  0  0  0  0".format(bo[0], bo[1]))
+            blist.append("{:>4d}{:>4d}  1  0  0  0  0".format(bo[0], bo[1]))
         return '\n'.join(blist)
 
     def get_conntable_from_atoms(self, extra_param = 0.16):
@@ -134,7 +107,7 @@ class MolFile():
     def make_mol(self):
         """
         """
-        header = '\n'
+        header = '\n\n'
         connection_table = self.connection_table()
         atoms = self.get_atoms_string()
         bonds = self.get_bonds_string()

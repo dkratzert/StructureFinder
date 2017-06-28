@@ -57,3 +57,5 @@ stdb_main.py
 <tmpfile>
 test.sqlite
 *.sqlite-journal
+
+opengl/jsmol.htm
