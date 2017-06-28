@@ -94,9 +94,9 @@ class StartStructureDB(QMainWindow):
         self.view = QWebEngineView()
         QtWebEngine.initialize()
         self.view.load(QUrl.fromLocalFile(os.path.abspath("./opengl/jsmol-template.htm")))
-        self.view.setMaximumWidth(230)
-        self.view.setMaximumHeight(270)
-        self.ui.glvert.addWidget(self.view)
+        self.view.setMaximumWidth(self.ui.ogllayout.geometry().width())
+        self.view.setMaximumHeight(self.ui.ogllayout.geometry().height())
+        self.ui.ogllayout.addWidget(self.view)
         self.view.show()
 
 

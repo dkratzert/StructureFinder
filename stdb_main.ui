@@ -219,6 +219,9 @@
             <property name="title">
              <string>Properties</string>
             </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
             <layout class="QHBoxLayout" name="horizontalLayout_2">
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -662,11 +665,16 @@
                  <verstretch>0</verstretch>
                 </sizepolicy>
                </property>
-               <layout class="QVBoxLayout" name="verticalLayout_8">
-                <item>
-                 <layout class="QVBoxLayout" name="glvert"/>
-                </item>
-               </layout>
+               <property name="alignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="flat">
+                <bool>false</bool>
+               </property>
+               <property name="checkable">
+                <bool>false</bool>
+               </property>
+               <layout class="QVBoxLayout" name="ogllayout"/>
               </widget>
              </item>
             </layout>
