@@ -29,8 +29,7 @@ class MolFile():
         """
           6  6  0  0  0  0  0  0  0  0  1 V3000
         """
-        tab = "{0}  {1}  {2}  {3}  {4}  {5}  {6}  {7}  {8}  {9}  {10} {11}".format(self.atomscount,
-                                            self.bondscount, 0, 0, 0, 0, 0, 0, 0, 0, "0999", "V2000")
+        tab = "{:>5d}{:>5d}".format(self.atomscount, self.bondscount)
         return tab
 
     def get_atoms_string(self) -> str:
@@ -39,13 +38,13 @@ class MolFile():
         """
         atoms = []
         num = 0
-        zeros = "0  0  0  0  0  0  0  0  0  0  0  0"
+        #zeros = "0  0  0  0  0  0  0  0  0  0  0  0"
         for num, at in enumerate(self.atoms):
             x = at[2]
             y = at[3]
             z = at[4]
             element = at[1]
-            atoms.append("{:>10.4f}{:>10.4f}{:>10.4f} {:<2s}".format(x, y, z, element, zeros))
+            atoms.append("{:>10.4f}{:>10.4f}{:>10.4f} {:<2s}".format(x, y, z, element))
         return '\n'.join(atoms)
 
     def get_bonds_string(self) -> str:

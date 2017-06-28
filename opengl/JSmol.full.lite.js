@@ -13521,9 +13521,9 @@ proto._parseSDF = function(sdf) {
 	var pt = 3;
 	var line = lines[pt++];
 	//alert(line)
-	this.nAtoms = parseFloat(line.substring(0, 3));
+	this.nAtoms = parseFloat(line.substring(0, 5));
 	//alert(this.nAtoms)
-	this.nBonds = parseFloat(line.substring(3, 6));
+	this.nBonds = parseFloat(line.substring(5, 10));
 	//alert(this.nBonds)
 	this.atoms = Array(this.nAtoms);
 	this.bonds = Array(this.nBonds);
@@ -13550,22 +13550,11 @@ proto._parseSDF = function(sdf) {
 		//alert(parseFloat(line.substring(0, 4)))
 		//alert(parseFloat(line.substring(4, 8)))
 		//alert(line.substring(8, 11))
-		switch (order) {
-		case 4: // JmolAdapter.ORDER_AROMATIC;
-		case 5: // JmolAdapter.ORDER_PARTIAL12;
-		case 6: // JmolAdapter.ORDER_AROMATIC_SINGLE;
-		case 8: // JmolAdapter.ORDER_PARTIAL01;
-			order = 1;
-			break;
-		case 7: // JmolAdapter.ORDER_AROMATIC_DOUBLE;
-			order = 2; 
-			break;
-		}
 		var xyz = tm._getPointAlong(a1.xyz, a2.xyz, 0.5);
 		var d = tm._distance(a1.xyz, xyz); 
 		var p1 = (a1.radius < d ? tm._getPointAlong(a1.xyz, xyz, a1.radius/d) : [0, 0, 99999]);
 		var p2 = (a2.radius < d ? tm._getPointAlong(a2.xyz, xyz, a2.radius/d) : [0, 0, 99999]);
-		this.elements[ept++] = this.bonds[i] = {type:1, atoms: [a1, a2], xyz:xyz, pts:[p1,p2], sxyz:[0, 0, 0], spts:[[0,0,0],[0,0,0]], order: order, color: 0};
+		this.elements[ept++] = this.bonds[i] = {type:1, atoms: [a1, a2], xyz:xyz, pts:[p1,p2], sxyz:[0, 0, 0], spts:[[0,0,0],[0,0,0]], order: 1, color: "#FFBF00"};
 	}
 	//alert(this.atoms.length + " atoms " + this.bonds.length + " bonds")
 }
