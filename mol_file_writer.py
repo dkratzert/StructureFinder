@@ -43,47 +43,46 @@ class MolFile():
     def __init__(self, id: str, db: StructureTable, cell: tuple):
         self.db = db
         self.atoms = self.db.get_atoms_table(id, cell, cartesian=True)
-        self.bonds = []
-        self.bondscount = 0
-        self.atomscount = 0
+        self.bonds = self.get_conntable_from_atoms()
+        self.bondscount = len(self.bonds)
+        self.atomscount = len(self.atoms)
 
     def header(self) -> str:
         """
         For JSmol, I don't need a facy header.
         """
-        return "\n\n\n"
+        return "{}{}{}".format(os.linesep, os.linesep, os.linesep)
 
     def connection_table(self) -> str:
         """
           6  6  0  0  0  0  0  0  0  0  1 V2000
         """
-        tab = "  {1}  {2}  {3}  {4}  {5}  {6}  {7}  {8}  {9}  {10}  {11}  {12}".format(
-            self.atomscount, self.bondscount, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, "V2000"
-        )
+        tab = " {0}  {1}  {2}  {3}  {4}  {5}  {6}  {7}  {8}  {9}  {10} {11}".format(self.atomscount,
+                                            self.bondscount, 0, 0, 0, 0, 0, 0, 0, 0, "0999", "V2000")
         return tab
 
-    def atoms(self):
+    def get_atoms_string(self) -> str:
         """
+        Returns a string with an atom in each line.
         """
         atoms = []
-        num = 1
+        num = 0
         zeros = "0  0  0  0  0  0  0  0  0  0  0  0"
-        for num, at in enumerate(self.atoms, 1):
+        for num, at in enumerate(self.atoms):
             x = at[2]
             y = at[3]
             z = at[4]
             element = at[1]
-            atoms.append("   {:>6.4}   {:>6.4}    {:>6.4} {}   {}").format(x, y, z, element, zeros)
-        self.atomscount = num
-        return os.linesep.join(atoms)
+            atoms.append("{:>10.4f}{:>10.4f}{:>10.4f} {:<2s}  {}".format(x, y, z, element, zeros))
+        return '\n'.join(atoms)
 
-    def bonds(self):
+    def get_bonds_string(self) -> str:
         """
         """
         blist = []
         for bo in self.bonds:
-            blist.append("{}  {}  1  0  0  0  0".format(bo[0], bo[1]))
-
+            blist.append("{:>3d}{:>3d}  1  0  0  0  0".format(bo[0], bo[1]))
+        return '\n'.join(blist)
 
     def get_conntable_from_atoms(self, extra_param = 0.16):
         """
@@ -120,13 +119,25 @@ class MolFile():
                 ele2 = elements.ELEMENTS[typ2.capitalize()]
                 if d <= (ele1.covrad + ele2.covrad) + extra_param and d > (ele1.covrad or ele2.covrad):
                     conlist.append([num1, num2])
-                    if [num2, num1] in conlist:
+                    #print(num1, num2, d)
+                    if len(conlist) == 99:
+                        return conlist
+                    if [num2, num1] or [num1, num2] in conlist:
                         continue
         return conlist
 
+    def footer(self) -> str:
+        """
+        """
+        return "M  END{}$$$$".format(os.linesep)
 
     def make_mol(self):
         """
         """
-        mol = ''
+        header = '\n'
+        connection_table = self.connection_table()
+        atoms = self.get_atoms_string()
+        bonds = self.get_bonds_string()
+        footer = self.footer()
+        mol = "{0}{5}{1}{5}{2}{5}{3}{5}{4}".format(header,connection_table,atoms,bonds,footer, '\n')
         return mol

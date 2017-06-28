@@ -17,6 +17,8 @@ from __future__ import print_function
 import os
 import sys
 import time
+from pathlib import Path
+from string import Template
 
 from PyQt5 import uic, QtWidgets, Qt3DExtras, Qt3DRender, Qt3DCore
 from PyQt5.QtWebChannel import QWebChannel
@@ -93,7 +95,7 @@ class StartStructureDB(QMainWindow):
         self.connect_signals_and_slots()
         self.view = QWebEngineView()
         QtWebEngine.initialize()
-        self.view.load(QUrl.fromLocalFile(os.path.abspath("./opengl/jsmol-template.htm")))
+        self.view.load(QUrl.fromLocalFile(os.path.abspath("./opengl/jsmol.htm")))
         self.view.setMaximumWidth(self.ui.ogllayout.geometry().width())
         self.view.setMaximumHeight(self.ui.ogllayout.geometry().height())
         self.ui.ogllayout.addWidget(self.view)
@@ -110,7 +112,7 @@ class StartStructureDB(QMainWindow):
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
         self.ui.searchLineEDit.textChanged.connect(self.search_cell)
         # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
-        self.ui.cifList_treeWidget.clicked.connect(self.get_properties)
+        #self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         #self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
         self.ui.actionClose_Database.triggered.connect(self.close_db)
@@ -173,9 +175,16 @@ class StartStructureDB(QMainWindow):
         """
         Displays the residuals from the cif file
         """
-        cell = self.structures.get_cell_by_id(structure_id)[:6]
-        tst = mol_file_writer.MolFile(structure_id, self.structures, cell)
-        print(len(tst.get_conntable_from_atoms()))
+        cell = self.structures.get_cell_by_id(structure_id)
+        tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6])
+        mol = tst.make_mol()
+        p = Path("./opengl/jsmol-template.htm")
+        templ = p.read_text(encoding='utf-8', errors='ignore')
+        s = Template(templ)
+        content = s.safe_substitute(MyMol=mol)
+        p2 = Path("./opengl/jsmol.htm")
+        p2.write_text(data=content, encoding="utf-8", errors='ignore')
+        self.view.reload()
         if not cif_dic:
             return False
         a, b, c, alpha, beta, gamma, volume = 0, 0, 0, 0, 0, 0, 0

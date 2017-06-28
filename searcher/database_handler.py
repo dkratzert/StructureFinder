@@ -486,8 +486,8 @@ class StructureTable():
             a = lattice.A(cell).orthogonal_matrix
             for at in result:
                 coord = np.matrix([at[2], at[3], at[4]])
-                coords = (a * coord.reshape(3, 1)).tolist()
-                cartesian_coords.append(coords.extend()) # TODO: Hier müssen noch weider name und Atomtyp dazu
+                coords = misc.flatten((a * coord.reshape(3, 1)).tolist())
+                cartesian_coords.append(list(at[:2])+coords)
             return cartesian_coords
         if result:
             return result

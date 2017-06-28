@@ -10,6 +10,8 @@ Created on 09.02.2015
 
 @author: daniel
 """
+import math
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -114,6 +116,5 @@ def distance(x1, y1, z1, x2, y2, z2):
     >>> distance(1, 0, 0, 2, 0, 0, 4)
     1.0
     """
-    import math as m
-    d = m.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
+    d = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
     return d
