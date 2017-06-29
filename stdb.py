@@ -47,6 +47,8 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
+- add a free text search field. Mayby with drop down menu for search type?
+- add a tab with "show all cif entries"
 - try to find a .p4p file to decide if it is a twin, also try to find a TWIN instruction in the cif file
 - allow to scan more than one directory. Just add to previous data
 - Add save button.
@@ -159,9 +161,8 @@ class StartStructureDB(QMainWindow):
     def get_properties(self, item):
         """
         This slot shows the properties of a cif file in the properties widget
-
-        _space_group_symop_operation_xyz oder _symmetry_equiv_pos_as_xyz
         """
+        # TODO: _space_group_symop_operation_xyz oder _symmetry_equiv_pos_as_xyz
         if not self.structures.database.cur:
             return False
         structure_id = item.sibling(item.row(), 2).data()
@@ -174,12 +175,17 @@ class StartStructureDB(QMainWindow):
         """
         Displays the residuals from the cif file
         """
+        mol = ' '
         cell = self.structures.get_cell_by_id(structure_id)
         if not cell:
             self.statusBar().showMessage('Not a valid unit cell!')
             return False
-        tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6])
-        mol = tst.make_mol()
+        try:
+            tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6])
+            mol = tst.make_mol()
+        except (TypeError, KeyError):
+            print("Error in structure", structure_id, "while writing mol file.")
+            pass
         p = Path("./opengl/jsmol-template.htm")
         templ = p.read_text(encoding='utf-8', errors='ignore')
         s = Template(templ)
@@ -187,6 +193,7 @@ class StartStructureDB(QMainWindow):
         p2 = Path("./opengl/jsmol.htm")
         p2.write_text(data=content, encoding="utf-8", errors='ignore')
         self.view.reload()
+        self.ui.cifList_treeWidget.setFocus()
         if not cif_dic:
             return False
         a, b, c, alpha, beta, gamma, volume = 0, 0, 0, 0, 0, 0, 0

@@ -13185,7 +13185,7 @@ proto._spin = function(TF) {
 }
 
 proto._initParams = function() {
-	this.zoom = this.__Info.defaultZoom || 100;
+	this.zoom = this.__Info.defaultZoom || 130;
 	this.doSpin = this.__Info.spin || false;
 	this.center2D = [this._canvas.width/2, this._canvas.height/2, 0];
 	this._getCenterAndRadius();

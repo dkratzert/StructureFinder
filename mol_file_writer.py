@@ -61,8 +61,10 @@ class MolFile():
         """
         returns a connectivity table from the atomic coordinates and the covalence
         radii of the atoms.
+        # a bond is defined with less than the sum of the covalence
+        # radii plus the extra_param:
         TODO:
-        - read FREE command from db to contro binding here.
+        - read FREE command from db to control binding here.
         :param cart_coords: cartesian coordinates of the atoms
         :type cart_coords: list
         :param atom_types: Atomic elements
@@ -73,31 +75,19 @@ class MolFile():
         t1 = time.clock()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
-            name1 = at1[0]
-            typ1 = at1[1]
-            x1 = at1[2]
-            y1 = at1[3]
-            z1 = at1[4]
             for num2, at2 in enumerate(self.atoms, 1):
-                name2 = at2[0]
-                typ2 = at2[1]
-                x2 = at2[2]
-                y2 = at2[3]
-                z2 = at2[4]
-                if name1 == name2:
+                if at1[0] == at2[0]: # name1 = name2
                     continue
-                d = misc.distance(x1, y1, z1, x2, y2, z2)
-                # a bond is defined with less than the sum of the covalence
-                # radii plus the extra_param:
-                ele1 = elements.ELEMENTS[typ1]
-                ele2 = elements.ELEMENTS[typ2]
-                if (ele1.covrad + ele2.covrad) + extra_param >= d > (ele1.covrad or ele2.covrad):
+                d = misc.distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
+                rad1 = elements.ELEMENTS[at1[1]].covrad  # at1[1] -> Atomtyp
+                rad2 = elements.ELEMENTS[at2[1]].covrad
+                if (rad1 + rad2) + extra_param >= d > (rad1 or rad2):
                     conlist.append([num1, num2])
                     #print(num1, num2, d)
                     if [num2, num1] in conlist:
                         continue
         t2 = time.clock()
-        print(t2-t1)
+        print(round(t2-t1, 4), 's')
         return conlist
 
     def footer(self) -> str:

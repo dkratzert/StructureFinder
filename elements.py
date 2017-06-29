@@ -336,6 +336,17 @@ class ElementsDict(object):
 # TODO: Handle Deuterium!
 
 ELEMENTS = ElementsDict(
+    Element(  # A hack by DK to support Deuterium. Not all number are correct!!:
+        1, 'D', 'Deuterium',
+        group=1, period=1, block='s', series=1,
+        mass=2.01410175, eleneg=2.2, eleaffin=0.75420375,
+        covrad=0.32, atmrad=0.79, vdwrad=1.2,
+        tboil=20.28, tmelt=13.81, density=0.084,
+        eleconfig='1s',
+        oxistates='1*, -1',
+        ionenergy=(13.5984, ),
+        isotopes={1: Isotope(1.0078250321, 0.999885, 1),
+                  2: Isotope(2.014101778, 0.000115, 2)}),
     Element(
         1, 'H', 'Hydrogen',
         group=1, period=1, block='s', series=1,
