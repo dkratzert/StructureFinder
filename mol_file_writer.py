@@ -2,6 +2,7 @@
 MOl V3000 format
 """
 import os
+import time
 
 import elements
 from searcher import misc
@@ -69,6 +70,7 @@ class MolFile():
         :param atom_names: atom name in the file like C1
         :type atom_names: list of strings
         """
+        t1 = time.clock()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
             name1 = at1[0]
@@ -87,13 +89,15 @@ class MolFile():
                 d = misc.distance(x1, y1, z1, x2, y2, z2)
                 # a bond is defined with less than the sum of the covalence
                 # radii plus the extra_param:
-                ele1 = elements.ELEMENTS[typ1.capitalize()]
-                ele2 = elements.ELEMENTS[typ2.capitalize()]
-                if d <= (ele1.covrad + ele2.covrad) + extra_param and d > (ele1.covrad or ele2.covrad):
+                ele1 = elements.ELEMENTS[typ1]
+                ele2 = elements.ELEMENTS[typ2]
+                if (ele1.covrad + ele2.covrad) + extra_param >= d > (ele1.covrad or ele2.covrad):
                     conlist.append([num1, num2])
                     #print(num1, num2, d)
-                    if [num2, num1] or [num1, num2] in conlist:
+                    if [num2, num1] in conlist:
                         continue
+        t2 = time.clock()
+        print(t2-t1)
         return conlist
 
     def footer(self) -> str:

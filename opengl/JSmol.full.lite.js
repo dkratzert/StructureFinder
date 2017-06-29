@@ -13508,7 +13508,7 @@ proto._transform = function(pt, spt, c, mat, f, sc) {
 //  adaptable --- 
 
 proto._parse = function(data) {
-	// just MOL data for now
+	// just .mol file data for now
 	this._parseSDF(data);
 }
 
@@ -13534,6 +13534,7 @@ proto._parseSDF = function(sdf) {
 		line = lines[pt++];
 		//alert(line)
 		x = parseFloat(line.substring(0, 10));
+		//str.split(' ').filter(function(i){return i})
 		y = parseFloat(line.substring(10, 20));
 		z = parseFloat(line.substring(20, 30));
 		var e = line.substring(31, 34).replace(/\s+/g, '');
