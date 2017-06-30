@@ -746,7 +746,7 @@
     </property>
     <addaction name="actionImport_directory"/>
     <addaction name="actionImport_file"/>
-    <addaction name="actionExport_Database_s"/>
+    <addaction name="actionSave_Database"/>
     <addaction name="actionClose_Database"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -798,9 +798,9 @@
     <string>Import Directory</string>
    </property>
   </action>
-  <action name="actionExport_Database_s">
+  <action name="actionSave_Database">
    <property name="text">
-    <string>Export Database</string>
+    <string>Save Database</string>
    </property>
   </action>
   <action name="actionOptions">
