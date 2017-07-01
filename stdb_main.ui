@@ -167,7 +167,7 @@
            </widget>
           </item>
           <item row="0" column="0">
-           <layout class="QHBoxLayout" name="searchLayout" stretch="0,0">
+           <layout class="QHBoxLayout" name="searchLayout" stretch="0,0,0,0,0">
             <property name="spacing">
              <number>7</number>
             </property>
@@ -189,6 +189,32 @@
             </item>
             <item>
              <widget class="QLineEdit" name="searchLineEDit"/>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_3">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Preferred</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="txtSearchLabel">
+              <property name="text">
+               <string>Search text:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="txtSearchEdit"/>
             </item>
            </layout>
           </item>
@@ -737,7 +763,7 @@
      <x>0</x>
      <y>0</y>
      <width>1030</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">

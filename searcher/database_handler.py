@@ -232,8 +232,8 @@ class DatabaseRequest():
         :type request: str
         """
         #print('-'*30, 'start')
-        #print('request:', request)
-        #print('args:', args)
+        print('request:', request)
+        print('args:', args)
         #print('_' * 30, 'end')
         try:
             if isinstance(args[0], (list, tuple)):
@@ -460,11 +460,6 @@ class StructureTable():
         beta = beta.split('(')[0]
         gamma = gamma.split('(')[0]
         vol = volume.split('(')[0]
-        #volume = 0.0
-        #try:
-        #    volume = lattice.vol_unitcell(float(a), float(b), float(c), float(alpha), float(beta), float(gamma))
-        #except ValueError:
-        #    print(a, b, c, alpha, beta, gamma)
         if self.database.db_request(req, structure_id, a, b, c, alpha, beta, gamma,
                                     aerror, berror, cerror, alphaerror, betaerror, gammaerror, vol):
             return True
@@ -509,7 +504,6 @@ class StructureTable():
         except TypeError:
             res = '?'
         return res
-
 
     def fill_residuals_table(self, structure_id, cif):
         """
@@ -689,6 +683,22 @@ class StructureTable():
                             '''.format(lower_limit, upper_limit)
         try:
             return searcher.misc.flatten([list(x) for x in self.database.db_request(req)])
+        except TypeError:
+            return False
+
+    def find_by_strings(self, text):
+        """
+        Searches cells with volume between upper and lower limit
+        :param text: Volume uncertaincy where to search
+        :type text: str
+        :return: list
+        """
+        req = '''
+        CREATE VIRTUAL TABLE data USING fts3()
+        SELECT Id FROM Structure WHERE filename LIKE *{}* '''.format(text)
+        try:
+            print(req)
+            return self.database.db_request(req)
         except TypeError:
             return False
 

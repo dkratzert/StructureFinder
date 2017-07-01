@@ -38,7 +38,7 @@ from math import radians, sin
 import mol_file_writer
 from lattice import lattice
 from pymatgen.core.mat_lattice import Lattice
-from searcher import filecrawler, misc
+from searcher import filecrawler, misc, database_handler
 from searcher.database_handler import StructureTable
 from searcher.fileparser import Cif
 uic.compileUiDir('./')
@@ -47,7 +47,7 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
-- add a free text search field. Mayby with drop down menu for search type?
+- add a free text search field. Mayby with drop down menu for search type? Or just search in all text fields that make sense?
 - add a tab with "show all cif entries"
 - try to find a .p4p file to decide if it is a twin, also try to find a TWIN instruction in the cif file
 - allow to scan more than one directory. Just add to previous data
@@ -102,8 +102,6 @@ class StartStructureDB(QMainWindow):
         self.ui.ogllayout.addWidget(self.view)
         self.view.show()
 
-
-
     def connect_signals_and_slots(self):
         """
         Connects the signals and slot.
@@ -111,7 +109,7 @@ class StartStructureDB(QMainWindow):
         """
         self.ui.importDatabaseButton.clicked.connect(self.import_database)
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
-        self.ui.searchLineEDit.textChanged.connect(self.search_cell)
+        self.ui.txtSearchEdit.textChanged.connect(self.search_text)
         # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
         #self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
@@ -275,6 +273,23 @@ class StartStructureDB(QMainWindow):
         return True
 
     @pyqtSlot('QString')
+    def search_text(self, search_string):
+        """
+        searches db for given text
+
+        :param search_string:
+        :type search_string: str
+        :rtype: bool
+        """
+        idlist = []
+        print(search_string)
+        try:
+            idlist = self.structures.find_by_strings(search_string)
+        except AttributeError as e:
+            print(e)
+        print(idlist)
+
+    @pyqtSlot('QString')
     def search_cell(self, search_string):
         """
         searches db for given cell via the cell volume
@@ -296,7 +311,7 @@ class StartStructureDB(QMainWindow):
             volume = lattice.vol_unitcell(*cell)
             # First a list of structures where the volume is similar:
             idlist = self.structures.find_by_volume(volume, threshold=0.03)
-        except ValueError:
+        except (ValueError, AttributeError):
             if not self.full_list:
                 self.show_full_list()
                 self.statusBar().showMessage('Found 0 cells.')
@@ -437,45 +452,6 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.structures.database.commit_db("Committed")
         self.abort_import_button.hide()
-
-    def show_molecule(self):
-        """
-        """
-        view = Qt3DExtras.Qt3DWindow()
-        # view.defaultFrameGraph().setClearColor(QColor(0x4d4d4f))
-        container = QWidget.createWindowContainer(view)
-        # screenSize = view.screen().size()
-        #container.setMinimumSize(QSize(200, 200))
-        s = Molecule3D()
-        rootEntity = s.create_molecule()
-
-        # // Camera
-        camera = view.camera()
-        lens = Qt3DRender.QCameraLens()
-        lens.setOrthographicProjection(-50, 50.0, -50.0, 50.0, -1.0, 500.0)
-        camera.setUpVector(QVector3D(0, 1.0, 0))
-        camera.setPosition(QVector3D(0, 0, 80.0))  # Entfernung
-        camera.setViewCenter(s.mid)
-        # camera.setfieldOfView = 45
-        # For camera controls:
-        camController = Qt3DExtras.QOrbitCameraController(rootEntity)
-        camController.setLinearSpeed(-30.0)
-        camController.setLookSpeed(-480.0)
-        camController.setCamera(camera)
-        # camController.setZoomInLimit(1)
-        lightEntity = QEntity(rootEntity)
-        light = QPointLight(lightEntity)
-        light.setColor(QColor(150, 150, 100))
-        light.setIntensity(0.5)
-        lightEntity.addComponent(light)
-        lightTransform = Qt3DCore.QTransform(lightEntity)
-        lightTransform.setTranslation(QVector3D(0, 0, 80.0))
-        lightEntity.addComponent(lightTransform)
-        view.setRootEntity(rootEntity)
-        container.show()
-        #self.ui.oglLayout.addWidget(container)
-        #view.show()
-
 
 
 
