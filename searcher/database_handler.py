@@ -103,7 +103,7 @@ class DatabaseRequest():
                           ON UPDATE NO ACTION);
                     ''')
         self.cur.execute("""
-            CREATE VIRTUAL TABLE txtsearch USING fts4();
+            CREATE VIRTUAL TABLE txtsearch USING fts4(StructureId INTEGER, filename, dataname, path, tokenize=porter);
         """)
         self.cur.execute('''
                     CREATE TABLE Residuals (
@@ -656,6 +656,16 @@ class StructureTable():
         """
         return ''.join(char for char in some_var if char.isalnum())
 
+    def populate_fulltext_search_table(self):
+        """
+        """
+        SQL_POPULATEINDEX = """
+        INSERT INTO txtsearch (StructureId, filename, dataname, path)
+        SELECT Id, filename, dataname, path
+            FROM Structure
+        """
+        self.database.cur.execute(SQL_POPULATEINDEX)
+
     def get_row_as_dict(self, request):
         """
         Returns a database row as dictionary
@@ -696,10 +706,10 @@ class StructureTable():
         :return: list
         """
         req = '''
-        SELECT Id FROM Structure WHERE filename LIKE *{}* '''.format(text)
+        SELECT * FROM txtsearch WHERE filename MATCH ? '''
         try:
-            print(req)
-            return self.database.db_request(req)
+            #print(req)
+            return self.database.db_request(req, text)
         except TypeError:
             return False
 

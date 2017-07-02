@@ -287,7 +287,11 @@ class StartStructureDB(QMainWindow):
             idlist = self.structures.find_by_strings(search_string)
         except AttributeError as e:
             print(e)
-        print(idlist)
+        try:
+            for l in idlist:
+                print(l)
+        except:
+            pass
 
     @pyqtSlot('QString')
     def search_cell(self, search_string):
@@ -450,6 +454,7 @@ class StartStructureDB(QMainWindow):
         self.ui.statusbar.showMessage('Parsed {} cif files in {} s'.format(n, round(diff, 2)))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        self.structures.populate_fulltext_search_table()
         self.structures.database.commit_db("Committed")
         self.abort_import_button.hide()
 
