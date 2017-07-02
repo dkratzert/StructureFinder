@@ -102,7 +102,9 @@ class DatabaseRequest():
                           ON DELETE CASCADE
                           ON UPDATE NO ACTION);
                     ''')
-
+        self.cur.execute("""
+            CREATE VIRTUAL TABLE txtsearch USING fts4();
+        """)
         self.cur.execute('''
                     CREATE TABLE Residuals (
                         Id                                      INTEGER NOT NULL,
@@ -232,8 +234,8 @@ class DatabaseRequest():
         :type request: str
         """
         #print('-'*30, 'start')
-        print('request:', request)
-        print('args:', args)
+        #print('request:', request)
+        #print('args:', args)
         #print('_' * 30, 'end')
         try:
             if isinstance(args[0], (list, tuple)):
@@ -694,7 +696,6 @@ class StructureTable():
         :return: list
         """
         req = '''
-        CREATE VIRTUAL TABLE data USING fts3()
         SELECT Id FROM Structure WHERE filename LIKE *{}* '''.format(text)
         try:
             print(req)
