@@ -102,9 +102,13 @@ class DatabaseRequest():
                           ON DELETE CASCADE
                           ON UPDATE NO ACTION);
                     ''')
+
         self.cur.execute("""
-            CREATE VIRTUAL TABLE txtsearch USING fts4(StructureId INTEGER, filename, dataname, path, tokenize=porter);
+            CREATE VIRTUAL TABLE txtsearch USING fts4(StructureId INTEGER, filename, dataname, path, 
+                tokenize=unicode61 "tokenchars= .=-_");
         """)
+        #CREATE VIRTUAL TABLE txtsearch USING fts4(StructureId INTEGER, filename, dataname, path, tokenize=porter);
+
         self.cur.execute('''
                     CREATE TABLE Residuals (
                         Id                                      INTEGER NOT NULL,
@@ -706,10 +710,15 @@ class StructureTable():
         :return: list
         """
         req = '''
-        SELECT * FROM txtsearch WHERE filename MATCH ? '''
+        SELECT * FROM txtsearch WHERE filename MATCH ?
+        UNION
+        SELECT * FROM txtsearch WHERE dataname MATCH ?
+        UNION
+        SELECT * FROM txtsearch WHERE path MATCH ?
+        '''
         try:
             #print(req)
-            return self.database.db_request(req, text)
+            return self.database.db_request(req, text, text, text)
         except TypeError:
             return False
 

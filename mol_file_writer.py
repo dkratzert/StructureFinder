@@ -87,7 +87,7 @@ class MolFile():
                     if [num2, num1] in conlist:
                         continue
         t2 = time.clock()
-        print(round(t2-t1, 4), 's')
+        #print(round(t2-t1, 4), 's')
         return conlist
 
     def footer(self) -> str:

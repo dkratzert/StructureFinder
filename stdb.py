@@ -282,16 +282,27 @@ class StartStructureDB(QMainWindow):
         :rtype: bool
         """
         idlist = []
-        print(search_string)
+        if len(search_string) == 0:
+            self.show_full_list()
+            return False
+        if len(search_string) > 2:
+            if not "*" in search_string:
+                search_string = '*'+search_string+'*'
         try:
             idlist = self.structures.find_by_strings(search_string)
         except AttributeError as e:
             print(e)
         try:
-            for l in idlist:
-                print(l)
+            self.ui.cifList_treeWidget.clear()
+            self.statusBar().showMessage("Found {} entries.".format(len(idlist)))
+            for i in idlist:
+                name = i[1]  # .decode("utf-8", "surrogateescape")
+                path = i[3]  # .decode("utf-8", "surrogateescape")
+                id = i[0]
+                self.add_table_row(name, path, id)
+            self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except:
-            pass
+            self.statusBar().showMessage("Nothing found.")
 
     @pyqtSlot('QString')
     def search_cell(self, search_string):
@@ -377,6 +388,15 @@ class StartStructureDB(QMainWindow):
         print("Opened {}.". format(fname[0]))
         self.dbfilename = fname[0]
         self.structures = StructureTable(self.dbfilename)
+        #self.structures.database.cur.execute("""
+        #    CREATE VIRTUAL TABLE txtsearch USING fts4(StructureId INTEGER, filename, dataname, path,
+        #        tokenize=unicode61 "tokenchars= .=-"); """)
+        #SQL_POPULATEINDEX = """
+        #        INSERT INTO txtsearch (StructureId, filename, dataname, path)
+        #        SELECT Id, filename, dataname, path
+        #            FROM Structure
+        #        """
+        #self.structures.database.cur.execute(SQL_POPULATEINDEX)
         self.show_full_list()
         if not self.structures:
             return False
