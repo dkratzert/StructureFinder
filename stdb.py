@@ -352,7 +352,7 @@ class StartStructureDB(QMainWindow):
                         float(dic['gamma']) )
                 except ValueError:
                     continue
-                map = lattice1.find_mapping(lattice2, ltol=0.2, atol=1, skip_rotation_matrix=True)
+                map = lattice1.find_mapping(lattice2, ltol=0.1, atol=0.6, skip_rotation_matrix=True)
                 if map:
                     idlist2.append(i)
         searchresult = self.structures.get_all_structure_names(idlist2)
