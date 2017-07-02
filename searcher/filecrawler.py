@@ -21,7 +21,6 @@ from pprint import pprint
 import time
 from searcher.database_handler import StructureTable, DatabaseRequest
 from searcher.fileparser import Cif
-from searcher.spinner import Spinner
 
 
 def create_file_list(searchpath='None', endings='cif'):
@@ -65,8 +64,6 @@ def put_cifs_in_db(searchpath):
     db.initialize_db()
     structures = StructureTable(dbfilename)
     n = 1
-    spinner = Spinner()
-    spinner.start()
     time1 = time.clock()
     for filepth in create_file_list(str(searchpath), endings='cif'):
         if not filepth.is_file():
@@ -76,14 +73,15 @@ def put_cifs_in_db(searchpath):
         if not cif.ok:
             continue
         if cif and filepth.name and path:
-            fill_db_tables(cif, filepth.name, path, n, structures)
+            tst = fill_db_tables(cif, filepth.name, path, n, structures)
+            if not tst:
+                continue
             n += 1
         if n % 400 == 0:
             print('{} files ...'.format(n))
             structures.database.commit_db()
     time2 = time.clock()
     diff = time2 - time1
-    spinner.stop()
     print('\nAdded {} cif files to database in: {} s'.format(n, round(diff, 2)))
     structures.populate_fulltext_search_table()
     structures.database.commit_db("Committed")

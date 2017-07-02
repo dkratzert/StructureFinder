@@ -425,7 +425,6 @@ class StartStructureDB(QMainWindow):
         :return: None
         """
         self.statusBar().showMessage('')
-        self.abort_import_button.show()
         self.close_db()
         self.dbfilename = 'test.sqlite'
         try:
@@ -439,6 +438,7 @@ class StartStructureDB(QMainWindow):
         if not fname:
             return False
         self.ui.cifList_treeWidget.show()
+        self.abort_import_button.show()
         # TODO: implement multiple cells in one cif file:
         n = 1
         min = 0
@@ -463,7 +463,7 @@ class StartStructureDB(QMainWindow):
                 n += 1
                 if n % 200 == 0:
                     self.structures.database.commit_db()
-            num += 1
+                num += 1
             if not self.decide_import:
                 self.abort_import_button.hide()
                 self.decide_import = True
