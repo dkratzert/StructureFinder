@@ -92,7 +92,22 @@ def put_cifs_in_db(searchpath):
 
 def fill_db_tables(cif, filename, path, structure_id, structures):
     """
-    Fill all info from cif file into the database tables 
+    Fill all info from cif file into the database tables
+    _atom_site_label
+    _atom_site_type_symbol
+    _atom_site_fract_x
+    _atom_site_fract_y
+    _atom_site_fract_z
+    _atom_site_U_iso_or_equiv
+    _atom_site_adp_type
+    _atom_site_occupancy
+    _atom_site_site_symmetry_order
+    _atom_site_calc_flag
+    _atom_site_refinement_flags_posn
+    _atom_site_refinement_flags_adp
+    _atom_site_refinement_flags_occupancy
+    _atom_site_disorder_assembly
+    _atom_site_disorder_group
     :param structures: structures database object
     :param cif: 
     :param filename: 

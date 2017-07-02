@@ -39,13 +39,8 @@ class MolFile():
         """
         atoms = []
         num = 0
-        #zeros = "0  0  0  0  0  0  0  0  0  0  0  0"
         for num, at in enumerate(self.atoms):
-            x = at[2]
-            y = at[3]
-            z = at[4]
-            element = at[1]
-            atoms.append("{:>10.4f}{:>10.4f}{:>10.4f} {:<2s}".format(x, y, z, element))
+            atoms.append("{:>10.4f}{:>10.4f}{:>10.4f} {:<2s}".format(at[2], at[3], at[4], at[1]))
         return '\n'.join(atoms)
 
     def get_bonds_string(self) -> str:

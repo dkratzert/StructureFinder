@@ -47,16 +47,18 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
-- add a free text search field. Mayby with drop down menu for search type? Or just search in all text fields that make sense?
-- add a tab with "show all cif entries"
+- add recent files list
+- get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
+- add a button: open in ...
+- add a tab that shows all cif data in a tableview
 - try to find a .p4p file to decide if it is a twin, also try to find a TWIN instruction in the cif file
 - allow to scan more than one directory. Just add to previous data
-- Add save button.
+- Add save button. 
+- add save db button, create db as tmpfile and move to target.
 - structure code
-- make 3D model from atoms
+- grow structure. parse symm cards
 - make file type more flexible. handle .res and .cif equally
 - group structures in measurements
-- add abort button for indexer
 - recognize already indexed files. Add a hash for each file. Make a database search with executemany()
   to get a list of files where hashes exist. Remove results from file crawler. May I need a hash run over 
   all files before the cif parsing run? Or just calc hash, search in db and then decide to parse cif or not? 
@@ -67,7 +69,7 @@ TODO:
 - the filecrawler should collect the bruker base file name, also for Rigaku? And STOE?
 - add measurement specific data to the db, e.g. machine from frame, temp from frame, 
 - pressing search in advanced tab will return to base tab with results
-- add save db button, create db as tmpfile and move to target.
+
 """
 
 
@@ -110,6 +112,7 @@ class StartStructureDB(QMainWindow):
         self.ui.importDatabaseButton.clicked.connect(self.import_database)
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
         self.ui.txtSearchEdit.textChanged.connect(self.search_text)
+        self.ui.searchLineEDit.textChanged.connect(self.search_cell)
         # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
         #self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
@@ -296,10 +299,10 @@ class StartStructureDB(QMainWindow):
             self.ui.cifList_treeWidget.clear()
             self.statusBar().showMessage("Found {} entries.".format(len(idlist)))
             for i in idlist:
-                name = i[1]  # .decode("utf-8", "surrogateescape")
-                path = i[3]  # .decode("utf-8", "surrogateescape")
-                id = i[0]
-                self.add_table_row(name, path, id)
+                # name = i[1]  # .decode("utf-8", "surrogateescape")
+                # path = i[3]  # .decode("utf-8", "surrogateescape")
+                # id = i[0]
+                self.add_table_row(i[1], i[3], i[0])
             self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except:
             self.statusBar().showMessage("Nothing found.")
@@ -318,9 +321,7 @@ class StartStructureDB(QMainWindow):
         except (TypeError, ValueError):
             return False
         if len(cell) != 6:
-            if not self.full_list:
-                self.show_full_list()
-                self.statusBar().showMessage('Not a valid unit cell!')
+            self.statusBar().showMessage('Not a valid unit cell!')
             return True
         try:
             volume = lattice.vol_unitcell(*cell)
@@ -335,21 +336,26 @@ class StartStructureDB(QMainWindow):
         idlist2 = []
         if idlist:
             lattice1 = Lattice.from_parameters(*cell)
+            self.statusBar().clearMessage()
             for num, i in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist)-1)
                 request = """select * from cell where StructureId = {}""".format(i)
                 dic = self.structures.get_row_as_dict(request)
-                cell2 = [dic['a'], dic['b'], dic['c'], dic['alpha'], dic['beta'], dic['gamma']]
                 try:
-                    cell2 = [float(x) for x in cell2]
+                    lattice2 = Lattice.from_parameters(
+                        float(dic['a']),
+                        float(dic['b']),
+                        float(dic['c']),
+                        float(dic['alpha']),
+                        float(dic['beta']),
+                        float(dic['gamma']) )
                 except ValueError:
                     continue
-                lattice2 = Lattice.from_parameters(*cell2)
                 map = lattice1.find_mapping(lattice2, ltol=0.2, atol=1, skip_rotation_matrix=True)
                 if map:
                     idlist2.append(i)
         searchresult = self.structures.get_all_structure_names(idlist2)
-        self.statusBar().showMessage('Found {} cells. {}'.format(len(idlist2), idlist2))
+        self.statusBar().showMessage('Found {} cells.'.format(len(idlist2)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for i in searchresult:

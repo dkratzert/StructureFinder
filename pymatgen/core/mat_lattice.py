@@ -552,9 +552,8 @@ class Lattice():
 
             None is returned if no matches are found.
         """
-        for x in self.find_all_mappings(other_lattice, ltol, atol,
-                                        skip_rotation_matrix=skip_rotation_matrix):
-            return x
+        return self.find_all_mappings(other_lattice, ltol, atol,
+                                        skip_rotation_matrix=skip_rotation_matrix)
 
     def get_lll_reduced_lattice(self, delta=0.75):
         if delta not in self._lll_matrix_mappings:
