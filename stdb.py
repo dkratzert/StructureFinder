@@ -48,6 +48,7 @@ from stdb_main import Ui_stdbMainwindow
 """
 TODO:
 - add recent files list
+- what if there is no volume in the cif? I then should calculate it! Otherwise cell is never found!
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - add a button: open in ...
 - add a tab that shows all cif data in a tableview
@@ -175,6 +176,7 @@ class StartStructureDB(QMainWindow):
         Displays the residuals from the cif file
         """
         mol = ' '
+        self.clear_fields()
         cell = self.structures.get_cell_by_id(structure_id)
         if not cell:
             self.statusBar().showMessage('Not a valid unit cell!')
@@ -198,7 +200,8 @@ class StartStructureDB(QMainWindow):
         a, b, c, alpha, beta, gamma, volume = 0, 0, 0, 0, 0, 0, 0
         if cell:
             a, b, c, alpha, beta, gamma, volume = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6]
-        if not all((a, b, c, alpha, beta, gamma)):
+        if not all((a, b, c, alpha, beta, gamma, volume)):
+            self.ui.cellField.setText('            ')
             return False
         #self.ui.cellField.setMinimumWidth(180)
         celltxt = r"""
@@ -387,7 +390,7 @@ class StartStructureDB(QMainWindow):
         :rtype: bool
         """
         self.close_db()
-        fname = QFileDialog.getOpenFileName(self, caption='Open File', directory='./')
+        fname = QFileDialog.getOpenFileName(self, caption='Open File', directory='./', filter="*.sqlite")
         if not fname[0]:
             return False
         print("Opened {}.". format(fname[0]))
@@ -413,7 +416,7 @@ class StartStructureDB(QMainWindow):
         mess = "Loaded {} entries.".format(id)
         self.statusBar().showMessage(mess)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
 
     def import_cif_dirs(self):
@@ -421,6 +424,7 @@ class StartStructureDB(QMainWindow):
         Imports cif files from a certain directory
         :return: None
         """
+        self.statusBar().showMessage('')
         self.abort_import_button.show()
         self.close_db()
         self.dbfilename = 'test.sqlite'
@@ -446,15 +450,16 @@ class StartStructureDB(QMainWindow):
             self.progressbar(num, min, 20)
             if not filepth.is_file():
                 continue
-            filename = filepth.name
             path = str(filepth.parents[0])
-            structure_id = n
             cif = Cif(filepth)
             if not cif.ok:
                 continue
-            if cif and filename and path:
-                filecrawler.fill_db_tables(cif, filename, path, structure_id, self.structures)
-                self.add_table_row(filename, path, str(n))
+            if cif:
+                # is the StructureId
+                tst = filecrawler.fill_db_tables(cif, filepth.name, path, n, self.structures)
+                if not tst:
+                    continue
+                self.add_table_row(filepth.name, path, str(n))
                 n += 1
                 if n % 200 == 0:
                     self.structures.database.commit_db()
@@ -468,12 +473,35 @@ class StartStructureDB(QMainWindow):
         self.progress.hide()
         self.ui.statusbar.showMessage('Parsed {} cif files in {} s'.format(n-1, round(diff, 2)))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.structures.populate_fulltext_search_table()
         self.structures.database.commit_db("Committed")
         self.abort_import_button.hide()
 
-
+    def clear_fields(self):
+        """
+        Clears all residuals fields.
+        """
+        self.ui.completeLineEdit.clear()
+        self.ui.dataReflnsLineEdit.clear()
+        self.ui.dLineEdit.clear()
+        self.ui.goofLineEdit.clear()
+        self.ui.maxShiftLineEdit.clear()
+        self.ui.numParametersLineEdit.clear()
+        self.ui.numRestraintsLineEdit.clear()
+        self.ui.peakLineEdit.clear()
+        self.ui.r1LineEdit.clear()
+        self.ui.reflTotalLineEdit.clear()
+        self.ui.rintLineEdit.clear()
+        self.ui.rsigmaLineEdit.clear()
+        self.ui.SpaceGroupLineEdit.clear()
+        self.ui.sumFormulaLineEdit.clear()
+        self.ui.temperatureLineEdit.clear()
+        self.ui.thetaFullLineEdit.clear()
+        self.ui.thetaMaxLineEdit.clear()
+        self.ui.wavelengthLineEdit.clear()
+        self.ui.wR2LineEdit.clear()
+        self.ui.zLineEdit.clear()
 
 class QmlAusgabe(object):
     def __init__(self, pathToQmlFile="beispiel.qml"):

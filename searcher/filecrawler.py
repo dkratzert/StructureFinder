@@ -71,14 +71,12 @@ def put_cifs_in_db(searchpath):
     for filepth in create_file_list(str(searchpath), endings='cif'):
         if not filepth.is_file():
             continue
-        filename = filepth.name
         path = str(filepth.parents[0])
-        structure_id = n
-        cif = Cif(filepth)
+        cif = Cif(filepth)  # parses the cif file
         if not cif.ok:
             continue
-        if cif and filename and path:
-            fill_db_tables(cif, filename, path, structure_id, structures)
+        if cif and filepth.name and path:
+            fill_db_tables(cif, filepth.name, path, n, structures)
             n += 1
         if n % 400 == 0:
             print('{} files ...'.format(n))
