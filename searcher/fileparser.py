@@ -184,8 +184,12 @@ class Cif():
                 # Collect all data items outside loops:
                 if line.startswith('_') and not loop:
                     lsplit = line.split()
+                    # add regular cif items:
                     if len(lsplit) > 1:
                         self.cif_data[lsplit[0]] = " ".join(delimit_line(" ".join(lsplit[1:])))
+                    # add one-liners that are just in the next line:
+                    if len(lsplit) == 1 and txt[num + 1][0] != ";" and txt[num + 1][0] != "_":
+                        self.cif_data[lsplit[0]] = " ".join(delimit_line(txt[num + 1]))
                 if line.startswith("_shelx_hkl_file") or line.startswith("_refln_"):
                     hkl = True
                     continue

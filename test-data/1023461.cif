@@ -21,7 +21,8 @@ _citation_id
 _citation_doi
 _citation_year
 1 10.1016/j.apsb.2017.04.011 2017
-_audit_update_record             
+
+_audit_update_record
 ;
 2015-01-04 deposited with the CCDC.
 2017-05-18 downloaded from the CCDC.

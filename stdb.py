@@ -90,8 +90,6 @@ class StartStructureDB(QMainWindow):
         self.ui.statusbar.addWidget(self.progress)
         self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
-        # The treewidget with the cif list:
-        self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         self.show()
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
@@ -377,10 +375,11 @@ class StartStructureDB(QMainWindow):
             name = name.decode("utf-8", "surrogateescape")
         if isinstance(path, bytes):
             path = path.decode("utf-8", "surrogateescape")
-        self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
-        self.str_tree.setText(0, name)  # name
-        self.str_tree.setText(1, path)  # path
-        self.str_tree.setData(2, 0, id)  # id
+        tree_item = QTreeWidgetItem()
+        tree_item.setText(0, name)  # name
+        tree_item.setText(1, path)  # path
+        tree_item.setData(2, 0, id)  # id
+        self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
 
     def import_database(self):
         """
@@ -394,15 +393,6 @@ class StartStructureDB(QMainWindow):
         print("Opened {}.". format(fname[0]))
         self.dbfilename = fname[0]
         self.structures = StructureTable(self.dbfilename)
-        #self.structures.database.cur.execute("""
-        #    CREATE VIRTUAL TABLE txtsearch USING fts4(StructureId INTEGER, filename, dataname, path,
-        #        tokenize=unicode61 "tokenchars= .=-"); """)
-        #SQL_POPULATEINDEX = """
-        #        INSERT INTO txtsearch (StructureId, filename, dataname, path)
-        #        SELECT Id, filename, dataname, path
-        #            FROM Structure
-        #        """
-        #self.structures.database.cur.execute(SQL_POPULATEINDEX)
         self.show_full_list()
         if not self.structures:
             return False
@@ -414,13 +404,12 @@ class StartStructureDB(QMainWindow):
         :return: 
         """
         self.ui.cifList_treeWidget.clear()
-        self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         id = 0
         for i in self.structures.get_all_structure_names():
-            name = i[3]
-            path = i[2]#.decode("utf-8", "surrogateescape")
+            #name = i[3]
+            #path = i[2]#.decode("utf-8", "surrogateescape")
             id = i[0]
-            self.add_table_row(name, path, id)
+            self.add_table_row(i[3], i[2], i[0])
         mess = "Loaded {} entries.".format(id)
         self.statusBar().showMessage(mess)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
@@ -477,7 +466,7 @@ class StartStructureDB(QMainWindow):
         time2 = time.clock()
         diff = time2 - time1
         self.progress.hide()
-        self.ui.statusbar.showMessage('Parsed {} cif files in {} s'.format(n, round(diff, 2)))
+        self.ui.statusbar.showMessage('Parsed {} cif files in {} s'.format(n-1, round(diff, 2)))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.structures.populate_fulltext_search_table()
