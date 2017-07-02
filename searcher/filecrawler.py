@@ -80,13 +80,14 @@ def put_cifs_in_db(searchpath):
         if cif and filename and path:
             fill_db_tables(cif, filename, path, structure_id, structures)
             n += 1
-        if n % 300 == 0:
+        if n % 400 == 0:
             print('{} files ...'.format(n))
             structures.database.commit_db()
     time2 = time.clock()
     diff = time2 - time1
     spinner.stop()
     print('\nAdded {} cif files to database in: {} s'.format(n, round(diff, 2)))
+    structures.populate_fulltext_search_table()
     structures.database.commit_db("Committed")
 
 
