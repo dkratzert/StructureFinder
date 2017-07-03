@@ -27,7 +27,7 @@ from searcher.fileparser import Cif
 
 
 excluded_names = (
-        {'ROOT', '.OLEX', 'TMP', 'TEMP', 'akfischer'}
+        {'ROOT', '.OLEX', 'TMP', 'TEMP', 'akfischer', 'Papierkorb', 'Recycle.Bin'}
     )
 
 
