@@ -23,7 +23,7 @@ from searcher.database_handler import StructureTable, DatabaseRequest
 from searcher.fileparser import Cif
 
 
-def create_file_list(searchpath='None', endings='cif'):
+def create_file_list(searchpath='None', ending='cif'):
     """
     walks through the file system and collects cells from res/cif files
     into a database
@@ -33,7 +33,8 @@ def create_file_list(searchpath='None', endings='cif'):
         sys.exit()
     print('collecting files...')
     p = Path(searchpath)
-    paths = p.rglob("*.cif")
+    #[path.as_posix() for path in Path.cwd().rglob('*.py')]
+    paths = p.rglob("*.{}".format(ending))
     return paths
 
 
@@ -59,13 +60,16 @@ def filewalker_walk(startdir, endings, add_excludes=''):
 
 
 def put_cifs_in_db(searchpath):
+    """
+    Command line version of file crawler.
+    """
     dbfilename = "structuredb.sqlite"
     db = DatabaseRequest(dbfilename)
     db.initialize_db()
     structures = StructureTable(dbfilename)
     n = 1
     time1 = time.clock()
-    for filepth in create_file_list(str(searchpath), endings='cif'):
+    for filepth in create_file_list(str(searchpath), ending='cif'):
         if not filepth.is_file():
             continue
         path = str(filepth.parents[0])

@@ -102,6 +102,7 @@ class StartStructureDB(QMainWindow):
         self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
         self.view.show()
+        self.excluded_paths = ['test-data', 'root', '.olex', 'tmp']
 
     def connect_signals_and_slots(self):
         """
@@ -444,7 +445,7 @@ class StartStructureDB(QMainWindow):
         min = 0
         num = 0
         time1 = time.clock()
-        for filepth in filecrawler.create_file_list(str(fname), endings='cif'):
+        for filepth in filecrawler.create_file_list(str(fname), ending='cif'):
             if num == 20:
                 num = 0
             self.progressbar(num, min, 20)
