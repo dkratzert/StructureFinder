@@ -39,7 +39,7 @@ def create_file_list(searchpath='None', ending='cif'):
     if not os.path.isdir(searchpath):
         print('search path {0} not found! Or no directory!'.format(searchpath))
         sys.exit()
-    print('collecting files...')
+    print('collecting files... (may take some minutes)')
     p = Path(searchpath)
     paths = p.rglob("*.{}".format(ending))
     return paths
