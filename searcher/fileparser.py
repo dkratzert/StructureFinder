@@ -83,7 +83,7 @@ class Cif():
         try:
             self.ok = self.parsefile(file)
         except Exception as e:
-            print(e)
+            #print(e)
             self.ok = False
 
     def parsefile(self, file):

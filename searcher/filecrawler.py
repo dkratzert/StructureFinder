@@ -15,12 +15,49 @@ Created on 09.02.2015
 import os
 import fnmatch as fn
 import sys
-from pathlib import Path
+from pathlib import Path, _WindowsFlavour, _PosixFlavour
 from pprint import pprint
 
 import time
 from searcher.database_handler import StructureTable, DatabaseRequest
 from searcher.fileparser import Cif
+
+
+class MyWindowsflavor(_WindowsFlavour):
+    """
+    Reimplementation of reserved paths to exclude certain path from the file crawler
+    """
+    reserved_names = (
+        {'CON', 'PRN', 'AUX', 'NUL'} |
+        {'COM%d' % i for i in range(1, 10)} |
+        {'LPT%d' % i for i in range(1, 10)} |
+        {'TEST-DATA', 'ROOT', '.OLEX', 'TMP', 'TEMP'}
+    )
+
+    def __init__(self):
+        super().__init__()
+        print(self.reserved_names)
+
+
+class MyPosixFlavour(_PosixFlavour):
+    """
+    Reimplementation of reserved paths to exclude certain path from the file crawler
+    """
+    reserved_names = (
+        {'TEST-DATA', 'ROOT', '.OLEX', 'TMP', 'TEMP'}
+    )
+
+    def __init__(self):
+        super().__init__()
+
+    def is_reserved(self, parts):
+        # NOTE: the rules for reserved names seem somewhat complicated
+        # (e.g. r"..\NUL" is reserved but not r"foo\NUL").
+        # We err on the side of caution and return True for paths which are
+        # not considered reserved by Windows.
+        if not parts:
+            return False
+        return parts[-1].partition('.')[0].upper() in self.reserved_names
 
 
 def create_file_list(searchpath='None', ending='cif'):
@@ -33,7 +70,6 @@ def create_file_list(searchpath='None', ending='cif'):
         sys.exit()
     print('collecting files...')
     p = Path(searchpath)
-    #[path.as_posix() for path in Path.cwd().rglob('*.py')]
     paths = p.rglob("*.{}".format(ending))
     return paths
 
