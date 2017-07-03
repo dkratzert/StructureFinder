@@ -103,6 +103,12 @@ class DatabaseRequest():
                           ON UPDATE NO ACTION);
                     ''')
 
+        self.cur.execute("""
+            CREATE VIRTUAL TABLE txtsearch USING fts4(StructureId INTEGER, filename, dataname, path, 
+                tokenize=unicode61 "tokenchars= .=-_");
+        """)
+        #CREATE VIRTUAL TABLE txtsearch USING fts4(StructureId INTEGER, filename, dataname, path, tokenize=porter);
+
         self.cur.execute('''
                     CREATE TABLE Residuals (
                         Id                                      INTEGER NOT NULL,
@@ -460,11 +466,6 @@ class StructureTable():
         beta = beta.split('(')[0]
         gamma = gamma.split('(')[0]
         vol = volume.split('(')[0]
-        #volume = 0.0
-        #try:
-        #    volume = lattice.vol_unitcell(float(a), float(b), float(c), float(alpha), float(beta), float(gamma))
-        #except ValueError:
-        #    print(a, b, c, alpha, beta, gamma)
         if self.database.db_request(req, structure_id, a, b, c, alpha, beta, gamma,
                                     aerror, berror, cerror, alphaerror, betaerror, gammaerror, vol):
             return True
@@ -509,7 +510,6 @@ class StructureTable():
         except TypeError:
             res = '?'
         return res
-
 
     def fill_residuals_table(self, structure_id, cif):
         """
@@ -660,6 +660,16 @@ class StructureTable():
         """
         return ''.join(char for char in some_var if char.isalnum())
 
+    def populate_fulltext_search_table(self):
+        """
+        """
+        SQL_POPULATEINDEX = """
+        INSERT INTO txtsearch (StructureId, filename, dataname, path)
+        SELECT Id, filename, dataname, path
+            FROM Structure
+        """
+        self.database.cur.execute(SQL_POPULATEINDEX)
+
     def get_row_as_dict(self, request):
         """
         Returns a database row as dictionary
@@ -689,6 +699,26 @@ class StructureTable():
                             '''.format(lower_limit, upper_limit)
         try:
             return searcher.misc.flatten([list(x) for x in self.database.db_request(req)])
+        except TypeError:
+            return False
+
+    def find_by_strings(self, text):
+        """
+        Searches cells with volume between upper and lower limit
+        :param text: Volume uncertaincy where to search
+        :type text: str
+        :return: list
+        """
+        req = '''
+        SELECT * FROM txtsearch WHERE filename MATCH ?
+        UNION
+        SELECT * FROM txtsearch WHERE dataname MATCH ?
+        UNION
+        SELECT * FROM txtsearch WHERE path MATCH ?
+        '''
+        try:
+            #print(req)
+            return self.database.db_request(req, text, text, text)
         except TypeError:
             return False
 

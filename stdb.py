@@ -38,7 +38,7 @@ from math import radians, sin
 import mol_file_writer
 from lattice import lattice
 from pymatgen.core.mat_lattice import Lattice
-from searcher import filecrawler, misc
+from searcher import filecrawler, misc, database_handler
 from searcher.database_handler import StructureTable
 from searcher.fileparser import Cif
 uic.compileUiDir('./')
@@ -47,16 +47,19 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
-- add a free text search field. Mayby with drop down menu for search type?
-- add a tab with "show all cif entries"
+- add recent files list
+- what if there is no volume in the cif? I then should calculate it! Otherwise cell is never found!
+- get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
+- add a button: open in ...
+- add a tab that shows all cif data in a tableview
 - try to find a .p4p file to decide if it is a twin, also try to find a TWIN instruction in the cif file
 - allow to scan more than one directory. Just add to previous data
-- Add save button.
+- Add save button. 
+- add save db button, create db as tmpfile and move to target.
 - structure code
-- make 3D model from atoms
+- grow structure. parse symm cards
 - make file type more flexible. handle .res and .cif equally
 - group structures in measurements
-- add abort button for indexer
 - recognize already indexed files. Add a hash for each file. Make a database search with executemany()
   to get a list of files where hashes exist. Remove results from file crawler. May I need a hash run over 
   all files before the cif parsing run? Or just calc hash, search in db and then decide to parse cif or not? 
@@ -67,7 +70,7 @@ TODO:
 - the filecrawler should collect the bruker base file name, also for Rigaku? And STOE?
 - add measurement specific data to the db, e.g. machine from frame, temp from frame, 
 - pressing search in advanced tab will return to base tab with results
-- add save db button, create db as tmpfile and move to target.
+
 """
 
 
@@ -88,8 +91,6 @@ class StartStructureDB(QMainWindow):
         self.ui.statusbar.addWidget(self.progress)
         self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
-        # The treewidget with the cif list:
-        self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         self.show()
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
@@ -102,8 +103,6 @@ class StartStructureDB(QMainWindow):
         self.ui.ogllayout.addWidget(self.view)
         self.view.show()
 
-
-
     def connect_signals_and_slots(self):
         """
         Connects the signals and slot.
@@ -111,6 +110,7 @@ class StartStructureDB(QMainWindow):
         """
         self.ui.importDatabaseButton.clicked.connect(self.import_database)
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
+        self.ui.txtSearchEdit.textChanged.connect(self.search_text)
         self.ui.searchLineEDit.textChanged.connect(self.search_cell)
         # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
         #self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
@@ -176,6 +176,7 @@ class StartStructureDB(QMainWindow):
         Displays the residuals from the cif file
         """
         mol = ' '
+        self.clear_fields()
         cell = self.structures.get_cell_by_id(structure_id)
         if not cell:
             self.statusBar().showMessage('Not a valid unit cell!')
@@ -199,7 +200,8 @@ class StartStructureDB(QMainWindow):
         a, b, c, alpha, beta, gamma, volume = 0, 0, 0, 0, 0, 0, 0
         if cell:
             a, b, c, alpha, beta, gamma, volume = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6]
-        if not all((a, b, c, alpha, beta, gamma)):
+        if not all((a, b, c, alpha, beta, gamma, volume)):
+            self.ui.cellField.setText('            ')
             return False
         #self.ui.cellField.setMinimumWidth(180)
         celltxt = r"""
@@ -275,6 +277,38 @@ class StartStructureDB(QMainWindow):
         return True
 
     @pyqtSlot('QString')
+    def search_text(self, search_string):
+        """
+        searches db for given text
+
+        :param search_string:
+        :type search_string: str
+        :rtype: bool
+        """
+        idlist = []
+        if len(search_string) == 0:
+            self.show_full_list()
+            return False
+        if len(search_string) > 2:
+            if not "*" in search_string:
+                search_string = '*'+search_string+'*'
+        try:
+            idlist = self.structures.find_by_strings(search_string)
+        except AttributeError as e:
+            print(e)
+        try:
+            self.ui.cifList_treeWidget.clear()
+            self.statusBar().showMessage("Found {} entries.".format(len(idlist)))
+            for i in idlist:
+                # name = i[1]  # .decode("utf-8", "surrogateescape")
+                # path = i[3]  # .decode("utf-8", "surrogateescape")
+                # id = i[0]
+                self.add_table_row(i[1], i[3], i[0])
+            self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        except:
+            self.statusBar().showMessage("Nothing found.")
+
+    @pyqtSlot('QString')
     def search_cell(self, search_string):
         """
         searches db for given cell via the cell volume
@@ -288,15 +322,13 @@ class StartStructureDB(QMainWindow):
         except (TypeError, ValueError):
             return False
         if len(cell) != 6:
-            if not self.full_list:
-                self.show_full_list()
-                self.statusBar().showMessage('Not a valid unit cell!')
+            self.statusBar().showMessage('Not a valid unit cell!')
             return True
         try:
             volume = lattice.vol_unitcell(*cell)
             # First a list of structures where the volume is similar:
             idlist = self.structures.find_by_volume(volume, threshold=0.03)
-        except ValueError:
+        except (ValueError, AttributeError):
             if not self.full_list:
                 self.show_full_list()
                 self.statusBar().showMessage('Found 0 cells.')
@@ -305,21 +337,26 @@ class StartStructureDB(QMainWindow):
         idlist2 = []
         if idlist:
             lattice1 = Lattice.from_parameters(*cell)
+            self.statusBar().clearMessage()
             for num, i in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist)-1)
                 request = """select * from cell where StructureId = {}""".format(i)
                 dic = self.structures.get_row_as_dict(request)
-                cell2 = [dic['a'], dic['b'], dic['c'], dic['alpha'], dic['beta'], dic['gamma']]
                 try:
-                    cell2 = [float(x) for x in cell2]
+                    lattice2 = Lattice.from_parameters(
+                        float(dic['a']),
+                        float(dic['b']),
+                        float(dic['c']),
+                        float(dic['alpha']),
+                        float(dic['beta']),
+                        float(dic['gamma']) )
                 except ValueError:
                     continue
-                lattice2 = Lattice.from_parameters(*cell2)
-                map = lattice1.find_mapping(lattice2, ltol=0.2, atol=1, skip_rotation_matrix=True)
+                map = lattice1.find_mapping(lattice2, ltol=0.1, atol=0.6, skip_rotation_matrix=True)
                 if map:
                     idlist2.append(i)
         searchresult = self.structures.get_all_structure_names(idlist2)
-        self.statusBar().showMessage('Found {} cells. {}'.format(len(idlist2), idlist2))
+        self.statusBar().showMessage('Found {} cells.'.format(len(idlist2)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for i in searchresult:
@@ -341,10 +378,11 @@ class StartStructureDB(QMainWindow):
             name = name.decode("utf-8", "surrogateescape")
         if isinstance(path, bytes):
             path = path.decode("utf-8", "surrogateescape")
-        self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
-        self.str_tree.setText(0, name)  # name
-        self.str_tree.setText(1, path)  # path
-        self.str_tree.setData(2, 0, id)  # id
+        tree_item = QTreeWidgetItem()
+        tree_item.setText(0, name)  # name
+        tree_item.setText(1, path)  # path
+        tree_item.setData(2, 0, id)  # id
+        self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
 
     def import_database(self):
         """
@@ -352,7 +390,7 @@ class StartStructureDB(QMainWindow):
         :rtype: bool
         """
         self.close_db()
-        fname = QFileDialog.getOpenFileName(self, caption='Open File', directory='./')
+        fname = QFileDialog.getOpenFileName(self, caption='Open File', directory='./', filter="*.sqlite")
         if not fname[0]:
             return False
         print("Opened {}.". format(fname[0]))
@@ -369,17 +407,16 @@ class StartStructureDB(QMainWindow):
         :return: 
         """
         self.ui.cifList_treeWidget.clear()
-        self.str_tree = QTreeWidgetItem(self.ui.cifList_treeWidget)
         id = 0
         for i in self.structures.get_all_structure_names():
-            name = i[3]
-            path = i[2]#.decode("utf-8", "surrogateescape")
+            #name = i[3]
+            #path = i[2]#.decode("utf-8", "surrogateescape")
             id = i[0]
-            self.add_table_row(name, path, id)
+            self.add_table_row(i[3], i[2], i[0])
         mess = "Loaded {} entries.".format(id)
         self.statusBar().showMessage(mess)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
 
     def import_cif_dirs(self):
@@ -387,7 +424,7 @@ class StartStructureDB(QMainWindow):
         Imports cif files from a certain directory
         :return: None
         """
-        self.abort_import_button.show()
+        self.statusBar().showMessage('')
         self.close_db()
         self.dbfilename = 'test.sqlite'
         try:
@@ -401,6 +438,7 @@ class StartStructureDB(QMainWindow):
         if not fname:
             return False
         self.ui.cifList_treeWidget.show()
+        self.abort_import_button.show()
         # TODO: implement multiple cells in one cif file:
         n = 1
         min = 0
@@ -412,19 +450,20 @@ class StartStructureDB(QMainWindow):
             self.progressbar(num, min, 20)
             if not filepth.is_file():
                 continue
-            filename = filepth.name
             path = str(filepth.parents[0])
-            structure_id = n
             cif = Cif(filepth)
             if not cif.ok:
                 continue
-            if cif and filename and path:
-                filecrawler.fill_db_tables(cif, filename, path, structure_id, self.structures)
-                self.add_table_row(filename, path, str(n))
+            if cif:
+                # is the StructureId
+                tst = filecrawler.fill_db_tables(cif, filepth.name, path, n, self.structures)
+                if not tst:
+                    continue
+                self.add_table_row(filepth.name, path, str(n))
                 n += 1
                 if n % 200 == 0:
                     self.structures.database.commit_db()
-            num += 1
+                num += 1
             if not self.decide_import:
                 self.abort_import_button.hide()
                 self.decide_import = True
@@ -432,52 +471,37 @@ class StartStructureDB(QMainWindow):
         time2 = time.clock()
         diff = time2 - time1
         self.progress.hide()
-        self.ui.statusbar.showMessage('Parsed {} cif files in {} s'.format(n, round(diff, 2)))
+        self.ui.statusbar.showMessage('Parsed {} cif files in {} s'.format(n-1, round(diff, 2)))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        self.structures.populate_fulltext_search_table()
         self.structures.database.commit_db("Committed")
         self.abort_import_button.hide()
 
-    def show_molecule(self):
+    def clear_fields(self):
         """
+        Clears all residuals fields.
         """
-        view = Qt3DExtras.Qt3DWindow()
-        # view.defaultFrameGraph().setClearColor(QColor(0x4d4d4f))
-        container = QWidget.createWindowContainer(view)
-        # screenSize = view.screen().size()
-        #container.setMinimumSize(QSize(200, 200))
-        s = Molecule3D()
-        rootEntity = s.create_molecule()
-
-        # // Camera
-        camera = view.camera()
-        lens = Qt3DRender.QCameraLens()
-        lens.setOrthographicProjection(-50, 50.0, -50.0, 50.0, -1.0, 500.0)
-        camera.setUpVector(QVector3D(0, 1.0, 0))
-        camera.setPosition(QVector3D(0, 0, 80.0))  # Entfernung
-        camera.setViewCenter(s.mid)
-        # camera.setfieldOfView = 45
-        # For camera controls:
-        camController = Qt3DExtras.QOrbitCameraController(rootEntity)
-        camController.setLinearSpeed(-30.0)
-        camController.setLookSpeed(-480.0)
-        camController.setCamera(camera)
-        # camController.setZoomInLimit(1)
-        lightEntity = QEntity(rootEntity)
-        light = QPointLight(lightEntity)
-        light.setColor(QColor(150, 150, 100))
-        light.setIntensity(0.5)
-        lightEntity.addComponent(light)
-        lightTransform = Qt3DCore.QTransform(lightEntity)
-        lightTransform.setTranslation(QVector3D(0, 0, 80.0))
-        lightEntity.addComponent(lightTransform)
-        view.setRootEntity(rootEntity)
-        container.show()
-        #self.ui.oglLayout.addWidget(container)
-        #view.show()
-
-
-
+        self.ui.completeLineEdit.clear()
+        self.ui.dataReflnsLineEdit.clear()
+        self.ui.dLineEdit.clear()
+        self.ui.goofLineEdit.clear()
+        self.ui.maxShiftLineEdit.clear()
+        self.ui.numParametersLineEdit.clear()
+        self.ui.numRestraintsLineEdit.clear()
+        self.ui.peakLineEdit.clear()
+        self.ui.r1LineEdit.clear()
+        self.ui.reflTotalLineEdit.clear()
+        self.ui.rintLineEdit.clear()
+        self.ui.rsigmaLineEdit.clear()
+        self.ui.SpaceGroupLineEdit.clear()
+        self.ui.sumFormulaLineEdit.clear()
+        self.ui.temperatureLineEdit.clear()
+        self.ui.thetaFullLineEdit.clear()
+        self.ui.thetaMaxLineEdit.clear()
+        self.ui.wavelengthLineEdit.clear()
+        self.ui.wR2LineEdit.clear()
+        self.ui.zLineEdit.clear()
 
 class QmlAusgabe(object):
     def __init__(self, pathToQmlFile="beispiel.qml"):
