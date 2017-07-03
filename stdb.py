@@ -17,6 +17,7 @@ from __future__ import print_function
 import os
 import sys
 import time
+import re
 from pathlib import Path
 from string import Template
 
@@ -452,6 +453,12 @@ class StartStructureDB(QMainWindow):
             if not filepth.is_file():
                 continue
             path = str(filepth.parents[0])
+            match = False
+            for ex in filecrawler.excluded_names:
+                if re.search(ex, path, re.I):
+                    match = True
+            if match:
+                continue
             cif = Cif(filepth)
             if not cif.ok:
                 continue
