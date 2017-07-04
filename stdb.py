@@ -78,6 +78,13 @@ TODO:
 - add measurement specific data to the db, e.g. machine from frame, temp from frame, 
 - pressing search in advanced tab will return to base tab with results
 
+
+fd, path = tempfile.mkstemp()
+os.write(fd, 'foo')
+os.close(fd)
+shutil.copy(path, 'bar.txt')
+os.remove(path)
+
 """
 
 
