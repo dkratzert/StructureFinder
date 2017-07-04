@@ -16,6 +16,7 @@ from __future__ import print_function
 
 import os
 import sys
+import tempfile
 import time
 import re
 from pathlib import Path
@@ -49,7 +50,7 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
-
+- use tempdir instead of file
 - add rightclick: copy unit cell on unit cell field
 - display CCDC-number
 - Format sum formula. Zahlen nach Strings tiefgestellt. Strings capitalized.
@@ -91,6 +92,7 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.show()
         self.ui.cifList_treeWidget.hideColumn(2)
         self.dbfilename = 'test.sqlite'
+        #self.dbfilename = tempfile.NamedTemporaryFile().name
         self.ui.centralwidget.setMinimumSize(1200, 500)
         self.abort_import_button = QtWidgets.QPushButton("Abort (takes a while)")
         self.progress = QtWidgets.QProgressBar(self)
@@ -116,17 +118,19 @@ class StartStructureDB(QMainWindow):
         The actionExit signal is connected in the ui file.
         """
         self.ui.importDatabaseButton.clicked.connect(self.import_database)
+        self.ui.saveDatabaseButton.clicked.connect(self.save_database)
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
-        self.ui.txtSearchEdit.textChanged.connect(self.search_text)
-        self.ui.searchLineEDit.textChanged.connect(self.search_cell)
-        # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
-        #self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
-        self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
-        #self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
         self.ui.actionImport_file.triggered.connect(self.import_database)
+        self.ui.actionSave_Database.triggered.connect(self.save_database)
+        self.ui.txtSearchEdit.textChanged.connect(self.search_text)
+        self.ui.searchLineEDit.textChanged.connect(self.search_cell)
+        self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.abort_import_button.clicked.connect(self.abort_import)
+        # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
+        # self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
+        # self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
 
     def progressbar(self, curr, min, max):
         """
@@ -177,6 +181,17 @@ class StartStructureDB(QMainWindow):
         dic = self.structures.get_row_as_dict(request)
         self.display_properties(structure_id, dic)
         return True
+
+    def save_database(self):
+        try:
+            # noinspection PyTypeChecker
+            len(self.dbfilename)
+        except TypeError:
+            return False
+        fname, tst = QFileDialog.getSaveFileName(self, caption='Open File', directory='./', filter="*.sqlite")
+        print(fname, tst)
+        with open(fname, mode='w') as f:
+            f.write(self.dbfilename)
 
     def display_properties(self, structure_id, cif_dic):
         """
@@ -407,7 +422,7 @@ class StartStructureDB(QMainWindow):
         """
         self.statusBar().showMessage('')
         self.close_db()
-        self.dbfilename = 'test.sqlite'
+        #self.dbfilename = 'test.sqlite'
         try:
             # TODO: don't do in future:
             os.remove(self.dbfilename)
