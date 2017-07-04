@@ -71,6 +71,10 @@ def put_cifs_in_db(searchpath):
     Command line version of file crawler.
     """
     dbfilename = "structuredb.sqlite"
+    try:
+        os.remove(dbfilename)
+    except:
+        pass
     db = DatabaseRequest(dbfilename)
     db.initialize_db()
     structures = StructureTable(dbfilename)
