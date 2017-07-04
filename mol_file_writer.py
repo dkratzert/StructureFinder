@@ -52,7 +52,6 @@ class MolFile():
             blist.append("{:>4d}{:>4d}  1  0  0  0  0".format(bo[0], bo[1]))
         return '\n'.join(blist)
 
-    def get_conntable_from_atoms(self, extra_param = 0.16):
         """
         returns a connectivity table from the atomic coordinates and the covalence
         radii of the atoms.
@@ -60,12 +59,8 @@ class MolFile():
         # radii plus the extra_param:
         TODO:
         - read FREE command from db to control binding here.
-        :param cart_coords: cartesian coordinates of the atoms
-        :type cart_coords: list
-        :param atom_types: Atomic elements
-        :type atom_types: list of strings
-        :param atom_names: atom name in the file like C1
-        :type atom_names: list of strings
+        :param extra_param: additional distance to the covalence radius
+        :type extra_param: float
         """
         t1 = time.clock()
         conlist = []

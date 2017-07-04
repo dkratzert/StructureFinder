@@ -48,7 +48,8 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
-- add recent files list
+- add rightclick: copy unit cell on unit cell field
+- display CCDC-number
 - what if there is no volume in the cif? I then should calculate it! Otherwise cell is never found!
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - add a button: open in ...
@@ -454,6 +455,8 @@ class StartStructureDB(QMainWindow):
                 continue
             path = str(filepth.parents[0])
             match = False
+            if filepth.name == 'xd_geo.cig':  # Exclude xdgeom cif files
+                continue
             for ex in filecrawler.excluded_names:
                 if re.search(ex, path, re.I):
                     match = True

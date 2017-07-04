@@ -81,6 +81,8 @@ def put_cifs_in_db(searchpath):
             continue
         path = str(filepth.parents[0])
         match = False
+        if filepth.name == 'xd_geo.cig':
+            continue
         for ex in excluded_names:
             if re.search(ex, path, re.I):
                 match = True

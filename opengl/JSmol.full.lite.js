@@ -13140,11 +13140,15 @@ Jmol.getTMApplet = Jmol._TMApplet._getApplet;
 
 ;(function(tm){
 
-tm._CPK = ["#FF1493", "#FFFFFF", "#D9FFFF", 
-	"#CC80FF", "#C2FF00", "#FFB5B5", "#909090", "#3050F8", "#FF0D0D", "#90E050", "#B3E3F5", 
-	"#AB5CF2", "#8AFF00", "#BFA6A6", "#F0C8A0", "#FF8000", "#FFFF30", "#1FF01F", "#80D1E3",
-	"#8F40D4", "#3DFF00", "#E6E6E6", "#BFC2C7", "#A6A6AB", "#8A99C7", "#9C7AC7", "#E06633", 
-		"#F090A0", "#50D050", "#C88033", "#7D80B0", "#C28F8F", "#668F8F", "#BD80E3", "#FFA100", "#A62929", "#5CB8D1", 
+tm._CPK = ["#FF1493", "#FFFFFF", "#D9FFFF",
+	//'Li',     'Be',      'B',        'C',      'N',       'O',       'F',      'Ne',
+	"#CC80FF", "#C2FF00", "#FFB5B5", "#797979", "#3050F8", "#FF0D0D", "#90e001", "#B3E3F5",
+	//'Na',      'Mg',     'Al',     'Si',       'P',      'S',       'Cl',       'Ar',
+	"#AB5CF2", "#8AFF00", "#BFA6A6", "#F0C8A0", "#FF8000", "#eeee2c", "#1ff001", "#80D1E3",
+	//'K',       'Ca',     'Sc',      'Ti',       'V',       'Cr',     'Mn',        'Fe',
+	"#8F40D4", "#3DFF00", "#E6E6E6", "#BFC2C7", "#A6A6AB", "#8A99C7", "#9C7AC7", "#E06633",
+	        // 'Co',  	'Ni', 		'Cu', 		'Zn', 		'Ga', 	'Ge',		 'As', 		'Se', 	'Br', 		'Kr',
+			"#F090A0", "#50D050", "#C88033", "#7D80B0", "#C28F8F", "#668F8F", "#BD80E3", "#FFA100", "#A62929", "#5CB8D1",
 	"#702EB0", "#00FF00", "#94FFFF", "#94E0E0", "#73C2C9", "#54B5B5", "#3B9E9E", "#248F8F", 
 		"#0A7D8C", "#006985", "#C0C0C0", "#FFD98F", "#A67573", "#668080", "#9E63B5", "#D47A00", "#940094", "#429EB0", 
 	"#57178F", "#00C900"] // through barium
@@ -13562,7 +13566,7 @@ proto._parseSDF = function(sdf) {
 }
 
 proto._getColor = function(c, f) {
-	if (c == "#FFFFFF") c = "#D0D0D0"; 
+	if (c == "#FFFFFF") c = "#D0D0D0";
 	var n = parseInt("0x" + c.substring(1), 16);
 	var r=(n >> 16) & 0xFF;
 	var g=(n >> 8) & 0xFF;
