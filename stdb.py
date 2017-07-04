@@ -37,6 +37,7 @@ from PyQt5.QtWidgets import QTreeWidgetItem
 from math import radians, sin
 
 import mol_file_writer
+from constants import celltxt
 from lattice import lattice
 from pymatgen.core.mat_lattice import Lattice
 from searcher import filecrawler, misc, database_handler
@@ -48,8 +49,11 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
+
 - add rightclick: copy unit cell on unit cell field
 - display CCDC-number
+- Format sum formula. Zahlen nach Strings tiefgestellt. Strings capitalized.
+- add recent files list. Maybe no saved options at all?
 - what if there is no volume in the cif? I then should calculate it! Otherwise cell is never found!
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - add a button: open in ...
@@ -207,33 +211,7 @@ class StartStructureDB(QMainWindow):
             self.ui.cellField.setText('            ')
             return False
         #self.ui.cellField.setMinimumWidth(180)
-        celltxt = r"""
-           <html><head/><body>
-           <table border="0" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;" 
-                  cellspacing="1" cellpadding="1">
-               <tr>
-                   <td><p align="left"><span style=" font-style:italic;">a</span> = &#09;</p></td>
-                   <td><p align="right">{:>8.3f} Å, </p></td>
-                   <td><p align="right"><span style="font-style:italic;">&alpha;</span> = </p></td> 
-                   <td><p align="right">{:>8.3f}° </p></td>
-               </tr>
-               <tr>
-                   <td><p align="left"><span style=" font-style:italic;">b</span> = &#09;</p></td>
-                   <td><p align="right">{:>8.3f} Å, </p></td>
-                   <td><p align="right"><span style=" font-style:italic;">&beta;</span> = </p></td> 
-                   <td><p align="right">{:>8.3f}° </p></td>
-               </tr>
-               <tr>
-                   <td><p align="left"><span style=" font-style:italic;">c</span> = &#09;</p></td>
-                   <td><p align="right">{:>8.3f} Å, </p></td>
-                   <td><p align="right"><span style=" font-style:italic;">&gamma;</span> = </p></td> 
-                   <td><p align="right">{:>8.3f}° </p></td>
-               </tr>
-           </table>
-           Volume = {:8.2f} Å<sup>3</sup>
-           </body></html>
-           """.format(a, alpha, b, beta, c, gamma, volume, '')
-        self.ui.cellField.setText(celltxt)
+        self.ui.cellField.setText(celltxt.format(a, alpha, b, beta, c, gamma, volume, ''))
         try:
             self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
         except ValueError:
