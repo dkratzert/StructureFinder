@@ -497,7 +497,7 @@ class StartStructureDB(QMainWindow):
         time2 = time.clock()
         diff = time2 - time1
         self.progress.hide()
-        self.ui.statusbar.showMessage('Parsed {} cif files in {} s'.format(n-1, round(diff, 2)), msecs=20000)
+        self.ui.statusbar.showMessage('Parsed {} cif files in {} s'.format(n-1, round(diff, 2)), msecs=0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.structures.populate_fulltext_search_table()
