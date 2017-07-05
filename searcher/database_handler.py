@@ -96,6 +96,8 @@ class DatabaseRequest():
                         x          FLOAT,
                         y          FLOAT,
                         z          FLOAT,
+                        occupancy  FLOAT,
+                        part       INTEGER,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
                         REFERENCES Structure(Id)
@@ -163,6 +165,7 @@ class DatabaseRequest():
                         _refine_diff_density_max                REAL,
                         _refine_diff_density_min                REAL,
                         _diffrn_reflns_av_unetI_netI            REAL,
+                        _database_code_depnum_ccdc_archive      TEXT,
                         number_of_atoms                         INTEGER,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
@@ -470,13 +473,14 @@ class StructureTable():
                                     aerror, berror, cerror, alphaerror, betaerror, gammaerror, vol):
             return True
 
-    def fill_atoms_table(self, structure_id, name, element, x, y, z):
+    def fill_atoms_table(self, structure_id, name, element, x, y, z, occ, part):
         """
         fill the atoms into structure(structureId) 
         :TODO: Add bonds?
         """
-        req = '''INSERT INTO Atoms (StructureId, name, element, x, y, z) VALUES(?, ?, ?, ?, ?, ?)'''
-        if self.database.db_request(req, structure_id, name, element, x, y, z):
+        req = '''INSERT INTO Atoms (StructureId, name, element, x, y, z, occupancy, part) 
+                                    VALUES(?, ?, ?, ?, ?, ?, ?, ?)'''
+        if self.database.db_request(req, structure_id, name, element, x, y, z, occ, part):
             return True
 
     def get_atoms_table(self, structure_id, cell, cartesian=False):
@@ -585,12 +589,13 @@ class StructureTable():
                     _refine_ls_shift_su_mean,
                     _refine_diff_density_max,
                     _refine_diff_density_min,
-                    _diffrn_reflns_av_unetI_netI
+                    _diffrn_reflns_av_unetI_netI,
+                    _database_code_depnum_ccdc_archive
                     ) 
                 VALUES
                     (
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                     );
                 '''
         result = self.database.db_request(req,
@@ -648,7 +653,8 @@ class StructureTable():
                 cif.cif_data['_refine_ls_shift/su_mean'],
                 cif.cif_data['_refine_diff_density_max'],           # Maximum difference density after refinement
                 cif.cif_data['_refine_diff_density_min'],           # Deepest hole
-                cif.cif_data['_diffrn_reflns_av_unetI/netI']        # R(sigma)
+                cif.cif_data['_diffrn_reflns_av_unetI/netI'],       # R(sigma)
+                cif.cif_data['_database_code_depnum_ccdc_archive']  # CCDC number
                 )
         return result
 

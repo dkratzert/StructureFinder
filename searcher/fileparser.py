@@ -78,7 +78,8 @@ class Cif():
             "_refine_ls_shift/su_mean": '',
             "_diffrn_reflns_av_unetI/netI": '',
             "_refine_diff_density_max": '',
-            "_refine_diff_density_min": ''
+            "_refine_diff_density_min": '',
+            "_database_code_depnum_ccdc_archive": ''
             }
         try:
             self.ok = self.parsefile(file)

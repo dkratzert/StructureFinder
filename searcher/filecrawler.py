@@ -154,7 +154,10 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
                                          cif._atom[x]['_atom_site_type_symbol'],
                                          cif._atom[x]['_atom_site_fract_x'].split('(')[0],
                                          cif._atom[x]['_atom_site_fract_y'].split('(')[0],
-                                         cif._atom[x]['_atom_site_fract_z'].split('(')[0])
+                                         cif._atom[x]['_atom_site_fract_z'].split('(')[0],
+                                         cif._atom[x]['_atom_site_occupancy'].split('(')[0],
+                                         cif._atom[x]['_atom_site_disorder_group']
+                                        )
         except KeyError as e:
             pass
     structures.fill_residuals_table(structure_id, cif)

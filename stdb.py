@@ -51,19 +51,17 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
-- Do not copy file if opened from db file instead of tmpfile. Make file_status?
+- add disordered and part tags from 
+- add a tab that shows all cif data in a tableview
+- search for strings to get a result for a persons name, add person to db
 - add rightclick: copy unit cell on unit cell field
-- display CCDC-number
 - Format sum formula. Zahlen nach Strings tiefgestellt. Strings capitalized.
 - add recent files list. Maybe no saved options at all?
 - what if there is no volume in the cif? I then should calculate it! Otherwise cell is never found!
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - add a button: open in ...
-- add a tab that shows all cif data in a tableview
 - try to find a .p4p file to decide if it is a twin, also try to find a TWIN instruction in the cif file
-- allow to scan more than one directory. Just add to previous data
-- Add save button. 
-- add save db button, create db as tmpfile and move to target.
+- allow to scan more than one directory. Just add to previous data. Really?
 - structure code
 - grow structure. parse symm cards
 - make file type more flexible. handle .res and .cif equally
@@ -71,7 +69,6 @@ TODO:
 - recognize already indexed files. Add a hash for each file. Make a database search with executemany()
   to get a list of files where hashes exist. Remove results from file crawler. May I need a hash run over 
   all files before the cif parsing run? Or just calc hash, search in db and then decide to parse cif or not? 
-- search for strings to get a result for a persons name, add person to db
 - add an advanced search tab where you can search for sum formula, twinning, only elements, names, users, ... 
 - add a file browser where you can match the local path 
 - add a tab where you can match path name parts to usernames
@@ -79,6 +76,15 @@ TODO:
 - add measurement specific data to the db, e.g. machine from frame, temp from frame, 
 - pressing search in advanced tab will return to base tab with results
 
+Advanced tab:
+- Exclude checkbox for each entry?
+Search for:
+- maschine
+- Formula
+- Atom type
+- measurement temp
+- r-value region
+- disordered? checkbox
 """
 
 
@@ -272,6 +278,7 @@ class StartStructureDB(QMainWindow):
         self.ui.peakLineEdit.setText("{} / {}".format(cif_dic['_refine_diff_density_max'], cif_dic['_refine_diff_density_min']))
         self.ui.rintLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_av_R_equivalents']))
         self.ui.rsigmaLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_av_unetI_netI']))
+        self.ui.cCDCNumberLineEdit.setText("{}".format(cif_dic['_database_code_depnum_ccdc_archive']))
         try:
             dat_param = cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters']
         except (ValueError, ZeroDivisionError, TypeError):

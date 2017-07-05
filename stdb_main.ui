@@ -750,6 +750,20 @@
                  </property>
                 </widget>
                </item>
+               <item row="9" column="0">
+                <widget class="QLabel" name="cCDCNumberLabel">
+                 <property name="text">
+                  <string>CCDC Number</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="9" column="1">
+                <widget class="QLineEdit" name="cCDCNumberLineEdit">
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
               </layout>
              </item>
              <item>
@@ -832,7 +846,7 @@
      <x>0</x>
      <y>0</y>
      <width>1030</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">
