@@ -85,6 +85,10 @@ Search for:
 - measurement temp
 - r-value region
 - disordered? checkbox
+- draw structure (with JSME? Acros? Kekule?)
+- compare  molecules https://groups.google.com/forum/#!msg/networkx-discuss/gC_-Wc0bRWw/ISRZYFsPCQAJ
+  - search algorithms
+  http://chemmine.ucr.edu/help/#similarity, https://en.wikipedia.org/wiki/Jaccard_index
 """
 
 
