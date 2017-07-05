@@ -22,6 +22,7 @@ import re
 from pathlib import Path
 from string import Template
 
+import shutil
 from PyQt5 import uic, QtWidgets, Qt3DExtras, Qt3DRender, Qt3DCore
 from PyQt5.QtWebChannel import QWebChannel
 from PyQt5.QtWebEngine import QtWebEngine
@@ -50,7 +51,7 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
-- use tempdir instead of file
+- Do not copy file if opened from db file instead of tmpfile. Make file_status?
 - add rightclick: copy unit cell on unit cell field
 - display CCDC-number
 - Format sum formula. Zahlen nach Strings tiefgestellt. Strings capitalized.
@@ -78,13 +79,6 @@ TODO:
 - add measurement specific data to the db, e.g. machine from frame, temp from frame, 
 - pressing search in advanced tab will return to base tab with results
 
-
-fd, path = tempfile.mkstemp()
-os.write(fd, 'foo')
-os.close(fd)
-shutil.copy(path, 'bar.txt')
-os.remove(path)
-
 """
 
 
@@ -95,11 +89,11 @@ class StartStructureDB(QMainWindow):
         super().__init__(*args, **kwargs)
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
-        self.statusBar().showMessage('Ready')
+        self.statusBar().showMessage('Ready', msecs=8000)
         self.ui.cifList_treeWidget.show()
         self.ui.cifList_treeWidget.hideColumn(2)
-        self.dbfilename = 'test.sqlite'
-        #self.dbfilename = tempfile.NamedTemporaryFile().name
+        self.dbfdesc = None
+        self.dbfilename = None
         self.ui.centralwidget.setMinimumSize(1200, 500)
         self.abort_import_button = QtWidgets.QPushButton("Abort (takes a while)")
         self.progress = QtWidgets.QProgressBar(self)
@@ -150,9 +144,10 @@ class StartStructureDB(QMainWindow):
             self.progress.hide()
 
     @pyqtSlot(name="close_db")
-    def close_db(self):
+    def close_db(self, copy_on_close=None):
         """
         Closed the current database and erases the list.
+        :param copy_on_close: Path to where the file should be copied after close()
         """
         self.ui.cifList_treeWidget.clear()
         try:
@@ -163,6 +158,24 @@ class StartStructureDB(QMainWindow):
             self.structures.database.con.close()
         except:
             pass
+        try:
+            os.close(self.dbfdesc)
+            self.dbfdesc = None
+        except:
+            pass
+        if copy_on_close:
+            if shutil._samefile(self.dbfilename, copy_on_close):
+                self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
+                return False
+            else:
+                shutil.copy(self.dbfilename, copy_on_close)
+            try:
+                os.remove(self.dbfilename)
+                self.dbfilename = None
+            except Exception:
+                return False
+        return True
+
 
     @pyqtSlot(name="abort_import")
     def abort_import(self):
@@ -172,6 +185,7 @@ class StartStructureDB(QMainWindow):
         """
         Initializes the database.
         """
+        self.dbfdesc, self.dbfilename = tempfile.mkstemp()
         self.structures = StructureTable(self.dbfilename)
         self.structures.database.initialize_db()
 
@@ -190,15 +204,18 @@ class StartStructureDB(QMainWindow):
         return True
 
     def save_database(self):
-        try:
-            # noinspection PyTypeChecker
-            len(self.dbfilename)
-        except TypeError:
+        """
+        Saves the database to a certain file. Therefore I have to close the database.
+        """
+        status = False
+        save_name, tst = QFileDialog.getSaveFileName(self, caption='Open File', directory='./', filter="*.sqlite")
+        if shutil._samefile(self.dbfilename, save_name):
+            self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
             return False
-        fname, tst = QFileDialog.getSaveFileName(self, caption='Open File', directory='./', filter="*.sqlite")
-        print(fname, tst)
-        with open(fname, mode='w') as f:
-            f.write(self.dbfilename)
+        if save_name:
+            status = self.close_db(save_name)
+        if status:
+            self.statusBar().showMessage("Database saved.", msecs=5000)
 
     def display_properties(self, structure_id, cif_dic):
         """
@@ -208,7 +225,7 @@ class StartStructureDB(QMainWindow):
         self.clear_fields()
         cell = self.structures.get_cell_by_id(structure_id)
         if not cell:
-            self.statusBar().showMessage('Not a valid unit cell!')
+            self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
             return False
         try:
             tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6])
@@ -301,7 +318,7 @@ class StartStructureDB(QMainWindow):
             print(e)
         try:
             self.ui.cifList_treeWidget.clear()
-            self.statusBar().showMessage("Found {} entries.".format(len(idlist)))
+            self.statusBar().showMessage("Found {} entries.".format(len(idlist)), msecs=0)
             for i in idlist:
                 # name = i[1]  # .decode("utf-8", "surrogateescape")
                 # path = i[3]  # .decode("utf-8", "surrogateescape")
@@ -309,7 +326,7 @@ class StartStructureDB(QMainWindow):
                 self.add_table_row(i[1], i[3], i[0])
             self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except:
-            self.statusBar().showMessage("Nothing found.")
+            self.statusBar().showMessage("Nothing found.", msecs=0)
 
     @pyqtSlot('QString')
     def search_cell(self, search_string):
@@ -325,7 +342,7 @@ class StartStructureDB(QMainWindow):
         except (TypeError, ValueError):
             return False
         if len(cell) != 6:
-            self.statusBar().showMessage('Not a valid unit cell!')
+            self.statusBar().showMessage('Not a valid unit cell!', msecs=2000)
             return True
         try:
             volume = lattice.vol_unitcell(*cell)
@@ -334,7 +351,7 @@ class StartStructureDB(QMainWindow):
         except (ValueError, AttributeError):
             if not self.full_list:
                 self.show_full_list()
-                self.statusBar().showMessage('Found 0 cells.')
+                self.statusBar().showMessage('Found 0 cells.', msecs=3000)
             return False
         # Get a smaller list where only cells are included that have a proper mapping to the input cell:
         idlist2 = []
@@ -359,7 +376,7 @@ class StartStructureDB(QMainWindow):
                 if map:
                     idlist2.append(i)
         searchresult = self.structures.get_all_structure_names(idlist2)
-        self.statusBar().showMessage('Found {} cells.'.format(len(idlist2)))
+        self.statusBar().showMessage('Found {} cells.'.format(len(idlist2)), msecs=3000)
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for i in searchresult:
@@ -417,7 +434,7 @@ class StartStructureDB(QMainWindow):
             id = i[0]
             self.add_table_row(i[3], i[2], i[0])
         mess = "Loaded {} entries.".format(id)
-        self.statusBar().showMessage(mess)
+        self.statusBar().showMessage(mess, msecs=5000)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
@@ -429,14 +446,7 @@ class StartStructureDB(QMainWindow):
         """
         self.statusBar().showMessage('')
         self.close_db()
-        #self.dbfilename = 'test.sqlite'
-        try:
-            # TODO: don't do in future:
-            os.remove(self.dbfilename)
-        except:
-            pass
         self.start_db()
-        # TODO: support excludes: mit filepath.parent in excludes = ('.olex', 'report', 'Report')
         fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         if not fname:
             return False
@@ -482,7 +492,7 @@ class StartStructureDB(QMainWindow):
         time2 = time.clock()
         diff = time2 - time1
         self.progress.hide()
-        self.ui.statusbar.showMessage('Parsed {} cif files in {} s'.format(n-1, round(diff, 2)))
+        self.ui.statusbar.showMessage('Parsed {} cif files in {} s'.format(n-1, round(diff, 2)), msecs=20000)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.structures.populate_fulltext_search_table()
