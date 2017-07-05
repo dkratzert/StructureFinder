@@ -132,7 +132,7 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tab_1">
+      <widget class="QWidget" name="maintab">
        <attribute name="title">
         <string>Structures</string>
        </attribute>
@@ -784,7 +784,7 @@
         <string>Advanced Search</string>
        </attribute>
       </widget>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="optiontab">
        <attribute name="title">
         <string>Options</string>
        </attribute>
@@ -832,7 +832,7 @@
      <x>0</x>
      <y>0</y>
      <width>1030</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">

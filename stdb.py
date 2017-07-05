@@ -94,6 +94,7 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.hideColumn(2)
         self.dbfdesc = None
         self.dbfilename = None
+        self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         self.ui.centralwidget.setMinimumSize(1200, 500)
         self.abort_import_button = QtWidgets.QPushButton("Abort (takes a while)")
         self.progress = QtWidgets.QProgressBar(self)
@@ -111,7 +112,8 @@ class StartStructureDB(QMainWindow):
         self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
         self.view.show()
-        self.excluded_paths = ['test-data', 'root', '.olex', 'tmp']
+        self.ui.tabWidget.removeTab(1)
+        self.ui.tabWidget.removeTab(1)
 
     def connect_signals_and_slots(self):
         """
@@ -169,11 +171,12 @@ class StartStructureDB(QMainWindow):
                 return False
             else:
                 shutil.copy(self.dbfilename, copy_on_close)
-            try:
-                os.remove(self.dbfilename)
-                self.dbfilename = None
-            except Exception:
-                return False
+            if self.tmpfile:
+                try:
+                    os.remove(self.dbfilename)
+                    self.dbfilename = None
+                except Exception:
+                    return False
         return True
 
 
@@ -409,6 +412,7 @@ class StartStructureDB(QMainWindow):
         Import a new database.
         :rtype: bool
         """
+        self.tmpfile = False
         self.close_db()
         fname = QFileDialog.getOpenFileName(self, caption='Open File', directory='./', filter="*.sqlite")
         if not fname[0]:
@@ -444,6 +448,7 @@ class StartStructureDB(QMainWindow):
         Imports cif files from a certain directory
         :return: None
         """
+        self.tmpfile = True
         self.statusBar().showMessage('')
         self.close_db()
         self.start_db()
@@ -465,7 +470,7 @@ class StartStructureDB(QMainWindow):
                 continue
             path = str(filepth.parents[0])
             match = False
-            if filepth.name == 'xd_geo.cig':  # Exclude xdgeom cif files
+            if filepth.name == 'xd_geo.cif':  # Exclude xdgeom cif files
                 continue
             for ex in filecrawler.excluded_names:
                 if re.search(ex, path, re.I):
