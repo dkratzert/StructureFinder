@@ -52,7 +52,6 @@ from stdb_main import Ui_stdbMainwindow
 """
 TODO:
 - add disordered and part tags from 
-- add a tab that shows all cif data in a tableview
 - search for strings to get a result for a persons name, add person to db
 - add rightclick: copy unit cell on unit cell field
 - Format sum formula. Zahlen nach Strings tiefgestellt. Strings capitalized.
@@ -62,10 +61,9 @@ TODO:
 - add a button: open in ...
 - try to find a .p4p file to decide if it is a twin, also try to find a TWIN instruction in the cif file
 - allow to scan more than one directory. Just add to previous data. Really?
-- structure code
+- structure python code
 - grow structure. parse symm cards
 - make file type more flexible. handle .res and .cif equally
-- group structures in measurements
 - recognize already indexed files. Add a hash for each file. Make a database search with executemany()
   to get a list of files where hashes exist. Remove results from file crawler. May I need a hash run over 
   all files before the cif parsing run? Or just calc hash, search in db and then decide to parse cif or not? 
@@ -216,7 +214,7 @@ class StartStructureDB(QMainWindow):
         self.display_properties(structure_id, dic)
         return True
 
-    def save_database(self):
+    def save_database(self) -> bool:
         """
         Saves the database to a certain file. Therefore I have to close the database.
         """
@@ -230,12 +228,13 @@ class StartStructureDB(QMainWindow):
         if status:
             self.statusBar().showMessage("Database saved.", msecs=5000)
 
-    def display_properties(self, structure_id, cif_dic):
+    def display_properties(self, structure_id: str, cif_dic: dict) -> bool:
         """
         Displays the residuals from the cif file
         """
         mol = ' '
         self.clear_fields()
+        self.ui.allCifTreeWidget.clear()
         cell = self.structures.get_cell_by_id(structure_id)
         if not cell:
             self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
@@ -308,6 +307,13 @@ class StartStructureDB(QMainWindow):
             compl = 0.0
         self.ui.completeLineEdit.setText("{:<5.1f}".format(compl))
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
+        for key, value in cif_dic.items():
+            cif_tree_item = QTreeWidgetItem()
+            self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
+            cif_tree_item.setText(0, str(key).strip("\n\r "))
+            cif_tree_item.setText(1, str(value).strip("\n\r "))
+        self.ui.allCifTreeWidget.resizeColumnToContents(0)
+        self.ui.allCifTreeWidget.resizeColumnToContents(1)
         return True
 
     @pyqtSlot('QString')
@@ -539,6 +545,7 @@ class StartStructureDB(QMainWindow):
         self.ui.wavelengthLineEdit.clear()
         self.ui.wR2LineEdit.clear()
         self.ui.zLineEdit.clear()
+        self.ui.cCDCNumberLineEdit.clear()
 
 class QmlAusgabe(object):
     def __init__(self, pathToQmlFile="beispiel.qml"):
