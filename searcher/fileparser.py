@@ -19,13 +19,9 @@ class Cif():
     def __init__(self, file):
         """
         A cif file parsing object optimized for speed and simplicity.
+        It can not handle multi cif files.
         :param file: input filename object
         :type file: Path
-
-        - find loops
-          - get loop header
-          - start and end
-        - fill for example atom loop dict with atoms
         """
         self.cif_data = {
             "_cell_volume": '',
@@ -90,9 +86,10 @@ class Cif():
     def parsefile(self, file):
         """
         This method parses the cif file. Currently, only single items and atoms are supported.
-        TODO: Implement multi line comments ";"
-        TODO: Implement line breaks in values
-
+        TODO: symmcards:
+        loop_
+          _space_group_symop_operation_xyz
+          'x, y, z'
         :param file: Cif file name
         :type file: Path
         :return: cif file content
@@ -181,7 +178,7 @@ class Cif():
                         data = True
                         continue
                     else:
-                        break  # TODO: support multi cif
+                        break
                 # Find the loop positions:
                 if line[:5] == "loop_":
                     loop = True
@@ -231,11 +228,9 @@ class Cif():
             self.handle_deprecates()
             return True
 
-
     def handle_deprecates(self):
         """
-        Makes the old and new cif values equal
-        :return:
+        Makes the old and new cif values equal.
         """
         if "_symmetry_space_group_name_H-M" in self.cif_data:
             self.cif_data["_space_group_name_H-M_alt"] = self.cif_data["_symmetry_space_group_name_H-M"]
@@ -288,7 +283,7 @@ class Cif():
         return out
 
 
-def delimit_line(line):
+def delimit_line(line: str) -> list:
     """
     Searches for delimiters in a cif line and returns a list of the respective values.
     >>> line = " 'C'  'C'   0.0033   0.0016   'some text inside' \\"more text\\""
@@ -301,10 +296,6 @@ def delimit_line(line):
     >>> delimit_line("'x, y, z'")
     ['x, y, z']
     
-    :param line:
-    :type line: str
-    :return: list of values
-    :rtype: list
     """
     data = []
     line = line.split(' ')

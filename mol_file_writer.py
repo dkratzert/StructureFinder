@@ -38,17 +38,18 @@ class MolFile():
         Returns a string with an atom in each line.
         """
         atoms = []
-        num = 0
         for num, at in enumerate(self.atoms):
             atoms.append("{:>10.4f}{:>10.4f}{:>10.4f} {:<2s}".format(at[2], at[3], at[4], at[1]))
         return '\n'.join(atoms)
 
     def get_bonds_string(self) -> str:
         """
-        This is not like the file standard. The original standard wants to have fixed format 3 digitss for the bonds.
+        This is not accodingly to the file standard!
+        The standard wants to have fixed format 3 digits for the bonds.
         """
         blist = []
         for bo in self.bonds:
+            # This is deviating from the standard:
             blist.append("{:>4d}{:>4d}  1  0  0  0  0".format(bo[0], bo[1]))
         return '\n'.join(blist)
 
@@ -63,7 +64,7 @@ class MolFile():
         :param extra_param: additional distance to the covalence radius
         :type extra_param: float
         """
-        t1 = time.clock()
+        #t1 = time.clock()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
             for num2, at2 in enumerate(self.atoms, 1):
@@ -77,7 +78,7 @@ class MolFile():
                     #print(num1, num2, d)
                     if [num2, num1] in conlist:
                         continue
-        t2 = time.clock()
+        #t2 = time.clock()
         #print(round(t2-t1, 4), 's')
         return conlist
 
@@ -88,6 +89,7 @@ class MolFile():
 
     def make_mol(self):
         """
+        Combines all above to a mol file.
         """
         header = '\n\n'
         connection_table = self.connection_table()

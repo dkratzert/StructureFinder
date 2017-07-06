@@ -13,14 +13,14 @@ Created on 09.02.2015
 @author: Daniel Kratzert
 """
 import os
+import time
+import re
 import fnmatch as fn
 import sys
-from pathlib import Path, _WindowsFlavour, _PosixFlavour
+from pathlib import Path
 from pprint import pprint
 
-import time
 
-import re
 
 from searcher.database_handler import StructureTable, DatabaseRequest
 from searcher.fileparser import Cif
@@ -105,7 +105,9 @@ def put_cifs_in_db(searchpath):
             structures.database.commit_db()
     time2 = time.clock()
     diff = time2 - time1
-    print('\nAdded {} cif files to database in: {} s'.format(n, round(diff, 2)))
+    m, s = divmod(diff, 60)
+    h, m = divmod(m, 60)
+    print('\nAdded {} cif files to database in: {:>2} h, {:>2} m, {:>3.2} s'.format(n, h, m, s))
     structures.populate_fulltext_search_table()
     structures.database.commit_db("Committed")
 

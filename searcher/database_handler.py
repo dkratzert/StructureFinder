@@ -106,8 +106,12 @@ class DatabaseRequest():
                     ''')
 
         self.cur.execute("""
-            CREATE VIRTUAL TABLE txtsearch USING fts4(StructureId INTEGER, filename, dataname, path, 
-                tokenize=unicode61 "tokenchars= .=-_");
+            CREATE VIRTUAL TABLE txtsearch USING 
+                    fts4(StructureId    INTEGER, 
+                         filename       TEXT, 
+                         dataname       TEXT, 
+                         path           TEXT, 
+                            tokenize=unicode61 "tokenchars= .=-_");
         """)
         #CREATE VIRTUAL TABLE txtsearch USING fts4(StructureId INTEGER, filename, dataname, path, tokenize=porter);
 
@@ -668,13 +672,23 @@ class StructureTable():
 
     def populate_fulltext_search_table(self):
         """
+        Populates the fts4 table with data to search for text.
+        _publ_contact_author_name
         """
-        SQL_POPULATEINDEX = """
-        INSERT INTO txtsearch (StructureId, filename, dataname, path)
-        SELECT Id, filename, dataname, path
-            FROM Structure
+        populate_index = """
+        INSERT INTO txtsearch (
+                                StructureId, 
+                                filename, 
+                                dataname, 
+                                path
+                                )
+        SELECT  Id, 
+                filename, 
+                dataname, 
+                path
+                    FROM Structure
         """
-        self.database.cur.execute(SQL_POPULATEINDEX)
+        self.database.cur.execute(populate_index)
 
     def get_row_as_dict(self, request):
         """

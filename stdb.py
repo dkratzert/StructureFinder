@@ -51,8 +51,7 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
-- add disordered and part tags from 
-- search for strings to get a result for a persons name, add person to db
+- for commandline: crawl to tempfile and write to destfile with unique id
 - add rightclick: copy unit cell on unit cell field
 - Format sum formula. Zahlen nach Strings tiefgestellt. Strings capitalized.
 - add recent files list. Maybe no saved options at all?
@@ -106,6 +105,7 @@ class StartStructureDB(QMainWindow):
         self.ui.centralwidget.setMinimumSize(1200, 500)
         self.abort_import_button = QtWidgets.QPushButton("Abort (takes a while)")
         self.progress = QtWidgets.QProgressBar(self)
+        self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
         self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
@@ -143,8 +143,9 @@ class StartStructureDB(QMainWindow):
         # self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
         # self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
 
-    def progressbar(self, curr, min, max):
+    def progressbar(self, curr: float, min: float, max: float) -> bool:
         """
+        Displays a progress bar in the status bar.
         """
         self.progress.setValue(curr)
         self.progress.setMaximum(max)
@@ -190,6 +191,9 @@ class StartStructureDB(QMainWindow):
 
     @pyqtSlot(name="abort_import")
     def abort_import(self):
+        """
+        This slot means, import was aborted.
+        """
         self.decide_import = False
 
     def start_db(self):
@@ -450,8 +454,6 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.clear()
         id = 0
         for i in self.structures.get_all_structure_names():
-            #name = i[3]
-            #path = i[2]#.decode("utf-8", "surrogateescape")
             id = i[0]
             self.add_table_row(i[3], i[2], i[0])
         mess = "Loaded {} entries.".format(id)
@@ -459,6 +461,7 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
+
 
     def import_cif_dirs(self):
         """
@@ -504,17 +507,20 @@ class StartStructureDB(QMainWindow):
                     continue
                 self.add_table_row(filepth.name, path, str(n))
                 n += 1
-                if n % 200 == 0:
+                if n % 300 == 0:
                     self.structures.database.commit_db()
                 num += 1
             if not self.decide_import:
+                # This means, import was aborted.
                 self.abort_import_button.hide()
                 self.decide_import = True
                 break
         time2 = time.clock()
         diff = time2 - time1
         self.progress.hide()
-        self.ui.statusbar.showMessage('Parsed {} cif files in {} s'.format(n-1, round(diff, 2)), msecs=0)
+        m, s = divmod(diff, 60)
+        h, m = divmod(m, 60)
+        self.ui.statusbar.showMessage('Added {} cif files to database in: {:>2} h, {:>2} m, {:>3.2} s'.format(n, h, m, s), msecs=0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.structures.populate_fulltext_search_table()
