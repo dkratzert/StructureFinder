@@ -12,6 +12,10 @@ Created on 09.02.2015
 """
 import math
 
+import re
+
+import constants
+
 
 class bcolors:
     HEADER = '\033[95m'
@@ -118,3 +122,29 @@ def distance(x1, y1, z1, x2, y2, z2):
     """
     d = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
     return d
+
+def get_atomlabel(input_atom):
+    """
+    converts an atom name like C12 to the element symbol C
+    Use this code to find the atoms while going through the character astream of a sumformula
+    e.g. C12H6O3Mn7
+    Find two-char atoms, them one-char, and see if numbers are in between.
+    """
+    elements = [x.upper() for x in constants.atoms]
+    atom = ''
+    for x in input_atom:  # iterate over characters in i
+        if re.match(r'^[A-Za-z]', x):  # Alphabet and "#" as allowed characters in names
+            atom = atom + x.upper()  # add characters to atoms until numbers occur
+        else:  # now we have atoms like C, Ca, but also Caaa
+            break
+    try:
+        if atom[0:2] in elements:  # fixes names like Caaa to be just Ca
+            return atom[0:2]  # atoms first, search for all two-letter atoms
+        elif atom[0] in elements:
+            return atom[0]  # then for all one-letter atoms
+        else:
+            print('*** {} is not a valid atom!! ***'.format(atom))
+            raise KeyError
+    except IndexError:
+        print('*** {} is not a valid atom! ***'.format(atom))
+        raise KeyError
