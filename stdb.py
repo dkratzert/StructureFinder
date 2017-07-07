@@ -52,10 +52,7 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
-- for commandline: crawl to tempfile and write to destfile with unique id
 - add rightclick: copy unit cell on unit cell field
-- Format sum formula. Zahlen nach Strings tiefgestellt. Strings capitalized.
-- add recent files list. Maybe no saved options at all?
 - what if there is no volume in the cif? I then should calculate it! Otherwise cell is never found!
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - add a button: open in ...
@@ -73,6 +70,7 @@ TODO:
 - the filecrawler should collect the bruker base file name, also for Rigaku? And STOE?
 - add measurement specific data to the db, e.g. machine from frame, temp from frame, 
 - pressing search in advanced tab will return to base tab with results
+- for commandline: crawl to tempfile and write to destfile with unique id
 
 Advanced tab:
 - Exclude checkbox for each entry?
@@ -282,7 +280,10 @@ class StartStructureDB(QMainWindow):
         except ValueError:
             pass
         self.ui.zLineEdit.setText("{}".format(cif_dic['_cell_formula_units_Z']))
-        sumdict = searcher.misc.format_sum_formula(cif_dic['_chemical_formula_sum'])
+        try:
+            sumdict = searcher.misc.format_sum_formula(cif_dic['_chemical_formula_sum'])
+        except KeyError:
+            sumdict = {}
         l = ['<html><body>']
         for i in sumdict:
             l.append("{}<sub>{}</sub>".format(i, sumdict[i]))
