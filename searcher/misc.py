@@ -66,7 +66,7 @@ def open_file_read(filename, asci=True):
             return binary
 
 
-def get_error_from_value(value: str) -> object:
+def get_error_from_value(value: str) -> str:
     """ 
     Returns the error value from a number string.
     :TODO: Make exponents work "1.234e23"
@@ -88,11 +88,10 @@ def get_error_from_value(value: str) -> object:
     except AttributeError:
         return "0.0"
     if "(" in value:
-        spl = value.split("(")
-        val = spl[0].split('.')
-        err = spl[1].strip(")")
+        val = value.split("(")[0].split('.')
+        err = value.split("(")[1].strip(")")
         if len(val) > 1:
-            return str(int(err) * (10 ** (-1* len(val[1]))))
+            return str(int(err) * (10 ** (-1 * len(val[1]))))
         else:
             return err
     else:
@@ -112,6 +111,7 @@ def flatten(lis):
             new_lis.append(item)
     return new_lis
 
+
 def distance(x1, y1, z1, x2, y2, z2):
     """
     distance between two points in space for orthogonal axes.
@@ -122,6 +122,7 @@ def distance(x1, y1, z1, x2, y2, z2):
     """
     d = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
     return d
+
 
 def format_sum_formula(sumform: str):
     """
@@ -138,21 +139,24 @@ def format_sum_formula(sumform: str):
     {'C': '12', 'H': '60', 'O': '3', 'Mn': '7'}
     >>> format_sum_formula("C13Cs12 H60 O3  Mn 7")
     {'C': '13', 'Cs': '12', 'H': '60', 'O': '3', 'Mn': '7'}
-    >>> format_sum_formula("CHMn")
+    >>> format_sum_formula("CHMn\\n")
     {'C': '', 'H': '', 'Mn': ''}
     >>> format_sum_formula("Hallo")
     Traceback (most recent call last):
     ...
     KeyError
+
+    >>> format_sum_formula('C4 H2.91 Al0.12 F4.36 Ni0.12 O0.48')
+    {'C': '4', 'H': '2.91', 'Al': '0.12', 'F': '4.36', 'Ni': '0.12', 'O': '0.48'}
     """
     elements = [x.upper() for x in constants.atoms]
     atlist = {}
     nums = []
-    sumform = sumform.upper().replace(' ', '')
+    sumform = sumform.upper().replace(' ', '').replace('\n', '')
 
     def isnumber(el):
         for x in el:
-            if x.isnumeric():
+            if x.isnumeric() or x == '.':
                 nums.append(x)
             else:
                 # end of number

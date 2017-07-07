@@ -39,6 +39,7 @@ from PyQt5.QtWidgets import QTreeWidgetItem
 from math import radians, sin
 
 import mol_file_writer
+import searcher
 from constants import celltxt
 from lattice import lattice
 from pymatgen.core.mat_lattice import Lattice
@@ -281,7 +282,12 @@ class StartStructureDB(QMainWindow):
         except ValueError:
             pass
         self.ui.zLineEdit.setText("{}".format(cif_dic['_cell_formula_units_Z']))
-        self.ui.sumFormulaLineEdit.setText("{}".format(cif_dic['_chemical_formula_sum']))
+        sumdict = searcher.misc.format_sum_formula(cif_dic['_chemical_formula_sum'])
+        l = ['<html><body>']
+        for i in sumdict:
+            l.append("{}<sub>{}</sub>".format(i, sumdict[i]))
+        l.append('</body></html>')
+        self.ui.formLabel.setText("{}".format("".join(l)))
         self.ui.reflTotalLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_number']))
         self.ui.goofLineEdit.setText("{}".format(cif_dic['_refine_ls_goodness_of_fit_ref']))
         self.ui.SpaceGroupLineEdit.setText("{}".format(cif_dic['_space_group_name_H_M_alt']))
@@ -549,7 +555,7 @@ class StartStructureDB(QMainWindow):
         self.ui.rintLineEdit.clear()
         self.ui.rsigmaLineEdit.clear()
         self.ui.SpaceGroupLineEdit.clear()
-        self.ui.sumFormulaLineEdit.clear()
+        self.ui.formLabel.clear()
         self.ui.temperatureLineEdit.clear()
         self.ui.thetaFullLineEdit.clear()
         self.ui.thetaMaxLineEdit.clear()
