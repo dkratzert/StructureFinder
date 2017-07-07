@@ -29,7 +29,7 @@ from PyQt5.QtWebEngine import QtWebEngine
 from PyQt5.Qt3DCore import QEntity
 from PyQt5.Qt3DRender import QPointLight
 from PyQt5.QtCore import pyqtSlot, QSize, QUrl
-from PyQt5.QtGui import QVector3D, QColor
+from PyQt5.QtGui import QVector3D, QColor, QIcon
 from PyQt5.QtQml import QQmlApplicationEngine
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QApplication, QWidget
@@ -122,24 +122,29 @@ class StartStructureDB(QMainWindow):
         self.view.show()
         self.ui.tabWidget.removeTab(1)
         self.ui.tabWidget.removeTab(1)
+        self.setWindowIcon(QIcon('./images/monoklin.png'))
 
     def connect_signals_and_slots(self):
         """
         Connects the signals and slot.
         The actionExit signal is connected in the ui file.
         """
+        # Buttons:
         self.ui.importDatabaseButton.clicked.connect(self.import_database)
         self.ui.saveDatabaseButton.clicked.connect(self.save_database)
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
+        # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
         self.ui.actionImport_file.triggered.connect(self.import_database)
         self.ui.actionSave_Database.triggered.connect(self.save_database)
+        # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
+        # Other fields:
         self.ui.txtSearchEdit.textChanged.connect(self.search_text)
         self.ui.searchLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.abort_import_button.clicked.connect(self.abort_import)
-        # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
+
         # self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
         # self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
 
