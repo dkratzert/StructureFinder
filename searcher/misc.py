@@ -123,28 +123,53 @@ def distance(x1, y1, z1, x2, y2, z2):
     d = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
     return d
 
-def get_atomlabel(input_atom):
+def format_sum_formula(sumform: str):
     """
     converts an atom name like C12 to the element symbol C
     Use this code to find the atoms while going through the character astream of a sumformula
     e.g. C12H6O3Mn7
     Find two-char atoms, them one-char, and see if numbers are in between.
+
+    >>> format_sum_formula("C12H6O3Mn7")
+    {'C': '12', 'H': '6', 'O': '3', 'Mn': '7'}
+    >>> format_sum_formula("C12 H60 O3 Mn7")
+    {'C': '12', 'H': '60', 'O': '3', 'Mn': '7'}
+    >>> format_sum_formula("C12 H60 O3  Mn 7")
+    {'C': '12', 'H': '60', 'O': '3', 'Mn': '7'}
+    >>> format_sum_formula("C13Cs12 H60 O3  Mn 7")
+    {'C': '13', 'Cs': '12', 'H': '60', 'O': '3', 'Mn': '7'}
+    >>> format_sum_formula("CHMn")
+    {'C': '', 'H': '', 'Mn': ''}
+    >>> format_sum_formula("Hallo")
+    Traceback (most recent call last):
+    ...
+    KeyError
     """
     elements = [x.upper() for x in constants.atoms]
-    atom = ''
-    for x in input_atom:  # iterate over characters in i
-        if re.match(r'^[A-Za-z]', x):  # Alphabet and "#" as allowed characters in names
-            atom = atom + x.upper()  # add characters to atoms until numbers occur
-        else:  # now we have atoms like C, Ca, but also Caaa
-            break
-    try:
-        if atom[0:2] in elements:  # fixes names like Caaa to be just Ca
-            return atom[0:2]  # atoms first, search for all two-letter atoms
-        elif atom[0] in elements:
-            return atom[0]  # then for all one-letter atoms
+    atlist = {}
+    nums = []
+    sumform = sumform.upper().replace(' ', '')
+
+    def isnumber(el):
+        for x in el:
+            if x.isnumeric():
+                nums.append(x)
+            else:
+                # end of number
+                break
+    while sumform:
+        if sumform[0:2] in elements:  # The two-character elements
+            isnumber(sumform[2:])
+            atlist[sumform[0:2].capitalize()] = "".join(nums)
+            sumform = sumform[2+len(nums):]
+            nums.clear()
+        elif sumform[0] in elements:
+            isnumber(sumform[1:])
+            atlist[sumform[0]] = "".join(nums)
+            sumform = sumform[1 + len(nums):]
+            nums.clear()
         else:
-            print('*** {} is not a valid atom!! ***'.format(atom))
             raise KeyError
-    except IndexError:
-        print('*** {} is not a valid atom! ***'.format(atom))
-        raise KeyError
+    return atlist
+
+
