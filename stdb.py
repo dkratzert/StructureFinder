@@ -571,6 +571,7 @@ class QmlAusgabe(object):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon('./images/monoklin.png'))
     myapp = StartStructureDB()
     myapp.show()
     myapp.raise_()
