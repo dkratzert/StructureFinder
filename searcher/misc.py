@@ -148,6 +148,11 @@ def format_sum_formula(sumform: str):
 
     >>> format_sum_formula('C4 H2.91 Al0.12 F4.36 Ni0.12 O0.48')
     {'C': '4', 'H': '2.91', 'Al': '0.12', 'F': '4.36', 'Ni': '0.12', 'O': '0.48'}
+    >>> format_sum_formula('C4H6O1*5H2O')
+    Traceback (most recent call last):
+    ...
+    KeyError
+
     """
     elements = [x.upper() for x in constants.atoms]
     atlist = {}

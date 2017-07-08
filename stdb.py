@@ -286,7 +286,9 @@ class StartStructureDB(QMainWindow):
         except KeyError:
             sumdict = {}
         l = ['<html><body>']
-        for i in sumdict:
+        for num, i in enumerate(sumdict):
+            if num >1 and num % 8 == 0:
+                l.append("<br>")
             l.append("{}<sub>{}</sub>".format(i, sumdict[i]))
         l.append('</body></html>')
         self.ui.formLabel.setText("{}".format("".join(l)))
