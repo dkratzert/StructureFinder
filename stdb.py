@@ -52,7 +52,7 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
-- add a column with the _data tag
+- Import APEX2/3 database
 - add rightclick: copy unit cell on unit cell field
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - try to find a .p4p file to decide if it is a twin, also try to find a TWIN instruction in the cif file
