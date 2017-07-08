@@ -11,9 +11,24 @@ Created on 09.02.2015
 
 @author: daniel
 """
-import sys
-from pprint import pprint
 
+'''
+For APEX DB:
+in table scd
+
+﻿SELECT 
+  lsq_refinement.a, 
+  lsq_refinement.b, 
+  lsq_refinement.c, 
+  lsq_refinement.alpha, 
+  lsq_refinement.beta, 
+  lsq_refinement.gamma, 
+  lsq_refinement.samples_id
+FROM 
+  scd.lsq_refinement;
+
+'''
+import sys
 import numpy as np
 
 import searcher
