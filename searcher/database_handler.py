@@ -111,9 +111,8 @@ class DatabaseRequest():
                          filename       TEXT, 
                          dataname       TEXT, 
                          path           TEXT, 
-                            tokenize=unicode61 "tokenchars= .=-_");
-        """)
-        #CREATE VIRTUAL TABLE txtsearch USING fts4(StructureId INTEGER, filename, dataname, path, tokenize=porter);
+                            tokenize=simple "tokenchars= .=-_");  
+        """)  # The simple tokenizer is best for my purposes
 
         self.cur.execute('''
                     CREATE TABLE Residuals (
