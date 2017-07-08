@@ -360,6 +360,7 @@ class StructureTable():
     def get_all_structure_names(self, ids=None):
         """
         returns all fragment names in the database, sorted by name
+        :returns [id, meas, path, filename, data]
         """
         if ids:
             if len(ids) > 2:

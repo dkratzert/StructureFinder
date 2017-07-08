@@ -20,8 +20,7 @@ import sys
 from pathlib import Path
 from pprint import pprint
 
-
-
+from lattice import lattice
 from searcher.database_handler import StructureTable, DatabaseRequest
 from searcher.fileparser import Cif
 
@@ -146,6 +145,13 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
     volume = cif._cell_volume
     if not all((a, b, c, alpha, beta, gamma)):
         return False
+    if not volume or volume == "?":
+        try:
+            volume = lattice.vol_unitcell(float(a.split('(')[0]), float(b.split('(')[0]), float(c.split('(')[0]),
+                                          float(alpha.split('(')[0]), float(beta.split('(')[0]), float(gamma.split('(')[0]))
+            volume = str(volume)
+        except ValueError:
+            volume = ''
     measurement_id = structures.fill_measuremnts_table(filename, structure_id)
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
     structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma, volume)

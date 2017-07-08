@@ -167,12 +167,17 @@
             </property>
             <column>
              <property name="text">
-              <string>file</string>
+              <string>Filename</string>
              </property>
             </column>
             <column>
              <property name="text">
-              <string>dir</string>
+              <string>Data Name</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Directory</string>
              </property>
             </column>
             <column>
@@ -382,8 +387,11 @@
                  <property name="text">
                   <string/>
                  </property>
+                 <property name="textFormat">
+                  <enum>Qt::RichText</enum>
+                 </property>
                  <property name="wordWrap">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>

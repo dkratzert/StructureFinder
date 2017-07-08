@@ -52,12 +52,12 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
+- add a column with the _data tag
 - add rightclick: copy unit cell on unit cell field
-- what if there is no volume in the cif? I then should calculate it! Otherwise cell is never found!
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
-- add a button: open in ...
 - try to find a .p4p file to decide if it is a twin, also try to find a TWIN instruction in the cif file
-- allow to scan more than one directory. Just add to previous data. Really?
+- allow to scan more than one directory. Just add to previous data. Especially for cmd version.
+- Make a web interface with python template to view everything also on a web site.
 - structure python code
 - grow structure. parse symm cards
 - make file type more flexible. handle .res and .cif equally
@@ -65,12 +65,12 @@ TODO:
   to get a list of files where hashes exist. Remove results from file crawler. May I need a hash run over 
   all files before the cif parsing run? Or just calc hash, search in db and then decide to parse cif or not? 
 - add an advanced search tab where you can search for sum formula, twinning, only elements, names, users, ... 
-- add a file browser where you can match the local path 
 - add a tab where you can match path name parts to usernames
 - the filecrawler should collect the bruker base file name, also for Rigaku? And STOE?
 - add measurement specific data to the db, e.g. machine from frame, temp from frame, 
 - pressing search in advanced tab will return to base tab with results
 - for commandline: crawl to tempfile and write to destfile with unique id
+- add a button: open in ...
 
 Advanced tab:
 - Exclude checkbox for each entry?
@@ -97,7 +97,7 @@ class StartStructureDB(QMainWindow):
         self.ui.setupUi(self)
         self.statusBar().showMessage('Ready', msecs=8000)
         self.ui.cifList_treeWidget.show()
-        self.ui.cifList_treeWidget.hideColumn(2)
+        self.ui.cifList_treeWidget.hideColumn(3)
         self.dbfdesc = None
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
@@ -216,7 +216,7 @@ class StartStructureDB(QMainWindow):
         # TODO: _space_group_symop_operation_xyz oder _symmetry_equiv_pos_as_xyz
         if not self.structures.database.cur:
             return False
-        structure_id = item.sibling(item.row(), 2).data()
+        structure_id = item.sibling(item.row(), 3).data()
         request = """select * from residuals where StructureId = {}""".format(structure_id)
         dic = self.structures.get_row_as_dict(request)
         self.display_properties(structure_id, dic)
@@ -227,7 +227,7 @@ class StartStructureDB(QMainWindow):
         Saves the database to a certain file. Therefore I have to close the database.
         """
         status = False
-        save_name, tst = QFileDialog.getSaveFileName(self, caption='Open File', directory='./', filter="*.sqlite")
+        save_name, tst = QFileDialog.getSaveFileName(self, caption='Save File', directory='./', filter="*.sqlite")
         if shutil._samefile(self.dbfilename, save_name):
             self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
             return False
@@ -247,15 +247,16 @@ class StartStructureDB(QMainWindow):
         if not cell:
             self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
             return False
+        p = Path("./opengl/jsmol-template.htm")
+        templ = p.read_text(encoding='utf-8', errors='ignore')
+        s = Template(templ)
         try:
             tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6])
             mol = tst.make_mol()
         except (TypeError, KeyError):
             print("Error in structure", structure_id, "while writing mol file.")
+            s = Template(' ')
             pass
-        p = Path("./opengl/jsmol-template.htm")
-        templ = p.read_text(encoding='utf-8', errors='ignore')
-        s = Template(templ)
         content = s.safe_substitute(MyMol=mol)
         p2 = Path("./opengl/jsmol.htm")
         p2.write_text(data=content, encoding="utf-8", errors='ignore')
@@ -357,9 +358,11 @@ class StartStructureDB(QMainWindow):
             self.statusBar().showMessage("Found {} entries.".format(len(idlist)), msecs=0)
             for i in idlist:
                 # name = i[1]  # .decode("utf-8", "surrogateescape")
+                # data = i[2]
                 # path = i[3]  # .decode("utf-8", "surrogateescape")
                 # id = i[0]
-                self.add_table_row(i[1], i[3], i[0])
+                #self.add_table_row(i[1], i[3], i[2], i[0])
+                self.add_table_row(name=i[1], path=i[3], id=i[0], data=i[2])
             self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except:
             self.statusBar().showMessage("Nothing found.", msecs=0)
@@ -416,13 +419,11 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for i in searchresult:
-            name = i[3]  # .decode("utf-8", "surrogateescape")
-            path = i[2]  # .decode("utf-8", "surrogateescape")
-            id = i[0]
-            self.add_table_row(name, path, id)
+            self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
+            #self.add_table_row(name, path, id)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
 
-    def add_table_row(self, name, path, id):
+    def add_table_row(self, name: str, path: str, data: bytes, id: str) -> None:
         """
         Adds a line to the search results table
         :type name: str, bytes
@@ -434,10 +435,13 @@ class StartStructureDB(QMainWindow):
             name = name.decode("utf-8", "surrogateescape")
         if isinstance(path, bytes):
             path = path.decode("utf-8", "surrogateescape")
+        if isinstance(data, bytes):
+            data = data.decode("utf-8", "surrogateescape")
         tree_item = QTreeWidgetItem()
         tree_item.setText(0, name)  # name
-        tree_item.setText(1, path)  # path
-        tree_item.setData(2, 0, id)  # id
+        tree_item.setText(1, data)  # data
+        tree_item.setText(2, path)  # path
+        tree_item.setData(3, 0, id)  # id
         self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
 
     def import_database(self):
@@ -461,13 +465,14 @@ class StartStructureDB(QMainWindow):
     def show_full_list(self):
         """
         Displays the complete list of structures
+        [id, meas, path, filename, data]
         :return: 
         """
         self.ui.cifList_treeWidget.clear()
         id = 0
         for i in self.structures.get_all_structure_names():
             id = i[0]
-            self.add_table_row(i[3], i[2], i[0])
+            self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
         mess = "Loaded {} entries.".format(id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
@@ -517,7 +522,7 @@ class StartStructureDB(QMainWindow):
                 tst = filecrawler.fill_db_tables(cif, filepth.name, path, n, self.structures)
                 if not tst:
                     continue
-                self.add_table_row(filepth.name, path, str(n))
+                self.add_table_row(filepth.name, path, cif.cif_data['data'], str(n))
                 n += 1
                 if n % 300 == 0:
                     self.structures.database.commit_db()
