@@ -99,7 +99,7 @@ def put_cifs_in_db(searchpath):
             if not tst:
                 continue
             n += 1
-        if n % 400 == 0:
+        if n % 4000 == 0:
             print('{} files ...'.format(n))
             structures.database.commit_db()
     time2 = time.clock()

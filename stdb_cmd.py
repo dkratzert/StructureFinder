@@ -2,7 +2,7 @@ import os
 import sys
 
 from searcher import filecrawler
-from searcher.spinner import Spinner
+#from searcher.spinner import Spinner
 
 try:
     fname = os.path.abspath(sys.argv[1])
@@ -11,10 +11,10 @@ except IndexError:
     print("Please run this as 'stdb_rmd [directory]'\n")
     print("stdb_cmd will search for .cif files in [directory] recoursively.")
 else:
-    spinner = Spinner()
-    spinner.start()
+    #spinner = Spinner()
+    #spinner.start()
     try:
         filecrawler.put_cifs_in_db(fname)
     except Exception as e:
         print(e)
-    spinner.stop()
+    #spinner.stop()
