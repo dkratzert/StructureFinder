@@ -143,8 +143,18 @@ class Cif():
                     #if line == "_atom_type_scat_source":
                     #    atkey = "_atom_type_scat_source"
                     # collecting keywords from head:
-                    if line[:1] == "_":
+                    if line.lstrip()[0] == "_" and atkey:
                         loophead_list.append(line)
+                        continue
+                    if line[:5] == "loop_":
+                        loop = True
+                        loophead_list.clear()
+                        atkey = ''
+                        continue
+                    if line[0] == '_':
+                        loop = False
+                        loophead_list.clear()
+                        atkey = ''
                         continue
                     # We are in a loop and the header ended, so we collect data:
                     else:
@@ -165,11 +175,12 @@ class Cif():
                             continue
                         # TODO: make this general. Not only for atoms:
                         if atkey and loopitem[atkey] in atoms:
-                            # atom is already there not there, upating values
+                            # atom is already there, upating values
                             atoms[loopitem[atkey]].update(loopitem)
                         elif atkey:
                             # atom is not there, creating key
                             atoms[loopitem[atkey]] = loopitem
+                        continue
                 # First find the start of the cif (the data tag)
                 if line[:5] == 'data_':
                     if not data:
@@ -221,9 +232,9 @@ class Cif():
         # pprint(self.cif_data)  # slow
         if not data:
             return False
-        if not atoms:
-            self.cif_data.clear()
-            return False
+        #if not atoms:
+        #    self.cif_data.clear()
+        #    return False
         else:
             self.handle_deprecates()
             return True

@@ -108,7 +108,7 @@ def put_cifs_in_db(searchpath):
     h, m = divmod(m, 60)
     structures.populate_fulltext_search_table()
     structures.database.commit_db("Committed")
-    print('\nAdded {} cif files to database in: {:>2} h, {:>2} m, {:>3.2f} s'.format(n, h, m, s))
+    print('\nAdded {} cif files to database in: {:>2} h, {:>2} m, {:>3.2f} s'.format(n-1, h, m, s))
 
 
 def fill_db_tables(cif, filename, path, structure_id, structures):

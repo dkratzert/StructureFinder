@@ -59,3 +59,4 @@ test.sqlite
 *.sqlite-journal
 
 opengl/jsmol.htm
+structuredb.sqlite
