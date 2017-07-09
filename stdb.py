@@ -415,7 +415,7 @@ class StartStructureDB(QMainWindow):
                         float(dic['gamma']) )
                 except ValueError:
                     continue
-                map = lattice1.find_mapping(lattice2, ltol=0.05, atol=0.2, skip_rotation_matrix=True)
+                map = lattice1.find_mapping(lattice2, ltol=0.001, atol=0.5, skip_rotation_matrix=True)
                 if map:
                     idlist2.append(i)
         searchresult = self.structures.get_all_structure_names(idlist2)
@@ -541,7 +541,7 @@ class StartStructureDB(QMainWindow):
         self.progress.hide()
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
-        self.ui.statusbar.showMessage('Added {} cif files to database in: {:>2} h, {:>2} m, {:>3.2} s'.format(n, h, m, s), msecs=0)
+        self.ui.statusbar.showMessage('Added {} cif files to database in: {:>2} h, {:>2} m, {:>3.2f} s'.format(n, h, m, s), msecs=0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.structures.populate_fulltext_search_table()

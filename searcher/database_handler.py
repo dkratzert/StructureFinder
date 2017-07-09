@@ -520,7 +520,7 @@ class StructureTable():
         alphaerror = get_error_from_value(alpha)
         betaerror = get_error_from_value(beta)
         gammaerror = get_error_from_value(gamma)
-        volerror = get_error_from_value(volume)
+        #volerror = get_error_from_value(volume)
         a = a.split('(')[0]
         b = b.split('(')[0]
         c = c.split('(')[0]
