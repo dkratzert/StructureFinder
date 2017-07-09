@@ -813,18 +813,5 @@ class StructureTable():
             
             
 if __name__ == '__main__':
-    s = StructureTable("../test.sqlite")
-    #vol = lattice.vol_unitcell(8.4009,  10.4848,  11.8979,  94.7910, 103.0250, 108.5480) # 954
-    # 8.40 10.48 11.99 94.78 103.0 108.55
-    vol = lattice.vol_unitcell(8.4, 10.5, 11.9, 95, 103, 109)  # 952
-    print(vol)
-    res = s.find_by_volume(vol)
-    print(res)
-    #latt = Lattice.from_string("10 20 30 90 91 92")
-    #for x in range(1000):
-    #    cell = s.get_cell_by_id(2)[0]
-    #    #print(cell)
-    #    m = latt.find_mapping(Lattice.from_parameters(*cell))
-    #    #print(m)
-    #print("ready")
+    pass
 

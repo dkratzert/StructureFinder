@@ -13,8 +13,8 @@ except IndexError:
 else:
     #spinner = Spinner()
     #spinner.start()
-    try:
-        filecrawler.put_cifs_in_db(fname)
-    except Exception as e:
-        print(e)
+    #try:
+    filecrawler.put_cifs_in_db(fname)
+    #except Exception as e:
+    #    print(e)
     #spinner.stop()

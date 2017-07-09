@@ -365,25 +365,4 @@ if __name__ == '__main__':
     failed, attempted = doctest.testmod()  # verbose=True)
     if failed == 0:
         print('passed all {} tests!'.format(attempted))
-    from pathlib import Path
-    time1 = time.clock()
-    cif = "./test-data/p21c.cif"
-    #cif = "/Users/daniel/.olex2/data/3e30b45376c2d4175951f811f7137870/customisation/cif_templates/ALS_BL1131_post_07_2014.cif"
-    #cif = "/Users/daniel/Documents/Strukturen/DK_ML7-66/DK_ML7-66-final-old.cif"
-    #cif = "/Users/daniel/Downloads/.olex/originals/10000007.cif"
-    c = Cif(Path(cif))
-    time2 = time.clock()
-    diff = round(time2-time1, 4)
-    #print(c.cif_data["_space_group_name_H-M_alt"])
-    #sys.exit()
-    #for i in c:
-     #   pass
-      #  pprint(i)
-        #for x in i:
-        #    print(x), print(i[x])
-    print('-'*50)
-    #print(c._shelx_space_group_comment, '##')
-    #print(c._atom.keys(), '##')
-    #print(c)
-    print('-' * 50)
-    print(diff, 's')
+
