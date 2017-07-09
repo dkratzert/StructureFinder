@@ -390,7 +390,7 @@ class StartStructureDB(QMainWindow):
         try:
             volume = lattice.vol_unitcell(*cell)
             # First a list of structures where the volume is similar:
-            idlist = self.structures.find_by_volume(volume, threshold=0.03)
+            idlist = self.structures.find_by_volume(volume, threshold=0.02)
         except (ValueError, AttributeError):
             if not self.full_list:
                 self.show_full_list()
