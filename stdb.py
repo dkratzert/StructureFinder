@@ -53,6 +53,8 @@ from stdb_main import Ui_stdbMainwindow
 """
 TODO:
 - Import APEX2/3 database
+Als user bruker: psql -U bruker -f /Users/Shared/dkdumpall.sql BAXSdb
+Eventuell geht das auch als user daniel, aber mit -U bruker 
 - add rightclick: copy unit cell on unit cell field
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - try to find a .p4p file to decide if it is a twin, also try to find a TWIN instruction in the cif file

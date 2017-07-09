@@ -13,6 +13,46 @@ Created on 09.02.2015
 """
 
 '''
+scd.lsq_refinement.samples_id
+scd.lsq_refinement.a
+scd.lsq_refinement.b
+scd.lsq_refinement.c
+scd.lsq_refinement.alpha, 
+scd.lsq_refinement.beta, 
+scd.lsq_refinement.gamma
+scd.lsq_refinement.volume  <-- existiert nicht!
+scd.lsq_refinement.a_esd
+scd.lsq_refinement.b_esd
+scd.lsq_refinement.c_esd
+scd.lsq_refinement.alpha_esd
+scd.lsq_refinement.beta_esd 
+scd.lsq_refinement.gamma_esd
+scd.lsq_refinement.volume_esd
+
+scd.crystal_systems.crystal_systems_id -> übersetzt in Namen
+
+scd.sample_color.crystal_appereances_id
+scd.sample_color.crystal_color_id_1
+scd.sample_color.crystal_color_id_2
+
+scd.sample_size.dimension_1, 2, 3
+
+scd.samples.sample_name
+scd.samples.formula
+scd.samples.compund
+scd.samples.shape (e.g. needle)
+scd.samples.last_modified
+
+scr.struct_file
+scr.struct_soln
+
+scd.space_proups  --> list of space groups
+
+scd.xrd_temperature_control  <- eventuell
+
+
+
+
 For APEX DB:
 in table scd
 

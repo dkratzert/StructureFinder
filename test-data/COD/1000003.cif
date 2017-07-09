@@ -1,0 +1,90 @@
+#------------------------------------------------------------------------------
+#$Date: 2017-02-09 11:15:25 +0200 (Thu, 09 Feb 2017) $
+#$Revision: 191935 $
+#$URL: file:///home/coder/svn-repositories/cod/cif/1/00/00/1000003.cif $
+#------------------------------------------------------------------------------
+#
+# This file is available in the Crystallography Open Database (COD),
+# http://www.crystallography.net/
+#
+# All data on this site have been placed in the public domain by the
+# contributors.
+#
+data_1000003
+loop_
+_publ_author_name
+'G. Vanhoyland'
+'M.K. Van Bael'
+'J. Mullens'
+'L.C. Van Poucke'
+_publ_section_title
+;
+Structure determination of anhydrous acid strontium oxalate by conventional
+X-ray powder diffraction
+;
+_journal_coden_ASTM              POWDIF
+_journal_issue                   4
+_journal_name_full               'Powder Diffraction'
+_journal_page_first              224
+_journal_page_last               226
+_journal_paper_doi               10.1154/1.1401199
+_journal_volume                  16
+_journal_year                    2001
+_chemical_formula_structural     Sr(HC2O4)1/2(C2O4)
+_chemical_formula_sum            'C3 O6 Sr'
+_chemical_formula_weight         878.598
+_chemical_name_common            'Anhydrous acid strontium oxalate'
+_symmetry_Int_Tables_number      14
+_symmetry_space_group_name_Hall  -P_2ybc
+_symmetry_space_group_name_H-M   'P 1 21/c 1'
+_audit_creation_date             2000-11-14
+_audit_creation_method           'Created with Diamond v2.0'
+_audit_update_record             2000-11-14
+_cell_angle_alpha                90.000
+_cell_angle_beta                 102.104(8)
+_cell_angle_gamma                90.000
+_cell_formula_units_Z            4
+_cell_length_a                   7.9661(7)
+_cell_length_b                   9.205(1)
+_cell_length_c                   7.3198(8)
+_cell_volume                     524.8(9)
+_cod_original_formula_sum        'Sr O6 C3'
+_cod_database_code               1000003
+_cod_depositor_comments
+;
+ Changing the _atom_site_occupancy data item value from '?' to '1'
+ for all fully occupied atom sites.
+
+ Antanas Vaitkus,
+ 2017-02-09
+;
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_occupancy
+_atom_site_symmetry_multiplicity
+_atom_site_Wyckoff_symbol
+_atom_site_attached_hydrogens
+_atom_site_calc_flag
+_atom_site_thermal_displace_type
+_atom_site_U_iso_or_equiv
+Sr1 Sr 0.8273(1) -0.1739(1) 0.9568(2) 1 4 e ? d Biso 0.63(3)
+O2 O 0.8337(8) 0.1155(6) 0.979(1) 1 4 e ? d Biso 0.97(9)
+O3 O 0.8948(9) -0.0985(7) 0.647(1) 1 4 e ? d Biso 0.97(9)
+O4 O 0.5425(9) -0.0308(9) 0.802(1) 1 4 e ? d Biso 0.97(9)
+O5 O 0.4039(8) 0.1835(9) 0.7991(9) 1 4 e ? d Biso 0.97(9)
+O6 O 1.0481(9) 0.1084(7) 0.6978(9) 1 4 e ? d Biso 0.97(9)
+O7 O 0.7052(7) 0.3290(9) 0.8944(9) 1 4 e ? d Biso 0.97(9)
+C8 C 0.536(1) 0.103(1) 0.829(2) 1 4 e ? d Biso 1.4(2)
+C9 C 0.708(1) 0.189(1) 0.909(2) 1 4 e ? d Biso 1.4(2)
+C10 C 0.973(2) -0.002(2) 0.601(2) 1 4 e ? d Biso 1.4(2)
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+_atom_type_radius_bond
+Sr ? 1.200
+O ? 1.200
+C ? 1.200

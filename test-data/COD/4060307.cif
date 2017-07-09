@@ -1,0 +1,188 @@
+#------------------------------------------------------------------------------
+#$Date: 2016-03-21 06:08:14 +0200 (Mon, 21 Mar 2016) $
+#$Revision: 178492 $
+#$URL: svn://www.crystallography.net/cod/cif/4/06/03/4060307.cif $
+#------------------------------------------------------------------------------
+#
+# This file is available in the Crystallography Open Database (COD),
+# http://www.crystallography.net/
+#
+# All data on this site have been placed in the public domain by the
+# contributors.
+#
+data_4060307
+loop_
+_publ_author_name
+'Sanchez-Nieves, J.'
+'Frutos, L. M.'
+'Royo, P.'
+'Castano, O.'
+'Herdtweck, E.'
+_publ_section_title
+;
+ Trapping Unstable Terminal Ta-O Multiple Bonds of Monocyclopentadienyl Tantalum
+ Complexes with a Lewis Acid
+;
+_journal_name_full               Organometallics
+_journal_paper_doi               10.1021/om0490132
+_journal_year                    2005
+_chemical_formula_sum            'C28 H38 S2 Y2'
+_chemical_formula_weight         616.52
+_space_group_IT_number           14
+_symmetry_cell_setting           monoclinic
+_symmetry_space_group_name_Hall  '-P 2ybc'
+_symmetry_space_group_name_H-M   'P 1 21/c 1'
+_cell_angle_alpha                90.00
+_cell_angle_beta                 104.688(7)
+_cell_angle_gamma                90.00
+_cell_formula_units_Z            2
+_cell_length_a                   9.181(4)
+_cell_length_b                   17.772(9)
+_cell_length_c                   8.877(4)
+_cell_measurement_temperature    298(2)
+_cell_volume                     1401.0(12)
+_diffrn_ambient_temperature      298(2)
+_exptl_crystal_density_diffrn    1.461
+_cod_depositor_comments
+;
+The following automatic conversions were performed:
+'_symmetry_cell_setting' value 'Monoclinic' changed to 'monoclinic'
+according to '/home/saulius/struct/CIF-dictionaries/cif_core.dic'
+dictionary named 'cif_core.dic' version 2.4.1 from 2010-06-29.
+
+Automatic conversion script
+Id: cif_fix_enum 1527 2010-12-29 10:47:43Z saulius 
+;
+_cod_original_sg_symbol_H-M      'P 21/c'
+_cod_database_code               4060307
+loop_
+_symmetry_equiv_pos_as_xyz
+'x, y, z'
+'-x, y+1/2, -z+1/2'
+'-x, -y, -z'
+'x, -y-1/2, z-1/2'
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_U_iso_or_equiv
+_atom_site_adp_type
+_atom_site_occupancy
+_atom_site_symmetry_multiplicity
+_atom_site_calc_flag
+_atom_site_refinement_flags
+_atom_site_disorder_assembly
+_atom_site_disorder_group
+Y1 Y 0.85070(5) 0.07391(3) 0.04584(5) 0.04275(17) Uani 1 1 d . . .
+S1 S 1.15808(14) 0.05565(7) 0.12374(15) 0.0490(3) Uani 1 1 d . . .
+C1 C 0.7139(8) -0.0165(4) 0.1999(7) 0.0762(18) Uani 1 1 d . . .
+H1A H 0.6737 -0.0664 0.1658 0.091 Uiso 1 1 calc R . .
+C2 C 0.8541(7) -0.0014(4) 0.2987(7) 0.0766(19) Uani 1 1 d . . .
+H2A H 0.9293 -0.0392 0.3469 0.092 Uiso 1 1 calc R . .
+C3 C 0.8563(7) 0.0740(4) 0.3412(6) 0.0753(18) Uani 1 1 d . . .
+H3A H 0.9343 0.0978 0.4236 0.090 Uiso 1 1 calc R . .
+C4 C 0.7227(8) 0.1052(4) 0.2712(7) 0.0770(18) Uani 1 1 d . . .
+H4A H 0.6879 0.1550 0.2942 0.092 Uiso 1 1 calc R . .
+C5 C 0.6332(7) 0.0493(4) 0.1818(7) 0.080(2) Uani 1 1 d . . .
+H5A H 0.5254 0.0538 0.1317 0.096 Uiso 1 1 calc R . .
+C6 C 0.6747(7) 0.1591(4) -0.1613(9) 0.089(2) Uani 1 1 d . . .
+H6A H 0.5665 0.1523 -0.2065 0.106 Uiso 1 1 calc R . .
+C7 C 0.7440(9) 0.2071(3) -0.0343(8) 0.0807(19) Uani 1 1 d . . .
+H7A H 0.6903 0.2384 0.0249 0.097 Uiso 1 1 calc R . .
+C8 C 0.8905(9) 0.2132(3) -0.0303(8) 0.0807(19) Uani 1 1 d . . .
+H8A H 0.9606 0.2487 0.0349 0.097 Uiso 1 1 calc R . .
+C9 C 0.9192(8) 0.1731(4) -0.1477(9) 0.0814(19) Uani 1 1 d . . .
+H9A H 1.0143 0.1742 -0.1788 0.098 Uiso 1 1 calc R . .
+C10 C 0.7915(10) 0.1401(3) -0.2298(7) 0.082(2) Uani 1 1 d . . .
+H10A H 0.7790 0.1143 -0.3298 0.099 Uiso 1 1 calc R . .
+C11 C 1.2575(7) 0.0479(3) 0.3283(6) 0.0752(18) Uani 1 1 d . . .
+H11A H 1.1851 0.0360 0.3876 0.090 Uiso 1 1 calc R . .
+H11B H 1.3276 0.0061 0.3403 0.090 Uiso 1 1 calc R . .
+C12 C 1.3450(8) 0.1189(5) 0.3983(8) 0.117(3) Uani 1 1 d . . .
+H12A H 1.4151 0.1061 0.4965 0.140 Uiso 1 1 calc R . .
+H12B H 1.4028 0.1372 0.3283 0.140 Uiso 1 1 calc R . .
+C13 C 1.2484(9) 0.1757(5) 0.4231(10) 0.122(3) Uani 1 1 d . . .
+H13A H 1.1898 0.1571 0.4921 0.146 Uiso 1 1 calc R . .
+H13B H 1.1790 0.1888 0.3246 0.146 Uiso 1 1 calc R . .
+C14 C 1.3369(9) 0.2476(4) 0.4958(10) 0.130(3) Uani 1 1 d . . .
+H14A H 1.2671 0.2855 0.5103 0.196 Uiso 1 1 calc R . .
+H14B H 1.3943 0.2664 0.4272 0.196 Uiso 1 1 calc R . .
+H14C H 1.4038 0.2351 0.5946 0.196 Uiso 1 1 calc R . .
+loop_
+_atom_site_aniso_label
+_atom_site_aniso_U_11
+_atom_site_aniso_U_22
+_atom_site_aniso_U_33
+_atom_site_aniso_U_23
+_atom_site_aniso_U_13
+_atom_site_aniso_U_12
+Y1 0.0478(3) 0.0468(3) 0.0343(3) 0.0028(2) 0.01152(18) 0.0038(2)
+S1 0.0514(7) 0.0520(8) 0.0428(7) -0.0025(6) 0.0104(6) -0.0007(6)
+C1 0.096(5) 0.086(5) 0.061(4) -0.010(3) 0.048(4) -0.035(4)
+C2 0.080(5) 0.110(6) 0.047(4) 0.031(4) 0.031(3) 0.012(4)
+C3 0.080(4) 0.117(6) 0.031(3) -0.010(3) 0.018(3) -0.027(4)
+C4 0.087(5) 0.089(5) 0.067(4) -0.017(4) 0.041(4) 0.003(4)
+C5 0.051(3) 0.136(6) 0.058(4) -0.011(4) 0.025(3) -0.013(4)
+C6 0.063(4) 0.089(5) 0.093(5) 0.041(4) -0.017(4) 0.010(4)
+C7 0.100(5) 0.060(4) 0.090(5) 0.013(4) 0.040(4) 0.038(4)
+C8 0.099(6) 0.054(4) 0.081(5) 0.012(3) 0.007(4) -0.008(4)
+C9 0.096(5) 0.078(5) 0.076(5) 0.040(4) 0.033(4) 0.014(4)
+C10 0.137(6) 0.058(4) 0.043(4) 0.017(3) 0.008(4) 0.012(4)
+C11 0.082(4) 0.084(4) 0.050(3) -0.025(3) -0.002(3) 0.001(3)
+C12 0.099(6) 0.173(8) 0.080(5) -0.028(5) 0.025(4) 0.025(6)
+C13 0.106(6) 0.118(7) 0.146(8) -0.001(6) 0.040(6) 0.006(5)
+C14 0.103(6) 0.106(6) 0.182(9) -0.046(6) 0.036(6) -0.012(5)
+loop_
+_geom_bond_atom_site_label_1
+_geom_bond_atom_site_label_2
+_geom_bond_distance
+_geom_bond_site_symmetry_2
+_geom_bond_publ_flag
+Y1 C7 2.591(5) . ?
+Y1 C6 2.604(5) . ?
+Y1 C2 2.607(5) . ?
+Y1 C3 2.609(5) . ?
+Y1 C8 2.615(6) . ?
+Y1 C5 2.619(6) . ?
+Y1 C4 2.624(5) . ?
+Y1 C1 2.626(5) . ?
+Y1 C10 2.644(5) . ?
+Y1 C9 2.646(6) . ?
+Y1 S1 2.7409(16) 3_755 ?
+Y1 S1 2.7491(18) . ?
+S1 C11 1.819(6) . ?
+S1 Y1 2.7409(16) 3_755 ?
+C1 C5 1.371(8) . ?
+C1 C2 1.387(8) . ?
+C1 H1A 0.9800 . ?
+C2 C3 1.392(8) . ?
+C2 H2A 0.9800 . ?
+C3 C4 1.346(8) . ?
+C3 H3A 0.9800 . ?
+C4 C5 1.402(8) . ?
+C4 H4A 0.9800 . ?
+C5 H5A 0.9800 . ?
+C6 C10 1.402(8) . ?
+C6 C7 1.427(9) . ?
+C6 H6A 0.9800 . ?
+C7 C8 1.341(9) . ?
+C7 H7A 0.9800 . ?
+C8 C9 1.343(8) . ?
+C8 H8A 0.9800 . ?
+C9 C10 1.348(8) . ?
+C9 H9A 0.9800 . ?
+C10 H10A 0.9800 . ?
+C11 C12 1.539(9) . ?
+C11 H11A 0.9700 . ?
+C11 H11B 0.9700 . ?
+C12 C13 1.398(9) . ?
+C12 H12A 0.9700 . ?
+C12 H12B 0.9700 . ?
+C13 C14 1.564(9) . ?
+C13 H13A 0.9700 . ?
+C13 H13B 0.9700 . ?
+C14 H14A 0.9600 . ?
+C14 H14B 0.9600 . ?
+C14 H14C 0.9600 . ?
