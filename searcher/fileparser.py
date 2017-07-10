@@ -102,6 +102,7 @@ class Cif():
         save_frame = False
         atoms = {}
         atkey = ''
+        loop_body = False
         num = 0
         semi_colon_text_field = ''
         semi_colon_text_list = []
@@ -111,6 +112,9 @@ class Cif():
             textlen = len(txt)
             for num, line in enumerate(txt):
                 line = line.rstrip('\r\n ')
+                if line[0] == "_" and loop_body:
+                    loop = False
+                    loop_body = False
                 if loop:
                     if not line:
                         loop = False
@@ -121,46 +125,28 @@ class Cif():
                     # leave out comments:
                     if line[0] == '#':
                         continue
-                    # Leave out save_ frames:
-                    if save_frame:
-                        continue
-                    if line[:5] == "save_":
-                        save_frame = True
-                        continue
-                    elif line[:5] == "save_" and save_frame:
-                        save_frame = False
                     # to collect the two parts of an atom loop (have to do it more general):
                     if line == '_atom_site_label':
                         atkey = '_atom_site_label'
                     if line == '_atom_site_aniso_label':
                         atkey = '_atom_site_aniso_label'
-                    #if line == "_atom_type_symbol":
-                    #    atkey = "_atom_type_symbol"
-                    #if line == "_atom_type_scat_dispersion_real":
-                    #    atkey = "_atom_type_scat_dispersion_real"
-                    #if line == "_atom_type_scat_dispersion_imag":
-                    #    atkey = "_atom_type_scat_dispersion_imag"
-                    #if line == "_atom_type_scat_source":
-                    #    atkey = "_atom_type_scat_source"
-                    # collecting keywords from head:
-                    if line.lstrip()[0] == "_" and atkey:
-                        loophead_list.append(line)
-                        continue
                     if line[:5] == "loop_":
                         loop = True
+                        loop_body = False
                         loophead_list.clear()
                         atkey = ''
                         continue
-                    if line[0] == '_':
-                        loop = False
-                        loophead_list.clear()
-                        atkey = ''
+                    if line[0] != "_":
+                        loop_body = True
+                    # Loop header started, collecting keywords from head:
+                    if line[0] == "_" and atkey:
+                        loophead_list.append(line)
                         continue
                     # We are in a loop and the header ended, so we collect data:
-                    else:
-                        loopitem = {}
+                    if loop_body and atkey:
+                        loopitem = {}  # a line from the loop body, e.g. an atom
                         loop_data_line = delimit_line(line)
-                        if cont:
+                        if cont:  # a continuation line
                             cont = False
                             continue
                         # unwrap loop data:
@@ -181,6 +167,14 @@ class Cif():
                             # atom is not there, creating key
                             atoms[loopitem[atkey]] = loopitem
                         continue
+                # Leave out save_ frames:
+                if save_frame:
+                    continue
+                if line[:5] == "save_":
+                    save_frame = True
+                    continue
+                elif line[:5] == "save_" and save_frame:
+                    save_frame = False
                 # First find the start of the cif (the data tag)
                 if line[:5] == 'data_':
                     if not data:
@@ -188,7 +182,7 @@ class Cif():
                         self.cif_data['data'] = name
                         data = True
                         continue
-                    else:
+                    else:   # break in occurence of a second data_
                         break
                 # Find the loop positions:
                 if line[:5] == "loop_":
