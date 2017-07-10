@@ -7,16 +7,28 @@ import pg8000
 
 conn = pg8000.connect(user="BrukerPostgreSQL", password="Bruker-PostgreSQL", ssl=False, database="BAXSdb")
 cursor = conn.cursor()
-cursor.execute("""SELECT lsq_refinement.samples_id, 
-                        lsq_refinement.a, 
-                        lsq_refinement.b, 
-                        lsq_refinement.c, 
-                        lsq_refinement.alpha, 
-                        lsq_refinement.beta, 
-                        lsq_refinement.gamma 
-                        FROM scd.lsq_refinement
-                JOIN scd.sample_color
-                        ON scd.sample_color.samples_id=scd.lsq_refinement.samples_id
+cursor.execute("""SELECT 
+                        lsq.samples_id,         --0  
+                        lsq.a,                  --1
+                        lsq.b,                  --2
+                        lsq.c,                  --3
+                        lsq.alpha, 
+                        lsq.beta, 
+                        lsq.gamma,
+                        col.crystal_colors_id_1,   --7 Farbe 1
+                        sam.formula,               --8
+                        sam.sample_name,           --9
+                        sam.last_modified,         --10
+                        sam.last_directory,        --11 Not the dir where the files are?
+                        indx.first_image           --12 First image of indexing
+                        FROM scd.lsq_refinement AS lsq
+                          INNER JOIN scd.sample_color AS col 
+                        ON lsq.samples_id=col.samples_id
+                          INNER JOIN scd.samples AS sam 
+                        ON lsq.samples_id=sam.samples_id
+                          INNER JOIN scd.indexing AS indx
+                        ON lsq.samples_id=indx.samples_id
+                        ;
                 """)
 results = cursor.fetchall()
 pprint.pprint(results)
