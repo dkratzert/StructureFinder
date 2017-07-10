@@ -23,16 +23,13 @@ from pathlib import Path
 from string import Template
 
 import shutil
-from PyQt5 import uic, QtWidgets, Qt3DExtras, Qt3DRender, Qt3DCore
-from PyQt5.QtWebChannel import QWebChannel
+from PyQt5 import uic, QtWidgets
 from PyQt5.QtWebEngine import QtWebEngine
-from PyQt5.Qt3DCore import QEntity
-from PyQt5.Qt3DRender import QPointLight
-from PyQt5.QtCore import pyqtSlot, QSize, QUrl
-from PyQt5.QtGui import QVector3D, QColor, QIcon
+from PyQt5.QtCore import pyqtSlot, QUrl
+from PyQt5.QtGui import QIcon
 from PyQt5.QtQml import QQmlApplicationEngine
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QTreeWidgetItem
@@ -40,10 +37,11 @@ from math import radians, sin
 
 import mol_file_writer
 import searcher
+from apex import apeximporter
 from constants import celltxt
 from lattice import lattice
 from pymatgen.core.mat_lattice import Lattice
-from searcher import filecrawler, misc, database_handler
+from searcher import filecrawler, misc
 from searcher.database_handler import StructureTable
 from searcher.fileparser import Cif
 uic.compileUiDir('./')
@@ -124,6 +122,7 @@ class StartStructureDB(QMainWindow):
         self.ui.tabWidget.removeTab(1)
         self.ui.tabWidget.removeTab(1)
         self.setWindowIcon(QIcon('./images/monoklin.png'))
+        self.APEX = False
 
     def connect_signals_and_slots(self):
         """
@@ -131,13 +130,13 @@ class StartStructureDB(QMainWindow):
         The actionExit signal is connected in the ui file.
         """
         # Buttons:
-        self.ui.importDatabaseButton.clicked.connect(self.import_database)
+        self.ui.importDatabaseButton.clicked.connect(self.import_cif_database)
         self.ui.saveDatabaseButton.clicked.connect(self.save_database)
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
-        self.ui.actionImport_file.triggered.connect(self.import_database)
+        self.ui.actionImport_file.triggered.connect(self.import_cif_database)
         self.ui.actionSave_Database.triggered.connect(self.save_database)
         # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
         # Other fields:
@@ -145,7 +144,7 @@ class StartStructureDB(QMainWindow):
         self.ui.searchLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.abort_import_button.clicked.connect(self.abort_import)
-
+        self.ui.openApexDBButton.clicked.connect(self.open_apex_db)
         # self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
         # self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
 
@@ -194,7 +193,6 @@ class StartStructureDB(QMainWindow):
                     return False
         return True
 
-
     @pyqtSlot(name="abort_import")
     def abort_import(self):
         """
@@ -230,9 +228,10 @@ class StartStructureDB(QMainWindow):
         """
         status = False
         save_name, tst = QFileDialog.getSaveFileName(self, caption='Save File', directory='./', filter="*.sqlite")
-        if shutil._samefile(self.dbfilename, save_name):
-            self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
-            return False
+        if save_name:
+            if shutil._samefile(self.dbfilename, save_name):
+                self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
+                return False
         if save_name:
             status = self.close_db(save_name)
         if status:
@@ -448,7 +447,7 @@ class StartStructureDB(QMainWindow):
         tree_item.setData(3, 0, id)  # id
         self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
 
-    def import_database(self):
+    def import_cif_database(self):
         """
         Import a new database.
         :rtype: bool
@@ -465,6 +464,15 @@ class StartStructureDB(QMainWindow):
         if not self.structures:
             return False
         return True
+
+    def open_apex_db(self):
+        """
+        Opens the APEX db to be displayed in the treeview.
+        """
+        self.APEX = True
+        apx = apeximporter.ApexDB()
+        data = apx.get_data()
+        print(data)
 
     def show_full_list(self):
         """
@@ -483,12 +491,12 @@ class StartStructureDB(QMainWindow):
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
 
-
     def import_cif_dirs(self):
         """
         Imports cif files from a certain directory
         :return: None
         """
+        self.APEX = False
         self.tmpfile = True
         self.statusBar().showMessage('')
         self.close_db()
@@ -586,11 +594,15 @@ class QmlAusgabe(object):
 
 
 if __name__ == "__main__":
+    # later http://www.pyinstaller.org/
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon('./images/monoklin.png'))
+    app.setApplicationName("StructureFinder")
+    app.setApplicationDisplayName("StructureFinder")
     myapp = StartStructureDB()
     myapp.show()
     myapp.raise_()
+    myapp.setWindowTitle("StructureFinder")
     try:
         sys.exit(app.exec_())
     except KeyboardInterrupt:

@@ -5,9 +5,18 @@ https://stackoverflow.com/questions/12475850/how-can-an-sql-query-return-data-fr
 import pprint
 import pg8000
 
-conn = pg8000.connect(user="BrukerPostgreSQL", password="Bruker-PostgreSQL", ssl=False, database="BAXSdb")
-cursor = conn.cursor()
-cursor.execute("""SELECT 
+
+class ApexDB():
+    def __init__(self):
+        self.conn = pg8000.connect(user="BrukerPostgreSQL", password="Bruker-PostgreSQ", ssl=False, database="BAXSdb")
+        self.cursor = self.conn.cursor()
+
+    def get_data(self):
+        """
+        Fetches the relevant data from the APEX database.
+        Does APEX2 also work?
+        """
+        self.cursor.execute("""SELECT 
                         lsq.samples_id,         --0  
                         lsq.a,                  --1
                         lsq.b,                  --2
@@ -30,21 +39,15 @@ cursor.execute("""SELECT
                         ON lsq.samples_id=indx.samples_id
                         ;
                 """)
-results = cursor.fetchall()
-pprint.pprint(results)
+        return self.cursor.fetchall()
 
 
 
-class ApexDB():
 
-    def __init__(self):
-        pass
 
-    def open_db(self):
-        pass
+if __name__ == '__main__':
+    apex = ApexDB()
+    data = apex.get_data()
+    pprint.pprint(data)
 
-    def read_data(self):
-        pass
 
-    def foo(self):
-        pass
