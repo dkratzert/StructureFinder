@@ -6,11 +6,10 @@ import threading
 from struct import pack
 from hashlib import md5
 from decimal import Decimal
-from collections import deque, defaultdict, OrderedDict
+from collections import deque, defaultdict
 from itertools import count, islice
 from six.moves import map
-from six import (
-    b, PY2, integer_types, next, text_type, u, binary_type, itervalues)
+from six import b, PY2, integer_types, next, text_type, u, binary_type
 from uuid import UUID
 from copy import deepcopy
 from calendar import timegm
@@ -18,7 +17,6 @@ from distutils.version import LooseVersion
 from struct import Struct
 import time
 import pg8000
-from json import loads
 
 # Copyright (c) 2007-2009, Mathieu Fenniak
 # All rights reserved.
@@ -50,6 +48,12 @@ from json import loads
 __author__ = "Mathieu Fenniak"
 
 
+try:
+    from json import loads
+except ImportError:
+    pass  # Can only use JSON with Python 2.6 and above
+
+
 ZERO = timedelta(0)
 
 
@@ -63,7 +67,6 @@ class UTC(datetime.tzinfo):
 
     def dst(self, dt):
         return ZERO
-
 
 utc = UTC()
 
@@ -155,7 +158,6 @@ class Interval(object):
 def pack_funcs(fmt):
     struc = Struct('!' + fmt)
     return struc.pack, struc.unpack_from
-
 
 i_pack, i_unpack = pack_funcs('i')
 h_pack, h_unpack = pack_funcs('h')
@@ -408,7 +410,6 @@ def Binary(value):
     else:
         return value
 
-
 if PY2:
     BINARY = Bytea
 else:
@@ -645,7 +646,6 @@ def timestamptz_send_float(v):
     # convert them.
     return timestamp_send_float(v.astimezone(utc).replace(tzinfo=None))
 
-
 DATETIME_MAX_TZ = datetime.datetime.max.replace(tzinfo=utc)
 DATETIME_MIN_TZ = datetime.datetime.min.replace(tzinfo=utc)
 
@@ -741,7 +741,6 @@ def float8_recv(data, offset, length):
 
 def bytea_send(v):
     return v
-
 
 # bytea
 if PY2:
@@ -842,12 +841,6 @@ class Cursor():
         self._cached_rows = deque()
         self.portal_name = None
         self.portal_suspended = False
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
 
     @property
     def connection(self):
@@ -1049,7 +1042,6 @@ class Cursor():
                     else:
                         raise StopIteration()
 
-
 if PY2:
     Cursor.next = Cursor.__next__
 
@@ -1227,7 +1219,7 @@ class Connection(object):
 
     def __init__(
             self, user, host, unix_sock, port, database, password, ssl,
-            timeout, application_name):
+            timeout):
         self._client_encoding = "utf8"
         self._commands_with_count = (
             b("INSERT"), b("DELETE"), b("UPDATE"), b("MOVE"),
@@ -1305,7 +1297,7 @@ class Connection(object):
         # An event handler that is fired when the database server issues a
         # notice.
         # The value of this property is a MulticastDelegate. A callback
-        # can be added by using connection.NoticeReceived += SomeMethod.
+        # can be added by using connection.NotificationReceived += SomeMethod.
         # The method will be called with a single argument, an object that has
         # properties: severity, code, msg, and possibly others (detail, hint,
         # position, where, file, line, and routine). Callbacks can be removed
@@ -1593,11 +1585,6 @@ class Connection(object):
             if isinstance(database, text_type):
                 database = database.encode('utf8')
             val.extend(b("database\x00") + database + NULL_BYTE)
-        if application_name is not None:
-            if isinstance(application_name, text_type):
-                application_name = application_name.encode('utf8')
-            val.extend(b("application_name\x00") + application_name +
-                       NULL_BYTE)
         val.append(0)
         self._write(i_pack(len(val) + 4))
         self._write(val)
@@ -1624,14 +1611,14 @@ class Connection(object):
         self.notifies_lock = threading.Lock()
 
     def handle_ERROR_RESPONSE(self, data, ps):
-        msg = OrderedDict(
-            (s[:1], s[1:].decode(self._client_encoding)) for s in
-            data.split(NULL_BYTE) if s != b(''))
-        exc_args = itervalues(msg)
-        if msg[RESPONSE_CODE] == "28000":
-            self.error = InterfaceError(*exc_args)
+        responses = tuple(
+            (s[0:1], s[1:].decode(self._client_encoding)) for s in
+            data.split(NULL_BYTE))
+        msg_dict = dict(responses)
+        if msg_dict[RESPONSE_CODE] == "28000":
+            self.error = InterfaceError("md5 password authentication failed")
         else:
-            self.error = ProgrammingError(*exc_args)
+            self.error = ProgrammingError(*tuple(v for k, v in responses))
 
     def handle_EMPTY_QUERY_RESPONSE(self, data, ps):
         self.error = ProgrammingError("query was empty")
@@ -1756,8 +1743,6 @@ class Connection(object):
         <http://www.python.org/dev/peps/pep-0249/>`_.
         """
         with self._lock:
-            if not self.in_transaction:
-                return
             self.execute(self._cursor, "rollback", None)
 
     def _close(self):
@@ -2392,7 +2377,6 @@ class Connection(object):
             return [self.xid(0, row[0], '') for row in curs]
         finally:
             self.autocommit = previous_autocommit_mode
-
 
 # pg element oid -> pg array typeoid
 pg_array_types = {
