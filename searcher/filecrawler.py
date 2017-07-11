@@ -79,6 +79,7 @@ def put_cifs_in_db(searchpath):
     structures = StructureTable(dbfilename)
     n = 1
     time1 = time.clock()
+    cif = Cif()
     for filepth in create_file_list(str(searchpath), ending='cif'):
         if not filepth.is_file():
             continue
@@ -91,8 +92,10 @@ def put_cifs_in_db(searchpath):
                 match = True
         if match:
             continue
-        cif = Cif()
-        cifok = cif.parsefile(filepth)
+        try:
+            cifok = cif.parsefile(filepth)
+        except IndexError:
+            continue
         if not cifok:
             continue
         if cif and filepth.name and path:
@@ -100,7 +103,7 @@ def put_cifs_in_db(searchpath):
             if not tst:
                 continue
             n += 1
-        if n % 4000 == 0:
+        if n % 1000 == 0:
             print('{} files ...'.format(n))
             structures.database.commit_db()
     time2 = time.clock()
@@ -152,13 +155,13 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
                 a = float(a.split('(')[0])
             if isinstance(b, str):
                 b = float(b.split('(')[0])
-            if isinstance(b, str):
+            if isinstance(c, str):
                 c = float(c.split('(')[0])
-            if isinstance(b, str):
+            if isinstance(alpha, str):
                 alpha = float(alpha.split('(')[0])
-            if isinstance(b, str):
+            if isinstance(beta, str):
                 beta = float(beta.split('(')[0])
-            if isinstance(b, str):
+            if isinstance(gamma, str):
                 gamma = float(gamma.split('(')[0])
             volume = lattice.vol_unitcell(a, b, c, alpha, beta, gamma)
             volume = str(volume)

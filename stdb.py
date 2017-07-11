@@ -390,6 +390,7 @@ class StartStructureDB(QMainWindow):
             return False
         if len(cell) != 6:
             self.statusBar().showMessage('Not a valid unit cell!', msecs=2000)
+            self.show_full_list()
             return True
         try:
             volume = lattice.vol_unitcell(*cell)
@@ -403,7 +404,6 @@ class StartStructureDB(QMainWindow):
         # Get a smaller list where only cells are included that have a proper mapping to the input cell:
         idlist2 = []
         if idlist:
-            print(idlist)
             lattice1 = Lattice.from_parameters(*cell)
             self.statusBar().clearMessage()
             for num, i in enumerate(idlist):
@@ -419,7 +419,6 @@ class StartStructureDB(QMainWindow):
                         float(dic['beta']),
                         float(dic['gamma']) )
                 except ValueError:
-                    print('##here###')
                     continue
                 map = lattice1.find_mapping(lattice2, ltol=0.001, atol=0.5, skip_rotation_matrix=True)
                 if map:
@@ -496,13 +495,12 @@ class StartStructureDB(QMainWindow):
         num = 0
         time1 = time.clock()
         conn = self.open_apex_db()
+        cif = Cif()
         if conn:
             for i in self.apx.get_all_data():
-                #pprint.pprint(i)
                 if num == 20:
                     num = 0
                 self.progressbar(num, min, 20)
-                cif = Cif()
                 cif.cif_data['_cell_length_a'] = i[1]
                 cif.cif_data['_cell_length_b'] = i[2]
                 cif.cif_data['_cell_length_c'] = i[3]
@@ -574,6 +572,7 @@ class StartStructureDB(QMainWindow):
         min = 0
         num = 0
         time1 = time.clock()
+        cif = Cif()
         for filepth in filecrawler.create_file_list(str(fname), ending='cif'):
             if num == 20:
                 num = 0
@@ -589,8 +588,10 @@ class StartStructureDB(QMainWindow):
                     match = True
             if match:
                 continue
-            cif = Cif()
-            cifok = cif.parsefile(filepth)
+            try:
+                cifok = cif.parsefile(filepth)
+            except IndexError:
+                continue
             if not cifok:
                 continue
             if cif:

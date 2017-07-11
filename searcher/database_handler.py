@@ -419,7 +419,6 @@ class StructureTable():
         if ids:
             if len(ids) > 2:
                 ids = tuple(ids)
-                print('foo')
                 req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
                          Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
             else:
