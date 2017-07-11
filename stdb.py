@@ -214,8 +214,12 @@ class StartStructureDB(QMainWindow):
         This slot shows the properties of a cif file in the properties widget
         """
         # TODO: _space_group_symop_operation_xyz oder _symmetry_equiv_pos_as_xyz
-        if not self.structures.database.cur:
-            return False
+        if self.APEX:
+            # TODO: Show properties here.
+            pass
+        else:
+            if not self.structures.database.cur:
+                return False
         structure_id = item.sibling(item.row(), 3).data()
         request = """select * from residuals where StructureId = {}""".format(structure_id)
         dic = self.structures.get_row_as_dict(request)
