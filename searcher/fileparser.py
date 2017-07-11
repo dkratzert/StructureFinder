@@ -16,7 +16,7 @@ import time
 from pprint import pprint
 
 class Cif():
-    def __init__(self, file):
+    def __init__(self):
         """
         A cif file parsing object optimized for speed and simplicity.
         It can not handle multi cif files.
@@ -77,11 +77,6 @@ class Cif():
             "_refine_diff_density_min": '',
             "_database_code_depnum_ccdc_archive": ''
             }
-        try:
-            self.ok = self.parsefile(file)
-        except Exception as e:
-            #print(e)
-            self.ok = False
 
     def parsefile(self, file):
         """
@@ -112,15 +107,15 @@ class Cif():
             textlen = len(txt)
             for num, line in enumerate(txt):
                 line = line.rstrip('\r\n ')
+                if not line:
+                    loop = False
+                    loophead_list.clear()
+                    atkey = ''
+                    continue
                 if line[0] == "_" and loop_body:
                     loop = False
                     loop_body = False
                 if loop:
-                    if not line:
-                        loop = False
-                        loophead_list.clear()
-                        atkey = ''
-                        continue
                     line = line.lstrip()
                     # leave out comments:
                     if line[0] == '#':

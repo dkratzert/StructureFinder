@@ -543,8 +543,9 @@ class StartStructureDB(QMainWindow):
                     match = True
             if match:
                 continue
-            cif = Cif(filepth)
-            if not cif.ok:
+            cif = Cif()
+            cifok = cif.parsefile(filepth)
+            if not cifok:
                 continue
             if cif:
                 # is the StructureId
