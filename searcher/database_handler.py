@@ -419,8 +419,9 @@ class StructureTable():
         if ids:
             if len(ids) > 2:
                 ids = tuple(ids)
+                print('foo')
                 req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
-                         Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format('?, '*len(ids))
+                         Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
             else:
                 req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
                             Structure.dataname FROM Structure WHERE Structure.Id == ?'''
@@ -523,13 +524,15 @@ class StructureTable():
         betaerror = get_error_from_value(beta)
         gammaerror = get_error_from_value(gamma)
         #volerror = get_error_from_value(volume)
-        a = a.split('(')[0]
-        b = b.split('(')[0]
-        c = c.split('(')[0]
-        alpha = alpha.split('(')[0]
-        beta = beta.split('(')[0]
-        gamma = gamma.split('(')[0]
-        vol = volume.split('(')[0]
+        if isinstance(a, str):
+            a = a.split('(')[0]
+            b = b.split('(')[0]
+            c = c.split('(')[0]
+            alpha = alpha.split('(')[0]
+            beta = beta.split('(')[0]
+            gamma = gamma.split('(')[0]
+        if isinstance(volume, str):
+            vol = volume.split('(')[0]
         if self.database.db_request(req, structure_id, a, b, c, alpha, beta, gamma,
                                     aerror, berror, cerror, alphaerror, betaerror, gammaerror, vol):
             return True

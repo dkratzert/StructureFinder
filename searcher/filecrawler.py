@@ -91,8 +91,9 @@ def put_cifs_in_db(searchpath):
                 match = True
         if match:
             continue
-        cif = Cif(filepth)  # parses the cif file
-        if not cif.ok:
+        cif = Cif()
+        cifok = cif.parsefile(filepth)
+        if not cifok:
             continue
         if cif and filepth.name and path:
             tst = fill_db_tables(cif, filepth.name, path, n, structures)
@@ -147,8 +148,19 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
         return False
     if not volume or volume == "?":
         try:
-            volume = lattice.vol_unitcell(float(a.split('(')[0]), float(b.split('(')[0]), float(c.split('(')[0]),
-                                          float(alpha.split('(')[0]), float(beta.split('(')[0]), float(gamma.split('(')[0]))
+            if isinstance(a, str):
+                a = float(a.split('(')[0])
+            if isinstance(b, str):
+                b = float(b.split('(')[0])
+            if isinstance(b, str):
+                c = float(c.split('(')[0])
+            if isinstance(b, str):
+                alpha = float(alpha.split('(')[0])
+            if isinstance(b, str):
+                beta = float(beta.split('(')[0])
+            if isinstance(b, str):
+                gamma = float(gamma.split('(')[0])
+            volume = lattice.vol_unitcell(a, b, c, alpha, beta, gamma)
             volume = str(volume)
         except ValueError:
             volume = ''

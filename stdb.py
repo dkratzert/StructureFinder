@@ -19,6 +19,7 @@ import sys
 import tempfile
 import time
 import re
+import pprint
 from pathlib import Path
 from string import Template
 
@@ -122,7 +123,7 @@ class StartStructureDB(QMainWindow):
         self.ui.tabWidget.removeTab(1)
         self.ui.tabWidget.removeTab(1)
         self.setWindowIcon(QIcon('./images/monoklin.png'))
-        self.APEX = False
+        #self.APEX = False
 
     def connect_signals_and_slots(self):
         """
@@ -144,7 +145,7 @@ class StartStructureDB(QMainWindow):
         self.ui.searchLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.abort_import_button.clicked.connect(self.abort_import)
-        self.ui.openApexDBButton.clicked.connect(self.show_apex_list)
+        self.ui.openApexDBButton.clicked.connect(self.import_apex_db)
         # self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
         # self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
 
@@ -402,6 +403,7 @@ class StartStructureDB(QMainWindow):
         # Get a smaller list where only cells are included that have a proper mapping to the input cell:
         idlist2 = []
         if idlist:
+            print(idlist)
             lattice1 = Lattice.from_parameters(*cell)
             self.statusBar().clearMessage()
             for num, i in enumerate(idlist):
@@ -417,6 +419,7 @@ class StartStructureDB(QMainWindow):
                         float(dic['beta']),
                         float(dic['gamma']) )
                 except ValueError:
+                    print('##here###')
                     continue
                 map = lattice1.find_mapping(lattice2, ltol=0.001, atol=0.5, skip_rotation_matrix=True)
                 if map:
@@ -469,12 +472,6 @@ class StartStructureDB(QMainWindow):
             return False
         return True
 
-    def show_apex_list(self):
-        """
-        """
-        self.APEX = True
-        self.show_full_list()
-
     def open_apex_db(self):
         """
         Opens the APEX db to be displayed in the treeview.
@@ -484,6 +481,62 @@ class StartStructureDB(QMainWindow):
         conn = self.apx.initialize_db()
         return conn
 
+    def import_apex_db(self):
+        """
+        Imports data from apex into own db
+        :return: None
+        """
+        self.statusBar().showMessage('')
+        self.close_db()
+        self.start_db()
+        self.ui.cifList_treeWidget.show()
+        self.abort_import_button.show()
+        n = 1
+        min = 0
+        num = 0
+        time1 = time.clock()
+        conn = self.open_apex_db()
+        if conn:
+            for i in self.apx.get_all_data():
+                #pprint.pprint(i)
+                if num == 20:
+                    num = 0
+                self.progressbar(num, min, 20)
+                cif = Cif()
+                cif.cif_data['_cell_length_a'] = i[1]
+                cif.cif_data['_cell_length_b'] = i[2]
+                cif.cif_data['_cell_length_c'] = i[3]
+                cif.cif_data['_cell_angle_alpha'] = i[4]
+                cif.cif_data['_cell_angle_beta'] = i[5]
+                cif.cif_data['_cell_angle_gamma'] = i[6]
+                cif.cif_data["data"] = i[8]
+                tst = filecrawler.fill_db_tables(cif=cif, filename=i[8], path=i[11],
+                                                 structure_id=n, structures=self.structures)
+                if not tst:
+                    continue
+                self.add_table_row(name='', path=i[11], data=cif.cif_data['data'], id=str(n))
+                n += 1
+                if n % 300 == 0:
+                    self.structures.database.commit_db()
+                num += 1
+                if not self.decide_import:
+                    # This means, import was aborted.
+                    self.abort_import_button.hide()
+                    self.decide_import = True
+                    break
+        time2 = time.clock()
+        diff = time2 - time1
+        self.progress.hide()
+        m, s = divmod(diff, 60)
+        h, m = divmod(m, 60)
+        self.ui.statusbar.showMessage('Added {} cif files to database in: {:>2} h, {:>2} m, {:>3.2f} s'.format(n, h, m, s), msecs=0)
+        self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        self.structures.populate_fulltext_search_table()
+        self.structures.database.commit_db("Committed")
+        self.abort_import_button.hide()
+
+
     def show_full_list(self):
         """
         Displays the complete list of structures
@@ -492,16 +545,9 @@ class StartStructureDB(QMainWindow):
         """
         self.ui.cifList_treeWidget.clear()
         id = 0
-        if self.APEX:
-            conn = self.open_apex_db()
-            if conn:
-                for i in self.apx.get_all_data():
-                    id = i[0]
-                    self.add_table_row(name=i[1], path=i[4], id=i[0], data=b' ')
-        else:
-            for i in self.structures.get_all_structure_names():
-                id = i[0]
-                self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
+        for i in self.structures.get_all_structure_names():
+            id = i[0]
+            self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
         mess = "Loaded {} entries.".format(id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)

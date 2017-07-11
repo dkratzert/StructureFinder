@@ -24,6 +24,13 @@ class Cif():
         :type file: Path
         """
         self.cif_data = {
+            "data": '',
+            "_cell_length_a": '',
+            '_cell_length_b': '',
+            '_cell_length_c': '',
+            '_cell_angle_alpha': '',
+            '_cell_angle_beta': '',
+            '_cell_angle_gamma': '',
             "_cell_volume": '',
             "_cell_formula_units_Z": '',
             "_space_group_name_H-M_alt": '',

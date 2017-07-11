@@ -31,10 +31,17 @@ class ApexDB():
         """
         self.cursor.execute("""SELECT 
                         lsq.samples_id,         --0  
-                        sam.sample_name,           --9
-                        sam.last_modified,         --10
-                        sam.last_directory,        --11 Not the dir where the files are?
-                        indx.first_image           --12 First image of indexing
+                        lsq.a,                  --1
+                        lsq.b,                  --2
+                        lsq.c,                  --3
+                        lsq.alpha,              --4
+                        lsq.beta,               --5
+                        lsq.gamma,              --6
+                        sam.formula,               --7
+                        sam.sample_name,           --8
+                        sam.last_modified,         --9
+                        sam.last_directory,        --10 Not the dir where the files are?
+                        indx.first_image           --11 First image of indexing
                         FROM scd.lsq_refinement AS lsq
                           INNER JOIN scd.samples AS sam 
                         ON lsq.samples_id=sam.samples_id
@@ -58,7 +65,6 @@ class ApexDB():
                         lsq.beta, 
                         lsq.gamma,
                         col.crystal_colors_id_1,   --7 Farbe 1
-                        sam.formula,
                         sam.formula,               --8
                         sam.sample_name,           --9
                         sam.last_modified,         --10
