@@ -411,7 +411,7 @@ class StructureTable():
         else:
             return False
 
-    def get_all_structure_names(self, ids=None):
+    def get_all_structure_names(self, ids: list = None) -> list:
         """
         returns all fragment names in the database, sorted by name
         :returns [id, meas, path, filename, data]
@@ -420,10 +420,12 @@ class StructureTable():
             if len(ids) > 2:
                 ids = tuple(ids)
                 req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
-                         Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
+                         Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format('?, '*len(ids))
             else:
                 req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
-                            Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(ids[0])
+                            Structure.dataname FROM Structure WHERE Structure.Id == ?'''
+                rows = [list(i) for i in self.database.db_request(req, ids[0])]
+                return rows
         else:
             req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
                                      Structure.dataname FROM Structure'''
@@ -437,7 +439,7 @@ class StructureTable():
         """
         returns the path of a res file in the db
         """
-        req_path = '''SELECT Structure.name, Structure.path FROM Structure WHERE
+        req_path = '''SELECT Structure.dataname, Structure.path FROM Structure WHERE
             Structure.Id = {0}'''.format(structure_id)
         path = self.database.db_request(req_path)[0]
         return path
@@ -477,8 +479,8 @@ class StructureTable():
         :type Id: int
         :rtype: bool
         """
-        req = '''SELECT Id FROM {0} WHERE {1}.Id = {2}'''.format(table, table, Id)
-        if self.database.db_request(req):
+        req = '''SELECT Id FROM ? WHERE ?.Id = ?'''
+        if self.database.db_request(req, (table, table, Id)):
             return True
 
     def fill_structures_table(self, path, filename, structure_id, measurement_id, dataname):
@@ -567,9 +569,9 @@ class StructureTable():
         """
         if not structure_id:
             return False
-        req = '''SELECT {0} FROM Residuals WHERE StructureId = {1}'''.format(residual, structure_id)
+        req = '''SELECT ? FROM Residuals WHERE StructureId = ?'''
         try:
-            res = self.database.db_request(req)[0][0]
+            res = self.database.db_request(req, (residual, structure_id))[0][0]
         except TypeError:
             res = '?'
         return res

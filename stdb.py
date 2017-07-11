@@ -144,7 +144,7 @@ class StartStructureDB(QMainWindow):
         self.ui.searchLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.abort_import_button.clicked.connect(self.abort_import)
-        self.ui.openApexDBButton.clicked.connect(self.open_apex_db)
+        self.ui.openApexDBButton.clicked.connect(self.show_apex_list)
         # self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
         # self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
 
@@ -465,14 +465,20 @@ class StartStructureDB(QMainWindow):
             return False
         return True
 
+    def show_apex_list(self):
+        """
+        """
+        self.APEX = True
+        self.show_full_list()
+
     def open_apex_db(self):
         """
         Opens the APEX db to be displayed in the treeview.
         """
         self.APEX = True
-        apx = apeximporter.ApexDB()
-        data = apx.get_data()
-        print(data)
+        self.apx = apeximporter.ApexDB()
+        conn = self.apx.initialize_db()
+        return conn
 
     def show_full_list(self):
         """
@@ -482,9 +488,16 @@ class StartStructureDB(QMainWindow):
         """
         self.ui.cifList_treeWidget.clear()
         id = 0
-        for i in self.structures.get_all_structure_names():
-            id = i[0]
-            self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
+        if self.APEX:
+            conn = self.open_apex_db()
+            if conn:
+                for i in self.apx.get_all_data():
+                    id = i[0]
+                    self.add_table_row(name=i[1], path=i[4], id=i[0], data=b' ')
+        else:
+            for i in self.structures.get_all_structure_names():
+                id = i[0]
+                self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
         mess = "Loaded {} entries.".format(id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
