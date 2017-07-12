@@ -8,6 +8,13 @@ _publ_section_title
 [H~3~N(CH~2~)~5~NH~3~].AlP~2~O~8~H, a one-dimensional aluminophosphate
 ;
 _journal_issue                   9
+_cell_angle_alpha                90.00
+_cell_angle_beta                 95.1470(10)
+_cell_angle_gamma                90.00
+_cell_formula_units_Z            4
+_cell_length_a                   7.8783(2)
+_cell_length_b                   10.46890(10)
+_cell_length_c                   16.0680(4)
 _journal_name_full               'Acta Crystallographica, Section C'
 loop_
 _atom_site_aniso_label

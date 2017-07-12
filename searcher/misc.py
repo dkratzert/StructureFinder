@@ -87,14 +87,11 @@ def get_error_from_value(value: str) -> str:
         value = value.replace(" ", "")
     except AttributeError:
         return "0.0"
-    if "(" in value:
+    if "(" in value and ")":
         val = value.split("(")[0].split('.')
-        err = value.split("(")[1].strip(")")
+        err = value.split("(")[1].split(")")[0]
         if len(val) > 1:
-            try:
-                return str(int(err) * (10 ** (-1 * len(val[1]))))
-            except ValueError:
-                return '0.0'
+            return str(int(err) * (10 ** (-1 * len(val[1]))))
         else:
             return err
     else:

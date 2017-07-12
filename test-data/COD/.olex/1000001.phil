@@ -1,0 +1,20 @@
+snum {
+  solution {
+    program = ShelXS ShelXS-1997 ShelXS-1986 XS XT *ShelXT 'olex2.solve' XM \
+              ShelXD ShelXD-1997 SIR2002 SIR2004 SIR2008 SIR2011 Superflip \
+              Unknown ShelXS-2013 ShelXS86 ShelXD-2013
+    method = 'Dual Space' 'Charge Flipping' 'Direct Methods' \
+             'Patterson Method' 'Structure Expansion' '*Intrinsic Phasing' \
+             Unknown
+  }
+  refinement {
+    program = ShelXL_ifc XL XH ShelXH-1997 XLMP *ShelXL ShelXL-1997 \
+              'olex2.refine' Tonto Unknown ShelXL-2012 ShelXLMP-2012 \
+              ShelXL-2013
+    method = '*Least Squares' CGLS 'Gauss-Newton' 'Levenberg-Marquardt' \
+             'Full Matrix' HAR Unknown
+  }
+  report {
+    diffractometer = 'Philips PW1100'
+  }
+}

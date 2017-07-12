@@ -115,7 +115,7 @@ class StartStructureDB(QMainWindow):
         self.connect_signals_and_slots()
         self.view = QWebEngineView()
         QtWebEngine.initialize()
-        self.view.load(QUrl.fromLocalFile(os.path.abspath("./opengl/jsmol.htm")))
+        self.view.load(QUrl.fromLocalFile(os.path.abspath("./displaymol/jsmol.htm")))
         self.view.setMaximumWidth(250)
         self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
@@ -253,7 +253,7 @@ class StartStructureDB(QMainWindow):
         if not cell:
             self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
             return False
-        p = Path("./opengl/jsmol-template.htm")
+        p = Path("./displaymol/jsmol-template.htm")
         templ = p.read_text(encoding='utf-8', errors='ignore')
         s = Template(templ)
         try:
@@ -264,7 +264,7 @@ class StartStructureDB(QMainWindow):
             s = Template(' ')
             pass
         content = s.safe_substitute(MyMol=mol)
-        p2 = Path("./opengl/jsmol.htm")
+        p2 = Path("./displaymol/jsmol.htm")
         p2.write_text(data=content, encoding="utf-8", errors='ignore')
         self.view.reload()
         self.ui.cifList_treeWidget.setFocus()

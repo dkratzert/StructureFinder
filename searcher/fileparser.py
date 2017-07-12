@@ -167,7 +167,7 @@ class Cif():
                             atoms[loopitem[atkey]].update(loopitem)
                         elif atkey:
                             # atom is not there, creating key
-                            atoms[loopitem[atkey]] = loopitem
+                            atoms[loopitem[atkey]] = loopitem  # loopitem[atkey] is the atoms name
                         continue
                 # Leave out save_ frames:
                 if save_frame:
@@ -196,10 +196,12 @@ class Cif():
                     # add regular cif items:
                     if len(lsplit) > 1:
                         self.cif_data[lsplit[0]] = " ".join(delimit_line(" ".join(lsplit[1:])))
+                        continue
                     # add one-liners that are just in the next line:
                     if len(lsplit) == 1 and txt[num + 1]:
                         if txt[num + 1][0] != ';' and txt[num + 1][0] != "_":
                             self.cif_data[lsplit[0]] = " ".join(delimit_line(txt[num + 1]))
+                            continue
                 if line.startswith("_shelx_hkl_file") or line.startswith("_refln_"):
                     hkl = True
                     continue
@@ -207,8 +209,9 @@ class Cif():
                 if hkl:
                     break
                     # continue  # use continue if data is behind hkl
-                if line.lstrip()[:1] == ";" and hkl:
+                if line.lstrip()[0] == ";" and hkl:
                     hkl = False
+                    continue
                 if semi_colon_text_field:
                     if not line.lstrip().startswith(";"):
                         semi_colon_text_list.append(line)

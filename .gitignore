@@ -58,5 +58,5 @@ stdb_main.py
 test.sqlite
 *.sqlite-journal
 
-opengl/jsmol.htm
+displaymol/jsmol.htm
 structuredb.sqlite

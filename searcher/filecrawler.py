@@ -21,6 +21,7 @@ from pathlib import Path
 from pprint import pprint
 
 from lattice import lattice
+from searcher import misc, atoms
 from searcher.database_handler import StructureTable, DatabaseRequest
 from searcher.fileparser import Cif
 
@@ -173,15 +174,28 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
     #pprint(cif._atom)
     for x in cif._atom:
         try:
+            try:
+                disord = cif._atom[x]['_atom_site_disorder_group']
+            except KeyError:
+                disord = "0"
+            try:
+                occu = cif._atom[x]['_atom_site_occupancy'].split('(')[0]
+            except KeyError:
+                occu = "1"
+            try:
+                atom_type_symbol = cif._atom[x]['_atom_site_type_symbol']
+            except KeyError:
+                atom_type_symbol  = atoms.get_atomlabel(x)
             structures.fill_atoms_table(structure_id, x,
-                                         cif._atom[x]['_atom_site_type_symbol'],
+                                         atom_type_symbol,
                                          cif._atom[x]['_atom_site_fract_x'].split('(')[0],
                                          cif._atom[x]['_atom_site_fract_y'].split('(')[0],
                                          cif._atom[x]['_atom_site_fract_z'].split('(')[0],
-                                         cif._atom[x]['_atom_site_occupancy'].split('(')[0],
-                                         cif._atom[x]['_atom_site_disorder_group']
+                                         occu,
+                                         disord
                                         )
         except KeyError as e:
+            print(x, filename)
             pass
     structures.fill_residuals_table(structure_id, cif)
     return True

@@ -1,0 +1,51 @@
+data_1000001
+loop_
+  _publ_author_name
+  'Bachet, Bernard'
+  'Soyer, Alain'
+  'Billy, Isabelle'
+  'Mornon, Jean-Paul'
+
+_publ_contact_author_address      ?
+_publ_contact_author_email        ?
+_publ_contact_author_fax          ' +33 01 44 27 37 85'
+_publ_contact_author_phone        ?
+_publ_section_title               
+;
+ Pristinamycin complex solved using Shake-and-Bake
+;
+
+_cell_measurement_reflns_used     25
+_cell_measurement_temperature     293
+_cell_measurement_theta_max       26
+_cell_measurement_theta_min       18
+_exptl_absorpt_correction_T_max   0.87
+_exptl_absorpt_correction_T_min   0.75
+_exptl_absorpt_correction_type    none
+_exptl_crystal_colour             colorless
+_exptl_crystal_description        needle
+_exptl_crystal_size_max           0.7
+_exptl_crystal_size_mid           0.4
+_exptl_crystal_size_min           0.2
+_diffrn_measurement_device_type   'Philips PW1100'
+_diffrn_measurement_method        \w/2\q
+_computing_data_collection        stepscan
+_computing_molecular_graphics     'Olex2 (Dolomanov et al., 2009)'
+_computing_publication_material   'Olex2 (Dolomanov et al., 2009)'
+_computing_structure_refinement   
+;
+CRYSTALS Issue 10 (Watkin, Prout, Carruthers & Betteridge, 1996)
+;
+
+_computing_structure_solution     'SnB (Miller et al, 1994)'
+_olex2_submission_special_instructions 'No special instructions were received'
+_audit_creation_method            
+;
+Olex2 1.2
+(compiled Mar 28 2017 19:26:29 for OlexSys, GUI svn.r5337)
+;
+
+_audit_creation_date              2017-07-12
+_publ_contact_author_id_orcid     ?
+_publ_contact_author_name         'Alain Soyer'
+
