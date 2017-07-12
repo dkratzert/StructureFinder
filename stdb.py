@@ -131,6 +131,9 @@ class StartStructureDB(QMainWindow):
         self.ui.importDatabaseButton.clicked.connect(self.import_cif_database)
         self.ui.saveDatabaseButton.clicked.connect(self.save_database)
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
+        self.ui.openApexDBButton.clicked.connect(self.import_apex_db)
+        self.ui.closeDatabaseButton.clicked.connect(self.close_db)
+        self.abort_import_button.clicked.connect(self.abort_import)
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
@@ -141,8 +144,6 @@ class StartStructureDB(QMainWindow):
         self.ui.txtSearchEdit.textChanged.connect(self.search_text)
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
-        self.abort_import_button.clicked.connect(self.abort_import)
-        self.ui.openApexDBButton.clicked.connect(self.import_apex_db)
         # self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
         # self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
 
@@ -346,6 +347,11 @@ class StartStructureDB(QMainWindow):
         :type search_string: str
         :rtype: bool
         """
+        try:
+            if not self.structures:
+                return False  # Empty database
+        except:
+            return False      # No database cursor
         idlist = []
         if len(search_string) == 0:
             self.show_full_list()
@@ -380,14 +386,18 @@ class StartStructureDB(QMainWindow):
         :param search_string: 
         :return: 
         """
-        # TODO: If len(cell) = 1: search for filename and or data_
+        try:
+            if not self.structures:
+                return False  # Empty database
+        except:
+            return False      # No database cursor
         try:
             cell = [float(x) for x in search_string.split()]
         except (TypeError, ValueError):
             return False
         if len(cell) != 6:
             self.statusBar().showMessage('Not a valid unit cell!', msecs=2000)
-            self.show_full_list()
+            #self.show_full_list()
             return True
         try:
             volume = lattice.vol_unitcell(*cell)
@@ -417,7 +427,7 @@ class StartStructureDB(QMainWindow):
                         float(dic['gamma']) )
                 except ValueError:
                     continue
-                map = lattice1.find_mapping(lattice2, ltol=0.0001, atol=0.5, skip_rotation_matrix=True)
+                map = lattice1.find_mapping(lattice2, ltol=0.001, atol=1, skip_rotation_matrix=True)
                 if map:
                     idlist2.append(i)
         searchresult = self.structures.get_all_structure_names(idlist2)
@@ -542,6 +552,8 @@ class StartStructureDB(QMainWindow):
         """
         self.ui.cifList_treeWidget.clear()
         id = 0
+        if not self.structures:
+            return
         for i in self.structures.get_all_structure_names():
             id = i[0]
             self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
