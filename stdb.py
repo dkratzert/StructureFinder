@@ -347,6 +347,7 @@ class StartStructureDB(QMainWindow):
         :type search_string: str
         :rtype: bool
         """
+        self.ui.searchCellLineEDit.clear()
         try:
             if not self.structures:
                 return False  # Empty database
@@ -386,6 +387,7 @@ class StartStructureDB(QMainWindow):
         :param search_string: 
         :return: 
         """
+        self.ui.txtSearchEdit.clear()
         try:
             if not self.structures:
                 return False  # Empty database
@@ -405,7 +407,7 @@ class StartStructureDB(QMainWindow):
             idlist = self.structures.find_by_volume(volume, threshold=0.02)
         except (ValueError, AttributeError):
             if not self.full_list:
-                self.show_full_list()
+                self.ui.cifList_treeWidget.clear()
                 self.statusBar().showMessage('Found 0 cells.', msecs=3000)
             return False
         # Get a smaller list where only cells are included that have a proper mapping to the input cell:
@@ -430,6 +432,9 @@ class StartStructureDB(QMainWindow):
                 map = lattice1.find_mapping(lattice2, ltol=0.001, atol=1, skip_rotation_matrix=True)
                 if map:
                     idlist2.append(i)
+        if not idlist2:
+            self.ui.cifList_treeWidget.clear()
+            self.statusBar().showMessage('Found 0 cells.', msecs=3000)
         searchresult = self.structures.get_all_structure_names(idlist2)
         self.statusBar().showMessage('Found {} cells.'.format(len(idlist2)), msecs=3000)
         self.ui.cifList_treeWidget.clear()
