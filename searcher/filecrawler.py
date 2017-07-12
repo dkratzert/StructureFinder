@@ -195,7 +195,7 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
                                          disord
                                         )
         except KeyError as e:
-            print(x, filename)
+            #print(x, filename)
             pass
     structures.fill_residuals_table(structure_id, cif)
     return True

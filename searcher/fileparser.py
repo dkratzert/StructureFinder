@@ -168,7 +168,7 @@ class Cif():
                         elif atkey:
                             # atom is not there, creating key
                             atoms[loopitem[atkey]] = loopitem  # loopitem[atkey] is the atoms name
-                        continue
+                    continue
                 # Leave out save_ frames:
                 if save_frame:
                     continue
