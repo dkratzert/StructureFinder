@@ -13,21 +13,6 @@ Created on 09.02.2015
 """
 
 '''
-scd.lsq_refinement.samples_id
-scd.lsq_refinement.a
-scd.lsq_refinement.b
-scd.lsq_refinement.c
-scd.lsq_refinement.alpha, 
-scd.lsq_refinement.beta, 
-scd.lsq_refinement.gamma
-scd.lsq_refinement.volume  <-- existiert nicht!
-scd.lsq_refinement.a_esd
-scd.lsq_refinement.b_esd
-scd.lsq_refinement.c_esd
-scd.lsq_refinement.alpha_esd
-scd.lsq_refinement.beta_esd 
-scd.lsq_refinement.gamma_esd
-scd.lsq_refinement.volume_esd
 
 scd.crystal_systems.crystal_systems_id -> übersetzt in Namen
 

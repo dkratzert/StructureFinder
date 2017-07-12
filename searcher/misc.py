@@ -91,7 +91,10 @@ def get_error_from_value(value: str) -> str:
         val = value.split("(")[0].split('.')
         err = value.split("(")[1].strip(")")
         if len(val) > 1:
-            return str(int(err) * (10 ** (-1 * len(val[1]))))
+            try:
+                return str(int(err) * (10 ** (-1 * len(val[1]))))
+            except ValueError:
+                return '0.0'
         else:
             return err
     else:
