@@ -238,7 +238,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="searchLineEDit"/>
+             <widget class="QLineEdit" name="searchCellLineEDit"/>
             </item>
             <item>
              <spacer name="horizontalSpacer_3">

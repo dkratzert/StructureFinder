@@ -53,28 +53,23 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
-- Import APEX2/3 database
-Als user bruker: psql -U bruker -f /Users/Shared/dkdumpall.sql BAXSdb
-Eventuell geht das auch als user daniel, aber mit -U bruker 
+-APEXdb: Als user bruker: psql -U bruker -f /Users/Shared/dkdumpall.sql BAXSdb
+         Eventuell geht das auch als user daniel, aber mit -U bruker 
 - add rightclick: copy unit cell on unit cell field
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - try to find a .p4p file to decide if it is a twin, also try to find a TWIN instruction in the cif file
 - allow to scan more than one directory. Just add to previous data. Especially for cmd version.
 - Make a web interface with python template to view everything also on a web site.
+- add an advanced search tab where you can search for sum formula, twinning, only elements, names, users, ...
 - structure python code
 - grow structure. parse symm cards
+- add a button: open in ...
 - make file type more flexible. handle .res and .cif equally
+- pressing search in advanced tab will return to base tab with results
 - recognize already indexed files. Add a hash for each file. Make a database search with executemany()
   to get a list of files where hashes exist. Remove results from file crawler. May I need a hash run over 
-  all files before the cif parsing run? Or just calc hash, search in db and then decide to parse cif or not? 
-- add an advanced search tab where you can search for sum formula, twinning, only elements, names, users, ... 
-- add a tab where you can match path name parts to usernames
-- the filecrawler should collect the bruker base file name, also for Rigaku? And STOE?
-- add measurement specific data to the db, e.g. machine from frame, temp from frame, 
-- pressing search in advanced tab will return to base tab with results
-- for commandline: crawl to tempfile and write to destfile with unique id
-- add a button: open in ...
-
+  all files before the cif parsing run? Or just calc hash, search in db and then decide to parse cif or not?
+  
 Advanced tab:
 - Exclude checkbox for each entry?
 Search for:
@@ -144,7 +139,7 @@ class StartStructureDB(QMainWindow):
         # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
         # Other fields:
         self.ui.txtSearchEdit.textChanged.connect(self.search_text)
-        self.ui.searchLineEDit.textChanged.connect(self.search_cell)
+        self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.openApexDBButton.clicked.connect(self.import_apex_db)
@@ -168,6 +163,8 @@ class StartStructureDB(QMainWindow):
         Closed the current database and erases the list.
         :param copy_on_close: Path to where the file should be copied after close()
         """
+        self.ui.searchCellLineEDit.clear()
+        self.ui.txtSearchEdit.clear()
         self.ui.cifList_treeWidget.clear()
         try:
             self.structures.database.cur.close()
@@ -420,7 +417,7 @@ class StartStructureDB(QMainWindow):
                         float(dic['gamma']) )
                 except ValueError:
                     continue
-                map = lattice1.find_mapping(lattice2, ltol=0.001, atol=0.5, skip_rotation_matrix=True)
+                map = lattice1.find_mapping(lattice2, ltol=0.0001, atol=0.5, skip_rotation_matrix=True)
                 if map:
                     idlist2.append(i)
         searchresult = self.structures.get_all_structure_names(idlist2)
