@@ -95,7 +95,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>Open APEX DB</string>
+          <string>Open APEX Database</string>
          </property>
         </widget>
        </item>

@@ -512,7 +512,7 @@ class Ui_stdbMainwindow(object):
         _translate = QtCore.QCoreApplication.translate
         stdbMainwindow.setWindowTitle(_translate("stdbMainwindow", "StructureFinder"))
         self.importDirButton.setText(_translate("stdbMainwindow", "Import Directory"))
-        self.openApexDBButton.setText(_translate("stdbMainwindow", "Open APEX DB"))
+        self.openApexDBButton.setText(_translate("stdbMainwindow", "Open APEX Database"))
         self.importDatabaseButton.setText(_translate("stdbMainwindow", "Open Database File"))
         self.saveDatabaseButton.setText(_translate("stdbMainwindow", "Save Database"))
         self.closeDatabaseButton.setText(_translate("stdbMainwindow", "Close Database"))
