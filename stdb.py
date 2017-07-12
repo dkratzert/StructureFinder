@@ -24,6 +24,8 @@ from pathlib import Path
 from string import Template
 
 import shutil
+
+import PyQt5
 from PyQt5 import uic, QtWidgets
 from PyQt5.QtWebEngine import QtWebEngine
 from PyQt5.QtCore import pyqtSlot, QUrl
@@ -215,12 +217,8 @@ class StartStructureDB(QMainWindow):
         This slot shows the properties of a cif file in the properties widget
         """
         # TODO: _space_group_symop_operation_xyz oder _symmetry_equiv_pos_as_xyz
-        if self.APEX:
-            # TODO: Show properties here.
-            pass
-        else:
-            if not self.structures.database.cur:
-                return False
+        if not self.structures.database.cur:
+            return False
         structure_id = item.sibling(item.row(), 3).data()
         request = """select * from residuals where StructureId = {}""".format(structure_id)
         dic = self.structures.get_row_as_dict(request)
@@ -337,6 +335,7 @@ class StartStructureDB(QMainWindow):
             self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
             cif_tree_item.setText(0, str(key).strip("\n\r "))
             cif_tree_item.setText(1, str(value).strip("\n\r "))
+        self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.allCifTreeWidget.resizeColumnToContents(0)
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
         return True
@@ -371,6 +370,7 @@ class StartStructureDB(QMainWindow):
                 # id = i[0]
                 #self.add_table_row(i[1], i[3], i[2], i[0])
                 self.add_table_row(name=i[1], path=i[3], id=i[0], data=i[2])
+            self.ui.cifList_treeWidget.sortByColumn(0, 0)
             self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except:
             self.statusBar().showMessage("Nothing found.", msecs=0)
@@ -430,6 +430,7 @@ class StartStructureDB(QMainWindow):
         for i in searchresult:
             self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
             #self.add_table_row(name, path, id)
+        self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
 
     def add_table_row(self, name: str, path: str, data: bytes, id: str) -> None:
@@ -512,7 +513,7 @@ class StartStructureDB(QMainWindow):
                                                  structure_id=n, structures=self.structures)
                 if not tst:
                     continue
-                self.add_table_row(name='', path=i[11], data=cif.cif_data['data'], id=str(n))
+                self.add_table_row(name=i[8], path=i[11], data=cif.cif_data['data'], id=str(n))
                 n += 1
                 if n % 300 == 0:
                     self.structures.database.commit_db()
@@ -528,6 +529,7 @@ class StartStructureDB(QMainWindow):
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
         self.ui.statusbar.showMessage('Added {} cif files to database in: {:>2} h, {:>2} m, {:>3.2f} s'.format(n, h, m, s), msecs=0)
+        self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.structures.populate_fulltext_search_table()
@@ -549,6 +551,7 @@ class StartStructureDB(QMainWindow):
         mess = "Loaded {} entries.".format(id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        self.ui.cifList_treeWidget.sortByColumn(0, 0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
 
@@ -617,6 +620,7 @@ class StartStructureDB(QMainWindow):
         self.ui.statusbar.showMessage('Added {} cif files to database in: {:>2} h, {:>2} m, {:>3.2f} s'.format(n, h, m, s), msecs=0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.structures.populate_fulltext_search_table()
         self.structures.database.commit_db("Committed")
         self.abort_import_button.hide()
