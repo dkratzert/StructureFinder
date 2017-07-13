@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1030</width>
-    <height>751</height>
+    <width>1064</width>
+    <height>781</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -338,7 +338,7 @@
                   <string/>
                  </property>
                  <property name="flat">
-                  <bool>true</bool>
+                  <bool>false</bool>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_5">
                   <property name="leftMargin">
@@ -359,7 +359,7 @@
                   <item row="1" column="1">
                    <widget class="QLabel" name="cellField">
                     <property name="sizePolicy">
-                     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                       <horstretch>0</horstretch>
                       <verstretch>0</verstretch>
                      </sizepolicy>
@@ -370,11 +370,23 @@
                       <height>75</height>
                      </size>
                     </property>
+                    <property name="baseSize">
+                     <size>
+                      <width>160</width>
+                      <height>75</height>
+                     </size>
+                    </property>
                     <property name="autoFillBackground">
                      <bool>false</bool>
                     </property>
                     <property name="styleSheet">
                      <string notr="true">border-color: rgb(53, 53, 53);</string>
+                    </property>
+                    <property name="frameShape">
+                     <enum>QFrame::NoFrame</enum>
+                    </property>
+                    <property name="frameShadow">
+                     <enum>QFrame::Plain</enum>
                     </property>
                     <property name="text">
                      <string/>
@@ -449,6 +461,19 @@
                 </widget>
                </item>
                <item>
+                <spacer name="verticalSpacer_5">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
                 <spacer name="verticalSpacer_6">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -462,6 +487,22 @@
                 </spacer>
                </item>
               </layout>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Preferred</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
              </item>
              <item>
               <layout class="QFormLayout" name="formLayout_3">
@@ -667,6 +708,22 @@
               </layout>
              </item>
              <item>
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Preferred</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
               <layout class="QFormLayout" name="formLayout">
                <property name="labelAlignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -861,7 +918,7 @@
              <item>
               <widget class="QGroupBox" name="openglview">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
@@ -875,7 +932,17 @@
                <property name="checkable">
                 <bool>false</bool>
                </property>
-               <layout class="QVBoxLayout" name="ogllayout"/>
+               <layout class="QVBoxLayout" name="ogllayout">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+               </layout>
               </widget>
              </item>
             </layout>
@@ -962,7 +1029,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1030</width>
+     <width>1064</width>
      <height>21</height>
     </rect>
    </property>

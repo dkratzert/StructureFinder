@@ -54,6 +54,7 @@ class Cif():
             "_diffrn_measurement_device_type": '',
             "_diffrn_reflns_number": '',
             "_diffrn_reflns_av_R_equivalents": '',
+            "_diffrn_reflns_av_unetI/netI": '',
             "_diffrn_reflns_theta_min": '',
             "_diffrn_reflns_theta_max": '',
             "_diffrn_reflns_theta_full": '',
@@ -79,7 +80,6 @@ class Cif():
             "_refine_ls_restrained_S_all": '',
             "_refine_ls_shift/su_max": '',
             "_refine_ls_shift/su_mean": '',
-            "_diffrn_reflns_av_unetI/netI": '',
             "_refine_diff_density_max": '',
             "_refine_diff_density_min": '',
             "_database_code_depnum_ccdc_archive": ''

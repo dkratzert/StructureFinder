@@ -53,15 +53,11 @@ from stdb_main import Ui_stdbMainwindow
 
 """
 TODO:
--APEXdb: Als user bruker: psql -U bruker -f /Users/Shared/dkdumpall.sql BAXSdb
-         Eventuell geht das auch als user daniel, aber mit -U bruker 
 - add rightclick: copy unit cell on unit cell field
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
-- try to find a .p4p file to decide if it is a twin, also try to find a TWIN instruction in the cif file
 - allow to scan more than one directory. Just add to previous data. Especially for cmd version.
 - Make a web interface with python template to view everything also on a web site.
 - add an advanced search tab where you can search for sum formula, twinning, only elements, names, users, ...
-- structure python code
 - grow structure. parse symm cards
 - add a button: open in ...
 - make file type more flexible. handle .res and .cif equally
@@ -299,7 +295,9 @@ class StartStructureDB(QMainWindow):
         self.ui.SpaceGroupLineEdit.setText("{}".format(cif_dic['_space_group_name_H_M_alt']))
         self.ui.temperatureLineEdit.setText("{}".format(cif_dic['_diffrn_ambient_temperature']))
         self.ui.maxShiftLineEdit.setText("{}".format(cif_dic['_refine_ls_shift_su_max']))
-        self.ui.peakLineEdit.setText("{} / {}".format(cif_dic['_refine_diff_density_max'], cif_dic['_refine_diff_density_min']))
+        peak = cif_dic['_refine_diff_density_max']
+        if peak:
+            self.ui.peakLineEdit.setText("{} / {}".format(peak, cif_dic['_refine_diff_density_min']))
         self.ui.rintLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_av_R_equivalents']))
         self.ui.rsigmaLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_av_unetI_netI']))
         self.ui.cCDCNumberLineEdit.setText("{}".format(cif_dic['_database_code_depnum_ccdc_archive']))
@@ -404,11 +402,11 @@ class StartStructureDB(QMainWindow):
         try:
             volume = lattice.vol_unitcell(*cell)
             # First a list of structures where the volume is similar:
-            idlist = self.structures.find_by_volume(volume, threshold=0.02)
+            idlist = self.structures.find_by_volume(volume, threshold=0.03)
         except (ValueError, AttributeError):
             if not self.full_list:
                 self.ui.cifList_treeWidget.clear()
-                self.statusBar().showMessage('Found 0 cells.', msecs=3000)
+                self.statusBar().showMessage('Found 0 cells.', msecs=0)
             return False
         # Get a smaller list where only cells are included that have a proper mapping to the input cell:
         idlist2 = []
@@ -434,7 +432,7 @@ class StartStructureDB(QMainWindow):
                     idlist2.append(i)
         if not idlist2:
             self.ui.cifList_treeWidget.clear()
-            self.statusBar().showMessage('Found 0 cells.', msecs=3000)
+            self.statusBar().showMessage('Found 0 cells.', msecs=0)
         searchresult = self.structures.get_all_structure_names(idlist2)
         self.statusBar().showMessage('Found {} cells.'.format(len(idlist2)), msecs=3000)
         self.ui.cifList_treeWidget.clear()
@@ -521,11 +519,23 @@ class StartStructureDB(QMainWindow):
                 cif.cif_data['_cell_angle_beta'] = i[5]
                 cif.cif_data['_cell_angle_gamma'] = i[6]
                 cif.cif_data["data"] = i[8]
-                tst = filecrawler.fill_db_tables(cif=cif, filename=i[8], path=i[11],
+                cif.cif_data['_diffrn_radiation_wavelength'] = i[13]
+                cif.cif_data['_exptl_crystal_colour'] = i[14]
+                cif.cif_data['_exptl_crystal_size_max'] = i[16]
+                cif.cif_data['_exptl_crystal_size_mid'] = i[17]
+                cif.cif_data['_exptl_crystal_size_min'] = i[18]
+                cif.cif_data["_chemical_formula_sum"] = i[25]
+                cif.cif_data['_diffrn_reflns_av_R_equivalents'] = i[21] #rint
+                cif.cif_data['_diffrn_reflns_av_unetI/netI'] = i[22] #rsig
+                cif.cif_data['_diffrn_reflns_number'] = i[23]
+                comp = i[26]
+                if comp:
+                    cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp/100
+                tst = filecrawler.fill_db_tables(cif=cif, filename=i[8], path=i[12],
                                                  structure_id=n, structures=self.structures)
                 if not tst:
                     continue
-                self.add_table_row(name=i[8], path=i[11], data=cif.cif_data['data'], id=str(n))
+                self.add_table_row(name=i[8], data='', path=i[12], id=str(n))
                 n += 1
                 if n % 300 == 0:
                     self.structures.database.commit_db()

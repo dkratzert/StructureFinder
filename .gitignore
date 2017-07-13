@@ -57,6 +57,7 @@ stdb_main.py
 <tmpfile>
 test.sqlite
 displaymol/jsmol.htm
+jsmol.htm
 *.sqlite-journal
 structuredb.sqlite
-
+displaymol/jsmol.htm

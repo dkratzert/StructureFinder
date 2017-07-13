@@ -209,7 +209,6 @@ class DatabaseRequest():
                         _refine_diff_density_min                REAL,
                         _diffrn_reflns_av_unetI_netI            REAL,
                         _database_code_depnum_ccdc_archive      TEXT,
-                        number_of_atoms                         INTEGER,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
                         REFERENCES Structure(Id)
@@ -507,7 +506,7 @@ class StructureTable():
         alphaerror = get_error_from_value(alpha)
         betaerror = get_error_from_value(beta)
         gammaerror = get_error_from_value(gamma)
-        #volerror = get_error_from_value(volume)
+        vol = ''
         if isinstance(a, str):
             a = a.split('(')[0]
             b = b.split('(')[0]
