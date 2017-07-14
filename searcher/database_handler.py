@@ -15,44 +15,6 @@ from constants import py36
 
 '''
 
-scd.crystal_systems.crystal_systems_id -> übersetzt in Namen
-
-scd.sample_color.crystal_appereances_id
-scd.sample_color.crystal_color_id_1
-scd.sample_color.crystal_color_id_2
-
-scd.sample_size.dimension_1, 2, 3
-
-scd.samples.sample_name
-scd.samples.formula
-scd.samples.compund
-scd.samples.shape (e.g. needle)
-scd.samples.last_modified
-
-scr.struct_file
-scr.struct_soln
-
-scd.space_proups  --> list of space groups
-
-scd.xrd_temperature_control  <- eventuell
-
-
-
-
-For APEX DB:
-in table scd
-
-﻿SELECT 
-  lsq_refinement.a, 
-  lsq_refinement.b, 
-  lsq_refinement.c, 
-  lsq_refinement.alpha, 
-  lsq_refinement.beta, 
-  lsq_refinement.gamma, 
-  lsq_refinement.samples_id
-FROM 
-  scd.lsq_refinement;
-
 '''
 import sys
 import numpy as np
@@ -94,18 +56,6 @@ class DatabaseRequest():
         self.cur.execute("DROP TABLE IF EXISTS Atoms")
         self.cur.execute("DROP TABLE IF EXISTS niggli_cell")
         self.cur.execute("DROP TABLE IF EXISTS Residuals")
-        try:
-            self.cur.execute("DROP INDEX cell")
-        except:
-            pass
-        try:
-            self.cur.execute("DROP INDEX path")
-        except:
-            pass
-        try:
-            self.cur.execute("DROP INDEX name")
-        except:
-            pass
 
         self.cur.execute('''
                     CREATE TABLE measurement (
