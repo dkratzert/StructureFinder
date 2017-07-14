@@ -449,7 +449,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
                         float(dic['gamma']) )
                 except ValueError:
                     continue
-                map = lattice1.find_mapping(lattice2, ltol=0.001, atol=1, skip_rotation_matrix=True)
+                map = lattice1.find_mapping(lattice2, ltol=0.01, atol=1, skip_rotation_matrix=True)
                 if map:
                     idlist2.append(i)
         if not idlist2:
