@@ -12,7 +12,7 @@ Created on 09.02.2015
 
 @author: Daniel Kratzert
 """
-import datetime
+import time
 import os
 import re
 
@@ -78,7 +78,7 @@ def put_cifs_in_db(searchpath):
     db.initialize_db()
     structures = searcher.database_handler.StructureTable(dbfilename)
     n = 1
-    time1 = datetime.time.clock()
+    time1 = time.clock()
     cif = searcher.fileparser.Cif()
     for filepth in create_file_list(str(searchpath), ending='cif'):
         if not filepth.is_file():
@@ -106,7 +106,7 @@ def put_cifs_in_db(searchpath):
         if n % 1000 == 0:
             print('{} files ...'.format(n))
             structures.database.commit_db()
-    time2 = datetime.time.clock()
+    time2 = time.clock()
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)

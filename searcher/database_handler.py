@@ -11,7 +11,7 @@ Created on 09.02.2015
 
 @author: daniel
 """
-from stdb import py36
+from constants import py36
 
 '''
 

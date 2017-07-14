@@ -13,18 +13,12 @@ Created on 09.02.2015
 @author: Daniel Kratzert
 """
 from __future__ import print_function
+
+from constants import py36
+
 __metaclass__ = type  # use new-style classes
 
 import sys
-py36 = False
-py34 = False
-py2 = False
-if sys.version_info > (3, 5):
-    py36 = True
-elif sys.version_info > (3, 4):
-    py34 = True
-elif sys.version_info < (3, 0) >= (2, 7):
-    py2 = True
 
 import time
 import math

@@ -1,4 +1,13 @@
-
+import sys
+py36 = False
+py34 = False
+py2 = False
+if sys.version_info > (3, 5):
+    py36 = True
+elif sys.version_info > (3, 4):
+    py34 = True
+elif sys.version_info < (3, 0) >= (2, 7):
+    py2 = True
 
 atoms = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
          'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe',
