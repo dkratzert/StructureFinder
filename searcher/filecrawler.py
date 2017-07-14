@@ -12,18 +12,18 @@ Created on 09.02.2015
 
 @author: Daniel Kratzert
 """
+import datetime
 import os
-import time
 import re
-import fnmatch as fn
+
+import pathlib
+
 import sys
-from pathlib import Path
-from pprint import pprint
 
-from lattice import lattice
-from searcher import atoms, database_handler
-from searcher.fileparser import Cif
-
+import lattice.lattice
+import searcher.atoms
+import searcher.database_handler
+import searcher.fileparser
 
 excluded_names = (
         {'ROOT', '.OLEX', 'TMP', 'TEMP', 'akfischer', 'Papierkorb', 'Recycle.Bin'}
@@ -39,7 +39,7 @@ def create_file_list(searchpath='None', ending='cif'):
         print('search path {0} not found! Or no directory!'.format(searchpath))
         sys.exit()
     print('collecting files... (may take some minutes)')
-    p = Path(searchpath)
+    p = pathlib.Path(searchpath)
     paths = p.rglob("*.{}".format(ending))
     return paths
 
@@ -56,7 +56,7 @@ def filewalker_walk(startdir, endings, add_excludes=''):
     print('collecting files below ' + startdir)
     for root, dirs, files in os.walk(startdir):  # @UnusedVariable
         for num, filen in enumerate(files):
-            if fn.fnmatch(filen, '*.{0}'.format(endings)):
+            if filen.fnmatch(filen, '*.{0}'.format(endings)):
                 if os.stat(os.path.join(root, filen)).st_size == 0:
                     continue
                 filelist.append([os.path.join(root, filen), filen])
@@ -74,12 +74,12 @@ def put_cifs_in_db(searchpath):
         os.remove(dbfilename)
     except:
         pass
-    db = DatabaseRequest(dbfilename)
+    db = searcher.database_handler.DatabaseRequest(dbfilename)
     db.initialize_db()
-    structures = StructureTable(dbfilename)
+    structures = searcher.database_handler.StructureTable(dbfilename)
     n = 1
-    time1 = time.clock()
-    cif = Cif()
+    time1 = datetime.time.clock()
+    cif = searcher.fileparser.Cif()
     for filepth in create_file_list(str(searchpath), ending='cif'):
         if not filepth.is_file():
             continue
@@ -106,7 +106,7 @@ def put_cifs_in_db(searchpath):
         if n % 1000 == 0:
             print('{} files ...'.format(n))
             structures.database.commit_db()
-    time2 = time.clock()
+    time2 = datetime.time.clock()
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
@@ -163,7 +163,7 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
                 beta = float(beta.split('(')[0])
             if isinstance(gamma, str):
                 gamma = float(gamma.split('(')[0])
-            volume = lattice.vol_unitcell(a, b, c, alpha, beta, gamma)
+            volume = lattice.lattice.vol_unitcell(a, b, c, alpha, beta, gamma)
             volume = str(volume)
         except ValueError:
             volume = ''
@@ -184,7 +184,7 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
             try:
                 atom_type_symbol = cif._atom[x]['_atom_site_type_symbol']
             except KeyError:
-                atom_type_symbol  = atoms.get_atomlabel(x)
+                atom_type_symbol  = searcher.atoms.get_atomlabel(x)
             structures.fill_atoms_table(structure_id, x,
                                          atom_type_symbol,
                                          cif._atom[x]['_atom_site_fract_x'].split('(')[0],

@@ -12,8 +12,7 @@ Created on 09.02.2015
 @author: daniel
 """
 import os
-import time
-from pprint import pprint
+#from pprint import pprint
 
 class Cif():
     def __init__(self):

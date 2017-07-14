@@ -6,7 +6,6 @@ from __future__ import division, unicode_literals
 import math
 
 import numpy as np
-import sys
 from numpy.linalg import inv
 from numpy import dot, transpose
 

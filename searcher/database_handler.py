@@ -732,7 +732,8 @@ class StructureTable():
                 path
                     FROM Structure
         """
-        self.database.cur.execute(populate_index)
+        if py36:
+            self.database.cur.execute(populate_index)
 
     def get_row_as_dict(self, request):
         """

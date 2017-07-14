@@ -13,38 +13,9 @@ Created on 09.02.2015
 @author: Daniel Kratzert
 """
 from __future__ import print_function
+__metaclass__ = type  # use new-style classes
 
-import os
-import re
-import shutil
 import sys
-import tempfile
-import time
-from math import radians, sin
-from pathlib import Path
-from string import Template
-
-from PyQt5 import uic, QtWidgets
-from PyQt5.QtCore import pyqtSlot, QUrl
-from PyQt5.QtGui import QIcon
-from PyQt5.QtQml import QQmlApplicationEngine
-from PyQt5.QtWebEngine import QtWebEngine
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow, QTreeWidgetItem
-
-import searcher
-from apex import apeximporter
-from constants import celltxt
-from displaymol import mol_file_writer
-from lattice import lattice
-from pymatgen.core.mat_lattice import Lattice
-from searcher import filecrawler, misc
-from searcher import database_handler
-from searcher.fileparser import Cif
-
-uic.compileUiDir('./')
-from stdb_main import Ui_stdbMainwindow
-
 py36 = False
 py34 = False
 py2 = False
@@ -54,6 +25,42 @@ elif sys.version_info > (3, 4):
     py34 = True
 elif sys.version_info < (3, 0) >= (2, 7):
     py2 = True
+
+import time
+import math
+import os
+import shutil
+import string
+import tempfile
+
+if py36:
+    """Only import this if Python 3.6 is used."""
+    from PyQt5.QtWebEngine import QtWebEngine
+    from PyQt5.QtWebEngineWidgets import QWebEngineView
+
+import PyQt5.QtCore
+import PyQt5.QtGui
+import PyQt5.QtQml
+import PyQt5.QtWidgets
+import PyQt5.uic
+import re
+
+import pathlib
+
+import apex.apeximporter
+import constants
+import displaymol.mol_file_writer
+import lattice.lattice
+import pymatgen.core.mat_lattice
+import searcher
+import searcher.filecrawler
+import searcher.fileparser
+
+
+PyQt5.uic.compileUiDir('./')
+from stdb_main import Ui_stdbMainwindow
+
+
 
 """
 TODO:
@@ -87,7 +94,7 @@ Search for:
 
 
 
-class StartStructureDB(QMainWindow):
+class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -100,8 +107,8 @@ class StartStructureDB(QMainWindow):
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         self.ui.centralwidget.setMinimumSize(1200, 500)
-        self.abort_import_button = QtWidgets.QPushButton("Abort (takes a while)")
-        self.progress = QtWidgets.QProgressBar(self)
+        self.abort_import_button = PyQt5.QtWidgets.QPushButton("Abort (takes a while)")
+        self.progress = PyQt5.QtWidgets.QProgressBar(self)
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
         self.ui.statusbar.addWidget(self.abort_import_button)
@@ -110,16 +117,11 @@ class StartStructureDB(QMainWindow):
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
         self.connect_signals_and_slots()
-        self.view = QWebEngineView()
-        QtWebEngine.initialize()
-        self.view.load(QUrl.fromLocalFile(os.path.abspath("./displaymol/jsmol.htm")))
-        self.view.setMaximumWidth(250)
-        self.view.setMaximumHeight(290)
-        self.ui.ogllayout.addWidget(self.view)
-        self.view.show()
+        if py36:
+            self.init_webview()
         self.ui.tabWidget.removeTab(1)
         self.ui.tabWidget.removeTab(1)
-        self.setWindowIcon(QIcon('./images/monoklin.png'))
+        self.setWindowIcon(PyQt5.QtGui.QIcon('./images/monoklin.png'))
         #self.APEX = False
 
     def connect_signals_and_slots(self):
@@ -150,6 +152,19 @@ class StartStructureDB(QMainWindow):
         # self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
         # self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
 
+    def init_webview(self):
+        """
+        Initializes a QWebengine to view the molecule.
+        """
+        self.view = QWebEngineView()
+        QtWebEngine.initialize()
+        self.view.load(PyQt5.QtCore.QUrl.fromLocalFile(os.path.abspath("./displaymol/jsmol.htm")))
+        self.view.setMaximumWidth(250)
+        self.view.setMaximumHeight(290)
+        self.ui.ogllayout.addWidget(self.view)
+        self.view.show()
+
+
     def progressbar(self, curr: float, min: float, max: float) -> None:
         """
         Displays a progress bar in the status bar.
@@ -161,7 +176,7 @@ class StartStructureDB(QMainWindow):
         if curr == max:
             self.progress.hide()
 
-    @pyqtSlot(name="close_db")
+    @PyQt5.QtCore.pyqtSlot(name="close_db")
     def close_db(self, copy_on_close: str = None) -> bool:
         """
         Closed the current database and erases the list.
@@ -197,7 +212,7 @@ class StartStructureDB(QMainWindow):
                     return False
         return True
 
-    @pyqtSlot(name="abort_import")
+    @PyQt5.QtCore.pyqtSlot(name="abort_import")
     def abort_import(self):
         """
         This slot means, import was aborted.
@@ -209,10 +224,10 @@ class StartStructureDB(QMainWindow):
         Initializes the database.
         """
         self.dbfdesc, self.dbfilename = tempfile.mkstemp()
-        self.structures = database_handler.StructureTable(self.dbfilename)
+        self.structures = searcher.database_handler.StructureTable(self.dbfilename)
         self.structures.database.initialize_db()
 
-    @pyqtSlot('QModelIndex', name="get_properties")
+    @PyQt5.QtCore.pyqtSlot('QModelIndex', name="get_properties")
     def get_properties(self, item):
         """
         This slot shows the properties of a cif file in the properties widget
@@ -231,7 +246,7 @@ class StartStructureDB(QMainWindow):
         Saves the database to a certain file. Therefore I have to close the database.
         """
         status = False
-        save_name, tst = QFileDialog.getSaveFileName(self, caption='Save File', directory='./', filter="*.sqlite")
+        save_name, tst = PyQt5.QtWidgets.QFileDialog.getSaveFileName(self, caption='Save File', directory='./', filter="*.sqlite")
         if save_name:
             if shutil._samefile(self.dbfilename, save_name):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
@@ -245,27 +260,14 @@ class StartStructureDB(QMainWindow):
         """
         Displays the residuals from the cif file
         """
-        mol = ' '
         self.clear_fields()
         self.ui.allCifTreeWidget.clear()
         cell = self.structures.get_cell_by_id(structure_id)
         if not cell:
             self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
             return False
-        p = Path("./displaymol/jsmol-template.htm")
-        templ = p.read_text(encoding='utf-8', errors='ignore')
-        s = Template(templ)
-        try:
-            tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6])
-            mol = tst.make_mol()
-        except (TypeError, KeyError):
-            print("Error in structure", structure_id, "while writing mol file.")
-            s = Template(' ')
-            pass
-        content = s.safe_substitute(MyMol=mol)
-        p2 = Path("./displaymol/jsmol.htm")
-        p2.write_text(data=content, encoding="utf-8", errors='ignore')
-        self.view.reload()
+        if py36:
+            self.display_molecule(cell, structure_id)
         self.ui.cifList_treeWidget.setFocus()
         if not cif_dic:
             return False
@@ -276,7 +278,7 @@ class StartStructureDB(QMainWindow):
             self.ui.cellField.setText('            ')
             return False
         #self.ui.cellField.setMinimumWidth(180)
-        self.ui.cellField.setText(celltxt.format(a, alpha, b, beta, c, gamma, volume, ''))
+        self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, ''))
         try:
             self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
         except ValueError:
@@ -318,7 +320,7 @@ class StartStructureDB(QMainWindow):
         thetamax = cif_dic['_diffrn_reflns_theta_max']
         # d = lambda/2sin(theta):
         try:
-            d = wavelen/(2*sin(radians(thetamax)))
+            d = wavelen/(2 * math.sin(math.radians(thetamax)))
         except(ZeroDivisionError, TypeError):
             d = 0.0
         self.ui.numRestraintsLineEdit.setText("{}".format(cif_dic['_refine_ls_number_restraints']))
@@ -334,7 +336,7 @@ class StartStructureDB(QMainWindow):
         self.ui.completeLineEdit.setText("{:<5.1f}".format(compl))
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
         for key, value in cif_dic.items():
-            cif_tree_item = QTreeWidgetItem()
+            cif_tree_item = PyQt5.QtWidgets.QTreeWidgetItem()
             self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
             cif_tree_item.setText(0, str(key).strip("\n\r "))
             cif_tree_item.setText(1, str(value).strip("\n\r "))
@@ -343,7 +345,26 @@ class StartStructureDB(QMainWindow):
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
         return True
 
-    @pyqtSlot('QString')
+    def display_molecule(self, cell, structure_id):
+        """
+        """
+        mol = ' '
+        p = pathlib.Path("./displaymol/jsmol-template.htm")
+        templ = p.read_text(encoding='utf-8', errors='ignore')
+        s = string.Template(templ)
+        try:
+            tst = displaymol.mol_file_writer.MolFile(structure_id, self.structures, cell[:6])
+            mol = tst.make_mol()
+        except (TypeError, KeyError):
+            print("Error in structure", structure_id, "while writing mol file.")
+            s = string.Template(' ')
+            pass
+        content = s.safe_substitute(MyMol=mol)
+        p2 = pathlib.Path("./displaymol/jsmol.htm")
+        p2.write_text(data=content, encoding="utf-8", errors='ignore')
+        self.view.reload()
+
+    @PyQt5.QtCore.pyqtSlot('QString')
     def search_text(self, search_string):
         """
         searches db for given text
@@ -384,7 +405,7 @@ class StartStructureDB(QMainWindow):
         except:
             self.statusBar().showMessage("Nothing found.", msecs=0)
 
-    @pyqtSlot('QString')
+    @PyQt5.QtCore.pyqtSlot('QString')
     def search_cell(self, search_string):
         """
         searches db for given cell via the cell volume
@@ -407,7 +428,7 @@ class StartStructureDB(QMainWindow):
             #self.show_full_list()
             return True
         try:
-            volume = lattice.vol_unitcell(*cell)
+            volume = lattice.lattice.vol_unitcell(*cell)
             # First a list of structures where the volume is similar:
             idlist = self.structures.find_by_volume(volume, threshold=0.03)
         except (ValueError, AttributeError):
@@ -418,14 +439,14 @@ class StartStructureDB(QMainWindow):
         # Get a smaller list where only cells are included that have a proper mapping to the input cell:
         idlist2 = []
         if idlist:
-            lattice1 = Lattice.from_parameters(*cell)
+            lattice1 = pymatgen.core.mat_lattice.Lattice.from_parameters(*cell)
             self.statusBar().clearMessage()
             for num, i in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist)-1)
                 request = """select * from cell where StructureId = {}""".format(i)
                 dic = self.structures.get_row_as_dict(request)
                 try:
-                    lattice2 = Lattice.from_parameters(
+                    lattice2 = pymatgen.core.mat_lattice.Lattice.from_parameters(
                         float(dic['a']),
                         float(dic['b']),
                         float(dic['c']),
@@ -464,7 +485,7 @@ class StartStructureDB(QMainWindow):
             path = path.decode("utf-8", "surrogateescape")
         if isinstance(data, bytes):
             data = data.decode("utf-8", "surrogateescape")
-        tree_item = QTreeWidgetItem()
+        tree_item = PyQt5.QtWidgets.QTreeWidgetItem()
         tree_item.setText(0, name)  # name
         tree_item.setText(1, data)  # data
         tree_item.setText(2, path)  # path
@@ -478,12 +499,12 @@ class StartStructureDB(QMainWindow):
         """
         self.tmpfile = False
         self.close_db()
-        fname = QFileDialog.getOpenFileName(self, caption='Open File', directory='./', filter="*.sqlite")
+        fname = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, caption='Open File', directory='./', filter="*.sqlite")
         if not fname[0]:
             return False
         print("Opened {}.". format(fname[0]))
         self.dbfilename = fname[0]
-        self.structures = database_handler.StructureTable(self.dbfilename)
+        self.structures = searcher.database_handler.StructureTable(self.dbfilename)
         self.show_full_list()
         if not self.structures:
             return False
@@ -494,7 +515,7 @@ class StartStructureDB(QMainWindow):
         Opens the APEX db to be displayed in the treeview.
         """
         self.APEX = True
-        self.apx = apeximporter.ApexDB()
+        self.apx = apex.apeximporter.ApexDB()
         conn = self.apx.initialize_db()
         return conn
 
@@ -513,7 +534,7 @@ class StartStructureDB(QMainWindow):
         num = 0
         time1 = time.clock()
         conn = self.open_apex_db()
-        cif = Cif()
+        cif = searcher.fileparser.Cif()
         if conn:
             for i in self.apx.get_all_data():
                 if num == 20:
@@ -538,8 +559,8 @@ class StartStructureDB(QMainWindow):
                 comp = i[26]
                 if comp:
                     cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp/100
-                tst = filecrawler.fill_db_tables(cif=cif, filename=i[8], path=i[12],
-                                                 structure_id=n, structures=self.structures)
+                tst = searcher.filecrawler.fill_db_tables(cif=cif, filename=i[8], path=i[12],
+                                                          structure_id=n, structures=self.structures)
                 if not tst:
                     continue
                 self.add_table_row(name=i[8], data='', path=i[12], id=str(n))
@@ -597,7 +618,7 @@ class StartStructureDB(QMainWindow):
         self.statusBar().showMessage('')
         self.close_db()
         self.start_db()
-        fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        fname = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         if not fname:
             return False
         self.ui.cifList_treeWidget.show()
@@ -607,8 +628,8 @@ class StartStructureDB(QMainWindow):
         min = 0
         num = 0
         time1 = time.clock()
-        cif = Cif()
-        for filepth in filecrawler.create_file_list(str(fname), ending='cif'):
+        cif = searcher.fileparser.Cif()
+        for filepth in searcher.filecrawler.create_file_list(str(fname), ending='cif'):
             if num == 20:
                 num = 0
             self.progressbar(num, min, 20)
@@ -618,7 +639,7 @@ class StartStructureDB(QMainWindow):
             match = False
             if filepth.name == 'xd_geo.cif':  # Exclude xdgeom cif files
                 continue
-            for ex in filecrawler.excluded_names:
+            for ex in searcher.filecrawler.excluded_names:
                 if re.search(ex, path, re.I):
                     match = True
             if match:
@@ -631,7 +652,7 @@ class StartStructureDB(QMainWindow):
                 continue
             if cif:
                 # is the StructureId
-                tst = filecrawler.fill_db_tables(cif, filepth.name, path, n, self.structures)
+                tst = searcher.filecrawler.fill_db_tables(cif, filepth.name, path, n, self.structures)
                 if not tst:
                     continue
                 self.add_table_row(filepth.name, path, cif.cif_data['data'], str(n))
@@ -686,7 +707,7 @@ class StartStructureDB(QMainWindow):
 class QmlAusgabe(object):
     def __init__(self, pathToQmlFile="beispiel.qml"):
         #QML-Engine
-        self.__appEngine = QQmlApplicationEngine()
+        self.__appEngine = PyQt5.QtQml.QQmlApplicationEngine()
         self.__appEngine.load(pathToQmlFile)
         self.__appWindow = self.__appEngine.rootObjects()[0]
 
@@ -696,8 +717,8 @@ class QmlAusgabe(object):
 
 if __name__ == "__main__":
     # later http://www.pyinstaller.org/
-    app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon('./images/monoklin.png'))
+    app = PyQt5.QtWidgets.QApplication(sys.argv)
+    app.setWindowIcon(PyQt5.QtGui.QIcon('./images/monoklin.png'))
     app.setApplicationName("StructureFinder")
     app.setApplicationDisplayName("StructureFinder")
     myapp = StartStructureDB()
