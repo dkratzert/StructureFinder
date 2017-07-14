@@ -11,6 +11,7 @@ Created on 09.02.2015
 
 @author: daniel
 """
+from stdb import py36
 
 '''
 
@@ -144,15 +145,15 @@ class DatabaseRequest():
                           ON DELETE CASCADE
                           ON UPDATE NO ACTION);
                     ''')
-
-        self.cur.execute("""
-            CREATE VIRTUAL TABLE txtsearch USING 
-                    fts4(StructureId    INTEGER, 
-                         filename       TEXT, 
-                         dataname       TEXT, 
-                         path           TEXT, 
-                            tokenize=simple "tokenchars= .=-_");  
-        """)  # The simple tokenizer is best for my purposes
+        if py36:
+            self.cur.execute("""
+                CREATE VIRTUAL TABLE txtsearch USING 
+                        fts4(StructureId    INTEGER, 
+                             filename       TEXT, 
+                             dataname       TEXT, 
+                             path           TEXT, 
+                                tokenize=simple "tokenchars= .=-_");  
+            """)  # The simple tokenizer is best for my purposes
 
         self.cur.execute('''
                     CREATE TABLE Residuals (

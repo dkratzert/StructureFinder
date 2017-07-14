@@ -15,41 +15,45 @@ Created on 09.02.2015
 from __future__ import print_function
 
 import os
+import re
+import shutil
 import sys
 import tempfile
 import time
-import re
-import pprint
+from math import radians, sin
 from pathlib import Path
 from string import Template
 
-import shutil
-
-import PyQt5
 from PyQt5 import uic, QtWidgets
-from PyQt5.QtWebEngine import QtWebEngine
 from PyQt5.QtCore import pyqtSlot, QUrl
 from PyQt5.QtGui import QIcon
 from PyQt5.QtQml import QQmlApplicationEngine
+from PyQt5.QtWebEngine import QtWebEngine
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtWidgets import QTreeWidgetItem
-from math import radians, sin
+from PyQt5.QtWidgets import QApplication, QFileDialog, QMainWindow, QTreeWidgetItem
 
-import mol_file_writer
 import searcher
 from apex import apeximporter
 from constants import celltxt
+from displaymol import mol_file_writer
 from lattice import lattice
 from pymatgen.core.mat_lattice import Lattice
 from searcher import filecrawler, misc
 from searcher.database_handler import StructureTable
 from searcher.fileparser import Cif
+
 uic.compileUiDir('./')
 from stdb_main import Ui_stdbMainwindow
 
+py36 = False
+py34 = False
+py2 = False
+if sys.version_info > (3, 5):
+    py36 = True
+elif sys.version_info > (3, 4):
+    py34 = True
+elif sys.version_info < (3, 0) >= (2, 7):
+    py2 = True
 
 """
 TODO:
@@ -137,13 +141,16 @@ class StartStructureDB(QMainWindow):
         self.ui.actionSave_Database.triggered.connect(self.save_database)
         # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
         # Other fields:
-        self.ui.txtSearchEdit.textChanged.connect(self.search_text)
+        if py36:
+            self.ui.txtSearchEdit.textChanged.connect(self.search_text)
+        else:
+            self.ui.txtSearchEdit.setText("For full test search, use a modern Operating system.")
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         # self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
         # self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
 
-    def progressbar(self, curr: float, min: float, max: float) -> bool:
+    def progressbar(self, curr: float, min: float, max: float) -> None:
         """
         Displays a progress bar in the status bar.
         """
@@ -155,7 +162,7 @@ class StartStructureDB(QMainWindow):
             self.progress.hide()
 
     @pyqtSlot(name="close_db")
-    def close_db(self, copy_on_close=None):
+    def close_db(self, copy_on_close: str = None) -> bool:
         """
         Closed the current database and erases the list.
         :param copy_on_close: Path to where the file should be copied after close()
@@ -554,7 +561,8 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
-        self.structures.populate_fulltext_search_table()
+        if py36:
+            self.structures.populate_fulltext_search_table()
         self.structures.database.commit_db("Committed")
         self.abort_import_button.hide()
 
