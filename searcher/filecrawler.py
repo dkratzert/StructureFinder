@@ -21,8 +21,7 @@ from pathlib import Path
 from pprint import pprint
 
 from lattice import lattice
-from searcher import misc, atoms
-from searcher.database_handler import StructureTable, DatabaseRequest
+from searcher import atoms, database_handler
 from searcher.fileparser import Cif
 
 

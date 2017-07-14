@@ -39,7 +39,7 @@ from displaymol import mol_file_writer
 from lattice import lattice
 from pymatgen.core.mat_lattice import Lattice
 from searcher import filecrawler, misc
-from searcher.database_handler import StructureTable
+from searcher import database_handler
 from searcher.fileparser import Cif
 
 uic.compileUiDir('./')
@@ -209,7 +209,7 @@ class StartStructureDB(QMainWindow):
         Initializes the database.
         """
         self.dbfdesc, self.dbfilename = tempfile.mkstemp()
-        self.structures = StructureTable(self.dbfilename)
+        self.structures = database_handler.StructureTable(self.dbfilename)
         self.structures.database.initialize_db()
 
     @pyqtSlot('QModelIndex', name="get_properties")
@@ -483,7 +483,7 @@ class StartStructureDB(QMainWindow):
             return False
         print("Opened {}.". format(fname[0]))
         self.dbfilename = fname[0]
-        self.structures = StructureTable(self.dbfilename)
+        self.structures = database_handler.StructureTable(self.dbfilename)
         self.show_full_list()
         if not self.structures:
             return False
