@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-<title>Super-Lightweight Jmol Testing</title>
 <head>
 <meta charset="utf-8">
 <script type="text/javascript" src="JSmol.full.lite.js"></script>
@@ -52,9 +51,6 @@ $(window).ready(function() {
   $("#apphere").html(jmol._code);
   var mol = $('html').html().split("MOL DATA\n")[1].split("-->")[0];
   jmol.__loadModel(mol);
-
-  //$("#spinstuff").html('<a href="javascript:jmol.spin(true)">spin ON</a> <a href="javascript:jmol.spin(false)">spin OFF</a>');
-
 });
 
 </script>

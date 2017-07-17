@@ -341,6 +341,13 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
             cif_tree_item.setText(0, str(key).strip("\n\r "))
             cif_tree_item.setText(1, str(value).strip("\n\r "))
+        atoms_item = PyQt5.QtWidgets.QTreeWidgetItem()
+        self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
+        atoms_item.setText(0, 'Atoms')
+        for at in self.structures.get_atoms_table(structure_id, cartesian=False):
+            data_cif_tree_item = PyQt5.QtWidgets.QTreeWidgetItem(atoms_item)
+            self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
+            data_cif_tree_item.setText(1, '{:<8.8s}\t {:<4s}\t {:>8.5f}\t {:>8.5f}\t {:>8.5f}'.format(*at))
         self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.allCifTreeWidget.resizeColumnToContents(0)
         self.ui.allCifTreeWidget.resizeColumnToContents(1)

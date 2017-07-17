@@ -481,7 +481,7 @@ class StructureTable():
         if self.database.db_request(req, structure_id, name, element, x, y, z, occ, part):
             return True
 
-    def get_atoms_table(self, structure_id, cell, cartesian=False):
+    def get_atoms_table(self, structure_id, cell='', cartesian=False):
         """
         returns the atoms of structure with structure_id
         """
