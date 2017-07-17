@@ -114,8 +114,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.connect_signals_and_slots()
         if py36:
             self.init_webview()
-        self.ui.tabWidget.removeTab(1)
-        self.ui.tabWidget.removeTab(1)
+        self.ui.tabWidget.removeTab(2)
         self.setWindowIcon(PyQt5.QtGui.QIcon('./images/monoklin.png'))
 
     def connect_signals_and_slots(self):
