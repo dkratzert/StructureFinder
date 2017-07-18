@@ -59,6 +59,7 @@ from stdb_main import Ui_stdbMainwindow
 """
 TODO:
 - add rightclick: copy unit cell on unit cell field
+- add atoms as additional treeitem to the all cif values list
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - allow to scan more than one directory. Just add to previous data. Especially for cmd version.
 - Make a web interface with python template to view everything also on a web site.
@@ -113,10 +114,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.connect_signals_and_slots()
         if py36:
             self.init_webview()
-        self.ui.tabWidget.removeTab(1)
-        self.ui.tabWidget.removeTab(1)
+        self.ui.tabWidget.removeTab(2)
         self.setWindowIcon(PyQt5.QtGui.QIcon('./images/monoklin.png'))
-        #self.APEX = False
 
     def connect_signals_and_slots(self):
         """
@@ -130,6 +129,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.openApexDBButton.clicked.connect(self.import_apex_db)
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
         self.abort_import_button.clicked.connect(self.abort_import)
+        self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
@@ -158,6 +158,12 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.ogllayout.addWidget(self.view)
         self.view.show()
 
+    @PyQt5.QtCore.pyqtSlot(name="cell_state_changed")
+    def cell_state_changed(self):
+        """
+        Searches a cell but with diffeent loos or strict option.
+        """
+        self.search_cell(self.ui.searchCellLineEDit.text())
 
     def progressbar(self, curr: float, min: float, max: float) -> None:
         """
@@ -334,6 +340,13 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
             cif_tree_item.setText(0, str(key).strip("\n\r "))
             cif_tree_item.setText(1, str(value).strip("\n\r "))
+        atoms_item = PyQt5.QtWidgets.QTreeWidgetItem()
+        self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
+        atoms_item.setText(0, 'Atoms')
+        for at in self.structures.get_atoms_table(structure_id, cartesian=False):
+            data_cif_tree_item = PyQt5.QtWidgets.QTreeWidgetItem(atoms_item)
+            self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
+            data_cif_tree_item.setText(1, '{:<8.8s}\t {:<4s}\t {:>8.5f}\t {:>8.5f}\t {:>8.5f}'.format(*at))
         self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.allCifTreeWidget.resizeColumnToContents(0)
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
@@ -350,7 +363,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             tst = displaymol.mol_file_writer.MolFile(structure_id, self.structures, cell[:6])
             mol = tst.make_mol()
         except (TypeError, KeyError):
-            print("Error in structure", structure_id, "while writing mol file.")
+            #print("Error in structure", structure_id, "while writing mol file.")
             s = string.Template(' ')
             pass
         content = s.safe_substitute(MyMol=mol)
@@ -386,7 +399,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             print(e)
         try:
             self.ui.cifList_treeWidget.clear()
-            self.statusBar().showMessage("Found {} entries.".format(len(idlist)), msecs=0)
+            self.statusBar().showMessage("Found {} entries.".format(len(idlist)))
             for i in idlist:
                 # name = i[1]  # .decode("utf-8", "surrogateescape")
                 # data = i[2]
@@ -397,7 +410,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.ui.cifList_treeWidget.sortByColumn(0, 0)
             self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except:
-            self.statusBar().showMessage("Nothing found.", msecs=0)
+            self.statusBar().showMessage("Nothing found.")
 
     @PyQt5.QtCore.pyqtSlot('QString')
     def search_cell(self, search_string):
@@ -407,28 +420,39 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         :param search_string: 
         :return: 
         """
+        if self.ui.moreResultsCheckBox.isChecked():
+            threshold = 0.06
+            ltol = 0.08
+            atol = 1.5
+        else:
+            threshold = 0.03
+            ltol = 0.001
+            atol = 1
         self.ui.txtSearchEdit.clear()
         try:
             if not self.structures:
                 return False  # Empty database
         except:
             return False      # No database cursor
+        if not search_string:
+            self.full_list = True
+            self.show_full_list()
         try:
             cell = [float(x) for x in search_string.split()]
         except (TypeError, ValueError):
             return False
         if len(cell) != 6:
-            self.statusBar().showMessage('Not a valid unit cell!', msecs=2000)
+            self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
             #self.show_full_list()
             return True
         try:
             volume = lattice.lattice.vol_unitcell(*cell)
             # First a list of structures where the volume is similar:
-            idlist = self.structures.find_by_volume(volume, threshold=0.03)
+            idlist = self.structures.find_by_volume(volume, threshold)
         except (ValueError, AttributeError):
             if not self.full_list:
                 self.ui.cifList_treeWidget.clear()
-                self.statusBar().showMessage('Found 0 cells.', msecs=0)
+                self.statusBar().showMessage('Found 0 cells.')
             return False
         # Get a smaller list where only cells are included that have a proper mapping to the input cell:
         idlist2 = []
@@ -449,14 +473,15 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
                         float(dic['gamma']) )
                 except ValueError:
                     continue
-                map = lattice1.find_mapping(lattice2, ltol=0.01, atol=1, skip_rotation_matrix=True)
+                map = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
                 if map:
                     idlist2.append(i)
         if not idlist2:
             self.ui.cifList_treeWidget.clear()
             self.statusBar().showMessage('Found 0 cells.', msecs=0)
+            return False
         searchresult = self.structures.get_all_structure_names(idlist2)
-        self.statusBar().showMessage('Found {} cells.'.format(len(idlist2)), msecs=3000)
+        self.statusBar().showMessage('Found {} cells.'.format(len(idlist2)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for i in searchresult:
@@ -557,7 +582,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
                                                           structure_id=n, structures=self.structures)
                 if not tst:
                     continue
-                self.add_table_row(name=i[8], data='', path=i[12], id=str(n))
+                self.add_table_row(name=i[8], data=i[8], path=i[12], id=str(n))
                 n += 1
                 if n % 300 == 0:
                     self.structures.database.commit_db()
