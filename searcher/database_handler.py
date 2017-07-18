@@ -688,10 +688,12 @@ class StructureTable():
                 str.path,
                 res._shelx_res_file
                     FROM Structure AS str
-                        INNER JOIN Residuals AS res 
+                        INNER JOIN Residuals AS res WHERE str.Id = res.Id;
         """
+        optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize');"""
         if py36:
             self.database.cur.execute(populate_index)
+            self.database.cur.execute(optimize_queries)
 
     def get_row_as_dict(self, request):
         """
@@ -736,15 +738,15 @@ class StructureTable():
         SELECT * FROM txtsearch WHERE filename MATCH ?
         UNION
         SELECT * FROM txtsearch WHERE dataname MATCH ?
-        UNION
+          UNION
         SELECT * FROM txtsearch WHERE path MATCH ?
-        UNION
+          UNION
         SELECT * FROM txtsearch WHERE shelx_res_file MATCH ?
         '''
         try:
-            #print(req)
+
             return self.database.db_request(req, text, text, text, text)
-        except TypeError:
+        except (TypeError, sqlite3.ProgrammingError):
             return False
 
     def find_biggest_cell(self):

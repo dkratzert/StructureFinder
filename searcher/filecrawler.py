@@ -79,8 +79,8 @@ def put_cifs_in_db(searchpath):
     structures = searcher.database_handler.StructureTable(dbfilename)
     n = 1
     time1 = time.clock()
-    cif = searcher.fileparser.Cif()
     for filepth in create_file_list(str(searchpath), ending='cif'):
+        cif = searcher.fileparser.Cif()
         if not filepth.is_file():
             continue
         path = str(filepth.parents[0])

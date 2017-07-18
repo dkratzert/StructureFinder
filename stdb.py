@@ -645,8 +645,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         min = 0
         num = 0
         time1 = time.clock()
-        cif = searcher.fileparser.Cif()
         for filepth in searcher.filecrawler.create_file_list(str(fname), ending='cif'):
+            cif = searcher.fileparser.Cif()
             if num == 20:
                 num = 0
             self.progressbar(num, min, 20)
