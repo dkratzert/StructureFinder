@@ -328,11 +328,6 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             compl = 0.0
         self.ui.completeLineEdit.setText("{:<5.1f}".format(compl))
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
-        for key, value in cif_dic.items():
-            cif_tree_item = PyQt5.QtWidgets.QTreeWidgetItem()
-            self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
-            cif_tree_item.setText(0, str(key).strip("\n\r "))
-            cif_tree_item.setText(1, str(value).strip("\n\r "))
         atoms_item = PyQt5.QtWidgets.QTreeWidgetItem()
         self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
         atoms_item.setText(0, 'Atoms')
@@ -343,6 +338,11 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
                 data_cif_tree_item.setText(1, '{:<8.8s}\t {:<4s}\t {:>8.5f}\t {:>8.5f}\t {:>8.5f}'.format(*at))
         except TypeError:
             pass
+        for key, value in cif_dic.items():
+            cif_tree_item = PyQt5.QtWidgets.QTreeWidgetItem()
+            self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
+            cif_tree_item.setText(0, str(key).strip("\n\r "))
+            cif_tree_item.setText(1, str(value).strip("\n\r "))
         self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.allCifTreeWidget.resizeColumnToContents(0)
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
