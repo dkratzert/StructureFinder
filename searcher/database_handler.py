@@ -101,7 +101,8 @@ class DatabaseRequest():
                         fts4(StructureId    INTEGER, 
                              filename       TEXT, 
                              dataname       TEXT, 
-                             path           TEXT, 
+                             path           TEXT,
+                             shelx_res_file TEXT,
                                 tokenize=simple "tokenchars= .=-_");  
             """)  # The simple tokenizer is best for my purposes
 
@@ -160,6 +161,7 @@ class DatabaseRequest():
                         _refine_diff_density_min                REAL,
                         _diffrn_reflns_av_unetI_netI            REAL,
                         _database_code_depnum_ccdc_archive      TEXT,
+                        _shelx_res_file                         TEXT,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
                         REFERENCES Structure(Id)
@@ -588,12 +590,13 @@ class StructureTable():
                     _refine_diff_density_max,
                     _refine_diff_density_min,
                     _diffrn_reflns_av_unetI_netI,
-                    _database_code_depnum_ccdc_archive
+                    _database_code_depnum_ccdc_archive,
+                    _shelx_res_file
                     ) 
                 VALUES
                     (
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                     );
                 '''
         result = self.database.db_request(req,
@@ -652,7 +655,8 @@ class StructureTable():
                 cif.cif_data['_refine_diff_density_max'],           # Maximum difference density after refinement
                 cif.cif_data['_refine_diff_density_min'],           # Deepest hole
                 cif.cif_data['_diffrn_reflns_av_unetI/netI'],       # R(sigma)
-                cif.cif_data['_database_code_depnum_ccdc_archive']  # CCDC number
+                cif.cif_data['_database_code_depnum_ccdc_archive'],  # CCDC number
+                cif.cif_data['_shelx_res_file']                      # The content of the SHELXL res file
                 )
         return result
 
@@ -668,19 +672,23 @@ class StructureTable():
         """
         Populates the fts4 table with data to search for text.
         _publ_contact_author_name
+        TODO: merge with residuals
         """
         populate_index = """
         INSERT INTO txtsearch (
                                 StructureId, 
                                 filename, 
                                 dataname, 
-                                path
+                                path,
+                                shelx_res_file
                                 )
-        SELECT  Id, 
-                filename, 
-                dataname, 
-                path
-                    FROM Structure
+        SELECT  str.Id, 
+                str.filename, 
+                str.dataname, 
+                str.path,
+                res._shelx_res_file
+                    FROM Structure AS str
+                        INNER JOIN Residuals AS res 
         """
         if py36:
             self.database.cur.execute(populate_index)
@@ -730,10 +738,12 @@ class StructureTable():
         SELECT * FROM txtsearch WHERE dataname MATCH ?
         UNION
         SELECT * FROM txtsearch WHERE path MATCH ?
+        UNION
+        SELECT * FROM txtsearch WHERE shelx_res_file MATCH ?
         '''
         try:
             #print(req)
-            return self.database.db_request(req, text, text, text)
+            return self.database.db_request(req, text, text, text, text)
         except TypeError:
             return False
 

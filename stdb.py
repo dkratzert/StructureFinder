@@ -59,7 +59,6 @@ from stdb_main import Ui_stdbMainwindow
 """
 TODO:
 - add rightclick: copy unit cell on unit cell field
-- add atoms as additional treeitem to the all cif values list
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - allow to scan more than one directory. Just add to previous data. Especially for cmd version.
 - Make a web interface with python template to view everything also on a web site.
@@ -75,12 +74,6 @@ TODO:
 Advanced tab:
 - Exclude checkbox for each entry?
 Search for:
-- maschine
-- Formula
-- Atom type
-- measurement temp
-- r-value region
-- disordered? checkbox
 - draw structure (with JSME? Acros? Kekule?, https://github.com/ggasoftware/ketcher)
 - compare  molecules https://groups.google.com/forum/#!msg/networkx-discuss/gC_-Wc0bRWw/ISRZYFsPCQAJ
   - search algorithms
@@ -343,10 +336,13 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         atoms_item = PyQt5.QtWidgets.QTreeWidgetItem()
         self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
         atoms_item.setText(0, 'Atoms')
-        for at in self.structures.get_atoms_table(structure_id, cartesian=False):
-            data_cif_tree_item = PyQt5.QtWidgets.QTreeWidgetItem(atoms_item)
-            self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
-            data_cif_tree_item.setText(1, '{:<8.8s}\t {:<4s}\t {:>8.5f}\t {:>8.5f}\t {:>8.5f}'.format(*at))
+        try:
+            for at in self.structures.get_atoms_table(structure_id, cartesian=False):
+                data_cif_tree_item = PyQt5.QtWidgets.QTreeWidgetItem(atoms_item)
+                self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
+                data_cif_tree_item.setText(1, '{:<8.8s}\t {:<4s}\t {:>8.5f}\t {:>8.5f}\t {:>8.5f}'.format(*at))
+        except TypeError:
+            pass
         self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.allCifTreeWidget.resizeColumnToContents(0)
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
@@ -381,6 +377,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         :rtype: bool
         """
         self.ui.searchCellLineEDit.clear()
+        self.ui.cifList_treeWidget.clear()
         try:
             if not self.structures:
                 return False  # Empty database
@@ -390,7 +387,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         if len(search_string) == 0:
             self.show_full_list()
             return False
-        if len(search_string) > 2:
+        if len(search_string) >= 2:
             if not "*" in search_string:
                 search_string = '*'+search_string+'*'
         try:
@@ -398,7 +395,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         except AttributeError as e:
             print(e)
         try:
-            self.ui.cifList_treeWidget.clear()
+            #self.ui.cifList_treeWidget.clear()
             self.statusBar().showMessage("Found {} entries.".format(len(idlist)))
             for i in idlist:
                 # name = i[1]  # .decode("utf-8", "surrogateescape")
@@ -597,7 +594,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.progress.hide()
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
-        self.ui.statusbar.showMessage('Added {} cif files to database in: {:>2} h, {:>2} m, {:>3.2f} s'.format(n, h, m, s), msecs=0)
+        self.ui.statusbar.showMessage('Added {} APEX entries in: {:>2d} h, {:>2d} m, {:>3.2f} s'
+                                      .format(n, int(h), int(m), s), msecs=0)
         self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
@@ -689,7 +687,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.progress.hide()
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
-        self.ui.statusbar.showMessage('Added {} cif files to database in: {:>2} h, {:>2} m, {:>3.2f} s'.format(n, h, m, s), msecs=0)
+        self.ui.statusbar.showMessage('Added {} cif files to database in: {:>2d} h, {:>2d} m, {:>3.2f} s'
+                                      .format(n, int(h), int(m), s))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.ui.cifList_treeWidget.sortByColumn(0, 0)

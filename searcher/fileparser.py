@@ -81,7 +81,8 @@ class Cif():
             "_refine_ls_shift/su_mean": '',
             "_refine_diff_density_max": '',
             "_refine_diff_density_min": '',
-            "_database_code_depnum_ccdc_archive": ''
+            "_database_code_depnum_ccdc_archive": '',
+            "_shelx_res_file": ''
             }
 
     def parsefile(self, file):
@@ -220,8 +221,8 @@ class Cif():
                         semi_colon_text_field = ''
                         continue
                 if (textlen - 1 > num) and txt[num + 1][0] == ";":
-                    if line.startswith("_shelx_res_file"):
-                        break
+                    #if line.startswith("_shelx_res_file"):
+                    #    break
                         # continue  # use continue if data is behind res file
                     semi_colon_text_field = line
                     continue
