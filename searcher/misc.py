@@ -12,9 +12,7 @@ Created on 09.02.2015
 """
 import math
 
-import re
-
-import constants
+from searcher import constants
 
 
 class bcolors:

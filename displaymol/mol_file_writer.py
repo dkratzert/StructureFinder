@@ -2,11 +2,9 @@
 MOl V3000 format
 """
 import os
-import time
 
-import elements
 import searcher.database_handler
-from searcher import misc
+from searcher import misc, elements
 
 
 class MolFile():

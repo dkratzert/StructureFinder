@@ -11,13 +11,12 @@ Created on 09.02.2015
 
 @author: daniel
 """
-from constants import py36
 
-'''
-
-'''
 import sys
+import sqlite3
 import numpy as np
+from sqlite3 import OperationalError
+from searcher.constants import py36
 
 import searcher
 from lattice import lattice
@@ -25,8 +24,6 @@ from searcher import misc
 from searcher.misc import get_error_from_value
 
 __metaclass__ = type  # use new-style classes
-import sqlite3
-from sqlite3 import OperationalError
 
 
 class DatabaseRequest():

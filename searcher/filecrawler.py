@@ -15,9 +15,7 @@ Created on 09.02.2015
 import time
 import os
 import re
-
 import pathlib
-
 import sys
 
 import lattice.lattice

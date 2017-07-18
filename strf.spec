@@ -18,7 +18,7 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          exclude_binaries=True,
+          exclude_binaries=False,
           name='stdb',
           debug=False,
           strip=False,

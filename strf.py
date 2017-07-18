@@ -14,7 +14,7 @@ Created on 09.02.2015
 """
 from __future__ import print_function
 
-from constants import py36
+from searcher.constants import py36
 
 __metaclass__ = type  # use new-style classes
 
@@ -42,17 +42,16 @@ import re
 import pathlib
 
 import apex.apeximporter
-import constants
+from searcher import constants
 import displaymol.mol_file_writer
 import lattice.lattice
 import pymatgen.core.mat_lattice
-import searcher
 import searcher.filecrawler
 import searcher.fileparser
 
 
 PyQt5.uic.compileUiDir('./')
-from stdb_main import Ui_stdbMainwindow
+from strf_main import Ui_stdbMainwindow
 
 
 

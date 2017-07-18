@@ -38,8 +38,7 @@
 """
 import os
 
-import elements
-from searcher import misc
+from searcher import misc, elements
 from searcher.database_handler import StructureTable
 
 

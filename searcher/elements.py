@@ -50,7 +50,7 @@ References
 
 Examples
 --------
->>> from elements import ELEMENTS
+>>> from searcher.elements import ELEMENTS
 >>> len(ELEMENTS)
 109
 >>> str(ELEMENTS[109])
