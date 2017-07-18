@@ -2,7 +2,8 @@ import sys
 py36 = False
 py34 = False
 py2 = False
-if sys.version_info > (3, 4, 3):
+# TODO: also check for FTS3 capability
+if sys.version_info > (3, 4, 4):
     py36 = True
 elif sys.version_info > (3, 4):
     py34 = True
