@@ -12,7 +12,9 @@ Created on 09.02.2015
 @author: daniel
 """
 import os
-#from pprint import pprint
+from pprint import pprint
+
+import pathlib
 
 
 class Cif():
@@ -37,6 +39,7 @@ class Cif():
             "_space_group_name_Hall": '',
             "_space_group_IT_number": '',
             "_space_group_crystal_system": '',
+            "_space_group_symop_operation_xyz": '',
             "_audit_creation_method": '',
             "_chemical_formula_sum": '',
             "_chemical_formula_weight": '',
@@ -86,13 +89,9 @@ class Cif():
             "_shelx_res_file": ''
             }
 
-    def parsefile(self, file):
+    def parsefile(self, file: pathlib.Path):
         """
         This method parses the cif file. Currently, only single items and atoms are supported.
-        TODO: symmcards:
-        loop_
-          _space_group_symop_operation_xyz
-          'x, y, z'
         :param file: Cif file name
         :type file: Path
         :return: cif file content
@@ -107,6 +106,8 @@ class Cif():
         atkey = ''
         loop_body = False
         num = 0
+        symm = False
+        symmlist = []
         semi_colon_text_field = ''
         semi_colon_text_list = []
         cont = False  # continue to next line if True
@@ -119,10 +120,12 @@ class Cif():
                     loop = False
                     loophead_list.clear()
                     atkey = ''
+                    symm = False
                     continue
                 if line[0] == "_" and loop_body:
                     loop = False
                     loop_body = False
+                    symm = False
                 if loop:
                     line = line.lstrip()
                     # leave out comments:
@@ -133,12 +136,18 @@ class Cif():
                         atkey = '_atom_site_label'
                     if line == '_atom_site_aniso_label':
                         atkey = '_atom_site_aniso_label'
+                    if line == "_space_group_symop_operation_xyz" or line == '_symmetry_equiv_pos_as_xyz':
+                        symm = '_space_group_symop_operation_xyz'
+                        continue
                     if line[:5] == "loop_":
                         loop = True
                         loop_body = False
                         loophead_list.clear()
                         atkey = ''
+                        symm = False
                         continue
+                    if symm:
+                        symmlist.append(line)
                     if line[0] != "_":
                         loop_body = True
                     # Loop header started, collecting keywords from head:
@@ -228,8 +237,9 @@ class Cif():
                     semi_colon_text_field = line
                     continue
         self.cif_data['_atom'] = atoms
+        self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(symmlist)
         self.cif_data['file_length_lines'] = num+1
-        # pprint(self.cif_data)  # slow
+        #pprint(self.cif_data)  # slow
         if not data:
             return False
         #if not atoms:

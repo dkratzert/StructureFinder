@@ -112,6 +112,7 @@ class DatabaseRequest():
                         _space_group_name_Hall                  TEXT,
                         _space_group_IT_number                  INTEGER,
                         _space_group_crystal_system             TEXT,
+                        _space_group_symop_operation_xyz        TEXT,
                         _audit_creation_method                  TEXT,
                         _chemical_formula_sum                   TEXT,
                         _chemical_formula_weight                TEXT,
@@ -542,6 +543,7 @@ class StructureTable():
                     _space_group_name_Hall,
                     _space_group_IT_number,
                     _space_group_crystal_system,
+                    _space_group_symop_operation_xyz,
                     _chemical_formula_sum,
                     _chemical_formula_weight,
                     _exptl_crystal_description,
@@ -593,7 +595,7 @@ class StructureTable():
                 VALUES
                     (
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                     );
                 '''
         result = self.database.db_request(req,
@@ -603,6 +605,7 @@ class StructureTable():
                 cif.cif_data['_space_group_name_Hall'],             # Hall-Symbol
                 cif.cif_data['_space_group_IT_number'],             # Raumgruppen-Nummer aus IT
                 cif.cif_data['_space_group_crystal_system'],        # Kristallsystem
+                cif.cif_data['_space_group_symop_operation_xyz'],   # SYMM cards
                 cif.cif_data['_chemical_formula_sum'],              # Summenformel
                 cif.cif_data['_chemical_formula_weight'],           # Moyety-Formel
                 cif.cif_data['_exptl_crystal_description'],         # Habitus
