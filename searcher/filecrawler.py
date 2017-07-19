@@ -92,7 +92,8 @@ def put_cifs_in_db(searchpath):
             continue
         try:
             cifok = cif.parsefile(filepth)
-        except IndexError:
+        except IndexError as e:
+            print(e, filepth, filepth.name)
             continue
         if not cifok:
             continue
