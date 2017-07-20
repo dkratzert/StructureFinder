@@ -71,7 +71,7 @@ Source: "win\strf_win_32.bat"; DestDir: "{app}"; DestName: "strf.bat"
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{app}\StructureFinder"; Filename: "strf.bat"; WorkingDir: "{app}"; IconFilename: "{app}\images\strf.ico"
+Name: "{group}\StructureFinder"; Filename: "strf.bat"; WorkingDir: "{app}"; IconFilename: "{app}\images\strf.ico"
 
 [UninstallDelete]
 Type: files; Name: "{app}\*.pyc"
