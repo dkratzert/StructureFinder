@@ -57,6 +57,7 @@ from strf_dbpasswd import Ui_strfPassword
 
 """
 TODO:
+- Add a popup for non-default user names/passwords
 - add rightclick: copy unit cell on unit cell field
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - allow to scan more than one directory. Just add to previous data. Especially for cmd version.

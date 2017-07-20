@@ -64,3 +64,4 @@ jsmol.htm
 *.sqlite-journal
 structuredb.sqlite
 displaymol/jsmol.htm
+scripts/Output/*
