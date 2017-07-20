@@ -597,7 +597,7 @@ class Ui_stdbMainwindow(object):
         self.menubar.addAction(self.menuHelp.menuAction())
 
         self.retranslateUi(stdbMainwindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         self.actionExit.triggered.connect(stdbMainwindow.close)
         QtCore.QMetaObject.connectSlotsByName(stdbMainwindow)
 

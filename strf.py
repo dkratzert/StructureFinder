@@ -52,7 +52,7 @@ import searcher.fileparser
 
 PyQt5.uic.compileUiDir('./')
 from strf_main import Ui_stdbMainwindow
-
+from strf_dbpasswd import Ui_strfPassword
 
 
 """
@@ -79,6 +79,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         super().__init__(*args, **kwargs)
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
+        #self.passwd = Ui_strfPassword()
         self.statusBar().showMessage('Ready', msecs=8000)
         self.ui.cifList_treeWidget.show()
         self.ui.cifList_treeWidget.hideColumn(3)
