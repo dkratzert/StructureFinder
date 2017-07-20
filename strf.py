@@ -14,6 +14,8 @@ Created on 09.02.2015
 """
 from __future__ import print_function
 
+from PyQt5.QtWidgets import QAbstractButton
+
 from searcher.constants import py36
 
 __metaclass__ = type  # use new-style classes
@@ -52,8 +54,8 @@ import searcher.fileparser
 
 PyQt5.uic.compileUiDir('./')
 from strf_main import Ui_stdbMainwindow
-from strf_dbpasswd import Ui_strfPassword
-
+#from apex.apexdialog import Ui_PasswdDialog
+from strf_dbpasswd import Ui_PasswdDialog
 
 """
 TODO:
@@ -80,7 +82,6 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         super().__init__(*args, **kwargs)
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
-        #self.passwd = Ui_strfPassword()
         self.statusBar().showMessage('Ready', msecs=8000)
         self.ui.cifList_treeWidget.show()
         self.ui.cifList_treeWidget.hideColumn(3)
@@ -103,6 +104,11 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.tabWidget.removeTab(2)
         self.ui.tabWidget.setCurrentIndex(0)
         self.setWindowIcon(PyQt5.QtGui.QIcon('./images/monoklin.png'))
+        self.uipass = Ui_PasswdDialog()
+        d = PyQt5.QtWidgets.QDialog()
+        self.passwd = self.uipass.setupUi(d)
+        d.exec()
+
 
     def connect_signals_and_slots(self):
         """
@@ -132,6 +138,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         # self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
         # self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
+
+    def passwd_accept(self):
+        print('foo')
 
     def init_webview(self):
         """
