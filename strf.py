@@ -62,16 +62,8 @@ TODO:
 - allow to scan more than one directory. Just add to previous data. Especially for cmd version.
 - Make a web interface with python template to view everything also on a web site.
 - add an advanced search tab where you can search for sum formula, twinning, only elements, names, users, ...
-- grow structure. parse symm cards
-- add a button: open in ...
-- make file type more flexible. handle .res and .cif equally
-- pressing search in advanced tab will return to base tab with results
-- recognize already indexed files. Add a hash for each file. Make a database search with executemany()
-  to get a list of files where hashes exist. Remove results from file crawler. May I need a hash run over 
-  all files before the cif parsing run? Or just calc hash, search in db and then decide to parse cif or not?
+- grow structure.
   
-Advanced tab:
-- Exclude checkbox for each entry?
 Search for:
 - draw structure (with JSME? Acros? Kekule?, https://github.com/ggasoftware/ketcher)
 - compare  molecules https://groups.google.com/forum/#!msg/networkx-discuss/gC_-Wc0bRWw/ISRZYFsPCQAJ
@@ -107,6 +99,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         if py36:
             self.init_webview()
         self.ui.tabWidget.removeTab(2)
+        self.ui.tabWidget.setCurrentIndex(0)
         self.setWindowIcon(PyQt5.QtGui.QIcon('./images/monoklin.png'))
 
     def connect_signals_and_slots(self):
@@ -338,11 +331,18 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         except TypeError:
             pass
         for key, value in cif_dic.items():
+            if key == "_shelx_res_file":
+                continue
             cif_tree_item = PyQt5.QtWidgets.QTreeWidgetItem()
             self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
-            cif_tree_item.setText(0, str(key).strip("\n\r "))
-            cif_tree_item.setText(1, str(value).strip("\n\r "))
-        self.ui.cifList_treeWidget.sortByColumn(0, 0)
+            cif_tree_item.setText(0, str(key))
+            cif_tree_item.setText(1, str(value))
+        shelx_tree_item = PyQt5.QtWidgets.QTreeWidgetItem()
+        shelx_data_item = PyQt5.QtWidgets.QTreeWidgetItem(shelx_tree_item)
+        self.ui.allCifTreeWidget.addTopLevelItem(shelx_tree_item)
+        shelx_tree_item.setText(0, '_shelx_res_file')
+        shelx_data_item.setText(1, cif_dic['_shelx_res_file'])
+        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.allCifTreeWidget.resizeColumnToContents(0)
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
         return True
@@ -403,7 +403,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
                 # id = i[0]
                 #self.add_table_row(i[1], i[3], i[2], i[0])
                 self.add_table_row(name=i[1], path=i[3], id=i[0], data=i[2])
-            self.ui.cifList_treeWidget.sortByColumn(0, 0)
+            #self.ui.cifList_treeWidget.sortByColumn(0, 0)
             self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except:
             self.statusBar().showMessage("Nothing found.")
@@ -483,7 +483,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         for i in searchresult:
             self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
             #self.add_table_row(name, path, id)
-        self.ui.cifList_treeWidget.sortByColumn(0, 0)
+        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
 
     def add_table_row(self, name: str, path: str, data: bytes, id: str) -> None:
@@ -595,7 +595,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         h, m = divmod(m, 60)
         self.ui.statusbar.showMessage('Added {} APEX entries in: {:>2d} h, {:>2d} m, {:>3.2f} s'
                                       .format(n, int(h), int(m), s), msecs=0)
-        self.ui.cifList_treeWidget.sortByColumn(0, 0)
+        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         if py36:
@@ -620,7 +620,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         mess = "Loaded {} entries.".format(id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        self.ui.cifList_treeWidget.sortByColumn(0, 0)
+        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
 
@@ -690,7 +690,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
                                       .format(n, int(h), int(m), s))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
-        self.ui.cifList_treeWidget.sortByColumn(0, 0)
+        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.structures.populate_fulltext_search_table()
         self.structures.database.commit_db("Committed")
         self.abort_import_button.hide()

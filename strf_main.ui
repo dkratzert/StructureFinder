@@ -1046,7 +1046,17 @@
            </widget>
           </item>
           <item>
-           <layout class="QFormLayout" name="formLayout_4">
+           <layout class="QGridLayout" name="gridLayout_4">
+            <item row="4" column="0">
+             <widget class="QLabel" name="r1Label_2">
+              <property name="text">
+               <string>R1</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLineEdit" name="ad_r1LineEdit"/>
+            </item>
             <item row="0" column="0">
              <widget class="QLabel" name="unitCellLabel">
               <property name="text">
@@ -1055,7 +1065,7 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="unitCellLineEdit">
+             <widget class="QLineEdit" name="ad_unitCellLineEdit">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -1065,100 +1075,70 @@
              </widget>
             </item>
             <item row="1" column="0">
-             <widget class="QLabel" name="sumFormulaLabel">
-              <property name="text">
-               <string>Sum Formula</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="sumFormulaLineEdit"/>
-            </item>
-            <item row="2" column="0">
              <widget class="QLabel" name="elementsIncludedLabel">
               <property name="text">
                <string>Elements Included</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="elementsIncludedLineEdit"/>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="elementsExcludedLabel">
-              <property name="text">
-               <string>Elements Excluded</string>
-              </property>
-             </widget>
-            </item>
             <item row="3" column="1">
-             <widget class="QLineEdit" name="elementsExcludedLineEdit"/>
+             <widget class="QLineEdit" name="ad_machineLineEdit"/>
             </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="machineLabel">
+            <item row="7" column="1">
+             <widget class="QCheckBox" name="ad_TwinCheckBox">
               <property name="text">
-               <string>Machine</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QLineEdit" name="machineLineEdit"/>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="temperatureLabel_2">
-              <property name="text">
-               <string>Temperature</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
-             <widget class="QLineEdit" name="temperatureLineEdit_2"/>
-            </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="r1Label_2">
-              <property name="text">
-               <string>R1</string>
+               <string/>
               </property>
              </widget>
             </item>
             <item row="6" column="1">
-             <widget class="QLineEdit" name="r1LineEdit_2"/>
-            </item>
-            <item row="7" column="0">
-             <widget class="QLabel" name="wR2Label_2">
+             <widget class="QCheckBox" name="ad_DisorderCheckBox">
               <property name="text">
-               <string>wR2</string>
+               <string/>
               </property>
              </widget>
             </item>
-            <item row="7" column="1">
-             <widget class="QLineEdit" name="wR2LineEdit_2"/>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="ad_elementsExLineEdit"/>
             </item>
-            <item row="8" column="0">
+            <item row="6" column="0">
              <widget class="QLabel" name="disorderLabel">
               <property name="text">
                <string>Disordered</string>
               </property>
              </widget>
             </item>
-            <item row="8" column="1">
-             <widget class="QCheckBox" name="DisorderCheckBox">
+            <item row="2" column="0">
+             <widget class="QLabel" name="elementsExcludedLabel">
               <property name="text">
-               <string/>
+               <string>Elements Excluded</string>
               </property>
              </widget>
             </item>
-            <item row="9" column="0">
+            <item row="7" column="0">
              <widget class="QLabel" name="TwinnedLabel">
               <property name="text">
                <string>Twinned</string>
               </property>
              </widget>
             </item>
-            <item row="9" column="1">
-             <widget class="QCheckBox" name="TwinCheckBox">
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="ad_elementsIncLineEdit"/>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="machineLabel">
               <property name="text">
-               <string/>
+               <string>Machine</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QLineEdit" name="ad_textsearch"/>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="wR2Label_2">
+              <property name="text">
+               <string>Free Text</string>
               </property>
              </widget>
             </item>
@@ -1181,7 +1161,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="SearchPushButton">
+           <widget class="QPushButton" name="ad_SearchPushButton">
             <property name="text">
              <string>Search</string>
             </property>
@@ -1214,7 +1194,7 @@
      <x>0</x>
      <y>0</y>
      <width>1064</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">
