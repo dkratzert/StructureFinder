@@ -52,9 +52,9 @@ import searcher.filecrawler
 import searcher.fileparser
 
 
-PyQt5.uic.compileUiDir('./')
-from strf_main import Ui_stdbMainwindow
-from strf_dbpasswd import Ui_PasswdDialog
+PyQt5.uic.compileUiDir('./gui')
+from gui.strf_main import Ui_stdbMainwindow
+from gui.strf_dbpasswd import Ui_PasswdDialog
 
 """
 TODO:
@@ -101,7 +101,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.init_webview()
         self.ui.tabWidget.removeTab(2)
         self.ui.tabWidget.setCurrentIndex(0)
-        self.setWindowIcon(PyQt5.QtGui.QIcon('./images/monoklin.png'))
+        self.setWindowIcon(PyQt5.QtGui.QIcon('./icons/monoklin.png'))
         self.uipass = Ui_PasswdDialog()
 
     def connect_signals_and_slots(self):
@@ -234,7 +234,6 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         """
         This slot shows the properties of a cif file in the properties widget
         """
-        # TODO: _space_group_symop_operation_xyz oder _symmetry_equiv_pos_as_xyz
         if not self.structures.database.cur:
             return False
         structure_id = item.sibling(item.row(), 3).data()
@@ -757,7 +756,7 @@ class QmlAusgabe(object):
 if __name__ == "__main__":
     # later http://www.pyinstaller.org/
     app = PyQt5.QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(PyQt5.QtGui.QIcon('./images/monoklin.png'))
+    app.setWindowIcon(PyQt5.QtGui.QIcon('./icons/monoklin.png'))
     app.setApplicationName("StructureFinder")
     app.setApplicationDisplayName("StructureFinder")
     myapp = StartStructureDB()

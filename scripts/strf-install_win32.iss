@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "1"
+#define MyAppVersion "2"
 #define MyAppPublisher "Daniel Kratzert"
 
 [Setup]
@@ -45,7 +45,6 @@ VersionInfoProductName=StructureFinder
 AlwaysShowComponentsList=False
 ShowComponentSizes=False
 
-[Run]
 
 
 [UninstallRun]
@@ -60,21 +59,26 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Files]
 Source: "..\apex\*"; DestDir: "{app}\apex"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\displaymol\*"; DestDir: "{app}\displaymol"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
-Source: "..\images\*"; DestDir: "{app}\images"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\icons\*"; DestDir: "{app}\icons"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\lattice\*"; DestDir: "{app}\lattice"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
-Source: "..\misc\*"; DestDir: "{app}\searcher"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\misc\*"; DestDir: "{app}\misc"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\pg8000\*"; DestDir: "{app}\pg8000"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\pymatgen\*"; DestDir: "{app}\pymatgen"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\searcher\*"; DestDir: "{app}\searcher"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
-Source: "D:\tmp\StructureFinder_win\*"; DestDir: "{app}\"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
-Source: "..\strf.py"; DestDir: "{app}"; DestName: "strf.py"
-Source: "..\strf_cmd.py"; DestDir: "{app}"; DestName: "strf_cmd.py"
-Source: "..\strf_main.ui"; DestDir: "{app}"; DestName: "strf_main.ui"
+;Source: "D:\tmp\StructureFinder_win\*"; DestDir: "{app}\"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\strf.py"; DestDir: "{app}"; 
+Source: "..\strf_cmd.py"; DestDir: "{app}\gui"; 
+Source: "..\gui\strf_main.ui"; DestDir: "{app}\gui"; 
+Source: "..\gui\strf_dbpasswd.ui"; DestDir: "{app}\gui"; 
 Source: "win\strf_win_32.bat"; DestDir: "{app}"; DestName: "strf.bat"
+Source: "C:\tools\Python3.6.1-32.zip"; DestDir: "{app}"; 
+
+[Run]
+Filename: "{app}\misc\7z.exe"; Parameters: "x ""{app}\Python3.6.1-32.zip"" -o""{app}"" * -r -aoa"; Flags: runascurrentuser postinstall
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{group}\StructureFinder"; Filename: "{app}\strf.bat"; WorkingDir: "{app}"; IconFilename: "{app}\images\strf.ico"
+Name: "{group}\StructureFinder"; Filename: "{app}\strf.bat"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"
 
 [UninstallDelete]
 Type: files; Name: "{app}\*.pyc"
@@ -84,3 +88,7 @@ Type: filesandordirs; Name: "{app}\*"
 [Dirs]
 Name: "{app}\displaymol"; Permissions: authusers-full
 Name: "{app}\."; Permissions: authusers-full
+
+[Code]
+
+
