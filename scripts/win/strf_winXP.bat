@@ -10,4 +10,4 @@ rem cls
 SET PYTHONPATH=%PYTHONPATH%;.\%ppath%\Lib\site-packages
 
 
-start .\%ppath%\pythonw.exe stdb.py 
+start .\%ppath%\pythonw.exe strf.py 

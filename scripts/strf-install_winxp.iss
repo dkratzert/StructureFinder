@@ -69,7 +69,7 @@ Source: "..\strf.py"; DestDir: "{app}";
 Source: "..\strf_cmd.py"; DestDir: "{app}\gui"; 
 Source: "..\gui\strf_main.ui"; DestDir: "{app}\gui"; 
 Source: "..\gui\strf_dbpasswd.ui"; DestDir: "{app}\gui"; 
-Source: "win\stdb_winXP.bat"; DestDir: "{app}"; DestName: "strf.bat"
+Source: "win\strf_winXP.bat"; DestDir: "{app}"; DestName: "strf.bat"
 Source: "C:\tools\{#PzipFile}.7z"; DestDir: "{app}"; Flags: deleteafterinstall;
 
 [Run]
