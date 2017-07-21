@@ -3,7 +3,7 @@ py36 = False
 py34 = False
 py2 = False
 # TODO: also check for FTS3 capability
-if sys.version_info > (3, 4, 4):
+if sys.version_info > (3, 4, 5):
     py36 = True
 elif sys.version_info > (3, 4):
     py34 = True
