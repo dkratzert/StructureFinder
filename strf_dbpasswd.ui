@@ -23,6 +23,9 @@
   <property name="windowTitle">
    <string>StructureFinder</string>
   </property>
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
+  </property>
   <property name="modal">
    <bool>true</bool>
   </property>
@@ -65,7 +68,11 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QLineEdit" name="userNameLineEdit"/>
+        <widget class="QLineEdit" name="userNameLineEdit">
+         <property name="text">
+          <string>BrukerPostgreSQL</string>
+         </property>
+        </widget>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="PasswordLabel">
@@ -75,7 +82,11 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QLineEdit" name="PasswordLineEdit"/>
+        <widget class="QLineEdit" name="PasswordLineEdit">
+         <property name="text">
+          <string>BrukerPostgreSQL</string>
+         </property>
+        </widget>
        </item>
        <item row="4" column="0">
         <widget class="QLabel" name="IPLabel">
@@ -85,7 +96,11 @@
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QLineEdit" name="IPlineEdit"/>
+        <widget class="QLineEdit" name="IPlineEdit">
+         <property name="text">
+          <string>localhost</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -117,7 +132,40 @@
   </layout>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>PasswdDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>348</x>
+     <y>176</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>341</x>
+     <y>194</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>PasswdDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>227</x>
+     <y>178</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>220</x>
+     <y>197</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <slots>
   <slot>acceptsettings()</slot>
  </slots>

@@ -94,13 +94,18 @@ class ApexDB():
         self.conn = None
         self.cursor = None
 
-    def initialize_db(self):
+    def initialize_db(self, user="", password="", host=''):
         """
         Initializes the database connection and cursor.
         """
+        if not user:
+            user = "BrukerPostgreSQL"
+        if not password:
+            password = "Bruker-PostgreSQL"
+        if not host:
+            host = 'localhost'
         try:
-            self.conn = pg8000.connect(user="BrukerPostgreSQL", password="Bruker-PostgreSQ",
-                                       ssl=False, database="BAXSdb")
+            self.conn = pg8000.connect(user=user, password=password, ssl=False, database="BAXSdb", host=host)
         except pg8000.core.ProgrammingError:
             self.conn = None
             return False

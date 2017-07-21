@@ -54,7 +54,6 @@ import searcher.fileparser
 
 PyQt5.uic.compileUiDir('./')
 from strf_main import Ui_stdbMainwindow
-#from apex.apexdialog import Ui_PasswdDialog
 from strf_dbpasswd import Ui_PasswdDialog
 
 """
@@ -105,10 +104,6 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.tabWidget.setCurrentIndex(0)
         self.setWindowIcon(PyQt5.QtGui.QIcon('./images/monoklin.png'))
         self.uipass = Ui_PasswdDialog()
-        d = PyQt5.QtWidgets.QDialog()
-        self.passwd = self.uipass.setupUi(d)
-        d.exec()
-
 
     def connect_signals_and_slots(self):
         """
@@ -136,11 +131,23 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.ui.txtSearchEdit.setText("For full test search, use a modern Operating system.")
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
-        # self.ui.cifList_treeWidget.clicked.connect(self.get_properties) # already with selection model():
-        # self.ui.cifList_treeWidget.doubleClicked.connect(self.get_properties)
 
-    def passwd_accept(self):
-        print('foo')
+    def passwd_handler(self):
+        """
+        Manages the QDialog buttons on the password dialog.
+        """
+        d = PyQt5.QtWidgets.QDialog()
+        self.passwd = self.uipass.setupUi(d)
+        ip_dialog = d.exec()
+        if ip_dialog == 1:  # Accepted
+            print(self.uipass.userNameLineEdit.text())
+            self.import_apex_db(user=self.uipass.userNameLineEdit.text(),
+                                password=self.uipass.PasswordLineEdit.text(),
+                                host=self.uipass.IPlineEdit.text())
+        elif ip_dialog == 0:  # reject
+            return None
+        else:
+            return None
 
     def init_webview(self):
         """
@@ -536,16 +543,19 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             return False
         return True
 
-    def open_apex_db(self):
+    def open_apex_db(self, user, password, host):
         """
         Opens the APEX db to be displayed in the treeview.
         """
-        self.APEX = True
         self.apx = apex.apeximporter.ApexDB()
-        conn = self.apx.initialize_db()
+        conn = None
+        try:
+            conn = self.apx.initialize_db(user, password, host)
+        except:
+            self.passwd_handler()
         return conn
 
-    def import_apex_db(self):
+    def import_apex_db(self, user='', password='', host=''):
         """
         Imports data from apex into own db
         :return: None
@@ -559,7 +569,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         min = 0
         num = 0
         time1 = time.clock()
-        conn = self.open_apex_db()
+        conn = self.open_apex_db(user, password, host)
+        if not conn:
+            return False
         cif = searcher.fileparser.Cif()
         if conn:
             for i in self.apx.get_all_data():
@@ -640,7 +652,6 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         Imports cif files from a certain directory
         :return: None
         """
-        self.APEX = False
         self.tmpfile = True
         self.statusBar().showMessage('')
         self.close_db()

@@ -18,6 +18,7 @@ class Ui_PasswdDialog(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(PasswdDialog.sizePolicy().hasHeightForWidth())
         PasswdDialog.setSizePolicy(sizePolicy)
+        PasswdDialog.setSizeGripEnabled(False)
         PasswdDialog.setModal(True)
         self.gridLayout = QtWidgets.QGridLayout(PasswdDialog)
         self.gridLayout.setObjectName("gridLayout")
@@ -65,6 +66,8 @@ class Ui_PasswdDialog(object):
         self.gridLayout.addLayout(self.verticalLayout, 0, 0, 1, 1)
 
         self.retranslateUi(PasswdDialog)
+        self.buttonBox.accepted.connect(PasswdDialog.accept)
+        self.buttonBox.rejected.connect(PasswdDialog.reject)
         QtCore.QMetaObject.connectSlotsByName(PasswdDialog)
 
     def retranslateUi(self, PasswdDialog):
@@ -73,6 +76,9 @@ class Ui_PasswdDialog(object):
         self.WarnLabel.setText(_translate("PasswdDialog", "Unable to connect to the APEX database. "))
         self.Asklabel.setText(_translate("PasswdDialog", "Please give the correct IP Adress, Username and Password."))
         self.NameLabel.setText(_translate("PasswdDialog", "Username"))
+        self.userNameLineEdit.setText(_translate("PasswdDialog", "BrukerPostgreSQL"))
         self.PasswordLabel.setText(_translate("PasswdDialog", "Password"))
+        self.PasswordLineEdit.setText(_translate("PasswdDialog", "BrukerPostgreSQL"))
         self.IPLabel.setText(_translate("PasswdDialog", "IP Adress"))
+        self.IPlineEdit.setText(_translate("PasswdDialog", "localhost"))
 
