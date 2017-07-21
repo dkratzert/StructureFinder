@@ -571,6 +571,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         time1 = time.clock()
         conn = self.open_apex_db(user, password, host)
         if not conn:
+            self.abort_import_button.hide()
             return False
         cif = searcher.fileparser.Cif()
         if conn:
