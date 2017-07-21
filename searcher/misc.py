@@ -155,8 +155,11 @@ def format_sum_formula(sumform: str):
     elements = [x.upper() for x in constants.atoms]
     atlist = {}
     nums = []
-    sumform = sumform.upper().replace(' ', '').replace('\n', '')
-
+    try:
+        sumform = sumform.upper().replace(' ', '').replace('\n', '')
+    except AttributeError:
+        return atlist
+    
     def isnumber(el):
         for x in el:
             if x.isnumeric() or x == '.':

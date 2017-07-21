@@ -35,7 +35,7 @@ EnableDirDoesntExistWarning=True
 DirExistsWarning=no
 UninstallLogMode=new
 VersionInfoVersion={#MyAppVersion}
-MinVersion=0,6.1
+MinVersion=0,5.01
 DefaultGroupName=StructureFinder
 DisableProgramGroupPage=yes
 AppendDefaultGroupName=True
@@ -45,7 +45,6 @@ AppSupportPhone=+49 761 203 6156
 VersionInfoProductName=StructureFinder
 AlwaysShowComponentsList=False
 ShowComponentSizes=False
-
 
 [UninstallRun]
 
@@ -66,7 +65,7 @@ Source: "..\pg8000\*"; DestDir: "{app}\pg8000"; Flags: ignoreversion createallsu
 Source: "..\pymatgen\*"; DestDir: "{app}\pymatgen"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\searcher\*"; DestDir: "{app}\searcher"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\strf.py"; DestDir: "{app}"; 
-Source: "..\strf_cmd.py"; DestDir: "{app}\gui"; 
+Source: "..\strf_cmd.py"; DestDir: "{app}"; 
 Source: "..\gui\strf_main.ui"; DestDir: "{app}\gui"; 
 Source: "..\gui\strf_dbpasswd.ui"; DestDir: "{app}\gui"; 
 Source: "win\strf_winXP.bat"; DestDir: "{app}"; DestName: "strf.bat"
