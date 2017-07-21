@@ -2,19 +2,20 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "1"
+#define MyAppVersion "2"
 #define MyAppPublisher "Daniel Kratzert"
+#define PzipFile "Python3.4_32-XP"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={FD3791DD-E642-47A6-8434-FBD976271019}
+AppId={{FD3791DD-E642-47A6-8434-FBD976271019}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={pf}\StructureFinder
-OutputBaseFilename=StructureFinder-setup-{#MyAppVersion}
+OutputBaseFilename=StructureFinder-setup-winXP-{#MyAppVersion}
 Compression=lzma2/fast
 SolidCompression=yes
 SetupLogging=True
@@ -35,7 +36,7 @@ DirExistsWarning=no
 UninstallLogMode=new
 VersionInfoVersion={#MyAppVersion}
 MinVersion=0,6.1
-DefaultGroupName=DSR
+DefaultGroupName=StructureFinder
 DisableProgramGroupPage=yes
 AppendDefaultGroupName=True
 AppContact=dkratzert@gmx.de
@@ -44,8 +45,6 @@ AppSupportPhone=+49 761 203 6156
 VersionInfoProductName=StructureFinder
 AlwaysShowComponentsList=False
 ShowComponentSizes=False
-
-[Run]
 
 
 [UninstallRun]
@@ -56,54 +55,43 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 ; adds a new page to the setup where you can choose if the path should be added
 ;Excludes: "*.pyc"
+
 [Files]
-Source: "D:\tmp\StructureFinder_win78910\apex\*"; DestDir: "{app}\apex"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\asyncio\*"; DestDir: "{app}\asyncio"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\collections\*"; DestDir: "{app}\collections"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\concurrent\*"; DestDir: "{app}\concurrent"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\ctypes\*"; DestDir: "{app}\ctypes"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\curses\*"; DestDir: "{app}\curses"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\dbm\*"; DestDir: "{app}\dbm"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\displaymol\*"; DestDir: "{app}\displaymol"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\distutils\*"; DestDir: "{app}\distutils"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-;Source: "D:\tmp\StructureFinder_win78910\email\*"; DestDir: "{app}\email"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\encodings\*"; DestDir: "{app}\encodings"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\html\*"; DestDir: "{app}\html"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\http\*"; DestDir: "{app}\http"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\images\*"; DestDir: "{app}\images"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\importlib\*"; DestDir: "{app}\importlib"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\json\*"; DestDir: "{app}\json"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\lattice\*"; DestDir: "{app}\lattice"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\lib2to3\*"; DestDir: "{app}\lib2to3"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\logging\*"; DestDir: "{app}\logging"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\msilib\*"; DestDir: "{app}\msilib"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\multiprocessing\*"; DestDir: "{app}\multiprocessing"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\numpy\*"; DestDir: "{app}\numpy"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\pg8000\*"; DestDir: "{app}\pg8000"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\pkg_resources\*"; DestDir: "{app}\pkg_resources"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\pymatgen\*"; DestDir: "{app}\pymatgen"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\PyQt5\*"; DestDir: "{app}\PyQt5"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\searcher\*"; DestDir: "{app}\searcher"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\sqlite3\*"; DestDir: "{app}\sqlite3"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\urllib\*"; DestDir: "{app}\urllib"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\wsgiref\*"; DestDir: "{app}\wsgiref"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\xml\*"; DestDir: "{app}\xml"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\xmlrpc\*"; DestDir: "{app}\xmlrpc"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\searcher\*"; DestDir: "{app}\searcher"; Flags: ignoreversion createallsubdirs recursesubdirs; 
-Source: "D:\tmp\StructureFinder_win78910\*"; DestDir: "{app}\"; Flags: ignoreversion; 
+Source: "..\apex\*"; DestDir: "{app}\apex"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\displaymol\*"; DestDir: "{app}\displaymol"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\icons\*"; DestDir: "{app}\icons"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\lattice\*"; DestDir: "{app}\lattice"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\misc\*"; DestDir: "{app}\misc"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\pg8000\*"; DestDir: "{app}\pg8000"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\pymatgen\*"; DestDir: "{app}\pymatgen"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\searcher\*"; DestDir: "{app}\searcher"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\strf.py"; DestDir: "{app}"; 
+Source: "..\strf_cmd.py"; DestDir: "{app}\gui"; 
+Source: "..\gui\strf_main.ui"; DestDir: "{app}\gui"; 
+Source: "..\gui\strf_dbpasswd.ui"; DestDir: "{app}\gui"; 
+Source: "win\stdb_winXP.bat"; DestDir: "{app}"; DestName: "strf.bat"
+Source: "C:\tools\{#PzipFile}.7z"; DestDir: "{app}"; Flags: deleteafterinstall;
 
-
-
+[Run]
+Filename: "{app}\misc\7z.exe"; Parameters: "x ""{app}\{#PzipFile}.7z"" -o""{app}"" * -r -aoa"; Flags: runascurrentuser postinstall; 
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
+Name: "{group}\StructureFinder"; Filename: "{app}\strf.bat"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"
 
 [UninstallDelete]
 Type: files; Name: "{app}\*.pyc"
-Type: filesandordirs; Name: "{app}\"
 Type: files; Name: "{app}\*.*"
+Type: filesandordirs; Name: "{app}\*"
 
 [Dirs]
-Name: "{app}\example"; Permissions: authusers-full
-Name: "{app}\manuals"
+Name: "{app}\displaymol"; Permissions: authusers-full
 Name: "{app}\."; Permissions: authusers-full
+
+[InstallDelete]
+
+[Tasks]
+
+[Code]
+
+

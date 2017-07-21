@@ -4,6 +4,7 @@
 #define MyAppName "StructureFinder"
 #define MyAppVersion "2"
 #define MyAppPublisher "Daniel Kratzert"
+#define pzipfile "Python3.6.1-32.7z"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -65,16 +66,15 @@ Source: "..\misc\*"; DestDir: "{app}\misc"; Flags: ignoreversion createallsubdir
 Source: "..\pg8000\*"; DestDir: "{app}\pg8000"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\pymatgen\*"; DestDir: "{app}\pymatgen"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\searcher\*"; DestDir: "{app}\searcher"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
-;Source: "D:\tmp\StructureFinder_win\*"; DestDir: "{app}\"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\strf.py"; DestDir: "{app}"; 
 Source: "..\strf_cmd.py"; DestDir: "{app}\gui"; 
 Source: "..\gui\strf_main.ui"; DestDir: "{app}\gui"; 
 Source: "..\gui\strf_dbpasswd.ui"; DestDir: "{app}\gui"; 
 Source: "win\strf_win_32.bat"; DestDir: "{app}"; DestName: "strf.bat"
-Source: "C:\tools\Python3.6.1-32.zip"; DestDir: "{app}"; 
+Source: "C:\tools\{#pzipfile}"; DestDir: "{app}"; Flags: deleteafterinstall;
 
 [Run]
-Filename: "{app}\misc\7z.exe"; Parameters: "x ""{app}\Python3.6.1-32.zip"" -o""{app}"" * -r -aoa"; Flags: runascurrentuser postinstall
+Filename: "{app}\misc\7z.exe"; Parameters: "x ""{app}\{#pzipfile}"" -o""{app}"" * -r -aoa"; Flags: runascurrentuser postinstall; 
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
@@ -88,6 +88,10 @@ Type: filesandordirs; Name: "{app}\*"
 [Dirs]
 Name: "{app}\displaymol"; Permissions: authusers-full
 Name: "{app}\."; Permissions: authusers-full
+
+[InstallDelete]
+
+[Tasks]
 
 [Code]
 
