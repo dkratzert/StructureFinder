@@ -16,6 +16,7 @@ import sys
 import sqlite3
 import numpy as np
 from sqlite3 import OperationalError
+
 from searcher.constants import py36
 
 import searcher
@@ -93,6 +94,7 @@ class DatabaseRequest():
                           ON UPDATE NO ACTION);
                     ''')
         if py36:
+            # The simple tokenizer is best for my purposes:
             self.cur.execute("""
                 CREATE VIRTUAL TABLE txtsearch USING 
                         fts4(StructureId    INTEGER, 
@@ -101,7 +103,14 @@ class DatabaseRequest():
                              path           TEXT,
                              shelx_res_file TEXT,
                                 tokenize=simple "tokenchars= .=-_");  
-            """)  # The simple tokenizer is best for my purposes
+            """)
+            # Now the table for element search:
+            self.cur.execute("""
+                CREATE VIRTUAL TABLE ElementSearch USING
+                        fts4(StructureId        INTEGER,
+                        _chemical_formula_sum   TEXT,
+                            tokenize=simple 'tokenchars=0123456789' 'separators=0123456789');
+            """)
 
         self.cur.execute('''
                     CREATE TABLE Residuals (
@@ -691,9 +700,15 @@ class StructureTable():
                         INNER JOIN Residuals AS res WHERE str.Id = res.Id;
         """
         optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize');"""
+        element_search = """
+            INSERT INTO ElementSearch(StructureId,
+                                    _chemical_formula_sum) 
+                SELECT Id, _chemical_formula_sum FROM residuals; 
+        """
         if py36:
             self.database.cur.execute(populate_index)
             self.database.cur.execute(optimize_queries)
+            self.database.cur.execute(element_search)
 
     def get_row_as_dict(self, request):
         """
@@ -727,12 +742,10 @@ class StructureTable():
         except TypeError:
             return False
 
-    def find_by_strings(self, text):
+    def find_by_strings(self, text: str) -> tuple:
         """
         Searches cells with volume between upper and lower limit
         :param text: Volume uncertaincy where to search
-        :type text: str
-        :return: list
         """
         req = '''
         SELECT * FROM txtsearch WHERE filename MATCH ?
@@ -748,6 +761,23 @@ class StructureTable():
             return self.database.db_request(req, text, text, text, text)
         except (TypeError, sqlite3.ProgrammingError):
             return False
+
+    def find_by_elements(self, elements: list) -> list:
+        """
+        >>> db = StructureTable('../structuredb.sqlite')
+        >>> db.database.initialize_db()
+        >>> db.find_by_elements(['Al'])
+        """
+        structures = []
+        req = '''SELECT StructureId from ElementSearch WHERE _chemical_formula_sum MATCH ?'''
+        for el in elements:
+            el = el+'*' # TODO: This finds als Ca where C is searched for!
+            result = self.database.db_request(req, el)
+            print(el, result)
+            if result:
+                structures.extend(result)
+        structures = set(misc.flatten([list(x) for x in structures]))
+        return structures
 
     def find_biggest_cell(self):
         """
@@ -765,5 +795,9 @@ class StructureTable():
             
             
 if __name__ == '__main__':
-    pass
+    searcher.filecrawler.put_cifs_in_db(searchpath='../')
+    db = StructureTable('../structuredb.sqlite')
+#    db.database.initialize_db()
+    out = db.find_by_elements(['Al'])
+    print(out)
 
