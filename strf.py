@@ -520,10 +520,20 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         """
         list(set(l).intersection(l2))
         """
-        print(str(self.ui.ad_elementsIncLineEdit.text()))
-        formula = misc.formula_str_to_dict(self.ui.ad_elementsIncLineEdit.text())
+        #print(str(self.ui.ad_elementsIncLineEdit.text()))
+        self.statusBar().showMessage('')
+        formula = {'':''}
+        try:
+            formula = misc.formula_str_to_dict(self.ui.ad_elementsIncLineEdit.text())
+            print(formula, 'formula')
+        except KeyError:
+            self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
+            print('wrong formula')
         print(list(formula.keys()), 'keys')
-        res = self.structures.find_by_elements(list(formula.keys()))
+        try:
+            res = self.structures.find_by_elements(list(formula.keys()))
+        except AttributeError:
+            pass
         print(res)
 
     def add_table_row(self, name: str, path: str, data: bytes, id: str) -> None:

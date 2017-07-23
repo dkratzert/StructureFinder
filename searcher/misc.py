@@ -140,13 +140,15 @@ def format_sum_formula(sumform: str) -> str:
     return formula
 
 
-def formula_str_to_dict(sumform: str) -> dict:
+def formula_str_to_dict(sumform: str or bytes) -> dict:
     """
     converts an atom name like C12 to the element symbol C
     Use this code to find the atoms while going through the character astream of a sumformula
     e.g. C12H6O3Mn7
     Find two-char atoms, them one-char, and see if numbers are in between.
 
+    >>> formula_str_to_dict("S1Cl")
+    {'S': '1', 'Cl': '1'}
     >>> formula_str_to_dict("C12H6O3Mn7")
     {'C': '12', 'H': '6', 'O': '3', 'Mn': '7'}
     >>> formula_str_to_dict("C12 H60 O3 Mn7")
@@ -176,6 +178,7 @@ def formula_str_to_dict(sumform: str) -> dict:
     try:
         sumform = sumform.upper().replace(' ', '').replace('\n', '')
     except AttributeError:
+        print('Error in formula_str_to_dict')
         return atlist
 
     def isnumber(el):
