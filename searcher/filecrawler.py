@@ -137,10 +137,12 @@ def put_cifs_in_db(self=None, searchpath=''):
                 self.abort_import_button.hide()
                 self.decide_import = True
                 break
-    time2 = time.clock()
-    diff = time2 - time1
     if self:
         self.progress.hide()
+    structures.populate_fulltext_search_table()
+    structures.database.commit_db("Committed")
+    time2 = time.clock()
+    diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
     tmessage = 'Added {} cif files to database in: {:>2d} h, {:>2d} m, {:>3.2f} s'
@@ -152,8 +154,7 @@ def put_cifs_in_db(self=None, searchpath=''):
         self.abort_import_button.hide()
     else:
         print(tmessage.format(n - 1, int(h), int(m), s))
-    structures.populate_fulltext_search_table()
-    structures.database.commit_db("Committed")
+
 
 
 def fill_db_tables(cif: searcher.fileparser.Cif, filename: str, path: str, structure_id: str,

@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>1064</width>
-    <height>781</height>
+    <height>714</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -172,7 +172,7 @@
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="maintab">
        <attribute name="title">
@@ -1047,15 +1047,22 @@
           </item>
           <item>
            <layout class="QGridLayout" name="gridLayout_4">
-            <item row="4" column="0">
-             <widget class="QLabel" name="r1Label_2">
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="ad_elementsIncLineEdit"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="elementsExcludedLabel">
               <property name="text">
-               <string>R1</string>
+               <string>Elements Excluded</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="1">
-             <widget class="QLineEdit" name="ad_r1LineEdit"/>
+            <item row="1" column="0">
+             <widget class="QLabel" name="elementsIncludedLabel">
+              <property name="text">
+               <string>Elements Included</string>
+              </property>
+             </widget>
             </item>
             <item row="0" column="0">
              <widget class="QLabel" name="unitCellLabel">
@@ -1074,68 +1081,27 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="elementsIncludedLabel">
-              <property name="text">
-               <string>Elements Included</string>
-              </property>
-             </widget>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="ad_elementsExLineEdit"/>
             </item>
-            <item row="3" column="1">
-             <widget class="QLineEdit" name="ad_machineLineEdit"/>
-            </item>
-            <item row="7" column="1">
-             <widget class="QCheckBox" name="ad_TwinCheckBox">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="1">
+            <item row="4" column="1">
              <widget class="QCheckBox" name="ad_DisorderCheckBox">
               <property name="text">
                <string/>
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="ad_elementsExLineEdit"/>
-            </item>
-            <item row="6" column="0">
+            <item row="4" column="0">
              <widget class="QLabel" name="disorderLabel">
               <property name="text">
                <string>Disordered</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="elementsExcludedLabel">
-              <property name="text">
-               <string>Elements Excluded</string>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="0">
-             <widget class="QLabel" name="TwinnedLabel">
-              <property name="text">
-               <string>Twinned</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="ad_elementsIncLineEdit"/>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="machineLabel">
-              <property name="text">
-               <string>Machine</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
+            <item row="3" column="1">
              <widget class="QLineEdit" name="ad_textsearch"/>
             </item>
-            <item row="5" column="0">
+            <item row="3" column="0">
              <widget class="QLabel" name="wR2Label_2">
               <property name="text">
                <string>Free Text</string>
