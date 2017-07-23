@@ -43,7 +43,7 @@ import PyQt5.uic
 import pathlib
 
 import apex.apeximporter
-from searcher import constants
+from searcher import constants, misc
 import displaymol.mol_file_writer
 import lattice.lattice
 import pymatgen.core.mat_lattice
@@ -98,7 +98,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.connect_signals_and_slots()
         if py36:
             self.init_webview()
-        self.ui.tabWidget.removeTab(2)
+        #self.ui.tabWidget.removeTab(2)
         self.ui.tabWidget.setCurrentIndex(0)
         self.setWindowIcon(PyQt5.QtGui.QIcon('./icons/monoklin.png'))
         self.uipass = Ui_PasswdDialog()
@@ -117,6 +117,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
         self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
+        self.ui.ad_SearchPushButton.clicked.connect(self.search_element)
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
@@ -514,6 +515,16 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             #self.add_table_row(name, path, id)
         #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
+
+    def search_element(self):
+        """
+        list(set(l).intersection(l2))
+        """
+        print(str(self.ui.ad_elementsIncLineEdit.text()))
+        formula = misc.formula_str_to_dict(self.ui.ad_elementsIncLineEdit.text())
+        print(list(formula.keys()), 'keys')
+        res = self.structures.find_by_elements(list(formula.keys()))
+        print(res)
 
     def add_table_row(self, name: str, path: str, data: bytes, id: str) -> None:
         """

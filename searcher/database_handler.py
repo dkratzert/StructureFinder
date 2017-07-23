@@ -109,7 +109,7 @@ class DatabaseRequest():
                 CREATE VIRTUAL TABLE ElementSearch USING
                         fts4(StructureId        INTEGER,
                         _chemical_formula_sum   TEXT,
-                            tokenize=simple 'tokenchars=0123456789' 'separators=0123456789');
+                            tokenize=simple 'tokenchars= 0123456789');
             """)
 
         self.cur.execute('''
@@ -757,7 +757,6 @@ class StructureTable():
         SELECT * FROM txtsearch WHERE shelx_res_file MATCH ?
         '''
         try:
-
             return self.database.db_request(req, text, text, text, text)
         except (TypeError, sqlite3.ProgrammingError):
             return False
@@ -765,7 +764,6 @@ class StructureTable():
     def find_by_elements(self, elements: list) -> list:
         """
         Find structures where certain elements are included in the sum formula.
-        list(set(l).intersection(l2))
 
         >>> db = StructureTable('../structuredb.sqlite')
         >>> db.database.initialize_db()
@@ -775,13 +773,17 @@ class StructureTable():
         import re
         structures = []
         matches = []
-        req = '''SELECT StructureId, _chemical_formula_sum 
-                      from ElementSearch WHERE _chemical_formula_sum 
-                        MATCH ?'''
+        req = '''SELECT StructureId, _chemical_formula_sum from ElementSearch WHERE _chemical_formula_sum MATCH ?'''
+        print(elements, 'elements')
         for el in elements:
-            result = self.database.db_request(req, el+'*')
+            el = el + '*'
+            result = self.database.db_request(req, el)
+            print(result, 'result', el)
             if result:
-                structures.extend(result)
+                if isinstance(result, int):
+                    result = [result]
+                else:
+                    structures.extend(result)
         for el in elements:
             regex = re.compile(r'[\d|\s]?' + el + r'[\d|\s]', re.IGNORECASE)
             for num, form in structures:
@@ -806,7 +808,7 @@ class StructureTable():
             
 if __name__ == '__main__':
     from searcher import filecrawler
-    searcher.filecrawler.put_cifs_in_db(searchpath='../')
+    #searcher.filecrawler.put_cifs_in_db(searchpath='../')
     db = StructureTable('../structuredb.sqlite')
 #    db.database.initialize_db()
     out = db.find_by_elements(['Cu', 'Al'])
