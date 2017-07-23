@@ -47,7 +47,7 @@ def find_binary_string(file, string, seek, size, return_ascii=False):
                 return result
             
 
-def open_file_read(filename, asci=True):
+def open_file_read(filename: str, asci: bool = True) -> str or list:
     if asci:
         state = 'r'
     else:
@@ -96,7 +96,7 @@ def get_error_from_value(value: str) -> str:
         return '0.0'
 
 
-def flatten(lis):
+def flatten(lis: list) -> list:
     """
     Given a list, possibly nested to any level, return it flattened.
     From: http://code.activestate.com/recipes/578948-flattening-an-arbitrarily-nested-list-in-python/
@@ -110,7 +110,8 @@ def flatten(lis):
     return new_lis
 
 
-def distance(x1, y1, z1, x2, y2, z2):
+def distance(x1: float, y1: float, z1: float,
+             x2: float, y2: float, z2: float) -> float:
     """
     distance between two points in space for orthogonal axes.
     >>> distance(1, 1, 1, 2, 2, 2, 4)
@@ -122,31 +123,48 @@ def distance(x1, y1, z1, x2, y2, z2):
     return d
 
 
-def format_sum_formula(sumform: str):
+def format_sum_formula(sumform: str) -> str:
+    """ 
+    Makes html formated sum formula from dictionary.
+    >>> format_sum_formula("C12H6O3Mn7")
+    '<html><body>C<sub>12</sub>H<sub>6</sub>O<sub>3</sub>Mn<sub>7</sub></body></html>'
+    """
+    atlist = formula_str_to_dict(sumform)
+    l = ['<html><body>']
+    for num, i in enumerate(atlist):
+        if num > 1 and num % 8 == 0:
+            l.append("<br>")
+        l.append("{}<sub>{}</sub>".format(i, atlist[i]))
+    l.append('</body></html>')
+    formula = "".join(l)
+    return formula
+
+
+def formula_str_to_dict(sumform: str) -> dict:
     """
     converts an atom name like C12 to the element symbol C
     Use this code to find the atoms while going through the character astream of a sumformula
     e.g. C12H6O3Mn7
     Find two-char atoms, them one-char, and see if numbers are in between.
 
-    >>> format_sum_formula("C12H6O3Mn7")
+    >>> formula_str_to_dict("C12H6O3Mn7")
     {'C': '12', 'H': '6', 'O': '3', 'Mn': '7'}
-    >>> format_sum_formula("C12 H60 O3 Mn7")
+    >>> formula_str_to_dict("C12 H60 O3 Mn7")
     {'C': '12', 'H': '60', 'O': '3', 'Mn': '7'}
-    >>> format_sum_formula("C12 H60 O3  Mn 7")
+    >>> formula_str_to_dict("C12 H60 O3  Mn 7")
     {'C': '12', 'H': '60', 'O': '3', 'Mn': '7'}
-    >>> format_sum_formula("C13Cs12 H60 O3  Mn 7")
+    >>> formula_str_to_dict("C13Cs12 H60 O3  Mn 7")
     {'C': '13', 'Cs': '12', 'H': '60', 'O': '3', 'Mn': '7'}
-    >>> format_sum_formula("CHMn\\n")
+    >>> formula_str_to_dict("CHMn\\n")
     {'C': '', 'H': '', 'Mn': ''}
-    >>> format_sum_formula("Hallo")
+    >>> formula_str_to_dict("Hallo")
     Traceback (most recent call last):
     ...
     KeyError
 
-    >>> format_sum_formula('C4 H2.91 Al0.12 F4.36 Ni0.12 O0.48')
+    >>> formula_str_to_dict('C4 H2.91 Al0.12 F4.36 Ni0.12 O0.48')
     {'C': '4', 'H': '2.91', 'Al': '0.12', 'F': '4.36', 'Ni': '0.12', 'O': '0.48'}
-    >>> format_sum_formula('C4H6O1*5H2O')
+    >>> formula_str_to_dict('C4H6O1*5H2O')
     Traceback (most recent call last):
     ...
     KeyError
@@ -159,7 +177,7 @@ def format_sum_formula(sumform: str):
         sumform = sumform.upper().replace(' ', '').replace('\n', '')
     except AttributeError:
         return atlist
-    
+
     def isnumber(el):
         for x in el:
             if x.isnumeric() or x == '.':
@@ -167,11 +185,12 @@ def format_sum_formula(sumform: str):
             else:
                 # end of number
                 break
+
     while sumform:
         if sumform[0:2] in elements:  # The two-character elements
             isnumber(sumform[2:])
             atlist[sumform[0:2].capitalize()] = "".join(nums)
-            sumform = sumform[2+len(nums):]
+            sumform = sumform[2 + len(nums):]
             nums.clear()
         elif sumform[0] in elements:
             isnumber(sumform[1:])
@@ -181,5 +200,3 @@ def format_sum_formula(sumform: str):
         else:
             raise KeyError
     return atlist
-
-

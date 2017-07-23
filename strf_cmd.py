@@ -14,7 +14,7 @@ else:
     #spinner = Spinner()
     #spinner.start()
     #try:
-    filecrawler.put_cifs_in_db(fname)
+    filecrawler.put_cifs_in_db(searchpath=fname)
     #except Exception as e:
     #    print(e)
     #spinner.stop()

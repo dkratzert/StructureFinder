@@ -63,27 +63,50 @@ def filewalker_walk(startdir, endings, add_excludes=''):
     return filelist
 
 
-def put_cifs_in_db(searchpath):
+def put_cifs_in_db(self=None, searchpath=''):
     """
-    Command line version of file crawler.
+    Imports cif files from a certain directory
+    :return: None
     """
-    dbfilename = "structuredb.sqlite"
-    try:
-        os.remove(dbfilename)
-    except:
-        pass
-    db = searcher.database_handler.DatabaseRequest(dbfilename)
-    db.initialize_db()
-    structures = searcher.database_handler.StructureTable(dbfilename)
+    if self:
+        import PyQt5.QtWidgets
+        self.tmpfile = True
+        self.statusBar().showMessage('')
+        self.close_db()
+        self.start_db()
+        fname = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        structures = self.structures
+    else:
+        fname = searchpath
+        dbfilename = "structuredb.sqlite"
+        try:
+            os.remove(dbfilename)
+        except:
+            pass
+        db = searcher.database_handler.DatabaseRequest(dbfilename)
+        db.initialize_db()
+        structures = searcher.database_handler.StructureTable(dbfilename)
+    if not fname:
+        return False
+    if self:
+        self.ui.cifList_treeWidget.show()
+        self.abort_import_button.show()
+    # TODO: implement multiple cells in one cif file:
     n = 1
+    min = 0
+    num = 0
     time1 = time.clock()
-    for filepth in create_file_list(str(searchpath), ending='cif'):
+    for filepth in create_file_list(str(fname), ending='cif'):
         cif = searcher.fileparser.Cif()
+        if num == 20:
+            num = 0
+        if self:
+            self.progressbar(num, min, 20)
         if not filepth.is_file():
             continue
         path = str(filepth.parents[0])
         match = False
-        if filepth.name == 'xd_geo.cif':
+        if filepth.name == 'xd_geo.cif':  # Exclude xdgeom cif files
             continue
         for ex in excluded_names:
             if re.search(ex, path, re.I):
@@ -92,29 +115,49 @@ def put_cifs_in_db(searchpath):
             continue
         try:
             cifok = cif.parsefile(filepth)
-        except IndexError as e:
-            #print(e, filepth, filepth.name)
+        except IndexError:
             continue
         if not cifok:
             continue
-        if cif and filepth.name and path:
+        if cif:
+            # is the StructureId
             tst = fill_db_tables(cif, filepth.name, path, n, structures)
             if not tst:
                 continue
+            if self:
+                self.add_table_row(filepth.name, path, cif.cif_data['data'], str(n))
             n += 1
-        if n % 1000 == 0:
-            print('{} files ...'.format(n))
-            structures.database.commit_db()
+            if n % 1000 == 0:
+                print('{} files ...'.format(n))
+                structures.database.commit_db()
+            num += 1
+        if self:
+            if not self.decide_import:
+                # This means, import was aborted.
+                self.abort_import_button.hide()
+                self.decide_import = True
+                break
     time2 = time.clock()
     diff = time2 - time1
+    if self:
+        self.progress.hide()
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
+    tmessage = 'Added {} cif files to database in: {:>2d} h, {:>2d} m, {:>3.2f} s'
+    if self:
+        self.ui.statusbar.showMessage(tmessage.format(n, int(h), int(m), s))
+        self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
+        self.abort_import_button.hide()
+    else:
+        print(tmessage.format(n - 1, int(h), int(m), s))
     structures.populate_fulltext_search_table()
     structures.database.commit_db("Committed")
-    print('\nAdded {} cif files to database in: {:>2d} h, {:>2d} m, {:>3.2f} s'.format(n-1, int(h), int(m), s))
 
 
-def fill_db_tables(cif, filename, path, structure_id, structures):
+def fill_db_tables(cif: searcher.fileparser.Cif, filename: str, path: str, structure_id: str,
+                   structures: searcher.database_handler.StructureTable):
     """
     Fill all info from cif file into the database tables
     _atom_site_label
@@ -132,12 +175,6 @@ def fill_db_tables(cif, filename, path, structure_id, structures):
     _atom_site_refinement_flags_occupancy
     _atom_site_disorder_assembly
     _atom_site_disorder_group
-    :param structures: structures database object
-    :param cif: 
-    :param filename: 
-    :param path: 
-    :param structure_id: 
-    :return: 
     """
     a = cif._cell_length_a
     b = cif._cell_length_b

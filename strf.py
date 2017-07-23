@@ -14,7 +14,7 @@ Created on 09.02.2015
 """
 from __future__ import print_function
 
-from PyQt5.QtWidgets import QAbstractButton
+from PyQt5 import QtCore
 
 from searcher.constants import py36
 
@@ -39,7 +39,6 @@ import PyQt5.QtGui
 import PyQt5.QtQml
 import PyQt5.QtWidgets
 import PyQt5.uic
-import re
 
 import pathlib
 
@@ -74,7 +73,6 @@ Search for:
 """
 
 
-
 class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
@@ -104,6 +102,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.tabWidget.setCurrentIndex(0)
         self.setWindowIcon(PyQt5.QtGui.QIcon('./icons/monoklin.png'))
         self.uipass = Ui_PasswdDialog()
+        self.structureId = ''
 
     def connect_signals_and_slots(self):
         """
@@ -167,6 +166,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         Searches a cell but with diffeent loos or strict option.
         """
         self.search_cell(self.ui.searchCellLineEDit.text())
+
+    def import_cif_dirs(self):
+        searcher.filecrawler.put_cifs_in_db(self)
 
     def progressbar(self, curr: float, min: float, max: float) -> None:
         """
@@ -241,6 +243,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         request = """select * from residuals where StructureId = {}""".format(structure_id)
         dic = self.structures.get_row_as_dict(request)
         self.display_properties(structure_id, dic)
+        self.structureId = structure_id
         return True
 
     def save_database(self) -> bool:
@@ -257,6 +260,26 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             status = self.close_db(save_name)
         if status:
             self.statusBar().showMessage("Database saved.", msecs=5000)
+
+    def eventFilter(self, object, event):
+        """Event filter for mouse clicks."""
+        if event.type() == PyQt5.QtCore.QEvent.MouseButtonDblClick:
+            if self.structureId:
+                cell = ''
+                try:
+                    cell = "{:>8.6} {:>8.6} {:>8.6} {:>8.6} {:>8.6} {:>8.6}"\
+                        .format(*self.structures.get_cell_by_id(self.structureId))
+                except:
+                    pass
+                clipboard = PyQt5.QtWidgets.QApplication.clipboard()
+                clipboard.setText(cell)
+            return True
+        elif event.type() == PyQt5.QtCore.QEvent.MouseButtonPress:
+            if event.buttons() == QtCore.Qt.RightButton:
+                #print("rightbutton")
+            #print("Mouse pressed")
+                return True
+        return False
 
     def display_properties(self, structure_id: str, cif_dic: dict) -> bool:
         """
@@ -281,6 +304,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             return False
         #self.ui.cellField.setMinimumWidth(180)
         self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, ''))
+        self.ui.cellField.installEventFilter(self)
+        self.ui.cellField.setToolTip("Double click on cell to copy to clipboard.")
         try:
             self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
         except ValueError:
@@ -291,16 +316,10 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             pass
         self.ui.zLineEdit.setText("{}".format(cif_dic['_cell_formula_units_Z']))
         try:
-            sumdict = searcher.misc.format_sum_formula(cif_dic['_chemical_formula_sum'])
+            sumform = searcher.misc.format_sum_formula(cif_dic['_chemical_formula_sum'])
         except KeyError:
-            sumdict = {}
-        l = ['<html><body>']
-        for num, i in enumerate(sumdict):
-            if num >1 and num % 8 == 0:
-                l.append("<br>")
-            l.append("{}<sub>{}</sub>".format(i, sumdict[i]))
-        l.append('</body></html>')
-        self.ui.formLabel.setText("{}".format("".join(l)))
+            sumform = ''
+        self.ui.formLabel.setText("{}".format(sumform))
         self.ui.reflTotalLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_number']))
         self.ui.goofLineEdit.setText("{}".format(cif_dic['_refine_ls_goodness_of_fit_ref']))
         self.ui.SpaceGroupLineEdit.setText("{}".format(cif_dic['_space_group_name_H_M_alt']))
@@ -364,7 +383,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
         return True
 
-    def display_molecule(self, cell, structure_id):
+    def display_molecule(self, cell: list, structure_id: str) -> None:
         """
         """
         mol = ' '
@@ -384,13 +403,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.view.reload()
 
     @PyQt5.QtCore.pyqtSlot('QString')
-    def search_text(self, search_string):
+    def search_text(self, search_string: str) -> bool:
         """
         searches db for given text
-
-        :param search_string:
-        :type search_string: str
-        :rtype: bool
         """
         self.ui.searchCellLineEDit.clear()
         self.ui.cifList_treeWidget.clear()
@@ -426,12 +441,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.statusBar().showMessage("Nothing found.")
 
     @PyQt5.QtCore.pyqtSlot('QString')
-    def search_cell(self, search_string):
+    def search_cell(self, search_string: str) -> bool:
         """
         searches db for given cell via the cell volume
-        
-        :param search_string: 
-        :return: 
         """
         if self.ui.moreResultsCheckBox.isChecked():
             threshold = 0.06
@@ -524,10 +536,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         tree_item.setData(3, 0, id)  # id
         self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
 
-    def import_cif_database(self):
+    def import_cif_database(self) -> bool:
         """
         Import a new database.
-        :rtype: bool
         """
         self.tmpfile = False
         self.close_db()
@@ -542,22 +553,21 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             return False
         return True
 
-    def open_apex_db(self, user, password, host):
+    def open_apex_db(self, user: str, password: str, host: str) -> bool:
         """
         Opens the APEX db to be displayed in the treeview.
         """
         self.apx = apex.apeximporter.ApexDB()
-        conn = None
+        connok = False
         try:
-            conn = self.apx.initialize_db(user, password, host)
+            connok = self.apx.initialize_db(user, password, host)
         except:
             self.passwd_handler()
-        return conn
+        return connok
 
-    def import_apex_db(self, user='', password='', host=''):
+    def import_apex_db(self, user: str = '', password: str = '', host: str = '') -> None:
         """
         Imports data from apex into own db
-        :return: None
         """
         self.statusBar().showMessage('')
         self.close_db()
@@ -627,11 +637,10 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.abort_import_button.hide()
 
 
-    def show_full_list(self):
+    def show_full_list(self) -> None:
         """
         Displays the complete list of structures
         [id, meas, path, filename, data]
-        :return: 
         """
         self.ui.cifList_treeWidget.clear()
         id = 0
@@ -647,77 +656,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
 
-    def import_cif_dirs(self):
-        """
-        Imports cif files from a certain directory
-        :return: None
-        """
-        self.tmpfile = True
-        self.statusBar().showMessage('')
-        self.close_db()
-        self.start_db()
-        fname = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
-        if not fname:
-            return False
-        self.ui.cifList_treeWidget.show()
-        self.abort_import_button.show()
-        # TODO: implement multiple cells in one cif file:
-        n = 1
-        min = 0
-        num = 0
-        time1 = time.clock()
-        for filepth in searcher.filecrawler.create_file_list(str(fname), ending='cif'):
-            cif = searcher.fileparser.Cif()
-            if num == 20:
-                num = 0
-            self.progressbar(num, min, 20)
-            if not filepth.is_file():
-                continue
-            path = str(filepth.parents[0])
-            match = False
-            if filepth.name == 'xd_geo.cif':  # Exclude xdgeom cif files
-                continue
-            for ex in searcher.filecrawler.excluded_names:
-                if re.search(ex, path, re.I):
-                    match = True
-            if match:
-                continue
-            try:
-                cifok = cif.parsefile(filepth)
-            except IndexError:
-                continue
-            if not cifok:
-                continue
-            if cif:
-                # is the StructureId
-                tst = searcher.filecrawler.fill_db_tables(cif, filepth.name, path, n, self.structures)
-                if not tst:
-                    continue
-                self.add_table_row(filepth.name, path, cif.cif_data['data'], str(n))
-                n += 1
-                if n % 300 == 0:
-                    self.structures.database.commit_db()
-                num += 1
-            if not self.decide_import:
-                # This means, import was aborted.
-                self.abort_import_button.hide()
-                self.decide_import = True
-                break
-        time2 = time.clock()
-        diff = time2 - time1
-        self.progress.hide()
-        m, s = divmod(diff, 60)
-        h, m = divmod(m, 60)
-        self.ui.statusbar.showMessage('Added {} cif files to database in: {:>2d} h, {:>2d} m, {:>3.2f} s'
-                                      .format(n, int(h), int(m), s))
-        self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
-        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
-        self.structures.populate_fulltext_search_table()
-        self.structures.database.commit_db("Committed")
-        self.abort_import_button.hide()
-
-    def clear_fields(self):
+    def clear_fields(self) -> None:
         """
         Clears all residuals fields.
         """
@@ -742,16 +681,6 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.wR2LineEdit.clear()
         self.ui.zLineEdit.clear()
         self.ui.cCDCNumberLineEdit.clear()
-
-class QmlAusgabe(object):
-    def __init__(self, pathToQmlFile="beispiel.qml"):
-        #QML-Engine
-        self.__appEngine = PyQt5.QtQml.QQmlApplicationEngine()
-        self.__appEngine.load(pathToQmlFile)
-        self.__appWindow = self.__appEngine.rootObjects()[0]
-
-    def show(self):
-        self.__appWindow.show()
 
 
 if __name__ == "__main__":
