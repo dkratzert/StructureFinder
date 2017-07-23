@@ -764,20 +764,30 @@ class StructureTable():
 
     def find_by_elements(self, elements: list) -> list:
         """
+        Find structures where certain elements are included in the sum formula.
+        list(set(l).intersection(l2))
+
         >>> db = StructureTable('../structuredb.sqlite')
         >>> db.database.initialize_db()
-        >>> db.find_by_elements(['Al'])
+        >>> db.find_by_elements(['Al', 'ca'])
+        {11, 3, 6, 15}
         """
+        import re
         structures = []
-        req = '''SELECT StructureId from ElementSearch WHERE _chemical_formula_sum MATCH ?'''
+        matches = []
+        req = '''SELECT StructureId, _chemical_formula_sum 
+                      from ElementSearch WHERE _chemical_formula_sum 
+                        MATCH ?'''
         for el in elements:
-            el = el+'*' # TODO: This finds als Ca where C is searched for!
-            result = self.database.db_request(req, el)
-            print(el, result)
+            result = self.database.db_request(req, el+'*')
             if result:
                 structures.extend(result)
-        structures = set(misc.flatten([list(x) for x in structures]))
-        return structures
+        for el in elements:
+            regex = re.compile(r'[\d|\s]?' + el + r'[\d|\s]', re.IGNORECASE)
+            for num, form in structures:
+                if regex.search(form):
+                    matches.append(num)
+        return set(matches)
 
     def find_biggest_cell(self):
         """
@@ -795,9 +805,10 @@ class StructureTable():
             
             
 if __name__ == '__main__':
+    from searcher import filecrawler
     searcher.filecrawler.put_cifs_in_db(searchpath='../')
     db = StructureTable('../structuredb.sqlite')
 #    db.database.initialize_db()
-    out = db.find_by_elements(['Al'])
+    out = db.find_by_elements(['Cu', 'Al'])
     print(out)
 
