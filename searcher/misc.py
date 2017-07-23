@@ -203,3 +203,32 @@ def formula_str_to_dict(sumform: str or bytes) -> dict:
         else:
             raise KeyError
     return atlist
+
+
+def get_list_of_elements(formula: str) -> list:
+    """
+    >>> get_list_of_elements("SCl")
+    ['S', 'Cl']
+    >>> get_list_of_elements("S1Cl1")
+    ['S', 'Cl']
+    >>> get_list_of_elements("S1Cl")
+    ['S', 'Cl']
+    >>> get_list_of_elements("ScCl")
+    ['Sc', 'Cl']
+    >>> get_list_of_elements("S20 Cl")
+    ['S', 'Cl']
+    """
+    elements = constants.atoms
+    atlist = []
+    formula = ''.join([i for i in formula if not i.isdigit()]).replace(' ', '')
+    while formula:
+        if formula[0:2] in elements:
+            atlist.append(formula[0:2].capitalize())
+            formula = formula[2:]
+        elif formula[0:1] in elements:
+            atlist.append(formula[0:1].capitalize())
+            formula = formula[1:]
+        else:
+            raise KeyError
+    return atlist
+
