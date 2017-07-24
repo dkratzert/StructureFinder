@@ -137,6 +137,10 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
     def advanced_search(self):
         """
         Combines all the search fields
+
+        If cell results:
+            all other results are only part of the cell results.
+        
         """
         results = []
         cell = self.ui.ad_unitCellLineEdit.text()
