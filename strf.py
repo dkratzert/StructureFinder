@@ -57,7 +57,8 @@ from gui.strf_dbpasswd import Ui_PasswdDialog
 
 """
 TODO:
-- VCredist 2015 and dll100 as link
+- VCredist 2015 https://www.microsoft.com/de-de/download/details.aspx?id=48145
+  and 2010 https://www.microsoft.com/de-de/download/details.aspx?id=5555
 - add rightclick: copy unit cell on unit cell field
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - allow to scan more than one directory. Just add to previous data. Especially for cmd version.
