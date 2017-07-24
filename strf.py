@@ -118,7 +118,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
         self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
-        self.ui.ad_SearchPushButton.clicked.connect(self.search_element)
+        self.ui.ad_SearchPushButton.clicked.connect(self.advanced_search)
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
@@ -132,6 +132,29 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.ui.txtSearchEdit.setText("For full test search, use a modern Operating system.")
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
+
+    @PyQt5.QtCore.pyqtSlot(name="advanced_search")
+    def advanced_search(self):
+        """
+        Combines all the search fields
+        """
+        results = []
+        cell = self.ui.ad_unitCellLineEdit.text()
+        elincl = self.ui.ad_elementsIncLineEdit.text()
+        elexcl = self.ui.ad_elementsExLineEdit.text()
+        txt = self.ui.ad_textsearch.text()
+        if elincl:
+            results.extend(self.search_elements(elincl))
+            #print(elincl, results)
+        if cell and len(cell.split()) == 6:
+            results.extend(self.search_cell(cell))
+        if txt:
+            results.extend(self.structures.find_by_strings(txt))
+        if elexcl:
+            elexcl = self.search_elements(elexcl)
+            #print('ecluded:', elexcl)
+        print('results', results)
+        print(list(set(elexcl) & set(results)))
 
     def passwd_handler(self):
         """
@@ -517,7 +540,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
 
-    def search_element(self):
+    def search_elements(self, elements) -> list:
         """
         list(set(l).intersection(l2))
         """
@@ -525,14 +548,14 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         formula = []
         res = []
         try:
-            formula = misc.get_list_of_elements(self.ui.ad_elementsIncLineEdit.text())
+            formula = misc.get_list_of_elements(elements)
         except KeyError:
             self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
         try:
             res = self.structures.find_by_elements(formula)
         except AttributeError:
             pass
-        print(res)
+        return list(res)
 
     def add_table_row(self, name: str, path: str, data: bytes, id: str) -> None:
         """

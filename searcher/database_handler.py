@@ -774,10 +774,8 @@ class StructureTable():
         structures = []
         matches = []
         req = '''SELECT StructureId, _chemical_formula_sum from ElementSearch WHERE _chemical_formula_sum MATCH ?'''
-        print(elements, 'elements')
         for el in elements:
             result = self.database.db_request(req, el+'*')
-            print(result, 'result', el)
             if result:
                 if isinstance(result, int):
                     continue
