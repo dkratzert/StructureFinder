@@ -1032,18 +1032,62 @@
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <layout class="QGridLayout" name="gridLayout_6">
-          <item row="0" column="0" colspan="3">
-           <widget class="QLabel" name="label_2">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
+          <item row="0" column="1">
+           <widget class="QLabel" name="label_3">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
             </property>
             <property name="text">
-             <string/>
+             <string>Schould not contain</string>
             </property>
            </widget>
+          </item>
+          <item row="1" column="0">
+           <layout class="QGridLayout" name="gridLayout_4">
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="ad_elementsIncLineEdit"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="elementsIncludedLabel">
+              <property name="text">
+               <string>Elements</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="ad_unitCellLineEdit">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="unitCellLabel">
+              <property name="text">
+               <string>Unit Cell</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QLineEdit" name="ad_textsearch"/>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="wR2Label_2">
+              <property name="text">
+               <string>Free Text</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item row="3" column="1">
            <spacer name="verticalSpacer_8">
@@ -1057,6 +1101,19 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Should contain</string>
+            </property>
+           </widget>
           </item>
           <item row="2" column="0">
            <widget class="QPushButton" name="ad_SearchPushButton">
@@ -1077,27 +1134,23 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <layout class="QGridLayout" name="gridLayout_4">
+          <item row="1" column="1">
+           <layout class="QGridLayout" name="gridLayout_7">
             <item row="1" column="1">
-             <widget class="QLineEdit" name="ad_elementsIncLineEdit"/>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="elementsExcludedLabel">
-              <property name="text">
-               <string>Elements Excluded</string>
-              </property>
-             </widget>
+             <widget class="QLineEdit" name="ad_elementsExLineEdit_2"/>
             </item>
             <item row="1" column="0">
-             <widget class="QLabel" name="elementsIncludedLabel">
+             <widget class="QLabel" name="elementsExcludedLabel_2">
               <property name="text">
-               <string>Elements Included</string>
+               <string>Elements</string>
               </property>
              </widget>
             </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="ad_textsearch_2"/>
+            </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="ad_unitCellLineEdit">
+             <widget class="QLineEdit" name="ad_unitCellLineEdit_2">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -1106,21 +1159,15 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="ad_elementsExLineEdit"/>
-            </item>
-            <item row="3" column="1">
-             <widget class="QLineEdit" name="ad_textsearch"/>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="wR2Label_2">
+            <item row="2" column="0">
+             <widget class="QLabel" name="wR2Label_3">
               <property name="text">
                <string>Free Text</string>
               </property>
              </widget>
             </item>
             <item row="0" column="0">
-             <widget class="QLabel" name="unitCellLabel">
+             <widget class="QLabel" name="unitCellLabel_2">
               <property name="text">
                <string>Unit Cell</string>
               </property>
