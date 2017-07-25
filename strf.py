@@ -138,27 +138,33 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         """
         Combines all the search fields
 
-        If cell results:
-            all other results are only part of the cell results.
+        Included: resuls that are in all incl together
+        excluded: results that are in incl minus the excluded
         
         """
         results = []
+        excl = []
+        incl = []
         cell = self.ui.ad_unitCellLineEdit.text()
         elincl = self.ui.ad_elementsIncLineEdit.text()
-        elexcl = self.ui.ad_elementsExLineEdit.text()
+        elexcl = self.ui.ad_elementsExclLineEdit.text()
         txt = self.ui.ad_textsearch.text()
-        if elincl:
-            results.extend(self.search_elements(elincl))
-            #print(elincl, results)
+        txt_ex = self.ui.ad_textsearch_excl.text()
+
         if cell and len(cell.split()) == 6:
-            results.extend(self.search_cell(cell))
-        if txt:
-            results.extend(self.structures.find_by_strings(txt))
-        if elexcl:
-            elexcl = self.search_elements(elexcl)
+            incl.append(self.search_cell(cell))
+        if elincl:
+            incl.extend(self.search_elements(elincl))
+        #    #print(elincl, results)#
+
+        #if txt:
+        #    results.extend(self.structures.find_by_strings(txt))
+        #if elexcl:
+        #    elexcl = self.search_elements(elexcl)
             #print('ecluded:', elexcl)
         print('results', results)
-        print(list(set(elexcl) & set(results)))
+        #print(list(set(elexcl) & set(results)))
+
 
     def passwd_handler(self):
         """
@@ -474,7 +480,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         """
         searches db for given cell via the cell volume
         """
-        if self.ui.moreResultsCheckBox.isChecked():
+        if self.ui.moreResultsCheckBox.isChecked() or \
+                self.ui.ad_moreResultscheckBox.isChecked():
             threshold = 0.06
             ltol = 0.08
             atol = 1.5
@@ -492,7 +499,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.full_list = True
             self.show_full_list()
         try:
-            cell = [float(x) for x in search_string.split()]
+            cell = [float(x) for x in search_string.strip().split()]
         except (TypeError, ValueError):
             return False
         if len(cell) != 6:
