@@ -263,7 +263,8 @@ class DatabaseRequest():
             return False
         rows = self.cur.fetchall()
         if not rows:
-            return last_rowid
+            return tuple()
+            #return last_rowid
         else:
             return rows
 
@@ -438,7 +439,8 @@ class StructureTable():
         filename = filename.encode("utf-8", "surrogateescape")
         path = path.encode("utf-8", "surrogateescape")
         dataname = dataname.encode("utf-8", "surrogateescape")
-        return self.database.db_request(req, structure_id, measurement_id, filename, path, dataname)
+        self.database.db_request(req, structure_id, measurement_id, filename, path, dataname)
+        return structure_id
 
     def fill_measuremnts_table(self, name, structure_id):
         """
@@ -449,7 +451,8 @@ class StructureTable():
               INSERT INTO measurement (Id, name) VALUES(?, ?)
               '''
         name = name.encode("utf-8", "surrogateescape")
-        return self.database.db_request(req, structure_id, name)
+        self.database.db_request(req, structure_id, name)
+        return structure_id
 
     def fill_cell_table(self, structure_id, a, b, c, alpha, beta, gamma, volume):
         """
@@ -761,10 +764,9 @@ class StructureTable():
             ids = self.database.db_request(req, text, text, text, text)
         except (TypeError, sqlite3.ProgrammingError):
             return False
-        print(ids)
         return ids
 
-    def find_by_elements(self, elements: list) -> list:
+    def find_by_elements(self, elements: list, anyresult: bool = False) -> list:
         """
         Find structures where certain elements are included in the sum formula.
 
@@ -773,7 +775,6 @@ class StructureTable():
         >>> db.find_by_elements(['Al', 'ca'])
         {11, 3, 6, 15}
         """
-        # TODO: make that only results where all elements are included get resturned
         import re
         structures = []
         matches = []
@@ -787,10 +788,18 @@ class StructureTable():
                     structures.extend(result)
         for el in elements:  # The second search excludes false hits like Ca instead of C
             regex = re.compile(r'[\d|\s]?' + el + r'[\d|\s]', re.IGNORECASE)
+            res = []
             for num, form in structures:
                 if regex.search(form):
-                    matches.append(num)
-        return set(matches)
+                    res.append(num)
+            matches.append(res)
+        if matches:
+            if anyresult:
+                return set(misc.flatten(matches))
+            else:
+                return set(matches[0]).intersection(*matches)
+        else:
+            return set()
 
     def find_biggest_cell(self):
         """

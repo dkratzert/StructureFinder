@@ -142,40 +142,60 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         excluded: results that are in incl minus the excluded
         
         """
-        results = []
         excl = []
         incl = []
-        cell = self.ui.ad_unitCellLineEdit.text()
-        elincl = self.ui.ad_elementsIncLineEdit.text()
-        elexcl = self.ui.ad_elementsExclLineEdit.text()
-        txt = self.ui.ad_textsearch.text()
-        txt_ex = self.ui.ad_textsearch_excl.text()
-
+        cell = self.ui.ad_unitCellLineEdit.text().strip(' ')
+        elincl = self.ui.ad_elementsIncLineEdit.text().strip(' ')
+        elexcl = self.ui.ad_elementsExclLineEdit.text().strip(' ')
+        txt = self.ui.ad_textsearch.text().strip(' ')
+        txt_ex = self.ui.ad_textsearch_excl.text().strip(' ')
         if cell and len(cell.split()) == 6:
             incl.append(self.search_cell(cell))
         if elincl:
             incl.append(self.search_elements(elincl))
-        #    #print(elincl, results)#
         if txt:
+            if len(txt) >= 2:
+                if not "*" in txt:
+                    txt = '*' + txt + '*'
             idlist = self.structures.find_by_strings(txt)
             try:
-                len(idlist)
                 incl.append([i[0] for i in idlist])
             except:
                 incl.append([idlist])  # only one result
-            #incl.append([i[0] for i in self.structures.find_by_strings(txt)])
         if elexcl:
-            excl.extend(self.search_elements(elexcl))
-            #print('ecluded:', elexcl)
+            excl.append(self.search_elements(elexcl, anyresult=True))
         if txt_ex:
-            pass
-            #excl.append([i[0] for i in self.structures.find_by_strings(txt)])
-        print('results', results)
-        print(incl)
-        print(excl)
-        print('intersect:', set(incl[0]).intersection(*incl))
-        #print(set())
+            if len(txt_ex) >= 2:
+                if not "*" in txt_ex:
+                    txt_ex = '*' + txt_ex + '*'
+            idlist = self.structures.find_by_strings(txt_ex)
+            try:
+                excl.append([i[0] for i in idlist])
+            except:
+                excl.append([idlist])  # only one result
+        if incl:
+            results = set(incl[0]).intersection(*incl)
+        else:
+            return 
+        if excl:
+            self.display_structures_by_idlist(list(results-set(misc.flatten(excl))))
+        else:
+            self.display_structures_by_idlist(list(results))
 
+    def display_structures_by_idlist(self, idlist: list or set) -> None:
+        """
+        Displays the structures with id in results list
+        """
+        searchresult = self.structures.get_all_structure_names(idlist)
+        self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
+        self.ui.cifList_treeWidget.clear()
+        self.full_list = False
+        for i in searchresult:
+            self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
+        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
+        self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        if idlist:
+            self.ui.tabWidget.setCurrentIndex(0)
 
     def passwd_handler(self):
         """
@@ -185,7 +205,6 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.passwd = self.uipass.setupUi(d)
         ip_dialog = d.exec()
         if ip_dialog == 1:  # Accepted
-            print(self.uipass.userNameLineEdit.text())
             self.import_apex_db(user=self.uipass.userNameLineEdit.text(),
                                 password=self.uipass.PasswordLineEdit.text(),
                                 host=self.uipass.IPlineEdit.text())
@@ -555,7 +574,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
 
-    def search_elements(self, elements) -> list:
+    def search_elements(self, elements: str, anyresult: bool = False) -> list:
         """
         list(set(l).intersection(l2))
         """
@@ -567,7 +586,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         except KeyError:
             self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
         try:
-            res = self.structures.find_by_elements(formula)
+            res = self.structures.find_by_elements(formula, anyresult=anyresult)
         except AttributeError:
             pass
         return list(res)
