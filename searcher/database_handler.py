@@ -746,20 +746,23 @@ class StructureTable():
         """
         Searches cells with volume between upper and lower limit
         :param text: Volume uncertaincy where to search
+        id, name, data, path
         """
         req = '''
-        SELECT * FROM txtsearch WHERE filename MATCH ?
-        UNION
-        SELECT * FROM txtsearch WHERE dataname MATCH ?
+        SELECT StructureId, filename, dataname, path FROM txtsearch WHERE filename MATCH ?
           UNION
-        SELECT * FROM txtsearch WHERE path MATCH ?
+        SELECT StructureId, filename, dataname, path FROM txtsearch WHERE dataname MATCH ?
           UNION
-        SELECT * FROM txtsearch WHERE shelx_res_file MATCH ?
+        SELECT StructureId, filename, dataname, path FROM txtsearch WHERE path MATCH ?
+          UNION
+        SELECT StructureId, filename, dataname, path FROM txtsearch WHERE shelx_res_file MATCH ?
         '''
         try:
-            return self.database.db_request(req, text, text, text, text)
+            ids = self.database.db_request(req, text, text, text, text)
         except (TypeError, sqlite3.ProgrammingError):
             return False
+        print(ids)
+        return ids
 
     def find_by_elements(self, elements: list) -> list:
         """
@@ -770,6 +773,7 @@ class StructureTable():
         >>> db.find_by_elements(['Al', 'ca'])
         {11, 3, 6, 15}
         """
+        # TODO: make that only results where all elements are included get resturned
         import re
         structures = []
         matches = []
@@ -781,7 +785,7 @@ class StructureTable():
                     continue
                 else:
                     structures.extend(result)
-        for el in elements:
+        for el in elements:  # The second search excludes false hits like Ca instead of C
             regex = re.compile(r'[\d|\s]?' + el + r'[\d|\s]', re.IGNORECASE)
             for num, form in structures:
                 if regex.search(form):

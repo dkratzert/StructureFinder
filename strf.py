@@ -154,16 +154,27 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         if cell and len(cell.split()) == 6:
             incl.append(self.search_cell(cell))
         if elincl:
-            incl.extend(self.search_elements(elincl))
+            incl.append(self.search_elements(elincl))
         #    #print(elincl, results)#
-
-        #if txt:
-        #    results.extend(self.structures.find_by_strings(txt))
-        #if elexcl:
-        #    elexcl = self.search_elements(elexcl)
+        if txt:
+            idlist = self.structures.find_by_strings(txt)
+            try:
+                len(idlist)
+                incl.append([i[0] for i in idlist])
+            except:
+                incl.append([idlist])  # only one result
+            #incl.append([i[0] for i in self.structures.find_by_strings(txt)])
+        if elexcl:
+            excl.extend(self.search_elements(elexcl))
             #print('ecluded:', elexcl)
+        if txt_ex:
+            pass
+            #excl.append([i[0] for i in self.structures.find_by_strings(txt)])
         print('results', results)
-        #print(list(set(elexcl) & set(results)))
+        print(incl)
+        print(excl)
+        print('intersect:', set(incl[0]).intersection(*incl))
+        #print(set())
 
 
     def passwd_handler(self):
@@ -461,16 +472,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         except AttributeError as e:
             print(e)
         try:
-            #self.ui.cifList_treeWidget.clear()
             self.statusBar().showMessage("Found {} entries.".format(len(idlist)))
             for i in idlist:
-                # name = i[1]  # .decode("utf-8", "surrogateescape")
-                # data = i[2]
-                # path = i[3]  # .decode("utf-8", "surrogateescape")
-                # id = i[0]
-                #self.add_table_row(i[1], i[3], i[2], i[0])
                 self.add_table_row(name=i[1], path=i[3], id=i[0], data=i[2])
-            #self.ui.cifList_treeWidget.sortByColumn(0, 0)
             self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except:
             self.statusBar().showMessage("Nothing found.")
