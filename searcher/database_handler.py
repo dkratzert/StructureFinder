@@ -787,7 +787,7 @@ class StructureTable():
                 else:
                     structures.extend(result)
         for el in elements:  # The second search excludes false hits like Ca instead of C
-            regex = re.compile(r'[\d|\s]?' + el + r'[\d|\s]', re.IGNORECASE)
+            regex = re.compile(r'[\d|\s]?' + el + r'[\d|\s]*', re.IGNORECASE)
             res = []
             for num, form in structures:
                 if regex.search(form):

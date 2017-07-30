@@ -138,21 +138,20 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
     def advanced_search(self):
         """
         Combines all the search fields
-
-        Included: resuls that are in all incl together
-        excluded: results that are in incl minus the excluded
-        
         """
         excl = []
         incl = []
-        cell = self.ui.ad_unitCellLineEdit.text().strip(' ')
+        try:
+            cell = [float(x) for x in self.ui.ad_unitCellLineEdit.text().strip().split()]
+        except (TypeError, ValueError):
+            return False
         elincl = self.ui.ad_elementsIncLineEdit.text().strip(' ')
         elexcl = self.ui.ad_elementsExclLineEdit.text().strip(' ')
         txt = self.ui.ad_textsearch.text().strip(' ')
         txt_ex = self.ui.ad_textsearch_excl.text().strip(' ')
-        if cell and len(cell.split()) == 6:
-            cellres = self.search_cell(cell)
-            print('cellres:', cellres)
+        if cell and len(cell) == 6:
+            cellres = self.search_cell_idlist(cell)
+            #print('cellres:', cellres)
             incl.append(cellres)
         if elincl:
             incl.append(self.search_elements(elincl))
@@ -179,7 +178,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             except(IndexError, KeyError):
                 excl.append([idlist])  # only one result
         if incl:
-            print('incl:', incl)
+            #print('incl:', incl)
             results = set(incl[0]).intersection(*incl)
         else:
             return
@@ -195,6 +194,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         """
         Displays the structures with id in results list
         """
+        if not idlist:
+            return
         searchresult = self.structures.get_all_structure_names(idlist)
         #print('#searchresult:', searchresult)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
@@ -238,7 +239,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
     @PyQt5.QtCore.pyqtSlot(name="cell_state_changed")
     def cell_state_changed(self):
         """
-        Searches a cell but with diffeent loos or strict option.
+        Searches a cell but with diffeent loose or strict option.
         """
         self.search_cell(self.ui.searchCellLineEDit.text())
 
@@ -508,10 +509,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         except:
             self.statusBar().showMessage("Nothing found.")
 
-    @PyQt5.QtCore.pyqtSlot('QString')
-    def search_cell(self, search_string: str) -> bool:
+    def search_cell_idlist(self, cell: list) -> list:
         """
-        searches db for given cell via the cell volume
+        Searches for a unit cell and resturns a list of ids.
         """
         if self.ui.moreResultsCheckBox.isChecked() or \
                 self.ui.ad_moreResultscheckBox.isChecked():
@@ -522,23 +522,15 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             threshold = 0.03
             ltol = 0.001
             atol = 1
-        self.ui.txtSearchEdit.clear()
         try:
             if not self.structures:
-                return False  # Empty database
+                return []  # Empty database
         except:
-            return False      # No database cursor
-        if not search_string:
-            self.full_list = True
-            self.show_full_list()
-        try:
-            cell = [float(x) for x in search_string.strip().split()]
-        except (TypeError, ValueError):
-            return False
+            return []      # No database cursor
         if len(cell) != 6:
             self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
             #self.show_full_list()
-            return True
+            return []
         try:
             volume = lattice.lattice.vol_unitcell(*cell)
             # First a list of structures where the volume is similar:
@@ -547,7 +539,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             if not self.full_list:
                 self.ui.cifList_treeWidget.clear()
                 self.statusBar().showMessage('Found 0 cells.')
-            return False
+            return []
         # Get a smaller list where only cells are included that have a proper mapping to the input cell:
         idlist2 = []
         if idlist:
@@ -570,12 +562,33 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
                 map = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
                 if map:
                     idlist2.append(i)
-        if not idlist2:
+        return idlist2
+
+    @PyQt5.QtCore.pyqtSlot('QString')
+    def search_cell(self, search_string: str) -> bool:
+        """
+        searches db for given cell via the cell volume
+        """
+        try:
+            cell = [float(x) for x in search_string.strip().split()]
+        except (TypeError, ValueError):
+            return False
+        self.ui.txtSearchEdit.clear()
+        if not search_string:
+            self.full_list = True
+            self.show_full_list()
+            return False
+        if len(cell) != 6:
+            self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
+            #self.show_full_list()
+            return False
+        idlist = self.search_cell_idlist(cell)
+        if not idlist:
             self.ui.cifList_treeWidget.clear()
             self.statusBar().showMessage('Found 0 cells.', msecs=0)
             return False
-        searchresult = self.structures.get_all_structure_names(idlist2)
-        self.statusBar().showMessage('Found {} cells.'.format(len(idlist2)))
+        searchresult = self.structures.get_all_structure_names(idlist)
+        self.statusBar().showMessage('Found {} cells.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for i in searchresult:
@@ -583,6 +596,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             #self.add_table_row(name, path, id)
         #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        return True
 
     def search_elements(self, elements: str, anyresult: bool = False) -> list:
         """
