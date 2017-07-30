@@ -151,7 +151,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         txt = self.ui.ad_textsearch.text().strip(' ')
         txt_ex = self.ui.ad_textsearch_excl.text().strip(' ')
         if cell and len(cell.split()) == 6:
-            incl.append(self.search_cell(cell))
+            cellres = self.search_cell(cell)
+            print('cellres:', cellres)
+            incl.append(cellres)
         if elincl:
             incl.append(self.search_elements(elincl))
             #print('elincl:', elincl)
@@ -177,7 +179,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             except(IndexError, KeyError):
                 excl.append([idlist])  # only one result
         if incl:
-            #print('incl:', incl)
+            print('incl:', incl)
             results = set(incl[0]).intersection(*incl)
         else:
             return
