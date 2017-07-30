@@ -119,6 +119,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
         self.ui.ad_SearchPushButton.clicked.connect(self.advanced_search)
+        self.ui.ad_ShowAllButton.clicked.connect(self.show_full_list)
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
@@ -153,33 +154,39 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             incl.append(self.search_cell(cell))
         if elincl:
             incl.append(self.search_elements(elincl))
+            #print('elincl:', elincl)
         if txt:
-            if len(txt) >= 2:
-                if not "*" in txt:
-                    txt = '*' + txt + '*'
+            if len(txt) >= 2 and "*" not in txt:
+                txt = '*' + txt + '*'
             idlist = self.structures.find_by_strings(txt)
+            #print('txt:', txt, idlist)
             try:
                 incl.append([i[0] for i in idlist])
-            except:
+            except(IndexError, KeyError):
                 incl.append([idlist])  # only one result
         if elexcl:
+            #print('elexcl:', elexcl)
             excl.append(self.search_elements(elexcl, anyresult=True))
         if txt_ex:
-            if len(txt_ex) >= 2:
-                if not "*" in txt_ex:
-                    txt_ex = '*' + txt_ex + '*'
+            if len(txt_ex) >= 2 and "*" not in txt_ex:
+                txt_ex = '*' + txt_ex + '*'
+            #print('txt_ex:', txt_ex)
             idlist = self.structures.find_by_strings(txt_ex)
             try:
                 excl.append([i[0] for i in idlist])
-            except:
+            except(IndexError, KeyError):
                 excl.append([idlist])  # only one result
         if incl:
+            #print('incl:', incl)
             results = set(incl[0]).intersection(*incl)
         else:
-            return 
+            return
         if excl:
+            #print('excl:', misc.flatten(excl))
+            #print('result:', list(results-set(misc.flatten(excl))))
             self.display_structures_by_idlist(list(results-set(misc.flatten(excl))))
         else:
+            #print('result:', list(results))
             self.display_structures_by_idlist(list(results))
 
     def display_structures_by_idlist(self, idlist: list or set) -> None:
@@ -187,6 +194,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         Displays the structures with id in results list
         """
         searchresult = self.structures.get_all_structure_names(idlist)
+        #print('#searchresult:', searchresult)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
@@ -731,6 +739,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
+        self.ui.tabWidget.setCurrentIndex(0)
 
     def clear_fields(self) -> None:
         """

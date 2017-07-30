@@ -362,7 +362,7 @@ class StructureTable():
         :returns [id, meas, path, filename, data]
         """
         if ids:
-            if len(ids) > 2:
+            if len(ids) > 1:
                 ids = tuple(ids)
                 req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
                          Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)

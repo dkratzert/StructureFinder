@@ -1044,7 +1044,7 @@
              <bool>false</bool>
             </property>
             <property name="styleSheet">
-             <string notr="true">background-color: rgb(255, 147, 147);</string>
+             <string notr="true">background-color: rgb(254, 201, 205);</string>
             </property>
             <property name="text">
              <string>Should not contain</string>
@@ -1054,25 +1054,9 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="containsLabel">
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">background-color: rgb(123, 255, 127);</string>
-            </property>
-            <property name="text">
-             <string>Should contain</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <layout class="QGridLayout" name="gridLayout_4">
-            <item row="1" column="1">
+            <item row="0" column="1">
              <widget class="QLineEdit" name="ad_unitCellLineEdit">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1082,34 +1066,34 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
+            <item row="1" column="1">
              <widget class="QLineEdit" name="ad_elementsIncLineEdit"/>
             </item>
-            <item row="1" column="0">
+            <item row="0" column="0">
              <widget class="QLabel" name="unitCellLabel">
               <property name="text">
                <string>Unit Cell</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
+            <item row="2" column="1">
              <widget class="QLineEdit" name="ad_textsearch"/>
             </item>
-            <item row="2" column="0">
+            <item row="1" column="0">
              <widget class="QLabel" name="elementsIncludedLabel">
               <property name="text">
                <string>Elements</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="0">
+            <item row="2" column="0">
              <widget class="QLabel" name="wR2Label_2">
               <property name="text">
                <string>Free Text</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="2">
+            <item row="0" column="2">
              <widget class="QCheckBox" name="ad_moreResultscheckBox">
               <property name="text">
                <string>More Results</string>
@@ -1117,6 +1101,42 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="2" column="0">
+           <spacer name="verticalSpacer_9">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Preferred</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="1" rowspan="3">
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <spacer name="verticalSpacer_8">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
           </item>
           <item row="1" column="2">
            <layout class="QGridLayout" name="gridLayout_7">
@@ -1149,27 +1169,7 @@
             </item>
            </layout>
           </item>
-          <item row="0" column="1" rowspan="3">
-           <widget class="Line" name="line_2">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2">
-           <spacer name="verticalSpacer_8">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item row="2" column="0" alignment="Qt::AlignHCenter">
+          <item row="3" column="0" alignment="Qt::AlignHCenter">
            <widget class="QPushButton" name="ad_SearchPushButton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1188,8 +1188,8 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0" alignment="Qt::AlignHCenter">
-           <widget class="QPushButton" name="ad_ShowAll">
+          <item row="3" column="2" alignment="Qt::AlignHCenter">
+           <widget class="QPushButton" name="ad_ShowAllButton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
               <horstretch>0</horstretch>
@@ -1203,7 +1203,29 @@
              </size>
             </property>
             <property name="text">
-             <string>Show All</string>
+             <string>Clear Search</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="containsLabel">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(173, 255, 167);</string>
+            </property>
+            <property name="text">
+             <string>Should contain</string>
             </property>
            </widget>
           </item>
@@ -1221,7 +1243,7 @@
      <x>0</x>
      <y>0</y>
      <width>1128</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">
@@ -1345,7 +1367,6 @@
   <tabstop>ad_textsearch</tabstop>
   <tabstop>ad_elementsExclLineEdit</tabstop>
   <tabstop>ad_textsearch_excl</tabstop>
-  <tabstop>ad_SearchPushButton</tabstop>
  </tabstops>
  <resources/>
  <connections>
