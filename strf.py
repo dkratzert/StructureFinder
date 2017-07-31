@@ -104,6 +104,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.setWindowIcon(PyQt5.QtGui.QIcon('./icons/monoklin.png'))
         self.uipass = Ui_PasswdDialog()
         self.structureId = ''
+        self.ui.cifList_treeWidget.sortByColumn(0, 0)
 
     def connect_signals_and_slots(self):
         """
@@ -137,13 +138,15 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
     @PyQt5.QtCore.pyqtSlot(name="advanced_search")
     def advanced_search(self):
         """
-        Combines all the search fields
+        Combines all the search fields. Collects all includes, all excludes ad calculates
+        the difference.
         """
         excl = []
         incl = []
         try:
             cell = [float(x) for x in self.ui.ad_unitCellLineEdit.text().strip().split()]
         except (TypeError, ValueError):
+            self.statusBar().showMessage('Invalid unit cell!')
             return False
         elincl = self.ui.ad_elementsIncLineEdit.text().strip(' ')
         elexcl = self.ui.ad_elementsExclLineEdit.text().strip(' ')
@@ -151,43 +154,35 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         txt_ex = self.ui.ad_textsearch_excl.text().strip(' ')
         if cell and len(cell) == 6:
             cellres = self.search_cell_idlist(cell)
-            #print('cellres:', cellres)
             incl.append(cellres)
         if elincl:
             incl.append(self.search_elements(elincl))
-            #print('elincl:', elincl)
         if txt:
             if len(txt) >= 2 and "*" not in txt:
                 txt = '*' + txt + '*'
             idlist = self.structures.find_by_strings(txt)
-            #print('txt:', txt, idlist)
             try:
                 incl.append([i[0] for i in idlist])
             except(IndexError, KeyError):
                 incl.append([idlist])  # only one result
         if elexcl:
-            #print('elexcl:', elexcl)
             excl.append(self.search_elements(elexcl, anyresult=True))
         if txt_ex:
             if len(txt_ex) >= 2 and "*" not in txt_ex:
                 txt_ex = '*' + txt_ex + '*'
-            #print('txt_ex:', txt_ex)
             idlist = self.structures.find_by_strings(txt_ex)
             try:
                 excl.append([i[0] for i in idlist])
             except(IndexError, KeyError):
                 excl.append([idlist])  # only one result
         if incl:
-            #print('incl:', incl)
             results = set(incl[0]).intersection(*incl)
         else:
+            self.statusBar().showMessage('Found 0 structures.')
             return
         if excl:
-            #print('excl:', misc.flatten(excl))
-            #print('result:', list(results-set(misc.flatten(excl))))
             self.display_structures_by_idlist(list(results-set(misc.flatten(excl))))
         else:
-            #print('result:', list(results))
             self.display_structures_by_idlist(list(results))
 
     def display_structures_by_idlist(self, idlist: list or set) -> None:
@@ -197,13 +192,11 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         if not idlist:
             return
         searchresult = self.structures.get_all_structure_names(idlist)
-        #print('#searchresult:', searchresult)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for i in searchresult:
             self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
-        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         if idlist:
             self.ui.tabWidget.setCurrentIndex(0)
@@ -435,6 +428,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         atoms_item = PyQt5.QtWidgets.QTreeWidgetItem()
         self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
         atoms_item.setText(0, 'Atoms')
+        #self.ui.allCifTreeWidget.installEventFilter(self)
         try:
             for at in self.structures.get_atoms_table(structure_id, cartesian=False):
                 data_cif_tree_item = PyQt5.QtWidgets.QTreeWidgetItem(atoms_item)
@@ -728,14 +722,12 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         h, m = divmod(m, 60)
         self.ui.statusbar.showMessage('Added {} APEX entries in: {:>2d} h, {:>2d} m, {:>3.2f} s'
                                       .format(n, int(h), int(m), s), msecs=0)
-        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         if py36:
             self.structures.populate_fulltext_search_table()
         self.structures.database.commit_db("Committed")
         self.abort_import_button.hide()
-
 
     def show_full_list(self) -> None:
         """
@@ -752,7 +744,6 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         mess = "Loaded {} entries.".format(id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
         self.ui.tabWidget.setCurrentIndex(0)
