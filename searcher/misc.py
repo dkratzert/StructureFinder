@@ -11,6 +11,7 @@ Created on 09.02.2015
 @author: daniel
 """
 import math
+import os
 
 from searcher import constants
 
@@ -232,3 +233,16 @@ def get_list_of_elements(formula: str) -> list:
             raise KeyError
     return atlist
 
+
+def remove_file(filename):
+    """
+    removes the file "filename" from disk
+    >>> remove_file('foobar')
+    """
+    if os.path.isfile(filename):
+        try:
+            os.remove(filename)
+        except(IOError, OSError):
+            print('Can not delete {}'.format(filename))
+            return False
+    return True

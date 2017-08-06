@@ -63,7 +63,6 @@ TODO:
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - allow to scan more than one directory. Just add to previous data. Especially for cmd version.
 - Make a web interface with python template to view everything also on a web site.
-- add an advanced search tab where you can search for sum formula, twinning, only elements, names, users, ...
 - grow structure.
   
 Search for:
@@ -94,6 +93,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
         self.show()
+        molf = pathlib.Path("./displaymol/jsmol.htm")
+        molf.write_text(data=' ', encoding="utf-8", errors='ignore')
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
         self.connect_signals_and_slots()
@@ -259,6 +260,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.searchCellLineEDit.clear()
         self.ui.txtSearchEdit.clear()
         self.ui.cifList_treeWidget.clear()
+        molf = pathlib.Path("./displaymol/jsmol.htm")
+        molf.write_text(data=' ', encoding="utf-8", errors='ignore')
+        self.view.reload()
         try:
             self.structures.database.cur.close()
         except:
@@ -509,9 +513,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         """
         if self.ui.moreResultsCheckBox.isChecked() or \
                 self.ui.ad_moreResultscheckBox.isChecked():
-            threshold = 0.06
-            ltol = 0.08
-            atol = 1.5
+            threshold = 0.08
+            ltol = 0.09
+            atol = 1.8
         else:
             threshold = 0.03
             ltol = 0.001

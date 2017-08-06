@@ -987,12 +987,25 @@
                 <property name="spacing">
                  <number>0</number>
                 </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
                 <property name="rightMargin">
                  <number>0</number>
                 </property>
                 <property name="bottomMargin">
                  <number>0</number>
                 </property>
+                <item alignment="Qt::AlignTop">
+                 <widget class="QLabel" name="label_2">
+                  <property name="text">
+                   <string>Asymmetric Unit</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </item>
@@ -1012,8 +1025,14 @@
          <layout class="QVBoxLayout" name="verticalLayout_7">
           <item>
            <widget class="QTreeWidget" name="allCifTreeWidget">
+            <property name="contextMenuPolicy">
+             <enum>Qt::ActionsContextMenu</enum>
+            </property>
             <property name="selectionMode">
              <enum>QAbstractItemView::MultiSelection</enum>
+            </property>
+            <property name="allColumnsShowFocus">
+             <bool>false</bool>
             </property>
             <column>
              <property name="text">
