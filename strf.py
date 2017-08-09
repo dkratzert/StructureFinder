@@ -100,7 +100,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.connect_signals_and_slots()
         if py36:
             self.init_webview()
-        #self.ui.tabWidget.removeTab(2)
+        else:
+            self.ui.tabWidget.removeTab(2)
         self.ui.tabWidget.setCurrentIndex(0)
         self.setWindowIcon(PyQt5.QtGui.QIcon('./icons/monoklin.png'))
         self.uipass = Ui_PasswdDialog()
@@ -324,7 +325,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         Saves the database to a certain file. Therefore I have to close the database.
         """
         status = False
-        save_name, tst = PyQt5.QtWidgets.QFileDialog.getSaveFileName(self, caption='Save File', directory='./', filter="*.sqlite")
+        save_name, tst = PyQt5.QtWidgets.QFileDialog.getSaveFileName(self, caption='Save File', directory='./',
+                                                                     filter="*.sqlite")
         if save_name:
             if shutil._samefile(self.dbfilename, save_name):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)

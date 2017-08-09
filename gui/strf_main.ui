@@ -1150,7 +1150,7 @@
             </property>
            </widget>
           </item>
-          <item row="4" column="2">
+          <item row="5" column="2">
            <spacer name="verticalSpacer_8">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -1194,7 +1194,7 @@
             </item>
            </layout>
           </item>
-          <item row="3" column="0" alignment="Qt::AlignHCenter">
+          <item row="4" column="0" alignment="Qt::AlignHCenter">
            <widget class="QPushButton" name="ad_SearchPushButton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1213,7 +1213,7 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="2" alignment="Qt::AlignHCenter">
+          <item row="4" column="2" alignment="Qt::AlignHCenter">
            <widget class="QPushButton" name="ad_ShowAllButton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -1251,6 +1251,13 @@
             </property>
             <property name="text">
              <string>Should contain</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="3">
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
            </widget>
           </item>
