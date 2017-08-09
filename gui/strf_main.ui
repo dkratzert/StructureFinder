@@ -172,7 +172,7 @@
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="maintab">
        <attribute name="title">
@@ -1114,7 +1114,7 @@
             <item row="2" column="0">
              <widget class="QLabel" name="wR2Label_2">
               <property name="text">
-               <string>Free Text</string>
+               <string>Any Text</string>
               </property>
              </widget>
             </item>
@@ -1168,7 +1168,7 @@
             <item row="2" column="0">
              <widget class="QLabel" name="wR2Label_3">
               <property name="text">
-               <string>Free Text</string>
+               <string>Any Text</string>
               </property>
              </widget>
             </item>
