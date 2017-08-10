@@ -63,7 +63,7 @@ def filewalker_walk(startdir, endings, add_excludes=''):
     return filelist
 
 
-def put_cifs_in_db(self=None, searchpath=''):
+def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
     """
     Imports cif files from a certain directory
     :return: None
@@ -78,11 +78,6 @@ def put_cifs_in_db(self=None, searchpath=''):
         structures = self.structures
     else:
         fname = searchpath
-        dbfilename = "structuredb.sqlite"
-        try:
-            os.remove(dbfilename)
-        except:
-            pass
         db = searcher.database_handler.DatabaseRequest(dbfilename)
         db.initialize_db()
         structures = searcher.database_handler.StructureTable(dbfilename)
@@ -94,14 +89,14 @@ def put_cifs_in_db(self=None, searchpath=''):
     # TODO: implement multiple cells in one cif file:
     n = 1
     min = 0
-    num = 0
+    prognum = 0
     time1 = time.clock()
     for filepth in create_file_list(str(fname), ending='cif'):
         cif = searcher.fileparser.Cif()
-        if num == 20:
-            num = 0
+        if prognum == 20:
+            prognum = 0
         if self:
-            self.progressbar(num, min, 20)
+            self.progressbar(prognum, min, 20)
         if not filepth.is_file():
             continue
         path = str(filepth.parents[0])
@@ -130,7 +125,7 @@ def put_cifs_in_db(self=None, searchpath=''):
             if n % 1000 == 0:
                 print('{} files ...'.format(n))
                 structures.database.commit_db()
-            num += 1
+            prognum += 1
         if self:
             if not self.decide_import:
                 # This means, import was aborted.

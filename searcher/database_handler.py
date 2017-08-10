@@ -48,22 +48,24 @@ class DatabaseRequest():
         initializtes the db
         """
         #self.con.execute("PRAGMA foreign_keys = ON")
-        self.cur.execute("DROP TABLE IF EXISTS structure")
-        self.cur.execute("DROP TABLE IF EXISTS measurement")
-        self.cur.execute("DROP TABLE IF EXISTS cell")
-        self.cur.execute("DROP TABLE IF EXISTS Atoms")
-        self.cur.execute("DROP TABLE IF EXISTS niggli_cell")
-        self.cur.execute("DROP TABLE IF EXISTS Residuals")
+        #self.cur.execute("DROP TABLE IF EXISTS structure")
+        ##self.cur.execute("DROP TABLE IF EXISTS measurement")
+        #self.cur.execute("DROP TABLE IF EXISTS cell")
+        #self.cur.execute("DROP TABLE IF EXISTS Atoms")
+        #self.cur.execute("DROP TABLE IF EXISTS niggli_cell")
+        #self.cur.execute("DROP TABLE IF EXISTS Residuals")
+        self.cur.execute("DROP TABLE IF EXISTS txtsearch")
+        self.cur.execute("DROP TABLE IF EXISTS ElementSearch")
 
         self.cur.execute('''
-                    CREATE TABLE measurement (
+                    CREATE TABLE IF NOT EXISTS measurement (
                         Id    INTEGER NOT NULL,
                         name    VARCHAR(255),
                         PRIMARY KEY(Id));
                     ''')
 
         self.cur.execute('''
-                    CREATE TABLE Structure (
+                    CREATE TABLE IF NOT EXISTS Structure (
                         Id    INTEGER NOT NULL,
                         measurement INTEGER NOT NULL,
                         path          TEXT,
@@ -77,7 +79,7 @@ class DatabaseRequest():
                     ''')
 
         self.cur.execute('''
-                    CREATE TABLE Atoms (
+                    CREATE TABLE IF NOT EXISTS Atoms (
                         Id    INTEGER NOT NULL,
                         StructureId    INTEGER NOT NULL,
                         Name       TEXT,
@@ -113,7 +115,7 @@ class DatabaseRequest():
             """)
 
         self.cur.execute('''
-                    CREATE TABLE Residuals (
+                    CREATE TABLE IF NOT EXISTS Residuals (
                         Id                                      INTEGER NOT NULL,
                         StructureId                             INTEGER NOT NULL,
                         _cell_formula_units_Z                   INTEGER,
@@ -178,7 +180,7 @@ class DatabaseRequest():
 
         self.cur.execute(
                     '''
-                    CREATE TABLE cell (
+                    CREATE TABLE IF NOT EXISTS cell (
                         Id        INTEGER NOT NULL,
                         StructureId    INTEGER NOT NULL,
                         a    FLOAT,
@@ -204,7 +206,7 @@ class DatabaseRequest():
 
         self.cur.execute(
                     '''
-                    CREATE TABLE niggli_cell (
+                    CREATE TABLE IF NOT EXISTS niggli_cell (
                                 Id        INTEGER NOT NULL,
                                 StructureId    INTEGER NOT NULL,
                                 a    FLOAT,
@@ -220,7 +222,22 @@ class DatabaseRequest():
                                   ON UPDATE NO ACTION);
                     '''
                     )
-        
+
+    def get_lastrowid(self):
+        """
+        Retrurns the last rowid of a loaded database.
+
+        >>> db = DatabaseRequest('test.sqlite')
+        >>> db.get_lastrowid()
+        """
+        lastid = self.db_fetchone("""SELECT max(id) FROM Structure""")
+        try:
+            return lastid[0]
+        except TypeError:
+            # No database or empty table:
+            return 0
+
+
     def db_fetchone(self, request):
         """
         fetches one db entry
@@ -819,8 +836,8 @@ class StructureTable():
 if __name__ == '__main__':
     from searcher import filecrawler
     #searcher.filecrawler.put_cifs_in_db(searchpath='../')
-    db = StructureTable('../structuredb.sqlite')
+    db = DatabaseRequest('./structuredb.sqlite')
 #    db.database.initialize_db()
-    out = db.find_by_elements(['Cu', 'Al'])
+    out = db.get_lastrowid()
     print(out)
 
