@@ -76,6 +76,8 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
         self.start_db()
         fname = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         structures = self.structures
+        # This can not work in the gui, because we don't have a database file in every case (tmpfile)
+        #db = searcher.database_handler.DatabaseRequest(os.path.join(fname, dbfilename))
     else:
         fname = searchpath
         db = searcher.database_handler.DatabaseRequest(dbfilename)
@@ -87,7 +89,11 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
         self.ui.cifList_treeWidget.show()
         self.abort_import_button.show()
     # TODO: implement multiple cells in one cif file:
-    n = 1
+    lastid = db.get_lastrowid()
+    if lastid <= 1:
+        n = 1
+    else:
+        n = lastid
     min = 0
     prognum = 0
     time1 = time.clock()
