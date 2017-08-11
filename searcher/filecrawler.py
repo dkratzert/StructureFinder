@@ -23,9 +23,7 @@ import searcher.atoms
 import searcher.database_handler
 import searcher.fileparser
 
-excluded_names = (
-        {'ROOT', '.OLEX', 'TMP', 'TEMP', 'akfischer', 'Papierkorb', 'Recycle.Bin'}
-    )
+excluded_names = ['ROOT', '.OLEX', 'TMP', 'TEMP', 'Papierkorb', 'Recycle.Bin']
 
 
 def create_file_list(searchpath='None', ending='cif'):
@@ -63,11 +61,12 @@ def filewalker_walk(startdir, endings, add_excludes=''):
     return filelist
 
 
-def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
+def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite", excludes=excluded_names):
     """
     Imports cif files from a certain directory
     :return: None
     """
+    lastid = 1
     if self:
         import PyQt5.QtWidgets
         self.tmpfile = True
@@ -82,6 +81,9 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
         fname = searchpath
         db = searcher.database_handler.DatabaseRequest(dbfilename)
         db.initialize_db()
+        lastid = db.get_lastrowid()
+        if not lastid:
+            lastid = 0
         structures = searcher.database_handler.StructureTable(dbfilename)
     if not fname:
         return False
@@ -89,13 +91,13 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
         self.ui.cifList_treeWidget.show()
         self.abort_import_button.show()
     # TODO: implement multiple cells in one cif file:
-    lastid = db.get_lastrowid()
     if lastid <= 1:
         n = 1
     else:
-        n = lastid
+        n = lastid + 1
     min = 0
     prognum = 0
+    num = 1
     time1 = time.clock()
     for filepth in create_file_list(str(fname), ending='cif'):
         cif = searcher.fileparser.Cif()
@@ -109,7 +111,7 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
         match = False
         if filepth.name == 'xd_geo.cif':  # Exclude xdgeom cif files
             continue
-        for ex in excluded_names:
+        for ex in excludes:
             if re.search(ex, path, re.I):
                 match = True
         if match:
@@ -128,6 +130,7 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
             if self:
                 self.add_table_row(filepth.name, path, cif.cif_data['data'], str(n))
             n += 1
+            num += 1
             if n % 1000 == 0:
                 print('{} files ...'.format(n))
                 structures.database.commit_db()
@@ -148,13 +151,13 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
     h, m = divmod(m, 60)
     tmessage = 'Added {} cif files to database in: {:>2d} h, {:>2d} m, {:>3.2f} s'
     if self:
-        self.ui.statusbar.showMessage(tmessage.format(n, int(h), int(m), s))
+        self.ui.statusbar.showMessage(tmessage.format(num-1, int(h), int(m), s))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.abort_import_button.hide()
     else:
-        print(tmessage.format(n - 1, int(h), int(m), s))
+        print(tmessage.format(num - 1, int(h), int(m), s))
 
 
 
