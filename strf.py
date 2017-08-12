@@ -103,7 +103,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         else:
             self.ui.tabWidget.removeTab(2)
         self.ui.tabWidget.setCurrentIndex(0)
-        self.setWindowIcon(PyQt5.QtGui.QIcon('./icons/monoklin.png'))
+        self.setWindowIcon(PyQt5.QtGui.QIcon('./icons/strf.png'))
         self.uipass = Ui_PasswdDialog()
         self.structureId = ''
         self.ui.cifList_treeWidget.sortByColumn(0, 0)
@@ -784,7 +784,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
 if __name__ == "__main__":
     # later http://www.pyinstaller.org/
     app = PyQt5.QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(PyQt5.QtGui.QIcon('./icons/monoklin.png'))
+    app.setWindowIcon(PyQt5.QtGui.QIcon('./icons/strf.png'))
     app.setApplicationName("StructureFinder")
     app.setApplicationDisplayName("StructureFinder")
     myapp = StartStructureDB()
