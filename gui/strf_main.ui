@@ -1269,44 +1269,6 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>1128</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="fileMenu">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="actionImport_directory"/>
-    <addaction name="actionImport_file"/>
-    <addaction name="actionSave_Database"/>
-    <addaction name="actionClose_Database"/>
-    <addaction name="separator"/>
-    <addaction name="actionExit"/>
-   </widget>
-   <widget class="QMenu" name="menuEdit">
-    <property name="title">
-     <string>edit</string>
-    </property>
-    <addaction name="separator"/>
-    <addaction name="actionOptions"/>
-   </widget>
-   <widget class="QMenu" name="menuHelp">
-    <property name="title">
-     <string>help</string>
-    </property>
-    <addaction name="actionUser_manual"/>
-    <addaction name="actionAbout_StructureDB"/>
-   </widget>
-   <addaction name="fileMenu"/>
-   <addaction name="menuEdit"/>
-   <addaction name="menuHelp"/>
-  </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionExit">
    <property name="text">

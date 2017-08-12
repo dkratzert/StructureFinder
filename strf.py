@@ -20,8 +20,9 @@ from searcher.constants import py36
 
 __metaclass__ = type  # use new-style classes
 
-import sys
+VERSION = 4
 
+import sys
 import time
 import math
 import os
@@ -74,12 +75,11 @@ Search for:
 
 
 class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
-        self.statusBar().showMessage('Ready', msecs=8000)
+        self.statusBar().showMessage('StructureFinder version {}'.format(VERSION))
         self.ui.cifList_treeWidget.show()
         self.ui.cifList_treeWidget.hideColumn(3)
         self.dbfdesc = None
