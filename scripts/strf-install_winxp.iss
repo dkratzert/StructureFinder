@@ -2,9 +2,9 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "2"
+#define MyAppVersion "3"
 #define MyAppPublisher "Daniel Kratzert"
-#define PzipFile "Python3.4_32-XP"
+#define PzipFile "Python3.4_32-XP.7z"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -15,7 +15,7 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={pf}\StructureFinder
-OutputBaseFilename=StructureFinder-setup-winXP-{#MyAppVersion}
+OutputBaseFilename=StructureFinder-setup-winXP-v{#MyAppVersion}
 Compression=lzma2/fast
 SolidCompression=yes
 SetupLogging=True
@@ -71,8 +71,8 @@ Source: "..\gui\strf_main.ui"; DestDir: "{app}\gui";
 Source: "..\gui\strf_dbpasswd.ui"; DestDir: "{app}\gui"; 
 Source: "win\strf_winXP.bat"; DestDir: "{app}"; DestName: "strf.bat"
 ; Caution change accordingly:
-;Source: "F:\Programmieren\StructureFinder_distrib\{#PzipFile}.zip"; DestDir: "{app}"; Flags: deleteafterinstall;
-Source: "C:\tools\{#PzipFile}.7z"; DestDir: "{app}"; Flags: deleteafterinstall;
+Source: "F:\Programmieren\StructureFinder_distrib\{#PzipFile}"; DestDir: "{app}"; Flags: deleteafterinstall;
+;Source: "C:\tools\{#PzipFile}.7z"; DestDir: "{app}"; Flags: deleteafterinstall;
 
 [Run]
 ; Caution change accordingly: 

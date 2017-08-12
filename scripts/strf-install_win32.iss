@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "2"
+#define MyAppVersion "3"
 #define MyAppPublisher "Daniel Kratzert"
 #define pzipfile "Python3.6.1-32.7z"
 
@@ -15,7 +15,7 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={pf}\StructureFinder
-OutputBaseFilename=StructureFinder-setup-{#MyAppVersion}
+OutputBaseFilename=StructureFinder-setup-v{#MyAppVersion}
 Compression=lzma2/fast
 SolidCompression=yes
 SetupLogging=True
@@ -72,7 +72,9 @@ Source: "..\strf_cmd.py"; DestDir: "{app}";
 Source: "..\gui\strf_main.ui"; DestDir: "{app}\gui"; 
 Source: "..\gui\strf_dbpasswd.ui"; DestDir: "{app}\gui"; 
 Source: "win\strf_win_32.bat"; DestDir: "{app}"; DestName: "strf.bat"
-Source: "C:\tools\{#pzipfile}"; DestDir: "{app}"; Flags: deleteafterinstall;
+; Caution change accordingly:
+Source: "F:\Programmieren\StructureFinder_distrib\{#PzipFile}"; DestDir: "{app}"; Flags: deleteafterinstall;
+;Source: "C:\tools\{#pzipfile}"; DestDir: "{app}"; Flags: deleteafterinstall;
 
 [Run]
 Filename: "{app}\misc\7z.exe"; Parameters: "x ""{app}\{#pzipfile}"" -o""{app}"" * -r -aoa"; Flags: runascurrentuser postinstall; 
