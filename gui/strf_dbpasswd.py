@@ -78,7 +78,7 @@ class Ui_PasswdDialog(object):
         self.NameLabel.setText(_translate("PasswdDialog", "Username"))
         self.userNameLineEdit.setText(_translate("PasswdDialog", "BrukerPostgreSQL"))
         self.PasswordLabel.setText(_translate("PasswdDialog", "Password"))
-        self.PasswordLineEdit.setText(_translate("PasswdDialog", "BrukerPostgreSQL"))
+        self.PasswordLineEdit.setText(_translate("PasswdDialog", "Bruker-PostgreSQL"))
         self.IPLabel.setText(_translate("PasswdDialog", "IP Adress"))
         self.IPlineEdit.setText(_translate("PasswdDialog", "localhost"))
 
