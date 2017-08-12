@@ -84,7 +84,7 @@
        <item row="3" column="1">
         <widget class="QLineEdit" name="PasswordLineEdit">
          <property name="text">
-          <string>BrukerPostgreSQL</string>
+          <string>Bruker-PostgreSQL</string>
          </property>
         </widget>
        </item>
