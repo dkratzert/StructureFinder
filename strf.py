@@ -261,8 +261,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.searchCellLineEDit.clear()
         self.ui.txtSearchEdit.clear()
         self.ui.cifList_treeWidget.clear()
-        molf = pathlib.Path("./displaymol/jsmol.htm")
-        molf.write_text(data=' ', encoding="utf-8", errors='ignore')
+        if py36:
+            molf = pathlib.Path("./displaymol/jsmol.htm")
+            molf.write_text(data=' ', encoding="utf-8", errors='ignore')
         self.view.reload()
         try:
             self.structures.database.cur.close()
