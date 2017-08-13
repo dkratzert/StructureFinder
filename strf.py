@@ -93,12 +93,12 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
         self.show()
-        molf = pathlib.Path("./displaymol/jsmol.htm")
-        molf.write_text(data=' ', encoding="utf-8", errors='ignore')
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
         self.connect_signals_and_slots()
         if py36:
+            molf = pathlib.Path("./displaymol/jsmol.htm")
+            molf.write_text(data=' ', encoding="utf-8", errors='ignore')
             self.init_webview()
         else:
             self.ui.tabWidget.removeTab(2)
