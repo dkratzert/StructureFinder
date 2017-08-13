@@ -72,12 +72,10 @@ Source: "..\gui\strf_dbpasswd.ui"; DestDir: "{app}\gui";
 Source: "win\strf_winXP.bat"; DestDir: "{app}"; DestName: "strf.bat"
 ; Caution change accordingly:
 Source: "F:\Programmieren\StructureFinder_distrib\{#PzipFile}"; DestDir: "{app}"; Flags: deleteafterinstall;
-;Source: "C:\tools\{#PzipFile}.7z"; DestDir: "{app}"; Flags: deleteafterinstall;
+;Source: "C:\tools\{#PzipFile}"; DestDir: "{app}"; Flags: deleteafterinstall;
 
 [Run]
-; Caution change accordingly: 
-Filename: "{app}\misc\7z.exe"; Parameters: "x ""{app}\{#PzipFile}.7z"" -o""{app}"" * -r -aoa"; Flags: runascurrentuser postinstall; 
-;Filename: "{app}\misc\7z.exe"; Parameters: "x ""{app}\{#PzipFile}.zip"" -o""{app}"" * -r -aoa"; Flags: runascurrentuser postinstall; 
+Filename: "{app}\misc\7z.exe"; Parameters: "x ""{app}\{#PzipFile}"" -o""{app}"" * -r -aoa"; Flags: runascurrentuser postinstall;
 
 
 [Icons]
