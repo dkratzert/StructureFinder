@@ -264,7 +264,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         if py36:
             molf = pathlib.Path("./displaymol/jsmol.htm")
             molf.write_text(data=' ', encoding="utf-8", errors='ignore')
-        self.view.reload()
+            self.view.reload()
         try:
             self.structures.database.cur.close()
         except:
