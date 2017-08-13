@@ -14,7 +14,7 @@ Created on 09.02.2015
 """
 from __future__ import print_function
 
-from PyQt5 import QtCore
+#from PyQt5 import QtCore
 
 from searcher.constants import py36
 
