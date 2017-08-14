@@ -58,6 +58,7 @@ from gui.strf_dbpasswd import Ui_PasswdDialog
 
 """
 TODO:
+- search for sub or supercells
 - VCredist 2015 https://www.microsoft.com/de-de/download/details.aspx?id=48145
   and 2010 https://www.microsoft.com/de-de/download/details.aspx?id=5555
 - add rightclick: copy unit cell on unit cell field
@@ -102,6 +103,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.init_webview()
         else:
             self.ui.tabWidget.removeTab(2)
+            self.ui.txtSearchEdit.hide()
+            self.ui.txtSearchLabel.hide()
+            self.ui.openglview.hide()
         self.ui.tabWidget.setCurrentIndex(0)
         self.setWindowIcon(PyQt5.QtGui.QIcon('./icons/strf.png'))
         self.uipass = Ui_PasswdDialog()
@@ -462,6 +466,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
 
     def display_molecule(self, cell: list, structure_id: str) -> None:
         """
+        Creates a html file from a mol file to display the molecule in jsmol-lite
         """
         mol = ' '
         p = pathlib.Path("./displaymol/jsmol-template.htm")
