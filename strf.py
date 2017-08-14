@@ -59,6 +59,21 @@ from gui.strf_dbpasswd import Ui_PasswdDialog
 """
 TODO:
 - search for sub or supercells
+- index also zip files
+from pathlib import Path
+from shutil import unpack_archive
+
+zip_files = Path(r"C:\Project\layers").rglob("*.zip")
+while True:
+    try:
+        path = next(zip_files)
+    except StopIteration:
+        break # no more files
+    except PermissionError:
+        continue
+    else:
+         extract_dir = path.with_name(path.stem)
+         unpack_archive(str(path), str(extract_dir), 'zip')
 - VCredist 2015 https://www.microsoft.com/de-de/download/details.aspx?id=48145
   and 2010 https://www.microsoft.com/de-de/download/details.aspx?id=5555
 - add rightclick: copy unit cell on unit cell field
