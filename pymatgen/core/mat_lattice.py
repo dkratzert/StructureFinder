@@ -39,8 +39,7 @@ __status__ = "Production, modified by Daniel Kratzert"
 __date__ = "Sep 23, 2011"
 
 
-
-class Lattice():
+class Lattice(object):
     """
     A lattice object.  Essentially a matrix with conversion matrices. In
     general, it is assumed that length units are in Angstroms and angles are in
@@ -317,6 +316,15 @@ class Lattice():
                     b * np.cos(alpha_r)]
         vector_c = [0.0, 0.0, float(c)]
         return Lattice([vector_a, vector_b, vector_c])
+
+    @staticmethod
+    def from_parameters_niggli_reduced(a: float, b: float, c: float,
+                                       alpha: float, beta: float, gamma: float):
+        """
+        Returns the niggli reduced lattice of
+        """
+        latt = Lattice.from_parameters(a, b, c, alpha, beta, gamma)
+        return latt.get_niggli_reduced_lattice()
 
     @property
     def angles(self):

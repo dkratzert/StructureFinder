@@ -549,7 +549,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         # Get a smaller list where only cells are included that have a proper mapping to the input cell:
         idlist2 = []
         if idlist:
-            lattice1 = pymatgen.core.mat_lattice.Lattice.from_parameters(*cell)
+            lattice1 = pymatgen.core.mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
             self.statusBar().clearMessage()
             for num, i in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist)-1)
