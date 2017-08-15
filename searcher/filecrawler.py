@@ -177,7 +177,8 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
                             if cif:
                                 tst = fill_db_tables(cif, filename=z.filename, path=fullpath, structure_id=n, structures=structures)
                                 if not tst:
-                                    print('#####', fullpath)
+                                    print('#####')
+                                    print(fullpath)
                                     continue
                                 if self:
                                     self.add_table_row(z.filename, fullpath, cif.cif_data['data'], str(n))
