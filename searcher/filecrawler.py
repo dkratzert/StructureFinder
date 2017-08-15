@@ -12,6 +12,7 @@ Created on 09.02.2015
 
 @author: Daniel Kratzert
 """
+import fnmatch
 import time
 import os
 import re
@@ -27,20 +28,9 @@ from zipfile import ZipFile, BadZipFile, LargeZipFile
 excluded_names = ['ROOT', '.OLEX', 'TMP', 'TEMP', 'Papierkorb', 'Recycle.Bin']
 
 
-def zipopener(file):
+def zipopener(file: os.path) -> list:
     """
     Opens a zip file and returns a list of cif files in the zip file.
-
-    >>> p = Path('test-data/Archiv.zip')
-    >>> zipopener(p)
-    Archiv/atomstwoline.cif
-    Archiv/breit_tb13_85.cif
-    Archiv/COD/1000000.cif
-    Archiv/COD/4060310.cif
-    Archiv/COD/4060311.cif
-    Archiv/COD/4060317.cif
-    Archiv/hubert.cif
-    Archiv/hubert2.cif
     """
     names = []
     try:
@@ -49,7 +39,7 @@ def zipopener(file):
                 if f.filename.endswith('.cif'):
                     if not f.filename.startswith('__') and f.file_size < 150000000:
                         # print(f.filename)  # for testing
-                        names.append(f)
+                        names.append(f.)
     except (BadZipFile, LargeZipFile):
         return []
     return names
@@ -79,18 +69,27 @@ def filewalker_walk(startdir, add_excludes=''):
         excludes.extend(add_excludes)
     excludes = excluded_names
     print('collecting files below ' + startdir)
-    for root, dirs, files in os.walk(startdir):  # @UnusedVariable
-        for num, filen in enumerate(files):
-            if filen.fnmatch(filen, '*.cif') or filen.fnmatch(filen, '*.zip'):
-                if os.stat(os.path.join(root, filen)).st_size == 0:
+    for root, _, files in os.walk(startdir):
+        for filen in files:
+            if fnmatch.fnmatch(filen, '*.cif') or fnmatch.fnmatch(filen, '*.zip'):
+                fullpath = os.path.join(root, filen)
+                #print(fullpath)
+                if os.stat(fullpath).st_size == 0:
                     continue
-                filelist.append([os.path.join(root, filen), filen])
+                for ex in excludes:
+                    if re.search(ex, fullpath, re.I):
+                        continue
+                if filen == 'xd_geo.cif':  # Exclude xdgeom cif files
+                    continue
+                if filen == 'xd_four.cif':  # Exclude xdfourier cif files
+                    continue
+                filelist.append([root, filen])
             else:
                 continue
     return filelist
 
 
-def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite", excludes=excluded_names):
+def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
     """
     Imports cif files from a certain directory
     :return: None
@@ -130,42 +129,57 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite", ex
     prognum = 0
     num = 1
     time1 = time.clock()
-    for filepth in create_file_list(str(fname), ending='cif'):
+    filelist = filewalker_walk(str(fname))
+    for filepth, name in filelist:
+        cifok = False
+        fullpath = os.path.join(filepth, name)
         cif = searcher.fileparser.Cif()
         if prognum == 20:
             prognum = 0
         if self:
             self.progressbar(prognum, min, 20)
-        if not filepth.is_file():
-            continue
-        path = str(filepth.parents[0])
-        match = False
-        if filepth.name == 'xd_geo.cif':  # Exclude xdgeom cif files
-            continue
-        for ex in excludes:
-            if re.search(ex, path, re.I):
-                match = True
-        if match:
-            continue
-        try:
-            cifok = cif.parsefile(filepth)
-        except IndexError:
-            continue
-        if not cifok:
-            continue
-        if cif:
-            # tst is the StructureId
-            tst = fill_db_tables(cif, filepth.name, path, n, structures)
-            if not tst:
-                continue
-            if self:
-                self.add_table_row(filepth.name, path, cif.cif_data['data'], str(n))
-            n += 1
-            num += 1
-            if n % 1000 == 0:
-                print('{} files ...'.format(n))
-                structures.database.commit_db()
-            prognum += 1
+
+        if not name.endswith('.zip'):
+            with open(fullpath, mode='r', encoding='ascii', errors="ignore") as f:
+                try:
+                    cifok = cif.parsefile(f.readlines())
+                    if not cifok:
+                        continue
+                except IndexError:
+                    continue
+                if cif:
+                    tst = fill_db_tables(cif, filename=name, path=filepth, structure_id=n, structures=structures)
+                    if not tst:
+                        continue
+                    if self:
+                        self.add_table_row(name, filepth, cif.cif_data['data'], str(n))
+                    n += 1
+                    num += 1
+                    if n % 1000 == 0:
+                        print('{} files ...'.format(n))
+                        structures.database.commit_db()
+                    prognum += 1
+        else:
+            for z in zipopener(fullpath):
+                try:
+                    cifok = cif.parsefile(z.read().split(os.linesep))
+                    if not cifok:
+                        continue
+                except IndexError:
+                    continue
+                if cif:
+                    tst = fill_db_tables(cif, filename=name, path=filepth, structure_id=n, structures=structures)
+                    if not tst:
+                        continue
+                    if self:
+                        self.add_table_row(name, filepth, cif.cif_data['data'], str(n))
+                    n += 1
+                    num += 1
+                    if n % 1000 == 0:
+                        print('{} files ...'.format(n))
+                        structures.database.commit_db()
+                    prognum += 1
+
         if self:
             if not self.decide_import:
                 # This means, import was aborted.

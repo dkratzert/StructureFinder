@@ -89,7 +89,7 @@ class Cif():
             "_shelx_res_file": ''
             }
 
-    def parsefile(self, file: pathlib.Path):
+    def parsefile(self, txt):
         """
         This method parses the cif file. Currently, only single items and atoms are supported.
         :param file: Cif file name
@@ -111,131 +111,129 @@ class Cif():
         semi_colon_text_field = ''
         semi_colon_text_list = []
         cont = False  # continue to next line if True
-        with file.open(mode='r', encoding='ascii', errors="ignore") as f:
-            txt = f.readlines()
-            textlen = len(txt)
-            for num, line in enumerate(txt):
-                line = line.rstrip('\r\n ')
-                if not line:
-                    loop = False
+        textlen = len(txt)
+        for num, line in enumerate(txt):
+            line = line.rstrip('\r\n ')
+            if not line:
+                loop = False
+                loophead_list.clear()
+                atkey = ''
+                symm = False
+                continue
+            if line[0] == "_" and loop_body:
+                loop = False
+                loop_body = False
+                symm = False
+            if loop:
+                line = line.lstrip()
+                # leave out comments:
+                if line[0] == '#':
+                    continue
+                # to collect the two parts of an atom loop (have to do it more general):
+                if line == '_atom_site_label':
+                    atkey = '_atom_site_label'
+                if line == '_atom_site_aniso_label':
+                    atkey = '_atom_site_aniso_label'
+                if line == "_space_group_symop_operation_xyz" or line == '_symmetry_equiv_pos_as_xyz':
+                    symm = '_space_group_symop_operation_xyz'
+                    continue
+                if line[:5] == "loop_":
+                    loop = True
+                    loop_body = False
                     loophead_list.clear()
                     atkey = ''
                     symm = False
                     continue
-                if line[0] == "_" and loop_body:
-                    loop = False
-                    loop_body = False
-                    symm = False
-                if loop:
-                    line = line.lstrip()
-                    # leave out comments:
-                    if line[0] == '#':
-                        continue
-                    # to collect the two parts of an atom loop (have to do it more general):
-                    if line == '_atom_site_label':
-                        atkey = '_atom_site_label'
-                    if line == '_atom_site_aniso_label':
-                        atkey = '_atom_site_aniso_label'
-                    if line == "_space_group_symop_operation_xyz" or line == '_symmetry_equiv_pos_as_xyz':
-                        symm = '_space_group_symop_operation_xyz'
-                        continue
-                    if line[:5] == "loop_":
-                        loop = True
-                        loop_body = False
-                        loophead_list.clear()
-                        atkey = ''
-                        symm = False
-                        continue
-                    if symm:
-                        symmlist.append(line)
-                    if line[0] != "_":
-                        loop_body = True
-                    # Loop header started, collecting keywords from head:
-                    if line[0] == "_" and atkey:
-                        loophead_list.append(line)
-                        continue
-                    # We are in a loop and the header ended, so we collect data:
-                    if loop_body and atkey:
-                        loopitem = {}  # a line from the loop body, e.g. an atom
-                        loop_data_line = delimit_line(line)
-                        if cont:  # a continuation line
-                            cont = False
-                            continue
-                        # unwrap loop data:
-                        if len(loop_data_line) != len(loophead_list):
-                            if textlen - 1 > num:
-                                loop_data_line.extend(delimit_line(txt[num + 1].strip("\r\n ")))
-                                cont = True
-                            continue
-                        for n, item in enumerate(loop_data_line):
-                            loopitem[loophead_list[n]] = item
-                        if cont:
-                            continue
-                        # TODO: make this general. Not only for atoms:
-                        if atkey and loopitem[atkey] in atoms:
-                            # atom is already there, upating values
-                            atoms[loopitem[atkey]].update(loopitem)
-                        elif atkey:
-                            # atom is not there, creating key
-                            atoms[loopitem[atkey]] = loopitem  # loopitem[atkey] is the atoms name
+                if symm:
+                    symmlist.append(line)
+                if line[0] != "_":
+                    loop_body = True
+                # Loop header started, collecting keywords from head:
+                if line[0] == "_" and atkey:
+                    loophead_list.append(line)
                     continue
-                # Leave out save_ frames:
-                if save_frame:
-                    continue
-                if line[:5] == "save_":
-                    save_frame = True
-                    continue
-                elif line[:5] == "save_" and save_frame:
-                    save_frame = False
-                # First find the start of the cif (the data tag)
-                if line[:5] == 'data_':
-                    if not data:
-                        name = line.split('_')[1].strip('\n\r')
-                        self.cif_data['data'] = name
-                        data = True
+                # We are in a loop and the header ended, so we collect data:
+                if loop_body and atkey:
+                    loopitem = {}  # a line from the loop body, e.g. an atom
+                    loop_data_line = delimit_line(line)
+                    if cont:  # a continuation line
+                        cont = False
                         continue
-                    else:   # break in occurence of a second data_
-                        break
-                # Find the loop positions:
-                if line[:5] == "loop_":
-                    loop = True
-                    continue
-                # Collect all data items outside loops:
-                if line.startswith('_') and not loop:
-                    lsplit = line.split()
-                    # add regular cif items:
-                    if len(lsplit) > 1:
-                        self.cif_data[lsplit[0]] = " ".join(delimit_line(" ".join(lsplit[1:])))
+                    # unwrap loop data:
+                    if len(loop_data_line) != len(loophead_list):
+                        if textlen - 1 > num:
+                            loop_data_line.extend(delimit_line(txt[num + 1].strip("\r\n ")))
+                            cont = True
                         continue
-                    # add one-liners that are just in the next line:
-                    if len(lsplit) == 1 and txt[num + 1]:
-                        if txt[num + 1][0] != ';' and txt[num + 1][0] != "_":
-                            self.cif_data[lsplit[0]] = " ".join(delimit_line(txt[num + 1]))
-                            continue
-                if line.startswith("_shelx_hkl_file") or line.startswith("_refln_"):
-                    hkl = True
+                    for n, item in enumerate(loop_data_line):
+                        loopitem[loophead_list[n]] = item
+                    if cont:
+                        continue
+                    # TODO: make this general. Not only for atoms:
+                    if atkey and loopitem[atkey] in atoms:
+                        # atom is already there, upating values
+                        atoms[loopitem[atkey]].update(loopitem)
+                    elif atkey:
+                        # atom is not there, creating key
+                        atoms[loopitem[atkey]] = loopitem  # loopitem[atkey] is the atoms name
+                continue
+            # Leave out save_ frames:
+            if save_frame:
+                continue
+            if line[:5] == "save_":
+                save_frame = True
+                continue
+            elif line[:5] == "save_" and save_frame:
+                save_frame = False
+            # First find the start of the cif (the data tag)
+            if line[:5] == 'data_':
+                if not data:
+                    name = line.split('_')[1].strip('\n\r')
+                    self.cif_data['data'] = name
+                    data = True
                     continue
-                # Leave out hkl frames:
-                if hkl:
+                else:   # break in occurence of a second data_
                     break
-                    # continue  # use continue if data is behind hkl
-                if line.lstrip()[0] == ";" and hkl:
-                    hkl = False
+            # Find the loop positions:
+            if line[:5] == "loop_":
+                loop = True
+                continue
+            # Collect all data items outside loops:
+            if line.startswith('_') and not loop:
+                lsplit = line.split()
+                # add regular cif items:
+                if len(lsplit) > 1:
+                    self.cif_data[lsplit[0]] = " ".join(delimit_line(" ".join(lsplit[1:])))
                     continue
-                if semi_colon_text_field:
-                    if not line.lstrip().startswith(";"):
-                        semi_colon_text_list.append(line)
-                    if (textlen - 1 > num) and txt[num + 1][0] == ";":
-                        self.cif_data[semi_colon_text_field] = "{}".format(os.linesep).join(semi_colon_text_list)
-                        semi_colon_text_list.clear()
-                        semi_colon_text_field = ''
+                # add one-liners that are just in the next line:
+                if len(lsplit) == 1 and txt[num + 1]:
+                    if txt[num + 1][0] != ';' and txt[num + 1][0] != "_":
+                        self.cif_data[lsplit[0]] = " ".join(delimit_line(txt[num + 1]))
                         continue
+            if line.startswith("_shelx_hkl_file") or line.startswith("_refln_"):
+                hkl = True
+                continue
+            # Leave out hkl frames:
+            if hkl:
+                break
+                # continue  # use continue if data is behind hkl
+            if line.lstrip()[0] == ";" and hkl:
+                hkl = False
+                continue
+            if semi_colon_text_field:
+                if not line.lstrip().startswith(";"):
+                    semi_colon_text_list.append(line)
                 if (textlen - 1 > num) and txt[num + 1][0] == ";":
-                    #if line.startswith("_shelx_res_file"):
-                    #    break
-                        # continue  # use continue if data is behind res file
-                    semi_colon_text_field = line
+                    self.cif_data[semi_colon_text_field] = "{}".format(os.linesep).join(semi_colon_text_list)
+                    semi_colon_text_list.clear()
+                    semi_colon_text_field = ''
                     continue
+            if (textlen - 1 > num) and txt[num + 1][0] == ";":
+                #if line.startswith("_shelx_res_file"):
+                #    break
+                    # continue  # use continue if data is behind res file
+                semi_colon_text_field = line
+                continue
         self.cif_data['_atom'] = atoms
         self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(symmlist)
         self.cif_data['file_length_lines'] = num+1
