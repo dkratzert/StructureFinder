@@ -31,7 +31,7 @@ def zipopener(file):
     """
     Opens a zip file and returns a list of cif files in the zip file.
 
-    >>> p = Path('../test-data/Archiv.zip')
+    >>> p = Path('test-data/Archiv.zip')
     >>> zipopener(p)
     Archiv/atomstwoline.cif
     Archiv/breit_tb13_85.cif
@@ -58,8 +58,6 @@ def zipopener(file):
 def create_file_list(searchpath='None', ending='cif'):
     """
     walks through the file system and collects cells from res/cif files
-    into a database
-
     """
     if not os.path.isdir(searchpath):
         print('search path {0} not found! Or no directory!'.format(searchpath))
@@ -70,19 +68,20 @@ def create_file_list(searchpath='None', ending='cif'):
     return paths
 
 
-def filewalker_walk(startdir, endings, add_excludes=''):
+def filewalker_walk(startdir, add_excludes=''):
     """
     walks through the filesystem starting from startdir and searches
     for files with ending endings.
     """
     filelist = []
-    excludes = ['.olex', 'dsrsaves']
+    excludes = []
     if add_excludes:
         excludes.extend(add_excludes)
+    excludes = excluded_names
     print('collecting files below ' + startdir)
     for root, dirs, files in os.walk(startdir):  # @UnusedVariable
         for num, filen in enumerate(files):
-            if filen.fnmatch(filen, '*.{0}'.format(endings)):
+            if filen.fnmatch(filen, '*.cif') or filen.fnmatch(filen, '*.zip'):
                 if os.stat(os.path.join(root, filen)).st_size == 0:
                     continue
                 filelist.append([os.path.join(root, filen), filen])
@@ -155,7 +154,7 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite", ex
         if not cifok:
             continue
         if cif:
-            # is the StructureId
+            # tst is the StructureId
             tst = fill_db_tables(cif, filepth.name, path, n, structures)
             if not tst:
                 continue
@@ -274,8 +273,9 @@ def fill_db_tables(cif: searcher.fileparser.Cif, filename: str, path: str, struc
 
 
 if __name__ == '__main__':
-    z = zipopener('test-data/Archiv.zip')
+    z = zipopener('../test-data/Archiv.zip')
+    print(z)
 
-    fp = create_file_list('test-data/', 'zip')
-    for i in fp:
-        print(i)
+    #fp = create_file_list('../test-data/', 'zip')
+    #for i in fp:
+    #    print(i)

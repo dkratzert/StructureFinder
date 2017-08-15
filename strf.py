@@ -532,7 +532,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
 
     def search_cell_idlist(self, cell: list) -> list:
         """
-        Searches for a unit cell and resturns a list of ids.
+        Searches for a unit cell and resturns a list of found database ids.
         """
         if self.ui.moreResultsCheckBox.isChecked() or \
                 self.ui.ad_moreResultscheckBox.isChecked():
