@@ -61,16 +61,12 @@ def create_file_list(searchpath='None', ending='cif'):
     return paths
 
 
-def filewalker_walk(startdir, add_excludes=''):
+def filewalker_walk(startdir):
     """
     walks through the filesystem starting from startdir and searches
     for files with ending endings.
     """
     filelist = []
-    excludes = []
-    if add_excludes:
-        excludes.extend(add_excludes)
-    excludes = excluded_names
     print('collecting files below ' + startdir)
     for root, _, files in os.walk(startdir):
         for filen in files:
@@ -79,7 +75,7 @@ def filewalker_walk(startdir, add_excludes=''):
                 #print(fullpath)
                 if os.stat(fullpath).st_size == 0:
                     continue
-                for ex in excludes:
+                for ex in excluded_names:
                     if re.search(ex, fullpath, re.I):
                         continue
                 if filen == 'xd_geo.cif':  # Exclude xdgeom cif files
@@ -167,6 +163,9 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
                 with zipfile.ZipFile(fullpath, 'r') as myzip:
                     for z in zipopener(fullpath):
                         with myzip.open(z.filename, mode='r') as zippedfile:
+                            for ex in excluded_names:
+                                if re.search(ex, z.filename, re.I):
+                                    continue
                             filedata = zippedfile.read().decode('ascii', 'ignore')
                             try:
                                 cifok = cif.parsefile(filedata.splitlines())
