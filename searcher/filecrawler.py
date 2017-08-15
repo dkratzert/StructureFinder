@@ -18,12 +18,13 @@ import os
 import re
 import pathlib
 import sys
+import zipfile
 
 import lattice.lattice
 import searcher.atoms
 import searcher.database_handler
 import searcher.fileparser
-from zipfile import ZipFile, BadZipFile, LargeZipFile
+
 
 excluded_names = ['ROOT', '.OLEX', 'TMP', 'TEMP', 'Papierkorb', 'Recycle.Bin']
 
@@ -34,13 +35,15 @@ def zipopener(file: os.path) -> list:
     """
     names = []
     try:
-        with ZipFile(file, 'r') as myzip:
+        if not zipfile.is_zipfile(file):
+            return []
+        with zipfile.ZipFile(file, 'r') as myzip:
             for f in myzip.filelist:
                 if f.filename.endswith('.cif'):
                     if not f.filename.startswith('__') and f.file_size < 150000000:
                         # print(f.filename)  # for testing
-                        names.append(f.)
-    except (BadZipFile, LargeZipFile):
+                        names.append(f)
+    except (zipfile.BadZipFile, zipfile.LargeZipFile):
         return []
     return names
 
@@ -138,8 +141,8 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
             prognum = 0
         if self:
             self.progressbar(prognum, min, 20)
-
-        if not name.endswith('.zip'):
+        # This is really ugly copy&pase code. TODO: refractor this:
+        if name.endswith('.cif'):
             with open(fullpath, mode='r', encoding='ascii', errors="ignore") as f:
                 try:
                     cifok = cif.parsefile(f.readlines())
@@ -159,27 +162,33 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
                         print('{} files ...'.format(n))
                         structures.database.commit_db()
                     prognum += 1
-        else:
-            for z in zipopener(fullpath):
-                try:
-                    cifok = cif.parsefile(z.read().split(os.linesep))
-                    if not cifok:
-                        continue
-                except IndexError:
-                    continue
-                if cif:
-                    tst = fill_db_tables(cif, filename=name, path=filepth, structure_id=n, structures=structures)
-                    if not tst:
-                        continue
-                    if self:
-                        self.add_table_row(name, filepth, cif.cif_data['data'], str(n))
-                    n += 1
-                    num += 1
-                    if n % 1000 == 0:
-                        print('{} files ...'.format(n))
-                        structures.database.commit_db()
-                    prognum += 1
-
+        else:  # a zip file:
+            try:
+                with zipfile.ZipFile(fullpath, 'r') as myzip:
+                    for z in zipopener(fullpath):
+                        with myzip.open(z.filename, mode='r') as zippedfile:
+                            filedata = zippedfile.read().decode('ascii', 'ignore')
+                            try:
+                                cifok = cif.parsefile(filedata.splitlines())
+                                if not cifok:
+                                    continue
+                            except IndexError:
+                                continue
+                            if cif:
+                                tst = fill_db_tables(cif, filename=z.filename, path=fullpath, structure_id=n, structures=structures)
+                                if not tst:
+                                    print('############################')
+                                    continue
+                                if self:
+                                    self.add_table_row(z.filename, fullpath, cif.cif_data['data'], str(n))
+                                n += 1
+                                num += 1
+                                if n % 1000 == 0:
+                                    print('{} files ...'.format(n))
+                                    structures.database.commit_db()
+                                prognum += 1
+            except zipfile.BadZipFile:
+                continue
         if self:
             if not self.decide_import:
                 # This means, import was aborted.
