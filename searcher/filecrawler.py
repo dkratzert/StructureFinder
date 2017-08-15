@@ -22,14 +22,44 @@ import lattice.lattice
 import searcher.atoms
 import searcher.database_handler
 import searcher.fileparser
+from zipfile import ZipFile, BadZipFile, LargeZipFile
 
 excluded_names = ['ROOT', '.OLEX', 'TMP', 'TEMP', 'Papierkorb', 'Recycle.Bin']
+
+
+def zipopener(file):
+    """
+    Opens a zip file and returns a list of cif files in the zip file.
+
+    >>> p = Path('../test-data/Archiv.zip')
+    >>> zipopener(p)
+    Archiv/atomstwoline.cif
+    Archiv/breit_tb13_85.cif
+    Archiv/COD/1000000.cif
+    Archiv/COD/4060310.cif
+    Archiv/COD/4060311.cif
+    Archiv/COD/4060317.cif
+    Archiv/hubert.cif
+    Archiv/hubert2.cif
+    """
+    names = []
+    try:
+        with ZipFile(file, 'r') as myzip:
+            for f in myzip.filelist:
+                if f.filename.endswith('.cif'):
+                    if not f.filename.startswith('__') and f.file_size < 150000000:
+                        # print(f.filename)  # for testing
+                        names.append(f)
+    except (BadZipFile, LargeZipFile):
+        return []
+    return names
 
 
 def create_file_list(searchpath='None', ending='cif'):
     """
     walks through the file system and collects cells from res/cif files
     into a database
+
     """
     if not os.path.isdir(searchpath):
         print('search path {0} not found! Or no directory!'.format(searchpath))
@@ -68,6 +98,7 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite", ex
     """
     lastid = 1
     if self:
+        # the graphical version:
         import PyQt5.QtWidgets
         self.tmpfile = True
         self.statusBar().showMessage('')
@@ -75,9 +106,10 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite", ex
         self.start_db()
         fname = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         structures = self.structures
-        # This can not work in the gui, because we don't have a database file in every case (tmpfile)
+        # This can not work in the gui, because we don't have a database file in every case (tmpfile):
         #db = searcher.database_handler.DatabaseRequest(os.path.join(fname, dbfilename))
     else:
+        # the command line version
         fname = searchpath
         db = searcher.database_handler.DatabaseRequest(dbfilename)
         db.initialize_db()
@@ -242,5 +274,8 @@ def fill_db_tables(cif: searcher.fileparser.Cif, filename: str, path: str, struc
 
 
 if __name__ == '__main__':
-    pass
+    z = zipopener('test-data/Archiv.zip')
 
+    fp = create_file_list('test-data/', 'zip')
+    for i in fp:
+        print(i)
