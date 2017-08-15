@@ -1,0 +1,65 @@
+ 
+data_hubert
+ 
+_audit_creation_method            'SHELXL-2016/6'
+_shelx_SHELXL_version_number      '2016/6'
+_chemical_name_systematic         ?
+_chemical_name_common             ?
+_chemical_melting_point           ?
+_chemical_formula_moiety          ?
+_chemical_formula_sum
+ 'C0.25 H0.50 Al1.25 F Ga1.50 O0.75' 
+_chemical_formula_weight          172.81
+
+loop_
+ _atom_type_symbol
+ _atom_type_description
+ _atom_type_scat_dispersion_real
+ _atom_type_scat_dispersion_imag
+ _atom_type_scat_source
+ 'C'  'C'   0.0033   0.0016
+ 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+ 'H'  'H'   0.0000   0.0000
+ 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+ 'O'  'O'   0.0106   0.0060
+ 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+ 'F'  'F'   0.0171   0.0103
+ 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+ 'Al'  'Al'   0.0645   0.0514
+ 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+ 'Ga'  'Ga'   0.2307   1.6083
+ 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'
+ 
+_space_group_crystal_system       monoclinic
+_space_group_IT_number            14
+_space_group_name_H-M_alt         'P 21/c'
+_space_group_name_Hall            '-P 2ybc'
+ 
+_shelx_space_group_comment
+;
+The symmetry employed for this shelxl refinement is uniquely defined
+by the following loop, which should always be used as a source of
+symmetry information in preference to the above space-group names.
+They are only intended as comments.
+;
+ 
+loop_
+ _space_group_symop_operation_xyz
+ 'x, y, z'
+ '-x, y+1/2, -z+1/2'
+ '-x, -y, -z'
+ 'x, -y-1/2, z-1/2'
+ 
+_cell_length_a                    10.3600         
+_cell_length_b                    18.0370
+_cell_length_c                    25.7640
+_cell_angle_alpha                 127.030
+_cell_angle_beta                  129.810
+_cell_angle_gamma                 90.510
+_cell_volume                      ?
+_cell_formula_units_Z             4
+_cell_measurement_temperature     100(2)
+_cell_measurement_reflns_used     ?
+_cell_measurement_theta_min       ?
+_cell_measurement_theta_max       ?
+
