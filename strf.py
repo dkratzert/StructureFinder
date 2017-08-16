@@ -20,7 +20,7 @@ from searcher.constants import py36
 
 __metaclass__ = type  # use new-style classes
 
-VERSION = 4
+VERSION = 5
 
 import sys
 import time
