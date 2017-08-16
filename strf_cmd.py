@@ -2,6 +2,8 @@
 import sys
 import argparse
 
+import time
+
 from searcher import filecrawler
 #from searcher.spinner import Spinner
 
@@ -46,6 +48,7 @@ else:
     #spinner = Spinner()
     #spinner.start()
     try:
+        time1 = time.clock()
         for p in fname:
             if args.outfile:
                 if args.ex:
@@ -57,6 +60,12 @@ else:
                     filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex)
                 else:
                     filecrawler.put_cifs_in_db(searchpath=p)
+        time2 = time.clock()
+        diff = time2 - time1
+        m, s = divmod(diff, 60)
+        h, m = divmod(m, 60)
+        tmessage = 'Total time: {0:>2d} h, {1:>2d} m, {2:>3.2f} s'
+        print(tmessage.format(int(h), int(m), s))
     except OSError as e:
         print("Unable to collect files:")
         print(e)
