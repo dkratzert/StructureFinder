@@ -65,19 +65,23 @@ def filewalker_walk(startdir):
     """
     walks through the filesystem starting from startdir and searches
     for files with ending endings.
+
+    >>> filewalker_walk('../')
     """
     filelist = []
     print('collecting files below ' + startdir)
     for root, _, files in os.walk(startdir):
         for filen in files:
+            omit = False
             if fnmatch.fnmatch(filen, '*.cif') or fnmatch.fnmatch(filen, '*.zip'):
-                fullpath = os.path.join(root, filen)
-                #print(fullpath)
+                fullpath = os.path.abspath(os.path.join(root, filen))
                 if os.stat(fullpath).st_size == 0:
                     continue
                 for ex in excluded_names:
                     if re.search(ex, fullpath, re.I):
-                        continue
+                        omit = True
+                if omit:
+                    continue
                 if filen == 'xd_geo.cif':  # Exclude xdgeom cif files
                     continue
                 if filen == 'xd_four.cif':  # Exclude xdfourier cif files
@@ -127,6 +131,7 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
     min = 0
     prognum = 0
     num = 1
+    zipcifs = 0
     time1 = time.clock()
     filelist = filewalker_walk(str(fname))
     for filepth, name in filelist:
@@ -146,7 +151,7 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
                         continue
                 except IndexError:
                     continue
-                if cif:
+                if cif:  # means cif object has data inside (cif could be parsed)
                     tst = fill_db_tables(cif, filename=name, path=filepth, structure_id=n, structures=structures)
                     if not tst:
                         continue
@@ -160,23 +165,27 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
                     prognum += 1
         else:  # a zip file:
             try:
-                with zipfile.ZipFile(fullpath, 'r') as myzip:
-                    for z in zipopener(fullpath):
-                        with myzip.open(z.filename, mode='r') as zippedfile:
-                            for ex in excluded_names:
+                with zipfile.ZipFile(fullpath, 'r') as myzip:  # the zip file object
+                    for z in zipopener(fullpath):              # the list of cif files in the zip file
+                        omit = False
+                        with myzip.open(z.filename, mode='r') as zippedfile:  # opening the respective cif files
+                            for ex in excluded_names:          # remove excludes
                                 if re.search(ex, z.filename, re.I):
-                                    continue
-                            filedata = zippedfile.read().decode('ascii', 'ignore')
+                                    omit = True
+                            if omit:
+                                continue
+                            filedata = zippedfile.read().decode('ascii', 'ignore').splitlines()
                             try:
-                                cifok = cif.parsefile(filedata.splitlines())
+                                cifok = cif.parsefile(filedata)
                                 if not cifok:
                                     continue
                             except IndexError:
                                 continue
                             if cif:
-                                tst = fill_db_tables(cif, filename=z.filename, path=fullpath, structure_id=n, structures=structures)
+                                tst = fill_db_tables(cif, filename=z.filename, path=fullpath,
+                                                     structure_id=n, structures=structures)
+                                zipcifs += 1
                                 if not tst:
-                                    #print('Unable to read cif in', fullpath.encode(encoding='ascii', errors='ignore'))
                                     continue
                                 if self:
                                     self.add_table_row(z.filename, fullpath, cif.cif_data['data'], str(n))
@@ -202,15 +211,15 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
-    tmessage = 'Added {} cif files to database in: {:>2d} h, {:>2d} m, {:>3.2f} s'
+    tmessage = 'Added {0} cif files ({4} in .zip files) to database in: {1:>2d} h, {2:>2d} m, {3:>3.2f} s'
     if self:
-        self.ui.statusbar.showMessage(tmessage.format(num-1, int(h), int(m), s))
+        self.ui.statusbar.showMessage(tmessage.format(num-1, int(h), int(m), s, zipcifs))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.abort_import_button.hide()
     else:
-        print(tmessage.format(num - 1, int(h), int(m), s))
+        print(tmessage.format(num - 1, int(h), int(m), s, zipcifs))
 
 
 
@@ -295,8 +304,9 @@ def fill_db_tables(cif: searcher.fileparser.Cif, filename: str, path: str, struc
 
 
 if __name__ == '__main__':
-    z = zipopener('../test-data/Archiv.zip')
-    print(z)
+    filewalker_walk('./')
+    #z = zipopener('../test-data/Archiv.zip')
+    #print(z)
 
     #fp = create_file_list('../test-data/', 'zip')
     #for i in fp:
