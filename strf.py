@@ -20,7 +20,7 @@ from searcher.constants import py36
 
 __metaclass__ = type  # use new-style classes
 
-VERSION = 5
+VERSION = 6
 
 import sys
 import time
@@ -58,6 +58,7 @@ from gui.strf_dbpasswd import Ui_PasswdDialog
 
 """
 TODO:
+- go to all entries on double click in cif list
 - recognize douplicates
 - rightclick menu: https://wiki.python.org/moin/PyQt/Creating%20a%20context%20menu%20for%20a%20tree%20view
   https://stackoverflow.com/questions/4815925/right-click-contextmenu-on-qpushbutton
@@ -793,12 +794,12 @@ if __name__ == "__main__":
     # later http://www.pyinstaller.org/
     app = PyQt5.QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(PyQt5.QtGui.QIcon('./icons/strf.png'))
-    app.setApplicationName("StructureFinder")
-    app.setApplicationDisplayName("StructureFinder")
+    app.setApplicationName('StructureFinder v{}'.format(VERSION))
+    #app.setApplicationDisplayName("StructureFinder")
     myapp = StartStructureDB()
     myapp.show()
     myapp.raise_()
-    myapp.setWindowTitle("StructureFinder")
+    myapp.setWindowTitle('StructureFinder v{}'.format(VERSION))
     try:
         sys.exit(app.exec_())
     except KeyboardInterrupt:
