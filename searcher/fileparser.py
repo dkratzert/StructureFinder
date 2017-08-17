@@ -187,6 +187,8 @@ class Cif():
                 save_frame = False
             # First find the start of the cif (the data tag)
             if line[:5] == 'data_':
+                if line == "data_global":
+                    continue
                 if not data:
                     name = line.split('_')[1].strip('\n\r')
                     self.cif_data['data'] = name
@@ -221,7 +223,9 @@ class Cif():
                 hkl = False
                 continue
             if semi_colon_text_field:
-                if not line.lstrip().startswith(";"):
+                if line.lstrip().startswith(";") and len(line) > 1:
+                    semi_colon_text_list.append(line[1:])
+                else:  # Added with 17.08.2017, 14:03 commit
                     semi_colon_text_list.append(line)
                 if (textlen - 1 > num) and txt[num + 1][0] == ";":
                     self.cif_data[semi_colon_text_field] = "{}".format(os.linesep).join(semi_colon_text_list)

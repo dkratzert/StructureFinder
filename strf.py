@@ -58,7 +58,7 @@ from gui.strf_dbpasswd import Ui_PasswdDialog
 
 """
 TODO:
-
+- recognize douplicates
 - rightclick menu: https://wiki.python.org/moin/PyQt/Creating%20a%20context%20menu%20for%20a%20tree%20view
   https://stackoverflow.com/questions/4815925/right-click-contextmenu-on-qpushbutton
   http://doc.qt.io/qt-5/qwidget.html#actions

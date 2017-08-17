@@ -169,7 +169,7 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
                         structures.database.commit_db()
                     prognum += 1
         else:  # a zip file:
-            try:
+            try:  # TODO: make a class that returns an iterator containing cif files from a zip file
                 with zipfile.ZipFile(fullpath, 'r') as myzip:  # the zip file object
                     for z in zipopener(fullpath):              # the list of cif files in the zip file
                         omit = False
