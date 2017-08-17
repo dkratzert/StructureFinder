@@ -225,8 +225,8 @@ class Cif():
             if semi_colon_text_field:
                 if line.lstrip().startswith(";") and len(line) > 1:
                     semi_colon_text_list.append(line[1:])
-                else:  # Added with 17.08.2017, 14:03 commit
-                    semi_colon_text_list.append(line)
+                #else:  # Added with 17.08.2017, 14:03 commit
+                #    semi_colon_text_list.append(line.lstrip(';'))
                 if (textlen - 1 > num) and txt[num + 1][0] == ";":
                     self.cif_data[semi_colon_text_field] = "{}".format(os.linesep).join(semi_colon_text_list)
                     semi_colon_text_list.clear()

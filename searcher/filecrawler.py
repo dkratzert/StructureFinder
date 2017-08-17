@@ -34,23 +34,30 @@ excluded_names = ['ROOT',
                   'Recycle.Bin']
 
 
-def zipopener(file: os.path) -> list:
-    """
-    Opens a zip file and returns a list of cif files in the zip file.
-    """
-    names = []
-    try:
-        if not zipfile.is_zipfile(file):
-            return []
-        with zipfile.ZipFile(file, 'r') as myzip:
-            for f in myzip.filelist:
-                if f.filename.endswith('.cif'):
-                    if not f.filename.startswith('__') and f.file_size < 150000000:
-                        # print(f.filename)  # for testing
-                        names.append(f)
-    except (zipfile.BadZipFile, zipfile.LargeZipFile):
-        return []
-    return names
+class MyZipReader(object):
+    def __init__(self, zipfilepth):
+        """
+        open the zip file
+        get list of cif files
+        equally handle zip, bzip2, 7zip and tar.gz
+        """
+        self.zipfilepath = zipfilepth
+        self.cifname = ''
+        self.cifpath = ''
+
+    def __iter__(self) -> list:
+        """
+        returns an iterator of cif files in the zipfile as list.
+        """
+        try:
+            zfile = zipfile.ZipFile(self.zipfilepath)
+            for name in zfile.namelist():
+                (self.cifpath, self.cifname) = os.path.split(name)
+                if self.cifname.endswith('.cif'):
+                    if not self.cifname.startswith('__') and zfile.NameToInfo[name].file_size < 150000000:
+                        yield zfile.read(name).decode('ascii', 'ignore').splitlines()
+        except (zipfile.BadZipFile, zipfile.LargeZipFile):
+            yield []
 
 
 def create_file_list(searchpath='None', ending='cif'):
@@ -169,39 +176,34 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
                         structures.database.commit_db()
                     prognum += 1
         else:  # a zip file:
-            try:  # TODO: make a class that returns an iterator containing cif files from a zip file
-                with zipfile.ZipFile(fullpath, 'r') as myzip:  # the zip file object
-                    for z in zipopener(fullpath):              # the list of cif files in the zip file
-                        omit = False
-                        with myzip.open(z.filename, mode='r') as zippedfile:  # opening the respective cif files
-                            for ex in excluded_names:          # remove excludes
-                                if re.search(ex, z.filename, re.I):
-                                    omit = True
-                            if omit:
-                                continue
-                            filedata = zippedfile.read().decode('ascii', 'ignore').splitlines()
-                            try:
-                                cifok = cif.parsefile(filedata)
-                                if not cifok:
-                                    continue
-                            except IndexError:
-                                continue
-                            if cif:
-                                tst = fill_db_tables(cif, filename=z.filename, path=fullpath,
-                                                     structure_id=n, structures=structures)
-                                zipcifs += 1
-                                if not tst:
-                                    continue
-                                if self:
-                                    self.add_table_row(z.filename, fullpath, cif.cif_data['data'], str(n))
-                                n += 1
-                                num += 1
-                                if n % 1000 == 0:
-                                    print('{} files ...'.format(n))
-                                    structures.database.commit_db()
-                                prognum += 1
-            except zipfile.BadZipFile:
-                continue
+            z = MyZipReader(fullpath)
+            for zippedfile in z:              # the list of cif files in the zip file
+                omit = False
+                for ex in excluded_names:          # remove excludes
+                    if re.search(ex, z.cifpath, re.I):
+                        omit = True
+                if omit:
+                    continue
+                try:
+                    cifok = cif.parsefile(zippedfile)
+                    if not cifok:
+                        continue
+                except IndexError:
+                    continue
+                if cif:
+                    tst = fill_db_tables(cif, filename=z.cifname, path=fullpath,
+                                         structure_id=n, structures=structures)
+                    zipcifs += 1
+                    if not tst:
+                        continue
+                    if self:
+                        self.add_table_row(name=z.cifname, path=fullpath, data=cif.cif_data['data'], id=str(n))
+                    n += 1
+                    num += 1
+                    if n % 1000 == 0:
+                        print('{} files ...'.format(n))
+                        structures.database.commit_db()
+                    prognum += 1
         if self:
             if not self.decide_import:
                 # This means, import was aborted.
@@ -309,7 +311,11 @@ def fill_db_tables(cif: searcher.fileparser.Cif, filename: str, path: str, struc
 
 
 if __name__ == '__main__':
-    filewalker_walk('./')
+    z = MyZipReader('./test-data/Archiv.zip')
+    for i in z:
+        print(i)
+
+    #filewalker_walk('./')
     #z = zipopener('../test-data/Archiv.zip')
     #print(z)
 
