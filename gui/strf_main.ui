@@ -172,7 +172,7 @@
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="maintab">
        <attribute name="title">
@@ -406,6 +406,9 @@
                       <width>160</width>
                       <height>75</height>
                      </size>
+                    </property>
+                    <property name="contextMenuPolicy">
+                     <enum>Qt::ActionsContextMenu</enum>
                     </property>
                     <property name="autoFillBackground">
                      <bool>false</bool>
@@ -1321,6 +1324,14 @@
   <action name="actionClose_Database">
    <property name="text">
     <string>Close Database</string>
+   </property>
+  </action>
+  <action name="actionCopy_Unit_Cell">
+   <property name="text">
+    <string>Copy Unit Cell</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C, Meta+C</string>
    </property>
   </action>
  </widget>

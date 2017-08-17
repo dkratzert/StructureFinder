@@ -182,6 +182,7 @@ class Ui_stdbMainwindow(object):
         self.cellField.setSizePolicy(sizePolicy)
         self.cellField.setMinimumSize(QtCore.QSize(0, 75))
         self.cellField.setBaseSize(QtCore.QSize(160, 75))
+        self.cellField.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.cellField.setAutoFillBackground(False)
         self.cellField.setStyleSheet("border-color: rgb(53, 53, 53);")
         self.cellField.setFrameShape(QtWidgets.QFrame.NoFrame)
@@ -608,9 +609,11 @@ class Ui_stdbMainwindow(object):
         self.actionAbout_StructureDB.setObjectName("actionAbout_StructureDB")
         self.actionClose_Database = QtWidgets.QAction(stdbMainwindow)
         self.actionClose_Database.setObjectName("actionClose_Database")
+        self.actionCopy_Unit_Cell = QtWidgets.QAction(stdbMainwindow)
+        self.actionCopy_Unit_Cell.setObjectName("actionCopy_Unit_Cell")
 
         self.retranslateUi(stdbMainwindow)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(0)
         self.actionExit.triggered.connect(stdbMainwindow.close)
         QtCore.QMetaObject.connectSlotsByName(stdbMainwindow)
         stdbMainwindow.setTabOrder(self.importDirButton, self.importDatabaseButton)
@@ -715,4 +718,6 @@ class Ui_stdbMainwindow(object):
         self.actionAdvanced_Search.setText(_translate("stdbMainwindow", "Advanced Search"))
         self.actionAbout_StructureDB.setText(_translate("stdbMainwindow", "About StructureDB"))
         self.actionClose_Database.setText(_translate("stdbMainwindow", "Close Database"))
+        self.actionCopy_Unit_Cell.setText(_translate("stdbMainwindow", "Copy Unit Cell"))
+        self.actionCopy_Unit_Cell.setShortcut(_translate("stdbMainwindow", "Ctrl+C, Meta+C"))
 
