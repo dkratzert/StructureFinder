@@ -354,11 +354,12 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
                     pass
                 clipboard = PyQt5.QtWidgets.QApplication.clipboard()
                 clipboard.setText(cell)
+                self.ui.statusbar.showMessage('Copied unit cell{} to clip board.'
+                                              .format(cell))
             return True
         elif event.type() == PyQt5.QtCore.QEvent.MouseButtonPress:
-            if event.buttons() == QtCore.Qt.RightButton:
+            if event.buttons() == PyQt5.QtCore.Qt.RightButton:
                 #print("rightbutton")
-            #print("Mouse pressed")
                 return True
         return False
 

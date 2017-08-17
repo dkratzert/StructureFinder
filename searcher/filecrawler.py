@@ -26,7 +26,12 @@ import searcher.database_handler
 import searcher.fileparser
 
 
-excluded_names = ['ROOT', '.OLEX', 'TMP', 'TEMP', 'Papierkorb', 'Recycle.Bin']
+excluded_names = ['ROOT',
+                  '.OLEX',
+#                  'TMP',
+#                  'TEMP',
+                  'Papierkorb',
+                  'Recycle.Bin']
 
 
 def zipopener(file: os.path) -> list:
