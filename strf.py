@@ -59,27 +59,9 @@ from gui.strf_dbpasswd import Ui_PasswdDialog
 """
 TODO:
 - search for sub or supercells
-- index also zip files
-from pathlib import Path
-from shutil import unpack_archive
-
-zip_files = Path(r"C:\Project\layers").rglob("*.zip")
-while True:
-    try:
-        path = next(zip_files)
-    except StopIteration:
-        break # no more files
-    except PermissionError:
-        continue
-    else:
-         extract_dir = path.with_name(path.stem)
-         unpack_archive(str(path), str(extract_dir), 'zip')
-- VCredist 2015 https://www.microsoft.com/de-de/download/details.aspx?id=48145
-  and 2010 https://www.microsoft.com/de-de/download/details.aspx?id=5555
 - add rightclick: copy unit cell on unit cell field
-- get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
-- allow to scan more than one directory. Just add to previous data. Especially for cmd version.
-- Make a web interface with python template to view everything also on a web site.
+- get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbo
+- Make a web interface with python Template() to view everything also on a web site.
 - grow structure.
   
 Search for:
