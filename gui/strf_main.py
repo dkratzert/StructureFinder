@@ -716,5 +716,5 @@ class Ui_stdbMainwindow(object):
         self.actionClose_Database.setText(_translate("stdbMainwindow", "Close Database"))
         self.actionCopy_Unit_Cell.setText(_translate("stdbMainwindow", "Copy Unit Cell"))
         self.actionGo_to_All_CIF_Tab.setText(_translate("stdbMainwindow", "Go to All CIF Tab"))
-        self.actionGo_to_All_CIF_Tab.setShortcut(_translate("stdbMainwindow", "A"))
+        self.actionGo_to_All_CIF_Tab.setShortcut(_translate("stdbMainwindow", "Meta+A"))
 

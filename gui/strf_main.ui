@@ -1326,7 +1326,7 @@
     <string>Go to All CIF Tab</string>
    </property>
    <property name="shortcut">
-    <string>A</string>
+    <string>Meta+A</string>
    </property>
   </action>
  </widget>

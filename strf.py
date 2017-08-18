@@ -59,12 +59,6 @@ from gui.strf_dbpasswd import Ui_PasswdDialog
 """
 TODO:
 - recognize douplicates
-- rightclick menu: https://wiki.python.org/moin/PyQt/Creating%20a%20context%20menu%20for%20a%20tree%20view
-  https://stackoverflow.com/questions/22198427/adding-a-right-click-menu-for-specific-items-in-qtreeview#
-  https://stackoverflow.com/questions/4815925/right-click-contextmenu-on-qpushbutton
-  http://doc.qt.io/qt-5/qwidget.html#actions
-  http://doc.qt.io/qt-5/qaction.html
-
 - search for sub or supercells
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbo
 - Make a web interface with python Template() to view everything also on a web site.
@@ -96,6 +90,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.statusbar.addWidget(self.progress)
         self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
+        self.structureId = ''
         self.show()
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
@@ -112,7 +107,6 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.tabWidget.setCurrentIndex(0)
         self.setWindowIcon(PyQt5.QtGui.QIcon('./icons/strf.png'))
         self.uipass = Ui_PasswdDialog()
-        self.structureId = ''
         self.ui.cifList_treeWidget.sortByColumn(0, 0)
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
@@ -138,8 +132,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
         self.ui.actionImport_file.triggered.connect(self.import_cif_database)
         self.ui.actionSave_Database.triggered.connect(self.save_database)
-        self.ui.actionCopy_Unit_Cell.triggered.connect(self.test)
-        self.ui.actionGo_to_All_CIF_Tab.triggered.connect(self.test2)
+        self.ui.actionCopy_Unit_Cell.triggered.connect(self.copyUnitCell)
+        self.ui.actionGo_to_All_CIF_Tab.triggered.connect(self.onClickItem)
         # Other fields:
         if py36:
             self.ui.txtSearchEdit.textChanged.connect(self.search_text)
@@ -147,14 +141,24 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.ui.txtSearchEdit.setText("For full test search, use a modern Operating system.")
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
+        self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.onClickItem)
 
-    def test(self):
-        pass
-        #print('foo')
+    def onClickItem(self, item):
+        self.ui.tabWidget.setCurrentIndex(1)
 
-    def test2(self):
-        pass
-        #print('bar')
+    def copyUnitCell(self):
+        if self.structureId:
+            cell = ''
+            try:
+                cell = "{:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f}" \
+                    .format(*self.structures.get_cell_by_id(self.structureId))
+            except:
+                return False
+            clipboard = PyQt5.QtWidgets.QApplication.clipboard()
+            clipboard.setText(cell)
+            self.ui.statusbar.showMessage('Copied unit cell {} to clip board.'
+                                          .format(cell))
+        return True
 
     @PyQt5.QtCore.pyqtSlot(name="advanced_search")
     def advanced_search(self):
@@ -359,18 +363,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
     def eventFilter(self, object, event):
         """Event filter for mouse clicks."""
         if event.type() == PyQt5.QtCore.QEvent.MouseButtonDblClick:
-            if self.structureId:
-                cell = ''
-                try:
-                    cell = "{:>8.6} {:>8.6} {:>8.6} {:>8.6} {:>8.6} {:>8.6}"\
-                        .format(*self.structures.get_cell_by_id(self.structureId))
-                except:
-                    pass
-                clipboard = PyQt5.QtWidgets.QApplication.clipboard()
-                clipboard.setText(cell)
-                self.ui.statusbar.showMessage('Copied unit cell{} to clip board.'
-                                              .format(cell))
-            return True
+            self.copyUnitCell()
         elif event.type() == PyQt5.QtCore.QEvent.MouseButtonPress:
             if event.buttons() == PyQt5.QtCore.Qt.RightButton:
                 #print("rightbutton")
