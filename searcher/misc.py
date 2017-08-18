@@ -26,6 +26,18 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+
+def write_file(list: list, name: str) -> None:
+    """
+    Writes the content of list to name.
+    :param list: list
+    :param name:  string
+    """
+    with open(name, 'w') as ofile:
+        for line in list:  # modified reslist
+            ofile.write("%s" % line)  # write the new file
+
+
 def find_binary_string(file, string, seek, size, return_ascii=False):
     """
     finds a string in a binary file

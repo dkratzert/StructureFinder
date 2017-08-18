@@ -55,7 +55,7 @@ class MyZipReader(object):
                 (self.cifpath, self.cifname) = os.path.split(name)
                 if self.cifname.endswith('.cif'):
                     if not self.cifname.startswith('__') and zfile.NameToInfo[name].file_size < 150000000:
-                        yield zfile.read(name).decode('ascii', 'ignore').splitlines()
+                        yield zfile.read(name).decode('utf-8', 'ignore').splitlines(keepends=True)
         except (zipfile.BadZipFile, zipfile.LargeZipFile):
             yield []
 
@@ -104,11 +104,13 @@ def filewalker_walk(startdir):
     return filelist
 
 
-def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
+def put_cifs_in_db(self = None, searchpath: str = '', dbfilename: str = "structuredb.sqlite",
+                   excludes: list = None) -> None:
     """
     Imports cif files from a certain directory
-    :return: None
     """
+    if excludes:
+        excluded_names.extend(excludes)
     lastid = 1
     if self:
         # the graphical version:
@@ -131,7 +133,7 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
             lastid = 0
         structures = searcher.database_handler.StructureTable(dbfilename)
     if not fname:
-        return False
+        return None
     if self:
         self.ui.cifList_treeWidget.show()
         self.abort_import_button.show()
@@ -147,7 +149,6 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
     time1 = time.clock()
     filelist = filewalker_walk(str(fname))
     for filepth, name in filelist:
-        cifok = False
         fullpath = os.path.join(filepth, name)
         cif = searcher.fileparser.Cif()
         if prognum == 20:
@@ -192,7 +193,7 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
                     continue
                 if cif:
                     tst = fill_db_tables(cif, filename=z.cifname, path=fullpath,
-                                         structure_id=n, structures=structures)
+                                         structure_id=str(n), structures=structures)
                     zipcifs += 1
                     if not tst:
                         continue
@@ -227,7 +228,6 @@ def put_cifs_in_db(self=None, searchpath='', dbfilename="structuredb.sqlite"):
         self.abort_import_button.hide()
     else:
         print(tmessage.format(num - 1, int(h), int(m), s, zipcifs))
-
 
 
 def fill_db_tables(cif: searcher.fileparser.Cif, filename: str, path: str, structure_id: str,

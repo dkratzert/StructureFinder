@@ -51,15 +51,9 @@ else:
         time1 = time.clock()
         for p in fname:
             if args.outfile:
-                if args.ex:
-                    filecrawler.put_cifs_in_db(searchpath=p, dbfilename=args.outfile, excludes=args.ex)
-                else:
-                    filecrawler.put_cifs_in_db(searchpath=p, dbfilename=args.outfile)
+                filecrawler.put_cifs_in_db(searchpath=p, dbfilename=args.outfile, excludes=args.ex)
             else:
-                if args.ex:
-                    filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex)
-                else:
-                    filecrawler.put_cifs_in_db(searchpath=p)
+                filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex)
         time2 = time.clock()
         diff = time2 - time1
         m, s = divmod(diff, 60)
