@@ -194,7 +194,7 @@ class Cif():
                     self.cif_data['data'] = name
                     data = True
                     continue
-                else:   # break in occurence of a second data_
+                else:  # break in occurence of a second data_
                     break
             # Find the loop positions:
             if line[:5] == "loop_":
@@ -223,28 +223,26 @@ class Cif():
                 hkl = False
                 continue
             if semi_colon_text_field:
-                if line.lstrip().startswith(";") and len(line) > 1:
-                    semi_colon_text_list.append(line[1:])
-                #else:  # Added with 17.08.2017, 14:03 commit
-                #    semi_colon_text_list.append(line.lstrip(';'))
+                if not line.lstrip().startswith(";"):
+                    semi_colon_text_list.append(line)
                 if (textlen - 1 > num) and txt[num + 1][0] == ";":
                     self.cif_data[semi_colon_text_field] = "{}".format(os.linesep).join(semi_colon_text_list)
                     semi_colon_text_list.clear()
                     semi_colon_text_field = ''
                     continue
             if (textlen - 1 > num) and txt[num + 1][0] == ";":
-                #if line.startswith("_shelx_res_file"):
+                # if line.startswith("_shelx_res_file"):
                 #    break
-                    # continue  # use continue if data is behind res file
+                # continue  # use continue if data is behind res file
                 semi_colon_text_field = line
                 continue
         self.cif_data['_atom'] = atoms
         self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(symmlist)
-        self.cif_data['file_length_lines'] = num+1
-        #pprint(self.cif_data)  # slow
+        self.cif_data['file_length_lines'] = num + 1
+        # pprint(self.cif_data)  # slow
         if not data:
             return False
-        #if not atoms:
+        # if not atoms:
         #    self.cif_data.clear()
         #    return False
         else:
@@ -373,6 +371,11 @@ def get_res_cell(filename):
 
 
 if __name__ == '__main__':
+    cif = Cif()
+    with open('test-data/p-1_a.cif', 'r') as f:
+        cifok = cif.parsefile(f.readlines())
+    pprint(cif.cif_data)
+    print(cifok)
     import doctest
     failed, attempted = doctest.testmod()  # verbose=True)
     if failed == 0:
