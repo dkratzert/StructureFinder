@@ -105,7 +105,7 @@ def filewalker_walk(startdir):
 
 
 def put_cifs_in_db(self = None, searchpath: str = '', dbfilename: str = "structuredb.sqlite",
-                   excludes: list = None) -> None:
+                   excludes: list = None) -> int:
     """
     Imports cif files from a certain directory
     """
@@ -133,7 +133,7 @@ def put_cifs_in_db(self = None, searchpath: str = '', dbfilename: str = "structu
             lastid = 0
         structures = searcher.database_handler.StructureTable(dbfilename)
     if not fname:
-        return None
+        return 0
     if self:
         self.ui.cifList_treeWidget.show()
         self.abort_import_button.show()
@@ -228,6 +228,7 @@ def put_cifs_in_db(self = None, searchpath: str = '', dbfilename: str = "structu
         self.abort_import_button.hide()
     else:
         print(tmessage.format(num - 1, int(h), int(m), s, zipcifs))
+    return n-1
 
 
 def fill_db_tables(cif: searcher.fileparser.Cif, filename: str, path: str, structure_id: str,

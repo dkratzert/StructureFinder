@@ -35,6 +35,8 @@ parser.add_argument("-o",
 
 args = parser.parse_args()
 
+
+ncifs = 0
 try:
     if not args.dir:
         parser.print_help()
@@ -51,15 +53,15 @@ else:
         time1 = time.clock()
         for p in fname:
             if args.outfile:
-                filecrawler.put_cifs_in_db(searchpath=p, dbfilename=args.outfile, excludes=args.ex)
+                ncifs = filecrawler.put_cifs_in_db(searchpath=p, dbfilename=args.outfile, excludes=args.ex)
             else:
-                filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex)
+                ncifs = filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex)
         time2 = time.clock()
         diff = time2 - time1
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
-        tmessage = 'Total time: {0:>2d} h, {1:>2d} m, {2:>3.2f} s'
-        print(tmessage.format(int(h), int(m), s))
+        tmessage = '\nTotal {3} cif files. Duration: {0:>2d} h, {1:>2d} m, {2:>3.2f} s'
+        print(tmessage.format(int(h), int(m), s, ncifs))
     except OSError as e:
         print("Unable to collect files:")
         print(e)
