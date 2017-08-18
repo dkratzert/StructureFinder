@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file './gui\strf_main.ui'
+# Form implementation generated from reading ui file './gui/strf_main.ui'
 #
-# Created by: PyQt5 UI code generator 5.9
+# Created by: PyQt5 UI code generator 5.8.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -591,8 +591,6 @@ class Ui_stdbMainwindow(object):
         stdbMainwindow.setStatusBar(self.statusbar)
         self.actionExit = QtWidgets.QAction(stdbMainwindow)
         self.actionExit.setObjectName("actionExit")
-        self.actionEdit_dataset = QtWidgets.QAction(stdbMainwindow)
-        self.actionEdit_dataset.setObjectName("actionEdit_dataset")
         self.actionUser_manual = QtWidgets.QAction(stdbMainwindow)
         self.actionUser_manual.setObjectName("actionUser_manual")
         self.actionImport_file = QtWidgets.QAction(stdbMainwindow)
@@ -601,8 +599,6 @@ class Ui_stdbMainwindow(object):
         self.actionImport_directory.setObjectName("actionImport_directory")
         self.actionSave_Database = QtWidgets.QAction(stdbMainwindow)
         self.actionSave_Database.setObjectName("actionSave_Database")
-        self.actionOptions = QtWidgets.QAction(stdbMainwindow)
-        self.actionOptions.setObjectName("actionOptions")
         self.actionAdvanced_Search = QtWidgets.QAction(stdbMainwindow)
         self.actionAdvanced_Search.setObjectName("actionAdvanced_Search")
         self.actionAbout_StructureDB = QtWidgets.QAction(stdbMainwindow)
@@ -611,6 +607,8 @@ class Ui_stdbMainwindow(object):
         self.actionClose_Database.setObjectName("actionClose_Database")
         self.actionCopy_Unit_Cell = QtWidgets.QAction(stdbMainwindow)
         self.actionCopy_Unit_Cell.setObjectName("actionCopy_Unit_Cell")
+        self.actionGo_to_All_CIF_Tab = QtWidgets.QAction(stdbMainwindow)
+        self.actionGo_to_All_CIF_Tab.setObjectName("actionGo_to_All_CIF_Tab")
 
         self.retranslateUi(stdbMainwindow)
         self.tabWidget.setCurrentIndex(0)
@@ -709,15 +707,14 @@ class Ui_stdbMainwindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.searchtab), _translate("stdbMainwindow", "Advanced Search"))
         self.actionExit.setText(_translate("stdbMainwindow", "Exit Program"))
         self.actionExit.setShortcut(_translate("stdbMainwindow", "Ctrl+Q"))
-        self.actionEdit_dataset.setText(_translate("stdbMainwindow", "edit dataset"))
         self.actionUser_manual.setText(_translate("stdbMainwindow", "User Manual"))
         self.actionImport_file.setText(_translate("stdbMainwindow", "Open Database"))
         self.actionImport_directory.setText(_translate("stdbMainwindow", "Import Directory"))
         self.actionSave_Database.setText(_translate("stdbMainwindow", "Save Database"))
-        self.actionOptions.setText(_translate("stdbMainwindow", "Options"))
         self.actionAdvanced_Search.setText(_translate("stdbMainwindow", "Advanced Search"))
         self.actionAbout_StructureDB.setText(_translate("stdbMainwindow", "About StructureDB"))
         self.actionClose_Database.setText(_translate("stdbMainwindow", "Close Database"))
         self.actionCopy_Unit_Cell.setText(_translate("stdbMainwindow", "Copy Unit Cell"))
-        self.actionCopy_Unit_Cell.setShortcut(_translate("stdbMainwindow", "Ctrl+C, Meta+C"))
+        self.actionGo_to_All_CIF_Tab.setText(_translate("stdbMainwindow", "Go to All CIF Tab"))
+        self.actionGo_to_All_CIF_Tab.setShortcut(_translate("stdbMainwindow", "A"))
 

@@ -1281,11 +1281,6 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionEdit_dataset">
-   <property name="text">
-    <string>edit dataset</string>
-   </property>
-  </action>
   <action name="actionUser_manual">
    <property name="text">
     <string>User Manual</string>
@@ -1304,11 +1299,6 @@
   <action name="actionSave_Database">
    <property name="text">
     <string>Save Database</string>
-   </property>
-  </action>
-  <action name="actionOptions">
-   <property name="text">
-    <string>Options</string>
    </property>
   </action>
   <action name="actionAdvanced_Search">
@@ -1330,8 +1320,13 @@
    <property name="text">
     <string>Copy Unit Cell</string>
    </property>
+  </action>
+  <action name="actionGo_to_All_CIF_Tab">
+   <property name="text">
+    <string>Go to All CIF Tab</string>
+   </property>
    <property name="shortcut">
-    <string>Ctrl+C, Meta+C</string>
+    <string>A</string>
    </property>
   </action>
  </widget>

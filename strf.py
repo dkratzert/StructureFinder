@@ -58,15 +58,14 @@ from gui.strf_dbpasswd import Ui_PasswdDialog
 
 """
 TODO:
-- go to all entries on double click in cif list
 - recognize douplicates
 - rightclick menu: https://wiki.python.org/moin/PyQt/Creating%20a%20context%20menu%20for%20a%20tree%20view
   https://stackoverflow.com/questions/22198427/adding-a-right-click-menu-for-specific-items-in-qtreeview#
   https://stackoverflow.com/questions/4815925/right-click-contextmenu-on-qpushbutton
   http://doc.qt.io/qt-5/qwidget.html#actions
   http://doc.qt.io/qt-5/qaction.html
+
 - search for sub or supercells
-- add rightclick: copy unit cell on unit cell field
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbo
 - Make a web interface with python Template() to view everything also on a web site.
 - grow structure.
@@ -115,6 +114,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.uipass = Ui_PasswdDialog()
         self.structureId = ''
         self.ui.cifList_treeWidget.sortByColumn(0, 0)
+        # Actions for certain gui elements:
+        self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
+        self.ui.cifList_treeWidget.addAction(self.ui.actionGo_to_All_CIF_Tab)
 
     def connect_signals_and_slots(self):
         """
@@ -136,7 +138,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
         self.ui.actionImport_file.triggered.connect(self.import_cif_database)
         self.ui.actionSave_Database.triggered.connect(self.save_database)
-        # self.ui.actionExit.triggered.connect(QtGui.QGuiApplication.quit)
+        self.ui.actionCopy_Unit_Cell.triggered.connect(self.test)
+        self.ui.actionGo_to_All_CIF_Tab.triggered.connect(self.test2)
         # Other fields:
         if py36:
             self.ui.txtSearchEdit.textChanged.connect(self.search_text)
@@ -144,6 +147,14 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.ui.txtSearchEdit.setText("For full test search, use a modern Operating system.")
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
+
+    def test(self):
+        pass
+        #print('foo')
+
+    def test2(self):
+        pass
+        #print('bar')
 
     @PyQt5.QtCore.pyqtSlot(name="advanced_search")
     def advanced_search(self):
@@ -390,7 +401,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         #self.ui.cellField.setMinimumWidth(180)
         self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, ''))
         self.ui.cellField.installEventFilter(self)
-        self.ui.cellField.setToolTip("Double click on cell to copy to clipboard.")
+        self.ui.cellField.setToolTip("Double click on 'Unit Cell' to copy to clipboard.")
         try:
             self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
         except ValueError:
