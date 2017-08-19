@@ -252,7 +252,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structu
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
-    tmessage = 'Added {0} cif files ({4} in .zip files) to database in: {1:>2d} h, {2:>2d} m, {3:>3.2f} s'
+    tmessage = 'Added {0} cif files ({4} in compressed files) to database in: {1:>2d} h, {2:>2d} m, {3:>3.2f} s'
     if self:
         self.ui.statusbar.showMessage(tmessage.format(num-1, int(h), int(m), s, zipcifs))
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
