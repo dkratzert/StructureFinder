@@ -13,6 +13,7 @@ Created on 09.02.2015
 @author: Daniel Kratzert
 """
 import fnmatch
+import tarfile
 import time
 import os
 import re
@@ -34,29 +35,55 @@ excluded_names = ['ROOT',
                   'Recycle.Bin']
 
 
-class MyZipReader(object):
-    def __init__(self, zipfilepth):
-        """
-        open the zip file
-        get list of cif files
-        equally handle zip, bzip2, 7zip and tar.gz
-        """
-        self.zipfilepath = zipfilepth
+class MyZipBase(object):
+    def __init__(self, filepath):
+        self.filepath = filepath
         self.cifname = ''
         self.cifpath = ''
+
+
+class MyZipReader(MyZipBase):
+    def __init__(self, filepath):
+        """
+        extracts .cif files from zip files
+        """
+        super().__init__(filepath)
 
     def __iter__(self) -> list:
         """
         returns an iterator of cif files in the zipfile as list.
         """
         try:
-            zfile = zipfile.ZipFile(self.zipfilepath)
+            zfile = zipfile.ZipFile(self.filepath)
             for name in zfile.namelist():
                 (self.cifpath, self.cifname) = os.path.split(name)
                 if self.cifname.endswith('.cif'):
                     if not self.cifname.startswith('__') and zfile.NameToInfo[name].file_size < 150000000:
                         yield zfile.read(name).decode('utf-8', 'ignore').splitlines(keepends=True)
-        except (zipfile.BadZipFile, zipfile.LargeZipFile):
+        except (zipfile.BadZipFile, zipfile.LargeZipFile) as e:
+            #print(e)
+            yield []
+
+
+class MyTarReader(MyZipBase):
+    def __init__(self, filepath):
+        """
+        extracts .cif files from tar.gz files
+        """
+        super().__init__(filepath)
+
+    def __iter__(self) -> list:
+        """
+        returns an iterator of cif files in the zipfile as list.
+        """
+        try:
+            tfile = tarfile.open(self.filepath, mode='r')
+            for name in tfile.getnames():
+                (self.cifpath, self.cifname) = os.path.split(name)
+                if self.cifname.endswith('.cif'):
+                    yield tfile.extractfile(name).read().decode('utf-8', 'ignore').splitlines(keepends=True)
+        except Exception as e:
+            print(e)
             yield []
 
 
@@ -85,7 +112,8 @@ def filewalker_walk(startdir):
     for root, _, files in os.walk(startdir):
         for filen in files:
             omit = False
-            if fnmatch.fnmatch(filen, '*.cif') or fnmatch.fnmatch(filen, '*.zip'):
+            if fnmatch.fnmatch(filen, '*.cif') or fnmatch.fnmatch(filen, '*.zip')\
+                    or fnmatch.fnmatch(filen, '*.tar.gz') or fnmatch.fnmatch(filen, '*.tar.bz2'):
                 fullpath = os.path.abspath(os.path.join(root, filen))
                 if os.stat(fullpath).st_size == 0:
                     continue
@@ -104,7 +132,7 @@ def filewalker_walk(startdir):
     return filelist
 
 
-def put_cifs_in_db(self = None, searchpath: str = '', dbfilename: str = "structuredb.sqlite",
+def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structuredb.sqlite",
                    excludes: list = None) -> int:
     """
     Imports cif files from a certain directory
@@ -121,6 +149,8 @@ def put_cifs_in_db(self = None, searchpath: str = '', dbfilename: str = "structu
         self.start_db()
         fname = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         structures = self.structures
+        self.progressbar(1, 0, 20)
+        self.abort_import_button.show()
         # This can not work in the gui, because we don't have a database file in every case (tmpfile):
         #db = searcher.database_handler.DatabaseRequest(os.path.join(fname, dbfilename))
     else:
@@ -177,7 +207,10 @@ def put_cifs_in_db(self = None, searchpath: str = '', dbfilename: str = "structu
                         structures.database.commit_db()
                     prognum += 1
         else:  # a zip file:
-            z = MyZipReader(fullpath)
+            if fullpath.endswith('.zip'):
+                z = MyZipReader(fullpath)
+            else:
+                z = MyTarReader(fullpath)
             for zippedfile in z:              # the list of cif files in the zip file
                 omit = False
                 for ex in excluded_names:          # remove excludes
@@ -312,7 +345,8 @@ def fill_db_tables(cif: searcher.fileparser.Cif, filename: str, path: str, struc
 
 
 if __name__ == '__main__':
-    z = MyZipReader('./test-data/Archiv.zip')
+    z = MyTarReader('./test-data/106c.tar.bz2')
+
     for i in z:
         print(i)
 

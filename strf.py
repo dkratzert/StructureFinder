@@ -14,7 +14,7 @@ Created on 09.02.2015
 """
 from __future__ import print_function
 
-#from PyQt5 import QtCore
+#import threading
 
 from searcher.constants import py36
 
@@ -59,9 +59,8 @@ from gui.strf_dbpasswd import Ui_PasswdDialog
 
 """
 TODO:
+- Move indexer to extra thread
 - sort results by G6 distance
-- recognize douplicates
-- search for sub or supercells
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbo
 - Make a web interface with python Template() to view everything also on a web site.
 - grow structure.
@@ -265,6 +264,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.search_cell(self.ui.searchCellLineEDit.text())
 
     def import_cif_dirs(self):
+        #t = threading.Thread(target = searcher.filecrawler.put_cifs_in_db, args=(self, ))
+        #t.start()
         searcher.filecrawler.put_cifs_in_db(self)
 
     def progressbar(self, curr: float, min: float, max: float) -> None:
