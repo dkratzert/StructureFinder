@@ -110,6 +110,36 @@ class Lattice(object):
         return fmt.format(*[format(c, fmt_spec) for row in m
                             for c in row])
 
+    def __repr__(self):
+        outs = ["Lattice", "    abc : {}".format(self._lengths),
+                " angles : {}".format(self._angles),
+                " volume : {:6.8}".format(str(self.volume)),
+                "      A : {}".format(list(self._matrix[0])),
+                "      B : {}".format(self._matrix[1]),
+                "      C : {}".format(self._matrix[2])]
+        return "\n".join(outs)
+
+    def __eq__(self, other):
+        """
+        A lattice is considered to be equal to another if the internal matrix
+        representation satisfies np.allclose(matrix1, matrix2) to be True.
+        """
+        if other is None:
+            return False
+        # shortcut the np.allclose if the memory addresses are the same
+        # (very common in Structure.from_sites)
+        return self is other or np.allclose(self.matrix, other.matrix)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return 7
+
+    def __str__(self):
+        return "\n".join([" ".join(["%.6f" % i for i in row])
+                          for row in self._matrix])
+
     def copy(self):
         """Deep copy of self."""
         return self.__class__(self.matrix.copy())
@@ -433,36 +463,6 @@ class Lattice(object):
             self._lll_inverse = np.linalg.inv(self.lll_mapping)
             return self._lll_inverse
 
-    def __repr__(self):
-        outs = ["Lattice", "    abc : {}".format(self._lengths),
-                " angles : {}".format(self._angles),
-                " volume : {:6.8}".format(str(self.volume)),
-                "      A : {}".format(list(self._matrix[0])),
-                "      B : {}".format(self._matrix[1]),
-                "      C : {}".format(self._matrix[2])]
-        return "\n".join(outs)
-
-    def __eq__(self, other):
-        """
-        A lattice is considered to be equal to another if the internal matrix
-        representation satisfies np.allclose(matrix1, matrix2) to be True.
-        """
-        if other is None:
-            return False
-        # shortcut the np.allclose if the memory addresses are the same
-        # (very common in Structure.from_sites)
-        return self is other or np.allclose(self.matrix, other.matrix)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return 7
-
-    def __str__(self):
-        return "\n".join([" ".join(["%.6f" % i for i in row])
-                          for row in self._matrix])
-
     def find_all_mappings(self, other_lattice, ltol=1e-5, atol=1, skip_rotation_matrix=False):
         """
         Finds all mappings between current lattice and another lattice.
@@ -525,7 +525,7 @@ class Lattice(object):
                     rotation_m = None
                 else:
                     rotation_m = np.linalg.solve(aligned_m, other_lattice.matrix)
-                yield Lattice(aligned_m), rotation_m, scale_m
+                yield Lattice(aligned_m), rotation_m, scale_m#, dist
 
     def find_mapping(self, other_lattice, ltol=1e-5, atol=1, skip_rotation_matrix=False):
         """
@@ -559,9 +559,8 @@ class Lattice(object):
 
             None is returned if no matches are found.
         """
-        for x in self.find_all_mappings(
-                other_lattice, ltol, atol,
-                skip_rotation_matrix=skip_rotation_matrix):
+        for x in self.find_all_mappings(other_lattice, ltol, atol,
+                                        skip_rotation_matrix=skip_rotation_matrix):
             return x
 
     def get_lll_reduced_lattice(self, delta=0.75):

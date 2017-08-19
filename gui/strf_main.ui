@@ -192,6 +192,9 @@
               <verstretch>3</verstretch>
              </sizepolicy>
             </property>
+            <property name="statusTip">
+             <string/>
+            </property>
             <property name="autoFillBackground">
              <bool>false</bool>
             </property>
@@ -261,6 +264,12 @@
                 <verstretch>3</verstretch>
                </sizepolicy>
               </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Insert unit cell as space separated: &lt;br&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;a b c α β γ&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="placeholderText">
+               <string>a b c alpha beta gamma</string>
+              </property>
              </widget>
             </item>
             <item>
@@ -271,20 +280,11 @@
              </widget>
             </item>
             <item>
-             <spacer name="horizontalSpacer_3">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+             <widget class="QCheckBox" name="sublattCheckbox">
+              <property name="text">
+               <string>sub- and superlattice</string>
               </property>
-              <property name="sizeType">
-               <enum>QSizePolicy::Preferred</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
+             </widget>
             </item>
             <item>
              <widget class="Line" name="line">
@@ -305,8 +305,11 @@
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                 <horstretch>0</horstretch>
-                <verstretch>2</verstretch>
+                <verstretch>1</verstretch>
                </sizepolicy>
+              </property>
+              <property name="placeholderText">
+               <string>text in name, path or .res file</string>
               </property>
              </widget>
             </item>

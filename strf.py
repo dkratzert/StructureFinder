@@ -20,7 +20,7 @@ from searcher.constants import py36
 
 __metaclass__ = type  # use new-style classes
 
-VERSION = 7
+VERSION = 8
 
 import sys
 import time
@@ -29,6 +29,7 @@ import os
 import shutil
 import string
 import tempfile
+import pprint
 
 if py36:
     """Only import this if Python 3.6 is used."""
@@ -58,6 +59,7 @@ from gui.strf_dbpasswd import Ui_PasswdDialog
 
 """
 TODO:
+- sort results by G6 distance
 - recognize douplicates
 - search for sub or supercells
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbo
@@ -125,6 +127,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
         self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
+        self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
         self.ui.ad_SearchPushButton.clicked.connect(self.advanced_search)
         self.ui.ad_ShowAllButton.clicked.connect(self.show_full_list)
         # Actions:
@@ -548,8 +551,17 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             return []
         try:
             volume = lattice.lattice.vol_unitcell(*cell)
-            # First a list of structures where the volume is similar:
-            idlist = self.structures.find_by_volume(volume, threshold)
+            # sub- and superlattice with doubled and halfed volume:
+            if self.ui.sublattCheckbox.isChecked():
+                vol1 = volume * 0.5
+                vol2 = volume * 2
+                idlist = []
+                for v in (volume, vol1, vol2):
+                    # First a list of structures where the volume is similar:
+                    idlist.extend(self.structures.find_by_volume(volume, threshold))
+            else:
+                idlist = self.structures.find_by_volume(volume, threshold)
+                idlist = self.structures.find_by_volume(volume, threshold)
         except (ValueError, AttributeError):
             if not self.full_list:
                 self.ui.cifList_treeWidget.clear()
@@ -576,6 +588,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
                     continue
                 map = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
                 if map:
+                    #pprint.pprint(map[3])
                     idlist2.append(i)
         return idlist2
 

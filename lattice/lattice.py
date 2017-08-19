@@ -28,9 +28,11 @@ def vol_unitcell(a, b, c, al, be, ga):
     >>> v = vol_unitcell(2, 2, 2, 90, 90, 90)
     >>> print(v)
     8.0
+
     """
-    ca, cb, cg = cos(radians(al)), cos(radians(be)), cos(radians(ga))
-    v = a * b * c * sqrt(1 + 2 * ca * cb * cg - ca ** 2 - cb ** 2 - cg ** 2)
+    #ca, cb, cg = cos(radians(al)), cos(radians(be)), cos(radians(ga))
+    v = a * b * c * sqrt(1 + 2 * cos(radians(al)) * cos(radians(be)) * cos(radians(ga))
+                         - cos(radians(al)) ** 2 - cos(radians(be)) ** 2 - cos(radians(ga)) ** 2)
     return v
 
 
