@@ -18,6 +18,7 @@ import pathlib
 import re
 import sys
 import tarfile
+#import threading
 import time
 import zipfile
 
@@ -160,6 +161,11 @@ def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structu
     zipcifs = 0
     time1 = time.clock()
     filelist = filewalker_walk(str(searchpath))
+    #from multiprocessing.pool import ThreadPool
+    #pool = ThreadPool(processes=1)
+    #async_result = pool.apply_async(filewalker_walk, (str(searchpath),))  # tuple of args for foo
+    # do some other stuff in the main process
+    #filelist = async_result.get()
     for filepth, name in filelist:
         fullpath = os.path.join(filepth, name)
         cif = fileparser.Cif()
