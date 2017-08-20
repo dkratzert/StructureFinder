@@ -125,10 +125,11 @@ def filewalker_walk(startdir):
                     continue
                 if filen == 'xd_four.cif':  # Exclude xdfourier cif files
                     continue
-                yield [root, filen]
+                #yield [root, filen]  # <- this is way slower!
+                filelist.append([root, filen])
             else:
                 continue
-    #return filelist
+    return filelist
 
 
 def put_cifs_in_db(self=None, structures=None, searchpath: str = './', excludes: list = None, lastid = 1) -> int:
