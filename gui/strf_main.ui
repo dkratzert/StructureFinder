@@ -265,7 +265,7 @@
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Insert unit cell as space separated: &lt;br&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;a b c α β γ&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Insert unit cell as space separated &lt;br/&gt;numbers: &lt;span style=&quot; font-style:italic;&quot;&gt;a b c α β γ&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="placeholderText">
                <string>a b c alpha beta gamma</string>
@@ -282,7 +282,7 @@
             <item>
              <widget class="QCheckBox" name="sublattCheckbox">
               <property name="text">
-               <string>sub- and superlattice</string>
+               <string>sub- or superlattice</string>
               </property>
              </widget>
             </item>

@@ -12,16 +12,16 @@ Created on 09.02.2015
 @author: daniel
 """
 
-import sys
 import sqlite3
-import numpy as np
+import sys
 from sqlite3 import OperationalError
 
-from searcher.constants import py36
+import numpy as np
 
 import searcher
 from lattice import lattice
 from searcher import misc
+from searcher.constants import py36
 from searcher.misc import get_error_from_value
 
 __metaclass__ = type  # use new-style classes
@@ -834,7 +834,6 @@ class StructureTable():
             
             
 if __name__ == '__main__':
-    from searcher import filecrawler
     #searcher.filecrawler.put_cifs_in_db(searchpath='../')
     db = DatabaseRequest('./structuredb.sqlite')
 #    db.database.initialize_db()

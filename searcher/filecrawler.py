@@ -13,19 +13,16 @@ Created on 09.02.2015
 @author: Daniel Kratzert
 """
 import fnmatch
+import os
+import pathlib
+import re
+import sys
 import tarfile
 import time
-import os
-import re
-import pathlib
-import sys
 import zipfile
 
-import lattice.lattice
-import searcher.atoms
-import searcher.database_handler
-import searcher.fileparser
-
+from searcher import atoms, database_handler, fileparser
+from lattice.lattice import vol_unitcell
 
 excluded_names = ['ROOT',
                   '.OLEX',
@@ -156,12 +153,12 @@ def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structu
     else:
         # the command line version
         fname = searchpath
-        db = searcher.database_handler.DatabaseRequest(dbfilename)
+        db = database_handler.DatabaseRequest(dbfilename)
         db.initialize_db()
         lastid = db.get_lastrowid()
         if not lastid:
             lastid = 0
-        structures = searcher.database_handler.StructureTable(dbfilename)
+        structures = database_handler.StructureTable(dbfilename)
     if not fname:
         return 0
     if self:
@@ -180,7 +177,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structu
     filelist = filewalker_walk(str(fname))
     for filepth, name in filelist:
         fullpath = os.path.join(filepth, name)
-        cif = searcher.fileparser.Cif()
+        cif = fileparser.Cif()
         if prognum == 20:
             prognum = 0
         if self:
@@ -247,7 +244,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structu
     if self:
         self.progress.hide()
     structures.populate_fulltext_search_table()
-    structures.database.commit_db("Committed")
+    structures.database.commit_db()
     time2 = time.clock()
     diff = time2 - time1
     m, s = divmod(diff, 60)
@@ -264,8 +261,8 @@ def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structu
     return n-1
 
 
-def fill_db_tables(cif: searcher.fileparser.Cif, filename: str, path: str, structure_id: str,
-                   structures: searcher.database_handler.StructureTable):
+def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: str,
+                   structures: database_handler.StructureTable):
     """
     Fill all info from cif file into the database tables
     _atom_site_label
@@ -307,7 +304,7 @@ def fill_db_tables(cif: searcher.fileparser.Cif, filename: str, path: str, struc
                 beta = float(beta.split('(')[0])
             if isinstance(gamma, str):
                 gamma = float(gamma.split('(')[0])
-            volume = lattice.lattice.vol_unitcell(a, b, c, alpha, beta, gamma)
+            volume = vol_unitcell(a, b, c, alpha, beta, gamma)
             volume = str(volume)
         except ValueError:
             volume = ''
@@ -328,7 +325,7 @@ def fill_db_tables(cif: searcher.fileparser.Cif, filename: str, path: str, struc
             try:
                 atom_type_symbol = cif._atom[x]['_atom_site_type_symbol']
             except KeyError:
-                atom_type_symbol  = searcher.atoms.get_atomlabel(x)
+                atom_type_symbol  = atoms.get_atomlabel(x)
             structures.fill_atoms_table(structure_id, x,
                                          atom_type_symbol,
                                          cif._atom[x]['_atom_site_fract_x'].split('(')[0],

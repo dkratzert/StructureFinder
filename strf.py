@@ -14,49 +14,36 @@ Created on 09.02.2015
 """
 from __future__ import print_function
 
-#import threading
+import math
+import os
+import pathlib
+import shutil
+import string
+import sys
+import tempfile
+import time
 
+from PyQt5 import QtWidgets, QtCore, QtGui, uic
+from PyQt5.QtCore import QEvent, Qt
+from lattice import lattice
+from apex import apeximporter
+from displaymol import mol_file_writer
+from pymatgen.core import mat_lattice
+from searcher import constants, misc, filecrawler, database_handler
 from searcher.constants import py36
+from searcher.fileparser import Cif
+
+uic.compileUiDir('./gui')
+from gui.strf_main import Ui_stdbMainwindow
+from gui.strf_dbpasswd import Ui_PasswdDialog
+
+if py36:
+    """Only import this if Python 3.6 is used."""
+    from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 __metaclass__ = type  # use new-style classes
 
 VERSION = 8
-
-import sys
-import time
-import math
-import os
-import shutil
-import string
-import tempfile
-import pprint
-
-if py36:
-    """Only import this if Python 3.6 is used."""
-    from PyQt5.QtWebEngine import QtWebEngine
-    from PyQt5.QtWebEngineWidgets import QWebEngineView
-
-import PyQt5.QtCore
-import PyQt5.QtGui
-import PyQt5.QtQml
-import PyQt5.QtWidgets
-import PyQt5.uic
-
-import pathlib
-
-import apex.apeximporter
-from searcher import constants, misc
-import displaymol.mol_file_writer
-import lattice.lattice
-import pymatgen.core.mat_lattice
-import searcher.filecrawler
-import searcher.fileparser
-
-
-PyQt5.uic.compileUiDir('./gui')
-from gui.strf_main import Ui_stdbMainwindow
-from gui.strf_dbpasswd import Ui_PasswdDialog
-
 """
 TODO:
 - Move indexer to extra thread
@@ -73,7 +60,7 @@ Search for:
 """
 
 
-class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
+class StartStructureDB(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ui = Ui_stdbMainwindow()
@@ -85,8 +72,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         self.ui.centralwidget.setMinimumSize(1200, 500)
-        self.abort_import_button = PyQt5.QtWidgets.QPushButton("Abort (takes a while)")
-        self.progress = PyQt5.QtWidgets.QProgressBar(self)
+        self.abort_import_button = QtWidgets.QPushButton("Abort (takes a while)")
+        self.progress = QtWidgets.QProgressBar(self)
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
         self.ui.statusbar.addWidget(self.abort_import_button)
@@ -106,7 +93,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.ui.txtSearchLabel.hide()
             self.ui.openglview.hide()
         self.ui.tabWidget.setCurrentIndex(0)
-        self.setWindowIcon(PyQt5.QtGui.QIcon('./icons/strf.png'))
+        self.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
         self.uipass = Ui_PasswdDialog()
         self.ui.cifList_treeWidget.sortByColumn(0, 0)
         # Actions for certain gui elements:
@@ -156,13 +143,13 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
                     .format(*self.structures.get_cell_by_id(self.structureId))
             except:
                 return False
-            clipboard = PyQt5.QtWidgets.QApplication.clipboard()
+            clipboard = QtWidgets.QApplication.clipboard()
             clipboard.setText(cell)
             self.ui.statusbar.showMessage('Copied unit cell {} to clip board.'
                                           .format(cell))
         return True
 
-    @PyQt5.QtCore.pyqtSlot(name="advanced_search")
+    @QtCore.pyqtSlot(name="advanced_search")
     def advanced_search(self):
         """
         Combines all the search fields. Collects all includes, all excludes ad calculates
@@ -208,7 +195,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             self.statusBar().showMessage('Found 0 structures.')
             return
         if excl:
-            self.display_structures_by_idlist(list(results-set(misc.flatten(excl))))
+            self.display_structures_by_idlist(list(results - set(misc.flatten(excl))))
         else:
             self.display_structures_by_idlist(list(results))
 
@@ -232,7 +219,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         """
         Manages the QDialog buttons on the password dialog.
         """
-        d = PyQt5.QtWidgets.QDialog()
+        d = QtWidgets.QDialog()
         self.passwd = self.uipass.setupUi(d)
         ip_dialog = d.exec()
         if ip_dialog == 1:  # Accepted
@@ -249,14 +236,14 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         Initializes a QWebengine to view the molecule.
         """
         self.view = QWebEngineView()
-        QtWebEngine.initialize()
-        self.view.load(PyQt5.QtCore.QUrl.fromLocalFile(os.path.abspath("./displaymol/jsmol.htm")))
+        #QtWebEngine.initialize()
+        self.view.load(QtCore.QUrl.fromLocalFile(os.path.abspath("./displaymol/jsmol.htm")))
         self.view.setMaximumWidth(250)
         self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
         self.view.show()
 
-    @PyQt5.QtCore.pyqtSlot(name="cell_state_changed")
+    @QtCore.pyqtSlot(name="cell_state_changed")
     def cell_state_changed(self):
         """
         Searches a cell but with diffeent loose or strict option.
@@ -264,9 +251,9 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.search_cell(self.ui.searchCellLineEDit.text())
 
     def import_cif_dirs(self):
-        #t = threading.Thread(target = searcher.filecrawler.put_cifs_in_db, args=(self, ))
-        #t.start()
-        searcher.filecrawler.put_cifs_in_db(self)
+        #worker = RunIndexerThread(self)
+        #worker.start()
+        filecrawler.put_cifs_in_db(self)
 
     def progressbar(self, curr: float, min: float, max: float) -> None:
         """
@@ -279,7 +266,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         if curr == max:
             self.progress.hide()
 
-    @PyQt5.QtCore.pyqtSlot(name="close_db")
+    @QtCore.pyqtSlot(name="close_db")
     def close_db(self, copy_on_close: str = None) -> bool:
         """
         Closed the current database and erases the list.
@@ -319,7 +306,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
                     return False
         return True
 
-    @PyQt5.QtCore.pyqtSlot(name="abort_import")
+    @QtCore.pyqtSlot(name="abort_import")
     def abort_import(self):
         """
         This slot means, import was aborted.
@@ -331,10 +318,10 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         Initializes the database.
         """
         self.dbfdesc, self.dbfilename = tempfile.mkstemp()
-        self.structures = searcher.database_handler.StructureTable(self.dbfilename)
+        self.structures = database_handler.StructureTable(self.dbfilename)
         self.structures.database.initialize_db()
 
-    @PyQt5.QtCore.pyqtSlot('QModelIndex', name="get_properties")
+    @QtCore.pyqtSlot('QModelIndex', name="get_properties")
     def get_properties(self, item):
         """
         This slot shows the properties of a cif file in the properties widget
@@ -353,7 +340,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         Saves the database to a certain file. Therefore I have to close the database.
         """
         status = False
-        save_name, tst = PyQt5.QtWidgets.QFileDialog.getSaveFileName(self, caption='Save File', directory='./',
+        save_name, tst = QtWidgets.QFileDialog.getSaveFileName(self, caption='Save File', directory='./',
                                                                      filter="*.sqlite")
         if save_name:
             if shutil._samefile(self.dbfilename, save_name):
@@ -366,11 +353,11 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
 
     def eventFilter(self, object, event):
         """Event filter for mouse clicks."""
-        if event.type() == PyQt5.QtCore.QEvent.MouseButtonDblClick:
+        if event.type() == QEvent.MouseButtonDblClick:
             self.copyUnitCell()
-        elif event.type() == PyQt5.QtCore.QEvent.MouseButtonPress:
-            if event.buttons() == PyQt5.QtCore.Qt.RightButton:
-                #print("rightbutton")
+        elif event.type() == QEvent.MouseButtonPress:
+            if event.buttons() == Qt.RightButton:
+                # print("rightbutton")
                 return True
         return False
 
@@ -395,7 +382,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         if not all((a, b, c, alpha, beta, gamma, volume)):
             self.ui.cellField.setText('            ')
             return False
-        #self.ui.cellField.setMinimumWidth(180)
+        # self.ui.cellField.setMinimumWidth(180)
         self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, ''))
         self.ui.cellField.installEventFilter(self)
         self.ui.cellField.setToolTip("Double click on 'Unit Cell' to copy to clipboard.")
@@ -409,7 +396,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             pass
         self.ui.zLineEdit.setText("{}".format(cif_dic['_cell_formula_units_Z']))
         try:
-            sumform = searcher.misc.format_sum_formula(cif_dic['_chemical_formula_sum'])
+            sumform = misc.format_sum_formula(cif_dic['_chemical_formula_sum'])
         except KeyError:
             sumform = ''
         self.ui.formLabel.setText("{}".format(sumform))
@@ -434,7 +421,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         thetamax = cif_dic['_diffrn_reflns_theta_max']
         # d = lambda/2sin(theta):
         try:
-            d = wavelen/(2 * math.sin(math.radians(thetamax)))
+            d = wavelen / (2 * math.sin(math.radians(thetamax)))
         except(ZeroDivisionError, TypeError):
             d = 0.0
         self.ui.numRestraintsLineEdit.setText("{}".format(cif_dic['_refine_ls_number_restraints']))
@@ -449,13 +436,13 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             compl = 0.0
         self.ui.completeLineEdit.setText("{:<5.1f}".format(compl))
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
-        atoms_item = PyQt5.QtWidgets.QTreeWidgetItem()
+        atoms_item = QtWidgets.QTreeWidgetItem()
         self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
         atoms_item.setText(0, 'Atoms')
-        #self.ui.allCifTreeWidget.installEventFilter(self)
+        # self.ui.allCifTreeWidget.installEventFilter(self)
         try:
             for at in self.structures.get_atoms_table(structure_id, cartesian=False):
-                data_cif_tree_item = PyQt5.QtWidgets.QTreeWidgetItem(atoms_item)
+                data_cif_tree_item = QtWidgets.QTreeWidgetItem(atoms_item)
                 self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
                 data_cif_tree_item.setText(1, '{:<8.8s}\t {:<4s}\t {:>8.5f}\t {:>8.5f}\t {:>8.5f}'.format(*at))
         except TypeError:
@@ -463,16 +450,16 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         for key, value in cif_dic.items():
             if key == "_shelx_res_file":
                 continue
-            cif_tree_item = PyQt5.QtWidgets.QTreeWidgetItem()
+            cif_tree_item = QtWidgets.QTreeWidgetItem()
             self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
             cif_tree_item.setText(0, str(key))
             cif_tree_item.setText(1, str(value))
-        shelx_tree_item = PyQt5.QtWidgets.QTreeWidgetItem()
-        shelx_data_item = PyQt5.QtWidgets.QTreeWidgetItem(shelx_tree_item)
+        shelx_tree_item = QtWidgets.QTreeWidgetItem()
+        shelx_data_item = QtWidgets.QTreeWidgetItem(shelx_tree_item)
         self.ui.allCifTreeWidget.addTopLevelItem(shelx_tree_item)
         shelx_tree_item.setText(0, '_shelx_res_file')
         shelx_data_item.setText(1, cif_dic['_shelx_res_file'])
-        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
+        # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.allCifTreeWidget.resizeColumnToContents(0)
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
         return True
@@ -486,10 +473,10 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         templ = p.read_text(encoding='utf-8', errors='ignore')
         s = string.Template(templ)
         try:
-            tst = displaymol.mol_file_writer.MolFile(structure_id, self.structures, cell[:6])
+            tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6])
             mol = tst.make_mol()
         except (TypeError, KeyError):
-            #print("Error in structure", structure_id, "while writing mol file.")
+            # print("Error in structure", structure_id, "while writing mol file.")
             s = string.Template(' ')
             pass
         content = s.safe_substitute(MyMol=mol)
@@ -497,7 +484,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         p2.write_text(data=content, encoding="utf-8", errors='ignore')
         self.view.reload()
 
-    @PyQt5.QtCore.pyqtSlot('QString')
+    @QtCore.pyqtSlot('QString')
     def search_text(self, search_string: str) -> bool:
         """
         searches db for given text
@@ -508,14 +495,14 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             if not self.structures:
                 return False  # Empty database
         except:
-            return False      # No database cursor
+            return False  # No database cursor
         idlist = []
         if len(search_string) == 0:
             self.show_full_list()
             return False
         if len(search_string) >= 2:
             if not "*" in search_string:
-                search_string = '*'+search_string+'*'
+                search_string = '*' + search_string + '*'
         try:
             idlist = self.structures.find_by_strings(search_string)
         except AttributeError as e:
@@ -545,13 +532,13 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             if not self.structures:
                 return []  # Empty database
         except:
-            return []      # No database cursor
+            return []  # No database cursor
         if len(cell) != 6:
             self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
-            #self.show_full_list()
+            # self.show_full_list()
             return []
         try:
-            volume = lattice.lattice.vol_unitcell(*cell)
+            volume = lattice.vol_unitcell(*cell)
             # sub- and superlattice with doubled and halfed volume:
             if self.ui.sublattCheckbox.isChecked():
                 vol1 = volume * 0.5
@@ -571,29 +558,29 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         # Get a smaller list where only cells are included that have a proper mapping to the input cell:
         idlist2 = []
         if idlist:
-            lattice1 = pymatgen.core.mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
+            lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
             self.statusBar().clearMessage()
             for num, i in enumerate(idlist):
-                self.progressbar(num, 0, len(idlist)-1)
+                self.progressbar(num, 0, len(idlist) - 1)
                 request = """select * from cell where StructureId = {}""".format(i)
                 dic = self.structures.get_row_as_dict(request)
                 try:
-                    lattice2 = pymatgen.core.mat_lattice.Lattice.from_parameters(
-                        float(dic['a']),
-                        float(dic['b']),
-                        float(dic['c']),
-                        float(dic['alpha']),
-                        float(dic['beta']),
-                        float(dic['gamma']) )
+                    lattice2 = mat_lattice.Lattice.from_parameters(
+                            float(dic['a']),
+                            float(dic['b']),
+                            float(dic['c']),
+                            float(dic['alpha']),
+                            float(dic['beta']),
+                            float(dic['gamma']))
                 except ValueError:
                     continue
                 map = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
                 if map:
-                    #pprint.pprint(map[3])
+                    # pprint.pprint(map[3])
                     idlist2.append(i)
         return idlist2
 
-    @PyQt5.QtCore.pyqtSlot('QString')
+    @QtCore.pyqtSlot('QString')
     def search_cell(self, search_string: str) -> bool:
         """
         searches db for given cell via the cell volume
@@ -609,7 +596,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             return False
         if len(cell) != 6:
             self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
-            #self.show_full_list()
+            # self.show_full_list()
             return False
         idlist = self.search_cell_idlist(cell)
         if not idlist:
@@ -622,8 +609,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.full_list = False
         for i in searchresult:
             self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
-            #self.add_table_row(name, path, id)
-        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
+            # self.add_table_row(name, path, id)
+        # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
         return True
 
@@ -658,7 +645,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
             path = path.decode("utf-8", "surrogateescape")
         if isinstance(data, bytes):
             data = data.decode("utf-8", "surrogateescape")
-        tree_item = PyQt5.QtWidgets.QTreeWidgetItem()
+        tree_item = QtWidgets.QTreeWidgetItem()
         tree_item.setText(0, name)  # name
         tree_item.setText(1, data)  # data
         tree_item.setText(2, path)  # path
@@ -671,12 +658,13 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         """
         self.tmpfile = False
         self.close_db()
-        fname = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, caption='Open File', directory='./', filter="*.sqlite")
+        fname = QtWidgets.QFileDialog.getOpenFileName(self, caption='Open File', directory='./',
+                                                            filter="*.sqlite")
         if not fname[0]:
             return False
-        print("Opened {}.". format(fname[0]))
+        print("Opened {}.".format(fname[0]))
         self.dbfilename = fname[0]
-        self.structures = searcher.database_handler.StructureTable(self.dbfilename)
+        self.structures = database_handler.StructureTable(self.dbfilename)
         self.show_full_list()
         if not self.structures:
             return False
@@ -686,7 +674,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         """
         Opens the APEX db to be displayed in the treeview.
         """
-        self.apx = apex.apeximporter.ApexDB()
+        self.apx = apeximporter.ApexDB()
         connok = False
         try:
             connok = self.apx.initialize_db(user, password, host)
@@ -710,8 +698,8 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         conn = self.open_apex_db(user, password, host)
         if not conn:
             self.abort_import_button.hide()
-            return False
-        cif = searcher.fileparser.Cif()
+            return None
+        cif = Cif()
         if conn:
             for i in self.apx.get_all_data():
                 if num == 20:
@@ -730,14 +718,14 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
                 cif.cif_data['_exptl_crystal_size_mid'] = i[17]
                 cif.cif_data['_exptl_crystal_size_min'] = i[18]
                 cif.cif_data["_chemical_formula_sum"] = i[25]
-                cif.cif_data['_diffrn_reflns_av_R_equivalents'] = i[21] #rint
-                cif.cif_data['_diffrn_reflns_av_unetI/netI'] = i[22] #rsig
+                cif.cif_data['_diffrn_reflns_av_R_equivalents'] = i[21]  # rint
+                cif.cif_data['_diffrn_reflns_av_unetI/netI'] = i[22]  # rsig
                 cif.cif_data['_diffrn_reflns_number'] = i[23]
                 comp = i[26]
                 if comp:
-                    cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp/100
-                tst = searcher.filecrawler.fill_db_tables(cif=cif, filename=i[8], path=i[12],
-                                                          structure_id=n, structures=self.structures)
+                    cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
+                tst = filecrawler.fill_db_tables(cif=cif, filename=i[8], path=i[12],
+                                                 structure_id=n, structures=self.structures)
                 if not tst:
                     continue
                 self.add_table_row(name=i[8], data=i[8], path=i[12], id=str(n))
@@ -758,7 +746,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.statusbar.showMessage('Added {} APEX entries in: {:>2d} h, {:>2d} m, {:>3.2f} s'
                                       .format(n, int(h), int(m), s), msecs=0)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        # self.ui.cifList_treeWidget.resizeColumnToContents(1)
         if py36:
             self.structures.populate_fulltext_search_table()
         self.structures.database.commit_db("Committed")
@@ -779,7 +767,7 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         mess = "Loaded {} entries.".format(id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        # self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
         self.ui.tabWidget.setCurrentIndex(0)
 
@@ -810,12 +798,27 @@ class StartStructureDB(PyQt5.QtWidgets.QMainWindow):
         self.ui.cCDCNumberLineEdit.clear()
 
 
+class RunIndexerThread(QtCore.QThread):
+    def __init__(self, strf):
+        """
+        Make a new thread instance
+        """
+        QtCore.QThread.__init__(self)
+        self.strf = strf
+
+    def run(self):
+        """
+        Runs the indexer thread
+        """
+        filecrawler.put_cifs_in_db(self.strf)
+
+
 if __name__ == "__main__":
     # later http://www.pyinstaller.org/
-    app = PyQt5.QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(PyQt5.QtGui.QIcon('./icons/strf.png'))
+    app = QtWidgets.QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
     app.setApplicationName('StructureFinder v{}'.format(VERSION))
-    #app.setApplicationDisplayName("StructureFinder")
+    # app.setApplicationDisplayName("StructureFinder")
     myapp = StartStructureDB()
     myapp.show()
     myapp.raise_()
