@@ -251,9 +251,16 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.search_cell(self.ui.searchCellLineEDit.text())
 
     def import_cif_dirs(self):
-        #worker = RunIndexerThread(self)
-        #worker.start()
-        filecrawler.put_cifs_in_db(self)
+        self.tmpfile = True
+        self.statusBar().showMessage('')
+        self.close_db()
+        self.start_db()
+        fname = QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        self.progressbar(1, 0, 20)
+        self.abort_import_button.show()
+        # This can not work in the gui, because we don't have a database file in every case (tmpfile):
+        #db = searcher.database_handler.DatabaseRequest(os.path.join(fname, dbfilename))
+        filecrawler.put_cifs_in_db(self, searchpath=fname)
 
     def progressbar(self, curr: float, min: float, max: float) -> None:
         """

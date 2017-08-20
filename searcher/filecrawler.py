@@ -123,10 +123,10 @@ def filewalker_walk(startdir):
                     continue
                 if filen == 'xd_four.cif':  # Exclude xdfourier cif files
                     continue
-                filelist.append([root, filen])
+                yield [root, filen]
             else:
                 continue
-    return filelist
+    #return filelist
 
 
 def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structuredb.sqlite",
@@ -137,33 +137,18 @@ def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structu
     if excludes:
         excluded_names.extend(excludes)
     lastid = 1
-    if self:
-        # the graphical version:
-        import PyQt5.QtWidgets
-        self.tmpfile = True
-        self.statusBar().showMessage('')
-        self.close_db()
-        self.start_db()
-        fname = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
-        structures = self.structures
-        self.progressbar(1, 0, 20)
-        self.abort_import_button.show()
-        # This can not work in the gui, because we don't have a database file in every case (tmpfile):
-        #db = searcher.database_handler.DatabaseRequest(os.path.join(fname, dbfilename))
-    else:
+    if not self:
         # the command line version
-        fname = searchpath
         db = database_handler.DatabaseRequest(dbfilename)
         db.initialize_db()
         lastid = db.get_lastrowid()
         if not lastid:
             lastid = 0
         structures = database_handler.StructureTable(dbfilename)
-    if not fname:
+    else:
+        structures = self.structures
+    if not searchpath:
         return 0
-    if self:
-        self.ui.cifList_treeWidget.show()
-        self.abort_import_button.show()
     # TODO: implement multiple cells in one cif file:
     if lastid <= 1:
         n = 1
@@ -174,7 +159,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structu
     num = 1
     zipcifs = 0
     time1 = time.clock()
-    filelist = filewalker_walk(str(fname))
+    filelist = filewalker_walk(str(searchpath))
     for filepth, name in filelist:
         fullpath = os.path.join(filepth, name)
         cif = fileparser.Cif()
