@@ -86,7 +86,8 @@ class MyTarReader(MyZipBase):
 
 def create_file_list(searchpath='None', ending='cif'):
     """
-    walks through the file system and collects cells from res/cif files
+    walks through the file system and collects cells from res/cif files.
+    Pathlib is nice, but does not allow me to do rglob for more than one file type.
     """
     if not os.path.isdir(searchpath):
         print('search path {0} not found! Or no directory!'.format(searchpath))
@@ -102,15 +103,17 @@ def filewalker_walk(startdir):
     walks through the filesystem starting from startdir and searches
     for files with ending endings.
 
-    >>> filewalker_walk('../')
+    Since os.walk() uses scandir, it is as fast as pathlib.
     """
     filelist = []
     print('collecting files below ' + startdir)
     for root, _, files in os.walk(startdir):
         for filen in files:
             omit = False
-            if fnmatch.fnmatch(filen, '*.cif') or fnmatch.fnmatch(filen, '*.zip')\
-                    or fnmatch.fnmatch(filen, '*.tar.gz') or fnmatch.fnmatch(filen, '*.tar.bz2') \
+            if fnmatch.fnmatch(filen, '*.cif') \
+                    or fnmatch.fnmatch(filen, '*.zip')\
+                    or fnmatch.fnmatch(filen, '*.tar.gz') \
+                    or fnmatch.fnmatch(filen, '*.tar.bz2') \
                     or fnmatch.fnmatch(filen, '*.tgz'):
                 fullpath = os.path.abspath(os.path.join(root, filen))
                 if os.stat(fullpath).st_size == 0:
