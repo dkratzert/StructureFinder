@@ -124,20 +124,19 @@ def filewalker_walk(startdir):
                     continue
                 if filen == 'xd_four.cif':  # Exclude xdfourier cif files
                     continue
-                yield [root, filen]
+                filelist.append([root, filen])
             else:
                 continue
-    #return filelist
+    return filelist
 
 
 def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structuredb.sqlite",
-                   excludes: list = None) -> int:
+                   excludes: list = None, lastid: int = 1) -> int:
     """
     Imports cif files from a certain directory
     """
     if excludes:
         excluded_names.extend(excludes)
-    lastid = 1
     if not self:
         # the command line version
         db = database_handler.DatabaseRequest(dbfilename)
