@@ -260,7 +260,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.abort_import_button.show()
         # This can not work in the gui, because we don't have a database file in every case (tmpfile):
         #db = searcher.database_handler.DatabaseRequest(os.path.join(fname, dbfilename))
-        filecrawler.put_cifs_in_db(self, searchpath=fname, structures=self.structures)
+        filecrawler.put_cifs_in_db(self, searchpath=fname)
 
     def progressbar(self, curr: float, min: float, max: float) -> None:
         """

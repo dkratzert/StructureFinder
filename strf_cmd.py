@@ -1,11 +1,10 @@
-import sqlite3
+
 import sys
 import argparse
 
 import time
 
-from searcher import filecrawler, database_handler
-
+from searcher import filecrawler
 #from searcher.spinner import Spinner
 
 
@@ -54,21 +53,9 @@ else:
         time1 = time.clock()
         for p in fname:
             if args.outfile:
-                dbfile = args.outfile
+                ncifs = filecrawler.put_cifs_in_db(searchpath=p, dbfilename=args.outfile, excludes=args.ex)
             else:
-                dbfile = "structuredb.sqlite"
-            db = database_handler.DatabaseRequest(dbfile)
-            db.initialize_db()
-            lastid = db.get_lastrowid()
-            if not lastid:
-                lastid = 0
-            structures = database_handler.StructureTable(dbfile)
-            try:
-                ncifs = filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex,
-                                                   structures=structures, lastid=lastid)
-            except sqlite3.IntegrityError:
-                print("Database already exists.")
-                break
+                ncifs = filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex)
         time2 = time.clock()
         diff = time2 - time1
         m, s = divmod(diff, 60)

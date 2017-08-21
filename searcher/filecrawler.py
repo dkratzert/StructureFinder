@@ -24,7 +24,6 @@ import zipfile
 
 from searcher import atoms, database_handler, fileparser
 from lattice.lattice import vol_unitcell
-from searcher.database_handler import StructureTable
 
 excluded_names = ['ROOT',
                   '.OLEX',
@@ -131,12 +130,24 @@ def filewalker_walk(startdir):
     #return filelist
 
 
-def put_cifs_in_db(self=None, structures=None, searchpath: str = './', excludes: list = None, lastid = 1) -> int:
+def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structuredb.sqlite",
+                   excludes: list = None) -> int:
     """
     Imports cif files from a certain directory
     """
     if excludes:
         excluded_names.extend(excludes)
+    lastid = 1
+    if not self:
+        # the command line version
+        db = database_handler.DatabaseRequest(dbfilename)
+        db.initialize_db()
+        lastid = db.get_lastrowid()
+        if not lastid:
+            lastid = 0
+        structures = database_handler.StructureTable(dbfilename)
+    else:
+        structures = self.structures
     if not searchpath:
         return 0
     # TODO: implement multiple cells in one cif file:
@@ -175,7 +186,6 @@ def put_cifs_in_db(self=None, structures=None, searchpath: str = './', excludes:
                     tst = fill_db_tables(cif, filename=name, path=filepth, structure_id=n, structures=structures)
                     if not tst:
                         continue
-                    # TODO: emit table row
                     if self:
                         self.add_table_row(name, filepth, cif.cif_data['data'], str(n))
                     n += 1
@@ -187,7 +197,7 @@ def put_cifs_in_db(self=None, structures=None, searchpath: str = './', excludes:
         else:  # a zip file:
             if fullpath.endswith('.zip'):
                 z = MyZipReader(fullpath)
-            else:  # a tar.gz file
+            else:
                 z = MyTarReader(fullpath)
             for zippedfile in z:              # the list of cif files in the zip file
                 omit = False
@@ -208,7 +218,7 @@ def put_cifs_in_db(self=None, structures=None, searchpath: str = './', excludes:
                     zipcifs += 1
                     if not tst:
                         continue
-                    if self:  # TODO: emit table row
+                    if self:
                         self.add_table_row(name=z.cifname, path=fullpath, data=cif.cif_data['data'], id=str(n))
                     n += 1
                     num += 1
@@ -217,7 +227,7 @@ def put_cifs_in_db(self=None, structures=None, searchpath: str = './', excludes:
                         structures.database.commit_db()
                     prognum += 1
         if self:
-            if not self.decide_import:  # TODO: abort via signal
+            if not self.decide_import:
                 # This means, import was aborted.
                 self.abort_import_button.hide()
                 self.decide_import = True
