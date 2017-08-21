@@ -476,7 +476,6 @@ class StructureTable():
         fill the cell of structure(structureId) in the table
         cell = [a, b, c, alpha, beta, gamma]
         """
-        # TODO: Only calc volume if not in cif:
         req = '''INSERT INTO cell (StructureId, a, b, c, alpha, beta, gamma, 
                                    esda, esdb, esdc, esdalpha, esdbeta, esdgamma, volume) 
                             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''

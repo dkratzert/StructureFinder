@@ -45,6 +45,7 @@ __metaclass__ = type  # use new-style classes
 VERSION = 8
 """
 TODO:
+-refractor put_cifs_in_db()
 - Move indexer to extra thread
 - sort results by G6 distance
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbo

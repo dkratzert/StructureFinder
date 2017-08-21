@@ -58,7 +58,7 @@ class MyZipReader(MyZipBase):
                     if not self.cifname.startswith('__') and zfile.NameToInfo[name].file_size < 150000000:
                         yield zfile.read(name).decode('utf-8', 'ignore').splitlines(keepends=True)
         except (zipfile.BadZipFile, zipfile.LargeZipFile) as e:
-            #print(e, self.filepath)
+            #print(e, self.filepath)  # filepath is not utf-8 save
             yield []
 
 
@@ -80,7 +80,7 @@ class MyTarReader(MyZipBase):
                 if self.cifname.endswith('.cif'):
                     yield tfile.extractfile(name).read().decode('utf-8', 'ignore').splitlines(keepends=True)
         except Exception as e:
-            #print(e, self.filepath)
+            #print(e, self.filepath)  # filepath is not utf-8 save
             yield []
 
 
@@ -110,7 +110,8 @@ def filewalker_walk(startdir):
         for filen in files:
             omit = False
             if fnmatch.fnmatch(filen, '*.cif') or fnmatch.fnmatch(filen, '*.zip')\
-                    or fnmatch.fnmatch(filen, '*.tar.gz') or fnmatch.fnmatch(filen, '*.tar.bz2'):
+                    or fnmatch.fnmatch(filen, '*.tar.gz') or fnmatch.fnmatch(filen, '*.tar.bz2') \
+                    or fnmatch.fnmatch(filen, '*.tgz'):
                 fullpath = os.path.abspath(os.path.join(root, filen))
                 if os.stat(fullpath).st_size == 0:
                     continue
@@ -123,6 +124,7 @@ def filewalker_walk(startdir):
                     continue
                 if filen == 'xd_four.cif':  # Exclude xdfourier cif files
                     continue
+                # This is much faster than yield():
                 filelist.append([root, filen])
             else:
                 continue
@@ -163,7 +165,6 @@ def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structu
     if self:
         self.ui.cifList_treeWidget.show()
         self.abort_import_button.show()
-    # TODO: implement multiple cells in one cif file:
     if lastid <= 1:
         n = 1
     else:
@@ -191,7 +192,8 @@ def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structu
                 except IndexError:
                     continue
                 if cif:  # means cif object has data inside (cif could be parsed)
-                    tst = fill_db_tables(cif, filename=name, path=filepth, structure_id=n, structures=structures)
+                    tst = fill_db_tables(cif, filename=name, path=filepth, structure_id=n,
+                                         structures=structures)
                     if not tst:
                         continue
                     if self:
@@ -227,7 +229,8 @@ def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structu
                     if not tst:
                         continue
                     if self:
-                        self.add_table_row(name=z.cifname, path=fullpath, data=cif.cif_data['data'], id=str(n))
+                        self.add_table_row(name=z.cifname, path=fullpath,
+                                           data=cif.cif_data['data'], id=str(n))
                     n += 1
                     num += 1
                     if n % 1000 == 0:
@@ -303,8 +306,7 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
                 beta = float(beta.split('(')[0])
             if isinstance(gamma, str):
                 gamma = float(gamma.split('(')[0])
-            volume = vol_unitcell(a, b, c, alpha, beta, gamma)
-            volume = str(volume)
+            volume = str(vol_unitcell(a, b, c, alpha, beta, gamma))
         except ValueError:
             volume = ''
     measurement_id = structures.fill_measuremnts_table(filename, structure_id)
