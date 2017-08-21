@@ -24,7 +24,6 @@ import tempfile
 import time
 
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
-from PyQt5.QtCore import QEvent, Qt
 from lattice import lattice
 from apex import apeximporter
 from displaymol import mol_file_writer
@@ -353,10 +352,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
 
     def eventFilter(self, object, event):
         """Event filter for mouse clicks."""
-        if event.type() == QEvent.MouseButtonDblClick:
+        if event.type() == QtCore.QEvent.MouseButtonDblClick:
             self.copyUnitCell()
-        elif event.type() == QEvent.MouseButtonPress:
-            if event.buttons() == Qt.RightButton:
+        elif event.type() == QtCore.QEvent.MouseButtonPress:
+            if event.buttons() == QtCore.Qt.RightButton:
                 # print("rightbutton")
                 return True
         return False
