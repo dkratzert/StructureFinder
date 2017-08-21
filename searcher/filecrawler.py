@@ -58,7 +58,7 @@ class MyZipReader(MyZipBase):
                     if not self.cifname.startswith('__') and zfile.NameToInfo[name].file_size < 150000000:
                         yield zfile.read(name).decode('utf-8', 'ignore').splitlines(keepends=True)
         except (zipfile.BadZipFile, zipfile.LargeZipFile) as e:
-            print(e, name)
+            print(e, self.filepath)
             yield []
 
 
@@ -80,7 +80,7 @@ class MyTarReader(MyZipBase):
                 if self.cifname.endswith('.cif'):
                     yield tfile.extractfile(name).read().decode('utf-8', 'ignore').splitlines(keepends=True)
         except Exception as e:
-            print(e, name)
+            print(e, self.filepath)
             yield []
 
 
