@@ -78,6 +78,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.statusbar.addWidget(self.progress)
         self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
+        self.apx = None
         self.structureId = ''
         self.show()
         self.full_list = True  # indicator if the full structures list is shown
@@ -253,14 +254,16 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def import_cif_dirs(self):
         #worker = RunIndexerThread(self)
         #worker.start()
-        import PyQt5.QtWidgets
         self.tmpfile = True
         self.statusBar().showMessage('')
-        self.progressbar(1, 0, 20)
-        self.abort_import_button.show()
         self.close_db()
         self.start_db()
-        fname = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        self.progressbar(1, 0, 20)
+        self.abort_import_button.show()
+        fname = QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        if not fname:
+            self.progress.hide()
+            self.abort_import_button.hide()
         filecrawler.put_cifs_in_db(self, searchpath=fname)
         self.ui.cifList_treeWidget.show()
         self.ui.cifList_treeWidget.resizeColumnToContents(0)
@@ -672,7 +675,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.tmpfile = False
         self.close_db()
         fname = QtWidgets.QFileDialog.getOpenFileName(self, caption='Open File', directory='./',
-                                                            filter="*.sqlite")
+                                                      filter="*.sqlite")
         if not fname[0]:
             return False
         print("Opened {}.".format(fname[0]))
@@ -691,7 +694,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         connok = False
         try:
             connok = self.apx.initialize_db(user, password, host)
-        except:
+        except Exception:
             self.passwd_handler()
         return connok
 
@@ -705,7 +708,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cifList_treeWidget.show()
         self.abort_import_button.show()
         n = 1
-        min = 0
         num = 0
         time1 = time.clock()
         conn = self.open_apex_db(user, password, host)
@@ -717,7 +719,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             for i in self.apx.get_all_data():
                 if num == 20:
                     num = 0
-                self.progressbar(num, min, 20)
+                self.progressbar(num, 0, 20)
                 cif.cif_data['_cell_length_a'] = i[1]
                 cif.cif_data['_cell_length_b'] = i[2]
                 cif.cif_data['_cell_length_c'] = i[3]
