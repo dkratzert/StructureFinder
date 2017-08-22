@@ -47,11 +47,12 @@ except IndexError:
     print("Please run this as 'stdb_rmd [directory]'\n")
     print("stdb_cmd will search for .cif files in [directory] recoursively.")
 else:
+    time1 = time.clock()
+    if args.outfile:
+        dbfilename = args.outfile
+    else:
+        dbfilename = 'structuredb.sqlite'
     for p in args.dir:
-        if args.outfile:
-            dbfilename = args.outfile
-        else:
-            dbfilename = 'structuredb.sqlite'
         # the command line version
         db = database_handler.DatabaseRequest(dbfilename)
         db.initialize_db()
@@ -64,10 +65,15 @@ else:
         try:
             ncifs = filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex,
                                                        structures=structures, lastid=lastid)
-            tmessage = "Total {} cif files written to {}'.\n---------------------"
-            print(tmessage.format(ncifs, dbfilename))
         except OSError as e:
             print("Unable to collect files:")
             print(e)
-        #spinner.stop()
-        pass
+        print("---------------------")
+    time2 = time.clock()
+    diff = time2 - time1
+    m, s = divmod(diff, 60)
+    h, m = divmod(m, 60)
+    tmessage = "\nTotal {3} cif files in '{4}'. Duration: {0:>2d} h, {1:>2d} m, {2:>3.2f} s"
+    print(tmessage.format(int(h), int(m), s, ncifs, dbfilename))
+
+
