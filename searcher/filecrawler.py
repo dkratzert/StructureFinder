@@ -106,15 +106,12 @@ def filewalker_walk(startdir):
     Since os.walk() uses scandir, it is as fast as pathlib.
     """
     filelist = []
+    patterns = ('*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz')
     print('collecting files below ' + startdir)
     for root, _, files in os.walk(startdir):
         for filen in files:
             omit = False
-            if fnmatch.fnmatch(filen, '*.cif') \
-                    or fnmatch.fnmatch(filen, '*.zip')\
-                    or fnmatch.fnmatch(filen, '*.tar.gz') \
-                    or fnmatch.fnmatch(filen, '*.tar.bz2') \
-                    or fnmatch.fnmatch(filen, '*.tgz'):
+            if any(fnmatch.fnmatch(filen, pattern) for pattern in patterns):
                 fullpath = os.path.abspath(os.path.join(root, filen))
                 if os.stat(fullpath).st_size == 0:
                     continue
