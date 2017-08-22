@@ -42,7 +42,7 @@ if py36:
 
 __metaclass__ = type  # use new-style classes
 
-VERSION = 8
+VERSION = 9
 """
 TODO:
 - add version checker
@@ -101,6 +101,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         self.ui.cifList_treeWidget.addAction(self.ui.actionGo_to_All_CIF_Tab)
+        if len(sys.argv) > 1:
+            self.dbfilename = sys.argv[2]
+            self.structures = database_handler.StructureTable(self.dbfilename)
+            self.show_full_list()
 
     def connect_signals_and_slots(self):
         """
