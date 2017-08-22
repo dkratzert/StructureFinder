@@ -33,7 +33,7 @@ excluded_names = ['ROOT',
 
 
 class MyZipBase(object):
-    def __init__(self, filepath):
+    def __init__(self, filepath: str) -> None:
         self.filepath = filepath
         self.cifname = ''
         self.cifpath = ''
@@ -58,7 +58,7 @@ class MyZipReader(MyZipBase):
                     if not self.cifname.startswith('__') and zfile.NameToInfo[name].file_size < 150000000:
                         yield zfile.read(name).decode('utf-8', 'ignore').splitlines(keepends=True)
         except Exception as e:
-            print("Error: {} in file {}".format(e, self.filepath.decode('utf-8', 'ignore')))
+            print("Error: {} in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
             #print(e, self.filepath)  # filepath is not utf-8 save
             yield []
 
@@ -81,7 +81,7 @@ class MyTarReader(MyZipBase):
                 if self.cifname.endswith('.cif'):
                     yield tfile.extractfile(name).read().decode('utf-8', 'ignore').splitlines(keepends=True)
         except Exception as e:
-            print("Error: {} in file {}".format(e, self.filepath.decode('utf-8', 'ignore')))
+            print("Error: {} in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
             #print(e, self.filepath)  # filepath is not utf-8 save
             yield []
 
