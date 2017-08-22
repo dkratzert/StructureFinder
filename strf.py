@@ -256,14 +256,17 @@ class StartStructureDB(QtWidgets.QMainWindow):
         import PyQt5.QtWidgets
         self.tmpfile = True
         self.statusBar().showMessage('')
+        self.progressbar(1, 0, 20)
+        self.abort_import_button.show()
         self.close_db()
         self.start_db()
         fname = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
-        self.progressbar(1, 0, 20)
-        self.abort_import_button.show()
         filecrawler.put_cifs_in_db(self, searchpath=fname)
         self.ui.cifList_treeWidget.show()
-        self.abort_import_button.show()
+        self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
+        self.abort_import_button.hide()
 
     def progressbar(self, curr: float, min: float, max: float) -> None:
         """

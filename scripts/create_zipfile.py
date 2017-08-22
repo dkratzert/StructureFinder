@@ -3,6 +3,8 @@ Creates a zip file with the content of the StructureDB program.
 """
 from zipfile import ZipFile
 
+import os
+
 from strf import VERSION
 
 version = VERSION
@@ -38,10 +40,11 @@ def make_zip(filelist):
     """
     :type filelist: list
     """
-    with ZipFile('../strf_cmd-v{}.zip'.format(version), 'w') as myzip:
+    os.chdir('../')
+    with ZipFile('strf_cmd-v{}.zip'.format(version), 'w') as myzip:
         for f in filelist:
             print("Adding {}".format(f))
-            myzip.write("../StructureFinder/"+f)
+            myzip.write("StructureFinder/"+f)
 
 
 if __name__ == "__main__":

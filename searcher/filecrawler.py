@@ -26,8 +26,8 @@ from lattice.lattice import vol_unitcell
 
 excluded_names = ['ROOT',
                   '.OLEX',
-#                  'TMP',
-#                  'TEMP',
+                  'TMP',
+                  'TEMP',
                   'Papierkorb',
                   'Recycle.Bin']
 
@@ -58,7 +58,7 @@ class MyZipReader(MyZipBase):
                     if not self.cifname.startswith('__') and zfile.NameToInfo[name].file_size < 150000000:
                         yield zfile.read(name).decode('utf-8', 'ignore').splitlines(keepends=True)
         except Exception as e:
-            print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
+            #print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
             #print(e, self.filepath)  # filepath is not utf-8 save
             yield []
 
@@ -81,7 +81,7 @@ class MyTarReader(MyZipBase):
                 if self.cifname.endswith('.cif'):
                     yield tfile.extractfile(name).read().decode('utf-8', 'ignore').splitlines(keepends=True)
         except Exception as e:
-            print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
+            #print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
             #print(e, self.filepath)  # filepath is not utf-8 save
             yield []
 
@@ -146,8 +146,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
     if lastid <= 1:
         n = 1
     else:
-        n = lastid + 1
-    min = 0
+        n = lastid
     prognum = 0
     num = 1
     zipcifs = 0
@@ -156,10 +155,10 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
     for filepth, name in filelist:
         fullpath = os.path.join(filepth, name)
         cif = fileparser.Cif()
-        if prognum == 20:
-            prognum = 0
         if self:
-            self.progressbar(prognum, min, 20)
+            if prognum == 20:
+                prognum = 0
+            self.progressbar(prognum, 0, 20)
         # This is really ugly copy&pase code. TODO: refractor this:
         if name.endswith('.cif'):
             with open(fullpath, mode='r', encoding='ascii', errors="ignore") as f:
@@ -230,14 +229,9 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
     tmessage = 'Added {0} cif files ({4} in compressed files) to database in: {1:>2d} h, {2:>2d} m, {3:>3.2f} s'
+    print(tmessage.format(num - 1, int(h), int(m), s, zipcifs))
     if self:
-        self.ui.statusbar.showMessage(tmessage.format(num-1, int(h), int(m), s, zipcifs))
-        self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
-        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
-        self.abort_import_button.hide()
-    else:
-        print(tmessage.format(num - 1, int(h), int(m), s, zipcifs))
+        self.ui.statusbar.showMessage(tmessage.format(num - 1, int(h), int(m), s, zipcifs))
     return n-1
 
 
