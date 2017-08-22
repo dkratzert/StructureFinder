@@ -253,7 +253,17 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def import_cif_dirs(self):
         #worker = RunIndexerThread(self)
         #worker.start()
-        filecrawler.put_cifs_in_db(self)
+        import PyQt5.QtWidgets
+        self.tmpfile = True
+        self.statusBar().showMessage('')
+        self.close_db()
+        self.start_db()
+        fname = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        self.progressbar(1, 0, 20)
+        self.abort_import_button.show()
+        filecrawler.put_cifs_in_db(self, searchpath=fname)
+        self.ui.cifList_treeWidget.show()
+        self.abort_import_button.show()
 
     def progressbar(self, curr: float, min: float, max: float) -> None:
         """

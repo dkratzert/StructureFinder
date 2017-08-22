@@ -133,40 +133,16 @@ def filewalker_walk(startdir):
     return filelist
 
 
-def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structuredb.sqlite",
-                   excludes: list = None, lastid: int = 1) -> int:
+def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, lastid: int = 1, structures=None) -> int:
     """
     Imports cif files from a certain directory
     """
     if excludes:
         excluded_names.extend(excludes)
-    if self:
-        # the graphical version:
-        import PyQt5.QtWidgets
-        self.tmpfile = True
-        self.statusBar().showMessage('')
-        self.close_db()
-        self.start_db()
-        fname = PyQt5.QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
-        structures = self.structures
-        self.progressbar(1, 0, 20)
-        self.abort_import_button.show()
-        # This can not work in the gui, because we don't have a database file in every case (tmpfile):
-        #db = searcher.database_handler.DatabaseRequest(os.path.join(fname, dbfilename))
-    else:
-        # the command line version
-        fname = searchpath
-        db = database_handler.DatabaseRequest(dbfilename)
-        db.initialize_db()
-        lastid = db.get_lastrowid()
-        if not lastid:
-            lastid = 0
-        structures = database_handler.StructureTable(dbfilename)
-    if not fname:
+    if not searchpath:
         return 0
     if self:
-        self.ui.cifList_treeWidget.show()
-        self.abort_import_button.show()
+        structures = self.structures
     if lastid <= 1:
         n = 1
     else:
@@ -176,7 +152,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', dbfilename: str = "structu
     num = 1
     zipcifs = 0
     time1 = time.clock()
-    filelist = filewalker_walk(str(fname))
+    filelist = filewalker_walk(str(searchpath))
     for filepth, name in filelist:
         fullpath = os.path.join(filepth, name)
         cif = fileparser.Cif()
