@@ -41,7 +41,8 @@ def make_zip(filelist):
     :type filelist: list
     """
     os.chdir('../')
-    with ZipFile('strf_cmd-v{}.zip'.format(version), 'w') as myzip:
+    with ZipFile('strf_cmd-v{}.zip'.format(version), mode='w',
+                 allowZip64=False) as myzip:
         for f in filelist:
             print("Adding {}".format(f))
             myzip.write("StructureFinder/"+f)
