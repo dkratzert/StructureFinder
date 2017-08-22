@@ -1,0 +1,294 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+
+  <title>StructureFinder</title>
+    
+    <style type="text/css">
+    
+    body {
+      padding:1px;
+      background-color: #FFF7DC;
+      color: black;
+      min-width: 530px;
+      font-family: Verdana, sans-serif;
+      font-size: 1.0em;
+    }
+    h2, h3 {
+      width: 100%;
+      text-align: center;
+        margin: 0.5em 0.0em;
+        font-size: 1.2em;
+    }
+    p {
+      width: 80%;
+      margin: 10px auto;
+    }
+    
+    a {
+      color: black;
+      text-decoration: underline;
+    }
+    a:hover {
+      text-decoration: none;
+      background-color: #D5ECFF;
+    }
+    td {
+      border-bottom: 1px solid #CCC;
+      padding: 5px;
+      text-align: left; /* IE */
+      font-size:0.8em;
+    }
+    td + td {
+      border-left: 1px solid #000000;
+    }
+    th {
+      padding: 0 5px;
+      text-align: left; /* IE */
+      font-size:1.1em;
+      color:#fff;
+    }
+    .header-background {
+      border-bottom: 1px solid black;
+    }
+    
+    /* above this is decorative, not part of the test */
+    
+    .fixed-table-container {
+      width: 1010px;
+      height: 400px;
+      border: 1px solid black;
+      margin: 10px auto;
+      background-color: white;
+      /* above is decorative or flexible */
+      position: relative; /* could be absolute or relative */
+      padding-top: 35px; /* height of header */
+    }
+
+    .fixed-table-container-inner {
+      overflow-x: auto;
+      overflow-y: auto;
+      height: 100%;
+    }
+     
+    .header-background {
+      background-color: #3C6F99;
+      height: 35px; /* height of header */
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+    }
+    
+    table {
+      background-color: white;
+      width: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    .th-inner {
+      position: absolute;
+      top: 0;
+      line-height: 35px; /* height of header */
+      text-align: left;
+      border-left: 1px solid black;
+      padding-left: 5px;
+      margin-left: -5px;
+    }
+    .first .th-inner {
+        border-left: none;
+        padding-left: 6px;
+      }
+		
+		/* extra-wrap */
+		
+		.extrawrap th {
+			text-align: center;
+		}
+		
+		.extra-wrap {
+			width: 100%;
+		}
+		
+		/* Zupa styles for centered headers 
+		
+		.zupa div.zupa1 {
+			margin: 0 auto !important;
+			width: 0 !important;
+		}
+		
+		.zupa div.th-inner {
+			width: 100%;
+			margin-left: -50%;
+			text-align: center;
+			border: none;
+		}*/
+
+    /* for hidden header hack to calculate widths of dynamic content */
+    
+    .hidden-head {
+      min-width: 530px; /* enough width to show all header text, or bad things happen */
+    }
+    
+    .hidden-header .th-inner {
+      position: static;
+      overflow-y: hidden;
+      height: 0;
+      white-space: nowrap;
+      padding-right: 5px;
+    }
+    
+    /* for complex headers */
+    
+    .complex.fixed-table-container {
+      padding-top: 70px; /* height of header */
+      overflow-x: hidden; /* for border */
+    }
+    
+    .complex .header-background {
+      height: 70px;
+    }
+    
+    .complex-top .th-inner {
+      border-bottom: 1px solid black;
+      width: 100%
+    }
+    
+    .complex-bottom .th-inner {
+      top: 35px;
+      width: 100%
+    }
+    
+    .complex-top .third .th-inner { /* double row cell */
+      height: 70px;
+      border-bottom: none;
+      background-color: #D5ECFF;
+    }
+    
+   
+    input, select{ 
+    padding:2px; 
+    font-size:0.8em; 
+    font-family:Verdana,sans-serif;
+    color:#00c;  
+    background-color:white;    
+    }
+
+    
+    </style>
+  </head>
+ <body>
+ <form action="nmrlog.cgi" method="get" enctype="multipart/form-data">
+     <h2>StructureFinder</h2>
+     <!--
+     <h2>AKK NMRLog from: <input maxlength="10" size="10" value="$startsearchstring" name="startsearchstring" onchange="this.form.submit"> to: <input maxlength="10" size="10" value="$endsearchstring" name="endsearchstring" onchange="this.form.submit()"> (please set time intervall as narrow as possible for performance reasons)</h2>
+ -->
+
+    <div class="fixed-table-container complex">
+        <div class="header-background"> </div>
+    <div class="fixed-table-container-inner">
+        <table cellspacing="0">
+          <thead>
+            <tr class = "complex-top">
+              <th class="filename">
+                <div class="th-inner">filename</div>
+              </th>
+              <th class="dataname">
+                <div class="th-inner">dataname</div>
+              </th>
+              <th class="directory">
+                <div class="th-inner">directory</div>
+              </th>
+            </tr>
+<!--
+            <tr class = "complex-bottom">
+            <th class="date">
+             <div class="th-inner">&nbsp</div>
+            </th>
+            <th class="spec">
+              <div class="th-inner">
+              <select name = "machinesearchstring" onchange="this.form.submit()">
+              $machineselector
+              </select>&nbsp
+              </div>
+            </th>
+            <th class="user">
+               <div class="th-inner">
+                <select name = "usersearchstring" onchange="this.form.submit()">
+                   $userselector
+                </select>&nbsp
+               </div>
+            </th>
+            <th class="dir">
+                <div class="th-inner">&nbsp</div>
+            </th>
+            <th class="number">
+                <div class="th-inner">&nbsp</div>
+            </th>
+            <th class="nucleus">
+                <div class="th-inner">
+                <select name = "nucsearchstring" onchange="this.form.submit()">
+                $nucselector
+                </select>&nbsp
+                </div>
+            </th>   
+            <th class="pulprog">
+                <div class="th-inner">
+                <select name = "pulprogsearchstring" onchange="this.form.submit()">
+                $pulprogselector
+                </select>&nbsp
+                </div>
+            </th>               
+            <th class="ns">
+                <div class="th-inner">&nbsp</div>
+            </th>          
+            <th class="d1">
+                <div class="th-inner">&nbsp</div>
+            </th>  
+            <th class="title">
+                <div class="th-inner"><input maxlength="30" size="20" value="$titlesearchstring" name="titlesearchstring" onchange="this.form.submit()"> &nbsp<INPUT TYPE="submit" VALUE="Search">&nbsp
+                </div>
+            </th>                   
+        </tr>
+-->
+       <tr class = "complex-top">
+              <th class="filename">
+                <div class="th-inner">filename</div>
+              </th>
+              <th class="dataname">
+                <div class="th-inner">dataname</div>
+              </th>
+              <th class="directory">
+                <div class="th-inner">directory</div>
+              </th>
+        <tr class="hidden-header">
+            <th class="th-inner">filename</th>
+
+            <th class="dataname">
+                <div class="th-inner">dataname</div>
+            </th>
+            <th class="directory">
+                <div class="th-inner">directory</div>
+            </th>
+		</tr>
+        </thead>   
+        <tbody>
+            $logtablecolumns  
+        </tbody>
+     </table>
+    </div>
+    </div>
+
+    </form>  
+    
+<p align="left">
+</br>
+for time ... mouseover date entry
+</br>
+for full path name ... mouseover machine entry
+</br>
+for parameter list ... mouseover pulse programme entry
+</p> 
+
+  </body>
+</html>
