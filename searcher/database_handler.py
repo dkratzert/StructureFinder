@@ -453,9 +453,9 @@ class StructureTable():
         req = '''
               INSERT INTO Structure (Id, measurement, filename, path, dataname) VALUES(?, ?, ?, ?, ?)
               '''
-        filename = filename.encode("utf-8", "surrogateescape")
-        path = path.encode("utf-8", "surrogateescape")
-        dataname = dataname.encode("utf-8", "surrogateescape")
+        filename = filename.encode("utf-8", "ignore")#.encode("utf-8", "surrogateescape")
+        path = path.encode("utf-8", "ignore")
+        dataname = dataname.encode("utf-8", "ignore")
         self.database.db_request(req, structure_id, measurement_id, filename, path, dataname)
         return structure_id
 
@@ -778,7 +778,8 @@ class StructureTable():
         '''
         try:
             ids = self.database.db_request(req, text, text, text, text)
-        except (TypeError, sqlite3.ProgrammingError):
+        except (TypeError, sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
+            print('DB request error.', e)
             return False
         return ids
 

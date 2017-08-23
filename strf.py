@@ -250,7 +250,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.view.setMaximumWidth(250)
         self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
-        self.view.show()
+        #self.view.show()
 
     @QtCore.pyqtSlot(name="cell_state_changed")
     def cell_state_changed(self):
@@ -526,7 +526,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             return False
         if len(search_string) >= 2:
             if not "*" in search_string:
-                search_string = '*' + search_string + '*'
+                search_string = "{}{}{}".format('*', search_string, '*')
         try:
             idlist = self.structures.find_by_strings(search_string)
         except AttributeError as e:

@@ -178,12 +178,8 @@
     </style>
   </head>
  <body>
- <form action="nmrlog.cgi" method="get" enctype="multipart/form-data">
+ <form action="strflog.cgi" method="get" enctype="multipart/form-data">
      <h2>StructureFinder</h2>
-     <!--
-     <h2>AKK NMRLog from: <input maxlength="10" size="10" value="$startsearchstring" name="startsearchstring" onchange="this.form.submit"> to: <input maxlength="10" size="10" value="$endsearchstring" name="endsearchstring" onchange="this.form.submit()"> (please set time intervall as narrow as possible for performance reasons)</h2>
- -->
-
     <div class="fixed-table-container complex">
         <div class="header-background"> </div>
     <div class="fixed-table-container-inner">
@@ -200,57 +196,6 @@
                 <div class="th-inner">directory</div>
               </th>
             </tr>
-<!--
-            <tr class = "complex-bottom">
-            <th class="date">
-             <div class="th-inner">&nbsp</div>
-            </th>
-            <th class="spec">
-              <div class="th-inner">
-              <select name = "machinesearchstring" onchange="this.form.submit()">
-              $machineselector
-              </select>&nbsp
-              </div>
-            </th>
-            <th class="user">
-               <div class="th-inner">
-                <select name = "usersearchstring" onchange="this.form.submit()">
-                   $userselector
-                </select>&nbsp
-               </div>
-            </th>
-            <th class="dir">
-                <div class="th-inner">&nbsp</div>
-            </th>
-            <th class="number">
-                <div class="th-inner">&nbsp</div>
-            </th>
-            <th class="nucleus">
-                <div class="th-inner">
-                <select name = "nucsearchstring" onchange="this.form.submit()">
-                $nucselector
-                </select>&nbsp
-                </div>
-            </th>   
-            <th class="pulprog">
-                <div class="th-inner">
-                <select name = "pulprogsearchstring" onchange="this.form.submit()">
-                $pulprogselector
-                </select>&nbsp
-                </div>
-            </th>               
-            <th class="ns">
-                <div class="th-inner">&nbsp</div>
-            </th>          
-            <th class="d1">
-                <div class="th-inner">&nbsp</div>
-            </th>  
-            <th class="title">
-                <div class="th-inner"><input maxlength="30" size="20" value="$titlesearchstring" name="titlesearchstring" onchange="this.form.submit()"> &nbsp<INPUT TYPE="submit" VALUE="Search">&nbsp
-                </div>
-            </th>                   
-        </tr>
--->
        <tr class = "complex-top">
               <th class="filename">
                 <div class="th-inner">filename</div>
