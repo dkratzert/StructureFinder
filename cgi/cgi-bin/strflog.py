@@ -65,8 +65,13 @@ def application(environ, start_response):
     age = d.get(b'age', [''])[0]  # Returns the first age value.
     hobbies = d.get(b'hobbies', [])  # Returns a list of hobbies.
     # Always escape user input to avoid script injection
-    age = escape(age.decode('ascii'))
-    hobbies = [escape(hobby.decode('ascii')) for hobby in hobbies]
+    try:
+        age = escape(age.decode('ascii'))
+        hobbies = [escape(hobby.decode('ascii')) for hobby in hobbies]
+    except AttributeError:
+        age = escape(age)
+        hobbies = [escape(hobby) for hobby in hobbies]
+
 
     response_body = html % {  # Fill the above html template in
         'checked-software': ('', 'checked')['software' in hobbies],
