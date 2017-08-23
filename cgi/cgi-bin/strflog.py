@@ -40,10 +40,10 @@ def process_data():
 
 
 if __name__ == "__main__":
-    try:
-        import wsgiref.simple_server
-        server = wsgiref.simple_server.make_server('127.0.0.1', 8000, main)
-        server.serve_forever()
-        print("Webserver running...")
-    except KeyboardInterrupt:
-        print("Webserver stopped...")
+try:
+    import wsgiref.simple_server
+    server = wsgiref.simple_server.make_server('127.0.0.1', 8000, main)
+    server.serve_forever()
+    print("Webserver running...")
+except KeyboardInterrupt:
+    print("Webserver stopped...")
