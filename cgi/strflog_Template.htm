@@ -7,7 +7,7 @@
     
     body {
       padding:1px;
-      background-color: #FFF7DC;
+      background-color: #d6d6d6;
       color: black;
       min-width: 530px;
       font-family: Verdana, sans-serif;
@@ -54,8 +54,8 @@
     /* above this is decorative, not part of the test */
     
     .fixed-table-container {
-      width: 1010px;
-      height: 400px;
+      width: 60%;
+      height: 40%;
       border: 1px solid black;
       margin: 10px auto;
       background-color: white;
@@ -71,7 +71,7 @@
     }
      
     .header-background {
-      background-color: #3C6F99;
+      background-color: #3e83af;
       height: 35px; /* height of header */
       position: absolute;
       top: 0;
@@ -177,8 +177,9 @@
     
     </style>
   </head>
- <body>
- <form action="strflog.cgi" method="get" enctype="multipart/form-data">
+
+<body>
+ <form action="cgi-bin/strflog.py" method="get" enctype="multipart/form-data">
      <h2>StructureFinder</h2>
     <div class="fixed-table-container complex">
         <div class="header-background"> </div>
@@ -206,6 +207,7 @@
               <th class="directory">
                 <div class="th-inner">directory</div>
               </th>
+       </tr>
         <tr class="hidden-header">
             <th class="th-inner">filename</th>
 
@@ -224,16 +226,16 @@
     </div>
     </div>
 
-    </form>  
+ </form>
     
 <p align="left">
-</br>
+<br>
 for time ... mouseover date entry
-</br>
+<br>
 for full path name ... mouseover machine entry
-</br>
+<br>
 for parameter list ... mouseover pulse programme entry
 </p> 
 
-  </body>
+</body>
 </html>

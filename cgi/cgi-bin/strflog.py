@@ -20,7 +20,7 @@ def application(environ, start_response):
     setup_testing_defaults(environ)
 
     status = '200 OK'
-    headers = [('Content-type', 'text/plain; charset=utf-8')]
+    headers = [('Content-type', 'text/html; charset=utf-8')]
     start_response(status, headers)
     txt = process_data()
     return [txt]
