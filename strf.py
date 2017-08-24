@@ -842,7 +842,7 @@ if __name__ == "__main__":
     # later http://www.pyinstaller.org/
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
-    app.setApplicationName('StructureFinder v{}'.format(VERSION))
+    app.setApplicationName('StructureFinder')
     # app.setApplicationDisplayName("StructureFinder")
     myapp = StartStructureDB()
     myapp.show()
