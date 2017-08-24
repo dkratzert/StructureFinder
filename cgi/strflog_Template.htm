@@ -25,34 +25,41 @@
         margin: 0.5em 0.0em;
         font-size: 1.8em;
     }
+
     p {
-      width: 95%;
-      margin: 10px auto;
+        width: 95%;
+        margin: 10px auto;
+        alignment: left;
     }
     
     a {
       color: black;
       text-decoration: underline;
     }
+
     a:hover {
       text-decoration: none;
       background-color: #D5ECFF;
     }
+
     td {
       border-bottom: 0.5px solid #dfdfdf;
       padding:       3px;
       text-align:    left; /* IE */
       font-size:     11px;
     }
+
     td + td {
       border-left: 1px solid #000000;
     }
+
     th {
       padding:    0 5px;
       text-align: left; /* IE */
       font-size:  1.1em;
       color:#fff;
     }
+
     .header-background {
       border-bottom: 1px solid black;
     }
@@ -86,11 +93,12 @@
     }
     
     table {
-      background-color: white;
+      background-color: #f5f5f5;
       width: 100%;
       overflow-x: hidden;
       overflow-y: auto;
     }
+
 
     .th-inner {
       position: absolute;
@@ -147,12 +155,12 @@
     /* for complex headers */
     
     .complex.fixed-table-container {
-      padding-top: 70px; /* height of header */
+      padding-top: 35px; /* height of header */
       overflow-x: hidden; /* for border */
     }
     
     .complex .header-background {
-      height: 70px;
+      height: 35px; /* height of header */
     }
     
     .complex-top .th-inner {
@@ -164,7 +172,7 @@
       top: 35px;
       width: 100%
     }
-    
+
     .complex-top .third .th-inner { /* double row cell */
       height: 70px;
       border-bottom: none;
@@ -185,63 +193,35 @@
   </head>
 
 <body>
- <form action="cgi-bin/strflog.py" method="get" enctype="multipart/form-data">
-     <h1>StructureFinder</h1>
-    <div class="fixed-table-container complex">
-        <div class="header-background"> </div>
-    <div class="fixed-table-container-inner">
-        <table cellspacing="0">
-          <thead>
-            <tr class = "complex-top">
-              <th class="filename">
-                <div class="th-inner">filename</div>
-              </th>
-              <th class="dataname">
-                <div class="th-inner">dataname</div>
-              </th>
-              <th class="directory">
-                <div class="th-inner">directory</div>
-              </th>
-            </tr>
-       <tr class = "complex-top">
-              <th class="filename">
-                <div class="th-inner">filename</div>
-              </th>
-              <th class="dataname">
-                <div class="th-inner">dataname</div>
-              </th>
-              <th class="directory">
-                <div class="th-inner">directory</div>
-              </th>
-       </tr>
-        <tr class="hidden-header">
-            <th class="th-inner">filename</th>
+    <form action="cgi-bin/strflog.py" method="get" enctype="multipart/form-data">
+    <h1>StructureFinder</h1>
+        <div class="fixed-table-container complex">
+            <div class="header-background"> </div>
+            <div class="fixed-table-container-inner">
+            <table cellspacing="0">
+                <thead>
+                    <tr class = "complex-top">
+                        <th class="filename">  <div class="th-inner">filename </div> </th>
+                        <th class="dataname">  <div class="th-inner">dataname </div> </th>
+                        <th class="directory"> <div class="th-inner">directory</div> </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    $logtablecolumns
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </form>
 
-            <th class="dataname">
-                <div class="th-inner">dataname</div>
-            </th>
-            <th class="directory">
-                <div class="th-inner">directory</div>
-            </th>
-		</tr>
-        </thead>   
-        <tbody>
-            $logtablecolumns  
-        </tbody>
-     </table>
-    </div>
-    </div>
+<p>
 
- </form>
-    
-<p align="left">
-<br>
-for time ... mouseover date entry
-<br>
-for full path name ... mouseover machine entry
-<br>
-for parameter list ... mouseover pulse programme entry
-</p> 
+        <h3 align="left">Search structures:</h3>
+    Search Unit Cell:
+    <form method="post" action="">
+        <input type="text" name="cell" value="">
+    </form>
+</p>
 
 </body>
 </html>

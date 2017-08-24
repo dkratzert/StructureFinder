@@ -34,7 +34,7 @@ def application(environ, start_response):
     #pprint.pprint(environ)
     request_body = environ['wsgi.input'].read(request_body_size).decode('utf-8')
     d = parse.parse_qs(request_body)
-    pprint.pprint('request_body:', d)
+    #pprint.pprint('request_body:', d)
     status = '200 OK'
     headers = [('Content-type', 'text/html; charset=utf-8')]
     start_response(status, headers)
