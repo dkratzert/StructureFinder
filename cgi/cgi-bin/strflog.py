@@ -69,7 +69,7 @@ def find_cell(cellstr: str):
     #    atol = 1
     #try:
     volume = lattice.vol_unitcell(*cell)
-    idlist = structures.find_by_volume(volume, threshold)
+    #idlist = structures.find_by_volume(volume, threshold)
 
 def process_data(structures):
     """
@@ -83,11 +83,11 @@ def process_data(structures):
         return []
     table_string = ""
     for i in structures.get_all_structure_names():
-        line = '<tr> <td>{0}</td> <td>{1}</td> <td>{2}</td> <td>{3}</td> </tr>\n'\
+        line = '<tr> <td>{0}</td> <td>{1}</td> <td>{2}</td> </tr>\n'\
                 .format(i[3].decode('ascii', errors='ignore'),
                         i[4].decode('ascii', errors='ignore'),
                         i[2].decode('ascii', errors='ignore'),
-                        i[0]
+                        #i[0]
                         )
         # i[0] -> id
         table_string += line
