@@ -13,6 +13,7 @@ from wsgiref.util import setup_testing_defaults, FileWrapper
 
 import pathlib
 
+from lattice import lattice
 from searcher import database_handler
 
 cgitb.enable(display=1, logdir="./log")
@@ -34,15 +35,43 @@ def application(environ, start_response):
     #pprint.pprint(environ)
     request_body = environ['wsgi.input'].read(request_body_size).decode('utf-8')
     d = parse.parse_qs(request_body)
+    if d.get("cell"):
+        cell = (d.get("cell"))
     #pprint.pprint('request_body:', d)
     status = '200 OK'
     headers = [('Content-type', 'text/html; charset=utf-8')]
     start_response(status, headers)
-    txt = process_data()
+    dbfilename = "./structuredb.sqlite"
+    structures = database_handler.StructureTable(dbfilename)
+    txt = process_data(structures)
     return [txt]
 
+def find_cell(cellstr: str):
+    """
+    Finds unit cells in db. Rsturns hits a a list of ids.
+    """
+    try:
+        cell = [float(x) for x in cellstr.strip().split()]
+    except (TypeError, ValueError):
+        return []
+    if len(cell) != 6:
+        #self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
+        # self.show_full_list()
+        return []
+    #if self.ui.moreResultsCheckBox.isChecked() or \
+    #        self.ui.ad_moreResultscheckBox.isChecked():
+    threshold = 0.08
+    ltol = 0.09
+    atol = 1.8
+    #else:
+    #    threshold = 0.03
+    #    ltol = 0.001
+    #    atol = 1
+    #try:
+    volume = lattice.vol_unitcell(*cell)
+    idlist = structures.find_by_volume(volume, threshold)
 
-def process_data(dbfilename="./structuredb.sqlite"):
+def process_data(structures):
     """
     Structure.Id             0
     Structure.measurement    1
@@ -50,7 +79,6 @@ def process_data(dbfilename="./structuredb.sqlite"):
     Structure.filename       3
     Structure.dataname       4
     """
-    structures = database_handler.StructureTable(dbfilename)
     if not structures:
         return []
     table_string = ""
