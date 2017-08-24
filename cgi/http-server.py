@@ -11,3 +11,13 @@ try:
         httpd.serve_forever()
 except KeyboardInterrupt:
     print("End.")
+
+"""
+try:
+    import wsgiref.simple_server
+    server = wsgiref.simple_server.make_server('127.0.0.1', 8000, application)
+    server.serve_forever()
+    print("Webserver running...")
+except KeyboardInterrupt:
+    print("Webserver stopped...")
+"""
