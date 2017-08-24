@@ -42,9 +42,11 @@ if py36:
 
 __metaclass__ = type  # use new-style classes
 
-VERSION = 9
+VERSION = 10
 """
 TODO:
+- disable molecule on windows7 32 bit?
+- Improve text search (in cif file)
 - add version checker
 - refractor put_cifs_in_db()
 - Move indexer to extra thread
