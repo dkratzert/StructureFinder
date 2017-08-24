@@ -842,6 +842,7 @@ if __name__ == "__main__":
     # later http://www.pyinstaller.org/
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
+    # Has to be without version number, because QWebengine stores data in ApplicationName directory:
     app.setApplicationName('StructureFinder')
     # app.setApplicationDisplayName("StructureFinder")
     myapp = StartStructureDB()
