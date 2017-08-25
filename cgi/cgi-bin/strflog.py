@@ -101,19 +101,18 @@ def process_data(structures: StructureTable, idlist: list=None):
     Structure.filename       3
     Structure.dataname       4
     """
+    print("process data ###")
     if not structures:
         return []
     table_string = ""
     for i in structures.get_all_structure_names(idlist):
-        line = '<tr> <td>{0}</td> <td>{1}</td> <td>{2}</td> </tr>\n' \
-            .format(i[3].decode('utf-8', errors='ignore'),
-                    i[4].decode('utf-8', errors='ignore'),
-                    i[2].decode('utf-8', errors='ignore'),
-                    # i[0]
-                    )
+        table_string += '<tr> <td>{0}</td> <td>{1}</td> <td>{2}</td> </tr>\n' \
+                            .format(i[3].decode('utf-8', errors='ignore'),
+                                    i[4].decode('utf-8', errors='ignore'),
+                                    i[2].decode('utf-8', errors='ignore'),
+                                    # i[0]
+                                    )
         # i[0] -> id
-        table_string += line
-        table_string = table_string
     p = pathlib.Path("./cgi/strflog_Template.htm")
     t = Template(p.read_bytes().decode('utf-8', 'ignore'))
     replacedict = {"logtablecolumns": table_string, "CSearch": "Search", "TSearch": "Search"}
