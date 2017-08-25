@@ -5,12 +5,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <script type="text/javascript" src="./bootstrap3/custom.css"></script>
-
-    <link rel="stylesheet" href="bootstrap3/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="bootstrap3/custom.css">
-    <script type="text/javascript" src="jquery/jquery.min.js"></script>
-
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script type="text/javascript" href="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script type="text/javascript" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -18,19 +12,18 @@
 </head>
 <style>
 
-
-    body {
-        padding-top: 10px;
-        padding-left: 8%;
-        padding-right: 8%;
-      background-color: #ebebeb;
-      color: black;
-      min-width: 530px;
-      font-size: 1.2em;
-    }
+body {
+    padding-top: 10px;
+    padding-left: 8%;
+    padding-right: 8%;
+    background-color: #ebebeb;
+    color: black;
+    min-width: 530px;
+    font-size: 1.2em;
+}
 
     .header-fixed {
-    width: 90%;
+    width: 100%;
 }
 
 
@@ -41,6 +34,16 @@
 .header-fixed > thead > tr > th,
 .header-fixed > tbody > tr > td {
     display: block;
+}
+
+table {
+    table-layout: auto;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table .absorbing-column {
+    width: 60%;
 }
 
 thead {
@@ -75,36 +78,38 @@ tbody {
 
 .header-fixed > tbody > tr > td,
 .header-fixed > thead > tr > th {
-    width: 33.333%;
+    width: 20%;
     float: left;
     padding: 2px;
 }
 /*Anke*/
 td {
-      border-bottom: 1px solid #CCC;
-      padding: 2px;
-      text-align: left; /* IE */
-    }
+    border-bottom: 1px solid #CCC;
+    padding: 2px;
+    text-align: left; /* IE */
+}
+
+
 td + td {
       border-left: 1px solid #9c9c9c;
     }
 
-    input {
-
+    input .cellsearch{
+        width: 40%;
     }
 
 </style>
 
 
 <body>
-    <form action="cgi-bin/strflog.py" method="get" enctype="multipart/form-data">
+    <form action="cgi-bin/strflog.py" enctype="multipart/form-data">
     <h1>StructureFinder</h1>
         <table class="table table-striped header-fixed">
             <thead style="font-size: 1.5em">
                 <tr>
                     <th> filename </th>
                     <th> dataname </th>
-                    <th> directory </th>
+                    <th class="absorbing-column"> directory </th>
                 </tr>
             </thead>
             <tbody>
@@ -117,7 +122,12 @@ td + td {
     <h3>Search structures:</h3>
     Search Unit Cell:
     <form method="post" action="">
-        <input type="text" name="cell" value=""> <input type="submit" value="Search">
+        <input style="width: 30em" type="text" name="cell" value=""> <input type="submit" value="$CSearch">
+    </form>
+    <br>
+    Search Text:
+    <form method="post" action="">
+        <input style="width: 30em" type="text" name="cell" value=""> <input type="submit" value="$TSearch">
     </form>
 </p>
 

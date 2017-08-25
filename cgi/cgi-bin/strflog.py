@@ -7,10 +7,12 @@ from urllib import parse
 from wsgiref.util import setup_testing_defaults
 
 from lattice import lattice
+from pymatgen.core import mat_lattice
 from searcher import database_handler
 
 
 # cgitb.enable(display=1, logdir="./log")
+from searcher.database_handler import StructureTable
 
 
 def application(environ, start_response):
@@ -29,29 +31,32 @@ def application(environ, start_response):
     # pprint.pprint(environ)
     request_body = environ['wsgi.input'].read(request_body_size).decode('utf-8')
     d = parse.parse_qs(request_body)
-    if d.get("cell"):
-        cell = (d.get("cell"))
+    dbfilename = "D:/GitHub/structures_22.08.2017.sqlite"
+    structures = database_handler.StructureTable(dbfilename)
     # pprint.pprint('request_body:', d)
     status = '200 OK'
     headers = [('Content-type', 'text/html; charset=utf-8')]
     start_response(status, headers)
-    dbfilename = "./structuredb.sqlite"
-    structures = database_handler.StructureTable(dbfilename)
+    if d.get("cell"):
+        cell = (d.get("cell")[0])
+        ids = find_cell(structures, cell)
+        txt = process_data(structures, ids)
+        return [txt]
     txt = process_data(structures)
     return [txt]
 
 
-def find_cell(cellstr: str):
+def find_cell(structures: StructureTable, cellstr: str):
     """
     Finds unit cells in db. Rsturns hits a a list of ids.
     """
     try:
         cell = [float(x) for x in cellstr.strip().split()]
-    except (TypeError, ValueError):
+    except (TypeError, ValueError) as e:
+        print(e)
         return []
     if len(cell) != 6:
-        # self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
-        # self.show_full_list()
+        print("No valid cell!")
         return []
     # if self.ui.moreResultsCheckBox.isChecked() or \
     #        self.ui.ad_moreResultscheckBox.isChecked():
@@ -64,10 +69,31 @@ def find_cell(cellstr: str):
     #    atol = 1
     # try:
     volume = lattice.vol_unitcell(*cell)
-    # idlist = structures.find_by_volume(volume, threshold)
+    idlist = structures.find_by_volume(volume, threshold)
+    idlist2 = []
+    if idlist:
+        lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
+        for num, i in enumerate(idlist):
+            request = """select * from cell where StructureId = {}""".format(i)
+            dic = structures.get_row_as_dict(request)
+            try:
+                lattice2 = mat_lattice.Lattice.from_parameters(
+                    float(dic['a']),
+                    float(dic['b']),
+                    float(dic['c']),
+                    float(dic['alpha']),
+                    float(dic['beta']),
+                    float(dic['gamma']))
+            except ValueError:
+                continue
+            map = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
+            if map:
+                idlist2.append(i)
+    if idlist2:
+        return idlist2
 
 
-def process_data(structures):
+def process_data(structures: StructureTable, idlist: list=None):
     """
     Structure.Id             0
     Structure.measurement    1
@@ -78,7 +104,7 @@ def process_data(structures):
     if not structures:
         return []
     table_string = ""
-    for i in structures.get_all_structure_names():
+    for i in structures.get_all_structure_names(idlist):
         line = '<tr> <td>{0}</td> <td>{1}</td> <td>{2}</td> </tr>\n' \
             .format(i[3].decode('utf-8', errors='ignore'),
                     i[4].decode('utf-8', errors='ignore'),
@@ -90,7 +116,8 @@ def process_data(structures):
         table_string = table_string
     p = pathlib.Path("./cgi/strflog_Template.htm")
     t = Template(p.read_bytes().decode('utf-8', 'ignore'))
-    return str(t.safe_substitute({"logtablecolumns": table_string})).encode('utf-8', 'ignore')
+    replacedict = {"logtablecolumns": table_string, "CSearch": "Search", "TSearch": "Search"}
+    return str(t.safe_substitute(replacedict)).encode('utf-8', 'ignore')
 
 
 if __name__ == "__main__":
