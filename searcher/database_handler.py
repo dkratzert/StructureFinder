@@ -780,7 +780,7 @@ class StructureTable():
             ids = self.database.db_request(req, text, text, text, text)
         except (TypeError, sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
             print('DB request error.', e)
-            return False
+            return tuple([])
         return ids
 
     def find_by_elements(self, elements: list, anyresult: bool = False) -> list:

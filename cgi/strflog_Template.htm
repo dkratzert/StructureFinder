@@ -98,13 +98,20 @@ td + td {
         width: 40%;
     }
 
+table tbody tr td a {
+  display: block;
+  width: 100%;
+  height: 100%;
+    color: black;
+}
+
 </style>
 
 
 <body>
     <form action="cgi-bin/strflog.py" enctype="multipart/form-data">
     <h1>StructureFinder</h1>
-        <table class="table table-striped header-fixed">
+        <table class="table table-striped header-fixed table-hover">
             <thead style="font-size: 1.5em">
                 <tr>
                     <th> filename </th>
@@ -117,7 +124,7 @@ td + td {
             </tbody>
         </table>
     </form>
-<p>
+    <p>
 
     <h3>Search structures:</h3>
     Search Unit Cell:
@@ -127,7 +134,7 @@ td + td {
     <br>
     Search Text:
     <form method="post" action="">
-        <input style="width: 30em" type="text" name="cell" value=""> <input type="submit" value="$TSearch">
+        <input style="width: 30em" type="text" name="txtsearch" value=""> <input type="submit" value="$TSearch">
     </form>
 </p>
 

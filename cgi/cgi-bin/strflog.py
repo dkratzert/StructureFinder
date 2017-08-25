@@ -31,7 +31,7 @@ def application(environ, start_response):
     # pprint.pprint(environ)
     request_body = environ['wsgi.input'].read(request_body_size).decode('utf-8')
     d = parse.parse_qs(request_body)
-    dbfilename = "D:/GitHub/structures_22.08.2017.sqlite"
+    dbfilename = "./structuredb.sqlite"
     structures = database_handler.StructureTable(dbfilename)
     # pprint.pprint('request_body:', d)
     status = '200 OK'
@@ -40,13 +40,19 @@ def application(environ, start_response):
     if d.get("cell"):
         cell = (d.get("cell")[0])
         ids = find_cell(structures, cell)
-        txt = process_data(structures, ids)
-        return [txt]
+        html = process_data(structures, ids)
+        return [html]
+    if d.get("txtsearch"):
+        txt = (d.get("txtsearch")[0])
+        ids_txt = search_text(structures, txt)
+        html = process_data(structures, ids_txt)
+        return [html]
+    print(d.get("tst"))
     txt = process_data(structures)
     return [txt]
 
 
-def find_cell(structures: StructureTable, cellstr: str):
+def find_cell(structures: StructureTable, cellstr: str) -> list:
     """
     Finds unit cells in db. Rsturns hits a a list of ids.
     """
@@ -93,24 +99,45 @@ def find_cell(structures: StructureTable, cellstr: str):
         return idlist2
 
 
+def search_text(structures: StructureTable, search_string: str) -> list:
+    """
+    searches db for given text
+    """
+    idlist = []
+    if len(search_string) == 0:
+        return []
+    if len(search_string) >= 2:
+        if "*" not in search_string:
+            search_string = "{}{}{}".format('*', search_string, '*')
+    try:
+        #  bad hack, should make this return ids like cell search
+        idlist = [x[0] for x in structures.find_by_strings(search_string)]
+    except AttributeError as e:
+        print("Error 1")
+        print(e)
+    return idlist
+
+
 def process_data(structures: StructureTable, idlist: list=None):
     """
-    Structure.Id             0
-    Structure.measurement    1
-    Structure.path           2
-    Structure.filename       3
-    Structure.dataname       4
+    Structure.Id,           0
+    Structure.measurement,  1
+    Structure.path,         2
+    Structure.filename,     3
+    Structure.dataname      4
     """
     print("process data ###")
     if not structures:
         return []
     table_string = ""
     for i in structures.get_all_structure_names(idlist):
-        table_string += '<tr> <td>{0}</td> <td>{1}</td> <td>{2}</td> </tr>\n' \
+        table_string += '<tr> <td> <a href="{3}"> {0} </a></td> ' \
+                        '     <td> <a href=""> {1} </a></td> ' \
+                        '     <td> <a href=""> {2} </a></td> </tr> \n' \
                             .format(i[3].decode('utf-8', errors='ignore'),
                                     i[4].decode('utf-8', errors='ignore'),
                                     i[2].decode('utf-8', errors='ignore'),
-                                    # i[0]
+                                    i[0]
                                     )
         # i[0] -> id
     p = pathlib.Path("./cgi/strflog_Template.htm")
