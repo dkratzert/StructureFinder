@@ -11,7 +11,6 @@
     <link rel="stylesheet" type="text/css" href="bootstrap3/custom.css">
     <script type="text/javascript" src="jquery/jquery.min.js"></script>
 
-
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <script type="text/javascript" href="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script type="text/javascript" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -19,14 +18,21 @@
 </head>
 <style>
 
+
     body {
-        padding-left: 20px;
         padding-top: 10px;
+        padding-left: 8%;
+        padding-right: 8%;
+      background-color: #ebebeb;
+      color: black;
+      min-width: 530px;
+      font-size: 1.2em;
     }
 
     .header-fixed {
     width: 90%;
 }
+
 
 .header-fixed > thead,
 .header-fixed > tbody,
@@ -37,12 +43,29 @@
     display: block;
 }
 
+thead {
+    /*border-radius: 4px;*/
+    border-top: 1.2px solid #3e83af;
+    border-left: 1.2px solid #3e83af;
+    border-right: 1.2px solid #3e83af;
+}
+
+tbody > tr{
+    background-color: #f1f1f1;
+}
+
+tbody {
+    /*border-radius: 4px;*/
+    border: 1.2px solid #3e83af;
+}
+
 .header-fixed > tbody > tr:after,
 .header-fixed > thead > tr:after {
     content: ' ';
     display: block;
     visibility: hidden;
     clear: both;
+
 }
 
 .header-fixed > tbody {
@@ -52,9 +75,23 @@
 
 .header-fixed > tbody > tr > td,
 .header-fixed > thead > tr > th {
-    width: 33.33%;
+    width: 33.333%;
     float: left;
+    padding: 2px;
 }
+/*Anke*/
+td {
+      border-bottom: 1px solid #CCC;
+      padding: 2px;
+      text-align: left; /* IE */
+    }
+td + td {
+      border-left: 1px solid #9c9c9c;
+    }
+
+    input {
+
+    }
 
 </style>
 
@@ -62,18 +99,18 @@
 <body>
     <form action="cgi-bin/strflog.py" method="get" enctype="multipart/form-data">
     <h1>StructureFinder</h1>
-            <table class="table table-striped header-fixed">
-                <thead>
-                    <tr>
-                        <th> filename </th>
-                        <th> dataname </th>
-                        <th> directory </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    $logtablecolumns
-                </tbody>
-            </table>
+        <table class="table table-striped header-fixed">
+            <thead style="font-size: 1.5em">
+                <tr>
+                    <th> filename </th>
+                    <th> dataname </th>
+                    <th> directory </th>
+                </tr>
+            </thead>
+            <tbody>
+                $logtablecolumns
+            </tbody>
+        </table>
     </form>
 <p>
 
