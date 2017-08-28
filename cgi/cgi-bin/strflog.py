@@ -29,12 +29,13 @@ def application(environ, start_response):
     # When the method is POST the variable will be sent
     # in the HTTP request body which is passed by the WSGI server
     # in the file like wsgi.input environment variable.
-    # pprint.pprint(environ)
+    #pprint.pprint(environ)
     request_body = environ['wsgi.input'].read(request_body_size).decode('utf-8')
     d = parse.parse_qs(request_body)
     dbfilename = "./structuredb.sqlite"
     structures = database_handler.StructureTable(dbfilename)
     print('request_body:', request_body)
+    print(d.keys(), d.values())
     status = '200 OK'
     headers = [('Content-type', 'text/html; charset=utf-8')]
     start_response(status, headers)
