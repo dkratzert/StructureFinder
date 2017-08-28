@@ -2,6 +2,7 @@
 ##!/usr/local/bin/python3
 
 import pathlib
+import pprint
 from string import Template
 from urllib import parse
 from wsgiref.util import setup_testing_defaults
@@ -33,7 +34,7 @@ def application(environ, start_response):
     d = parse.parse_qs(request_body)
     dbfilename = "./structuredb.sqlite"
     structures = database_handler.StructureTable(dbfilename)
-    # pprint.pprint('request_body:', d)
+    print('request_body:', request_body)
     status = '200 OK'
     headers = [('Content-type', 'text/html; charset=utf-8')]
     start_response(status, headers)
