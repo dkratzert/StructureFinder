@@ -47,7 +47,6 @@ def application(environ, start_response):
         ids_txt = search_text(structures, txt)
         html = process_data(structures, ids_txt)
         return [html]
-    print(d.get("tst"))
     txt = process_data(structures)
     return [txt]
 
@@ -131,7 +130,7 @@ def process_data(structures: StructureTable, idlist: list=None):
         return []
     table_string = ""
     for i in structures.get_all_structure_names(idlist):
-        table_string += '<tr> <td> {0} </a></td> ' \
+        table_string += '<tr id={3}> <td> {0} </a></td> ' \
                         '     <td> {1} </a></td> ' \
                         '     <td> {2} </a></td> </tr> \n' \
                             .format(i[3].decode('utf-8', errors='ignore'),
