@@ -131,9 +131,9 @@ def process_data(structures: StructureTable, idlist: list=None):
         return []
     table_string = ""
     for i in structures.get_all_structure_names(idlist):
-        table_string += '<tr> <td> <a href="{3}"> {0} </a></td> ' \
-                        '     <td> <a href=""> {1} </a></td> ' \
-                        '     <td> <a href=""> {2} </a></td> </tr> \n' \
+        table_string += '<tr> <td> {0} </a></td> ' \
+                        '     <td> {1} </a></td> ' \
+                        '     <td> {2} </a></td> </tr> \n' \
                             .format(i[3].decode('utf-8', errors='ignore'),
                                     i[4].decode('utf-8', errors='ignore'),
                                     i[2].decode('utf-8', errors='ignore'),
