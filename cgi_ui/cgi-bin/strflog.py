@@ -25,12 +25,24 @@ def application():
     <script type="text/javascript" href="jquery/jquery.min.js"></script>
     <script type="text/javascript" href="jasny-bootstrap/js/jasny-bootstrap.min.js"></script>
     """
+    ids = []
     print("Content-Type: text/html; charset=utf-8\n")
     form = cgi.FieldStorage()
+    cell = form.getvalue("cell")
+    text = form.getfirst("text")
     dbfilename = "./structuredb.sqlite"
     structures = database_handler.StructureTable(dbfilename)
-    html = process_data(structures, []).decode('utf-8', 'ignore')
-    print(html)
+    if cell:
+        ids = find_cell(structures, cell)
+        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
+    elif text:
+        ids = search_text(structures, text)
+        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
+    else:
+        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
+    print(html_txt)
+    print(ids)
+    print(cell)
 
 
 def find_cell(structures: StructureTable, cellstr: str) -> list:
