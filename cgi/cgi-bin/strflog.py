@@ -1,56 +1,35 @@
-#!C:\tools\Python-3.6.2_64\python.exe
-##!/usr/local/bin/python3
+#!/usr/local/bin/python3.6
+##!C:\tools\Python-3.6.2_64\python.exe
 
 import pathlib
 import pprint
 from string import Template
 from urllib import parse
-from wsgiref.util import setup_testing_defaults
 
+import cgi
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher import database_handler
 
+import cgitb
+cgitb.enable()
 
-# cgitb.enable(display=1, logdir="./log")
 from searcher.database_handler import StructureTable
 
 
-def application(environ, start_response):
+def application():
     """
     The main application of the StructureFinder web interface.
     """
-    setup_testing_defaults(environ)
-    # the environment variable CONTENT_LENGTH may be empty or missing
-    try:
-        request_body_size = int(environ.get('CONTENT_LENGTH', 0))
-    except ValueError:
-        request_body_size = 0
-    # When the method is POST the variable will be sent
-    # in the HTTP request body which is passed by the WSGI server
-    # in the file like wsgi.input environment variable.
-    #pprint.pprint(environ)
-    request_body = environ['wsgi.input'].read(request_body_size).decode('utf-8')
-    d = parse.parse_qs(request_body)
-    dbfilename = "./structuredb.sqlite"
-    structures = database_handler.StructureTable(dbfilename)
-    print('request_body:', request_body)
-    print(d.keys(), d.values())
-    status = '200 OK'
-    headers = [('Content-type', 'text/html; charset=utf-8')]
-    start_response(status, headers)
-    if d.get("cell"):
-        cell = (d.get("cell")[0])
-        ids = find_cell(structures, cell)
-        html = process_data(structures, ids)
-        return [html]
-    if d.get("txtsearch"):
-        txt = (d.get("txtsearch")[0])
-        ids_txt = search_text(structures, txt)
-        html = process_data(structures, ids_txt)
-        return [html]
-    txt = process_data(structures)
-    return [txt]
+    print("Content-type:text/html\r\n\r\n")
+    print('<html>')
+    print('<head>')
+    print('<title>Hello Word - First CGI Program</title>')
+    print('</head>')
+    print('<body>')
+    print('<h2>Hello Word! This is my first CGI program</h2>')
+    print('</body>')
+    print('</html>')
 
 
 def find_cell(structures: StructureTable, cellstr: str) -> list:
@@ -148,6 +127,8 @@ def process_data(structures: StructureTable, idlist: list=None):
 
 
 if __name__ == "__main__":
+    application()
+    """
     try:
         import wsgiref.simple_server
 
@@ -156,3 +137,4 @@ if __name__ == "__main__":
         print("Webserver running...")
     except KeyboardInterrupt:
         print("Webserver stopped...")
+    """
