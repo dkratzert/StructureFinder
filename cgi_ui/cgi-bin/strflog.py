@@ -2,16 +2,16 @@
 ##!/usr/local/bin/python3.6
 import cgi
 import pathlib
-import pprint
 from string import Template
-from urllib import parse
 
+import sys
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher import database_handler
 import html
 import cgitb
 
+#sys.stderr = sys.stdout
 cgitb.enable()
 
 from searcher.database_handler import StructureTable
