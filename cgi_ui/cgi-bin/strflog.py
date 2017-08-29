@@ -1,6 +1,6 @@
-#!C:\tools\Python-3.6.2_64\python.exe
+#!C:\tools\Python-3.6.2_64\pythonw.exe
 ##!/usr/local/bin/python3.6
-
+import cgi
 import pathlib
 import pprint
 from string import Template
@@ -9,8 +9,9 @@ from urllib import parse
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher import database_handler
-
+import html
 import cgitb
+
 cgitb.enable()
 
 from searcher.database_handler import StructureTable
@@ -19,10 +20,17 @@ from searcher.database_handler import StructureTable
 def application():
     """
     The main application of the StructureFinder web interface.
+    <link rel="stylesheet" href="bootstrap3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="jasny-bootstrap/css/jasny-bootstrap.min.css">
+    <script type="text/javascript" href="jquery/jquery.min.js"></script>
+    <script type="text/javascript" href="jasny-bootstrap/js/jasny-bootstrap.min.js"></script>
     """
-    # the environment variable CONTENT_LENGTH may be empty or missing
+    print("Content-Type: text/html; charset=utf-8\n")
     form = cgi.FieldStorage()
-    print(form)
+    dbfilename = "./structuredb.sqlite"
+    structures = database_handler.StructureTable(dbfilename)
+    html = process_data(structures, []).decode('utf-8', 'ignore')
+    print(html)
 
 
 def find_cell(structures: StructureTable, cellstr: str) -> list:
@@ -91,7 +99,7 @@ def search_text(structures: StructureTable, search_string: str) -> list:
     return idlist
 
 
-def process_data(structures: StructureTable, idlist: list=None):
+def process_data(structures: StructureTable, idlist: list = None):
     """
     Structure.Id,           0
     Structure.measurement,  1
@@ -99,7 +107,6 @@ def process_data(structures: StructureTable, idlist: list=None):
     Structure.filename,     3
     Structure.dataname      4
     """
-    print("process data ###")
     if not structures:
         return []
     table_string = ""
@@ -107,14 +114,18 @@ def process_data(structures: StructureTable, idlist: list=None):
         table_string += '<tr id={3}> <td> {0} </a></td> ' \
                         '     <td> {1} </a></td> ' \
                         '     <td> {2} </a></td> </tr> \n' \
-                            .format(i[3].decode('utf-8', errors='ignore'),
-                                    i[4].decode('utf-8', errors='ignore'),
-                                    i[2].decode('utf-8', errors='ignore'),
-                                    i[0]
-                                    )
+            .format(i[3].decode('utf-8', errors='ignore'),
+                    i[4].decode('utf-8', errors='ignore'),
+                    i[2].decode('utf-8', errors='ignore'),
+                    i[0]
+                    )
         # i[0] -> id
-    p = pathlib.Path("./cgi/strflog_Template.htm")
-    t = Template(p.read_bytes().decode('utf-8', 'ignore'))
+    try:
+        p = pathlib.Path("cgi_ui/strflog_Template.htm")
+        t = Template(p.read_bytes().decode('utf-8', 'ignore'))
+    except FileNotFoundError:
+        p = pathlib.Path("./strflog_Template.htm")
+        t = Template(p.read_bytes().decode('utf-8', 'ignore'))
     replacedict = {"logtablecolumns": table_string, "CSearch": "Search", "TSearch": "Search"}
     return str(t.safe_substitute(replacedict)).encode('utf-8', 'ignore')
 
