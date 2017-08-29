@@ -1,12 +1,11 @@
-#!/usr/local/bin/python3.6
-##!C:\tools\Python-3.6.2_64\python.exe
+#!C:\tools\Python-3.6.2_64\python.exe
+##!/usr/local/bin/python3.6
 
 import pathlib
 import pprint
 from string import Template
 from urllib import parse
 
-import cgi
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher import database_handler
@@ -21,15 +20,9 @@ def application():
     """
     The main application of the StructureFinder web interface.
     """
-    print("Content-type:text/html\r\n\r\n")
-    print('<html>')
-    print('<head>')
-    print('<title>Hello Word - First CGI Program</title>')
-    print('</head>')
-    print('<body>')
-    print('<h2>Hello Word! This is my first CGI program</h2>')
-    print('</body>')
-    print('</html>')
+    # the environment variable CONTENT_LENGTH may be empty or missing
+    form = cgi.FieldStorage()
+    print(form)
 
 
 def find_cell(structures: StructureTable, cellstr: str) -> list:
