@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3.6
+#!C:\tools\Python-3.6.2_64\pythonw.exe
 ##!/usr/local/bin/python3.6
 import cgi
 import pathlib
@@ -119,14 +119,17 @@ def process_data(structures: StructureTable, idlist: list = None):
     Structure.path,         2
     Structure.filename,     3
     Structure.dataname      4
+    <a href="?id={3}">
     """
     if not structures:
         return []
     table_string = ""
     for i in structures.get_all_structure_names(idlist):
-        table_string += '<tr id={3} data-target="{3}">  <td> <a href="?id={3}"> {0} </a></td> ' \
-                        '     <td> {1} </a></td> ' \
-                        '     <td> {2} </a></td> </tr> \n' \
+        table_string += '<tr> ' \
+                        '   <td> <a href="?id={3}">{0} </a></td> ' \
+                        '   <td> {1} </a></td> ' \
+                        '   <td> {2} </a></td> ' \
+                        '</tr> \n' \
             .format(i[3].decode('utf-8', errors='ignore'),
                     i[4].decode('utf-8', errors='ignore'),
                     i[2].decode('utf-8', errors='ignore'),

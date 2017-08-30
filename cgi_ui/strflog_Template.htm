@@ -5,9 +5,10 @@
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.min.css">
+   <!--
     <script type="text/javascript" href="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script type="text/javascript" href="https://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
-
+   -->
 
 
 <style type="text/css">
@@ -47,19 +48,12 @@ input.cellsearch {
 
 </style>
 
-<script type="text/javascript">
-jQuery(document).ready(function(){
-    jQuery('tbody.rowlink').rowlink(function(){
-        alert("Hello");
-    });
-});
 
-</script>
 
 </head>
 
 <body>
-    <form action="strflog.cgi" enctype="multipart/form-data">
+    <form action="strflog.cgi" enctype="multipart/form-data" method="POST">
     <h1>StructureFinder</h1>
         <div id="mystrtable">
         <table class="table table-striped table-bordered table-hover table-responsive">
@@ -70,7 +64,7 @@ jQuery(document).ready(function(){
                     <th> directory </th>
                 </tr>
             </thead>
-            <tbody data-link="row" class="rowlink">
+            <tbody class="rowlink" data-link="row" data-target="a.mainlink">
                 $logtablecolumns
             </tbody>
         </table>
@@ -107,6 +101,17 @@ jQuery(document).ready(function(){
 
 </p>
 
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="http://netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
+
+
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+    $("tbody.rowlink").row(alert("hello"));
+});
+</script>
 
 </body>
 </html>
