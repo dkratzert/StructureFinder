@@ -1,4 +1,4 @@
-#!C:\tools\Python-3.6.2_64\pythonw.exe
+#!/usr/local/bin/python3.6
 ##!/usr/local/bin/python3.6
 import cgi
 import pathlib
@@ -42,6 +42,7 @@ def application():
         html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
     print(html_txt)
     print(ids)
+    print("Id:", form.getfirst("id"))
     print(cell)
 
 
@@ -123,7 +124,7 @@ def process_data(structures: StructureTable, idlist: list = None):
         return []
     table_string = ""
     for i in structures.get_all_structure_names(idlist):
-        table_string += '<tr id={3}> <td> {0} </a></td> ' \
+        table_string += '<tr id={3} data-target="{3}">  <td> <a href="?id={3}"> {0} </a></td> ' \
                         '     <td> {1} </a></td> ' \
                         '     <td> {2} </a></td> </tr> \n' \
             .format(i[3].decode('utf-8', errors='ignore'),
@@ -139,7 +140,7 @@ def process_data(structures: StructureTable, idlist: list = None):
         p = pathlib.Path("./strflog_Template.htm")
         t = Template(p.read_bytes().decode('utf-8', 'ignore'))
     replacedict = {"logtablecolumns": table_string, "CSearch": "Search", "TSearch": "Search"}
-    return str(t.safe_substitute(replacedict)).encode('utf-8', 'ignore')
+    return str(t.safe_substitute(replacedict)).encode('ascii', 'ignore')
 
 
 if __name__ == "__main__":
