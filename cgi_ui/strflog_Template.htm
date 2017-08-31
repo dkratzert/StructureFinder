@@ -147,6 +147,14 @@ input.cellsearch {
 
 jQuery(document).ready(function($) {
 
+    // height of cif list to 35% of the screen height
+    $(document).ready(function(){
+        //gets the window's height
+        var b = $(window).height();
+        var h = b * 0.35;
+        $("#mystrtable").css("height", h);
+    });
+
     $('#mystrtable').find('tr').click(function() {
         var idstr = $(this).find("a").attr("id");
         //if(idstr) {
