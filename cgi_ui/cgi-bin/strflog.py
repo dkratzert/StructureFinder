@@ -30,6 +30,7 @@ def application():
     form = cgi.FieldStorage()
     cell = form.getvalue("cell")
     text = form.getfirst("text")
+    strid = form.getvalue("id")
     dbfilename = "./structuredb.sqlite"
     #dbfilename = "./structures_22.08.2017.sqlite"
     structures = database_handler.StructureTable(dbfilename)
@@ -41,9 +42,47 @@ def application():
         html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
     else:
         html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
+    if strid:
+        print(get_residuals_table(structures, strid))
+        return
     print(html_txt)
-    print(ids)
-    print("<br>Cell:", cell)
+    # print(ids)  # For debug
+    # print("<br>Cell:", cell)  # For debug
+
+
+def get_residuals_table(structures: StructureTable, structure_id: int):
+    """
+    Returns a table with the residuals values of a structure.
+    """
+    # starting table header (the div is for css):
+    table_string = """<h4>Structure Properties</h4>
+                        <div id="myresidualtable">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th> Item </th>
+                                    <th> Value </th>
+                                </tr>
+                            </thead>
+                        <tbody>"""
+    # get the residuals of the cif file as a dictionary:
+    request = """select * from residuals where StructureId = {}""".format(structure_id)
+    dic = structures.get_row_as_dict(request)
+    # filling table with data rows:
+    for key, value in dic.items():
+        if key == "Id" or key == "StructureId":
+            continue
+        if isinstance(value, str):
+            value = ''.join([x.replace("\n", "<br>") for x in value])
+        table_string += '''<tr> 
+                                <td class="residual-{}"> {} </a></td> 
+                                <td> {} </a></td> 
+                           </tr> \n'''.format(structure_id, key, value)
+    # closing table:
+    table_string += """ </tbody>
+                        </table>
+                        </div>"""
+    return table_string
 
 
 def find_cell(structures: StructureTable, cellstr: str) -> list:

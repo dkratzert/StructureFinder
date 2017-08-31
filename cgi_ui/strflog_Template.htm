@@ -45,12 +45,24 @@ input.cellsearch {
     font-size: 14px;
     }
 
+#myresidualtable {
+    max-width: 60%;
+    alignment: left;
+}
+/*
+#myresidualtable tr td {
+    line-height: 8px;
+    min-height: 8px;
+    height: 8px;
+    font-size: 1.2em;
+}
+*/
+
 
 </style>
 
-
-
 </head>
+
 
 <body>
     <form action="strflog.cgi" enctype="multipart/form-data" method="POST">
@@ -73,7 +85,7 @@ input.cellsearch {
 
 <p>
 
-<h4>Search structures:</h4>
+<h4>Search structures</h4>
 <form action="strflog.cgi" enctype="multipart/form-data" method="POST">
     <div class="form-group row">
         <div class="col-xs-6">
@@ -102,6 +114,10 @@ input.cellsearch {
 </p>
 
 <p>
+
+
+    <span id="residuals"></span>
+
 
 <!-- The Modal -->
 <div id="myModal" class="modal">
@@ -133,11 +149,26 @@ jQuery(document).ready(function($) {
 
     $('#mystrtable').find('tr').click(function() {
         var idstr = $(this).find("a").attr("id");
-        if(idstr) {
-            alert(idstr);
+        //if(idstr) {
+        //    alert(idstr);
+        //}
+        if (window.XMLHttpRequest) {
+            // AJAX mit IE7+, Chrome, Firefox, Safari, Opera
+            var xmlhttp = new XMLHttpRequest();
         }
+        xmlhttp.onreadystatechange = function() {
+            // check if server returned the data:
+            if (xmlhttp.readyState===4 && xmlhttp.status===200) {
+                // search for id and replace with residuals text:
+                document.getElementById("residuals").innerHTML = xmlhttp.responseText;
+            }
+        };
+        // Make a POST request to the server
+        xmlhttp.open("POST", "strflog.cgi", true);
+        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.send("id="+idstr);
     });
-    
+
 });
 
 
