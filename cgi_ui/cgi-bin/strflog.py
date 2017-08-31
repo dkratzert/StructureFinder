@@ -31,6 +31,7 @@ def application():
     cell = form.getvalue("cell")
     text = form.getfirst("text")
     dbfilename = "./structuredb.sqlite"
+    #dbfilename = "./structures_22.08.2017.sqlite"
     structures = database_handler.StructureTable(dbfilename)
     if cell:
         ids = find_cell(structures, cell)
