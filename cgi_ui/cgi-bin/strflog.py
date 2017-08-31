@@ -43,8 +43,7 @@ def application():
         html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
     print(html_txt)
     print(ids)
-    print("Id:", form.getfirst("id"))
-    print(cell)
+    print("<br>Cell:", cell)
 
 
 def find_cell(structures: StructureTable, cellstr: str) -> list:
@@ -127,7 +126,7 @@ def process_data(structures: StructureTable, idlist: list = None):
     table_string = ""
     for i in structures.get_all_structure_names(idlist):
         table_string += '<tr> ' \
-                        '   <td> <a href="?id={3}">{0} </a></td> ' \
+                        '   <td> <a id="{3}">{0} </a></td> ' \
                         '   <td> {1} </a></td> ' \
                         '   <td> {2} </a></td> ' \
                         '</tr> \n' \
