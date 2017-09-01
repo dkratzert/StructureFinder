@@ -1,5 +1,6 @@
-#!C:\tools\Python-3.6.2_64\pythonw.exe
 #!/usr/local/bin/python3.6
+#!C:\tools\Python-3.6.2_64\pythonw.exe
+
 import cgi
 import pathlib
 from string import Template
@@ -43,14 +44,19 @@ def application():
     else:
         html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
     if strid:
-        print(get_residuals_table(structures, strid))
+        print(get_all_cif_val_table(structures, strid))
         return
     print(html_txt)
     # print(ids)  # For debug
     # print("<br>Cell:", cell)  # For debug
 
-
 def get_residuals_table(structures: StructureTable, structure_id: int) -> str:
+    """
+    Returns a table with the most important residuals of a structure.
+    """
+    pass
+
+def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     """
     Returns a html table with the residuals values of a structure.
     """
