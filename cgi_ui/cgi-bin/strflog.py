@@ -1,5 +1,5 @@
 #!C:\tools\Python-3.6.2_64\pythonw.exe
-##!/usr/local/bin/python3.6
+#!/usr/local/bin/python3.6
 import cgi
 import pathlib
 from string import Template
@@ -57,7 +57,7 @@ def get_residuals_table(structures: StructureTable, structure_id: int):
     # starting table header (the div is for css):
     table_string = """<h4>Structure Properties</h4>
                         <div id="myresidualtable">
-                        <table class="table table-striped table-bordered">
+                        <table class="table table-striped table-bordered" style="white-space: pre">
                             <thead>
                                 <tr>
                                     <th> Item </th>
