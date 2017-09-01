@@ -76,10 +76,14 @@ Info = {
 	addSelectionOptions: false,
 	use: "HTML5",
     appletLoadingImage: "none",
-    zoom: 110,
     //menuFile: "fileName",
     readyFunction: null,
-	script: "set antialiasDisplay; load http://127.0.0.1/breit_tb13_85.cif; spin 15"
+	script: "set antialiasDisplay; " +
+            "load http://127.0.0.1/breit_tb13_85.cif; " +
+            "spin 15;" +
+            "set frank off;" +
+            "zoom 130;"
+
 };
 
 $("#jsmoldiv").html(Jmol.getAppletHtml("jmolApplet0", Info))
@@ -99,7 +103,7 @@ $("#jsmoldiv").html(Jmol.getAppletHtml("jmolApplet0", Info))
 <div class="container">
 
 <form action="strflog.cgi" enctype="multipart/form-data" method="POST">
-<h1>StructureFinder</h1>
+<h2>StructureFinder</h2>
     <div id="mystrtable">
     <table class="table table-striped table-bordered table-hover table-responsive">
         <thead>
