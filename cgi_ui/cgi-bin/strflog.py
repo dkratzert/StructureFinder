@@ -50,9 +50,9 @@ def application():
     # print("<br>Cell:", cell)  # For debug
 
 
-def get_residuals_table(structures: StructureTable, structure_id: int):
+def get_residuals_table(structures: StructureTable, structure_id: int) -> str:
     """
-    Returns a table with the residuals values of a structure.
+    Returns a html table with the residuals values of a structure.
     """
     # starting table header (the div is for css):
     table_string = """<h4>Structure Properties</h4>
@@ -68,12 +68,14 @@ def get_residuals_table(structures: StructureTable, structure_id: int):
     # get the residuals of the cif file as a dictionary:
     request = """select * from residuals where StructureId = {}""".format(structure_id)
     dic = structures.get_row_as_dict(request)
+    if not dic:
+        return ""
     # filling table with data rows:
     for key, value in dic.items():
         if key == "Id" or key == "StructureId":
             continue
         if isinstance(value, str):
-            value = ''.join([x.replace("\n", "<br>") for x in value])
+            value = ''.join([x.replace("\n", "<br>").rstrip('\r\n') for x in value])
         table_string += '''<tr> 
                                 <td class="residual-{}"> {} </a></td> 
                                 <td> {} </a></td> 

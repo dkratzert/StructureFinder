@@ -5,7 +5,14 @@
 
     <link rel="stylesheet" href="http://127.0.0.1/bootstrap3/css/bootstrap.min.css">
     <link rel="stylesheet" href="http://127.0.0.1/jasny-bootstrap/css/jasny-bootstrap.min.css">
-   <!--
+
+    <script src="http://127.0.0.1/jquery/jquery.min.js"></script>
+    <script src="http://127.0.0.1/bootstrap3/js/bootstrap-3.2.0.min.js"></script>
+    <script src="http://127.0.0.1/jasny-bootstrap/js/jasny-bootstrap-3.1.3.min.js"></script>
+
+    <script src="http://127.0.0.1/jsmol/JSmol.min.nojq.js"></script>
+
+    <!--
     <script href="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script href="https://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
    -->
@@ -24,9 +31,9 @@ body {
 #mystrtable {
     /* Format the whole table */
     height: 400px; /* Will be changed by Javascript below */
-    max-width: 100%;
+    /*max-width: 100%;*/
     overflow: auto;
-    outline: solid 1.5px;
+    outline: solid 1px;
 }
 
 #mystrtable tr td{
@@ -51,16 +58,45 @@ body {
 
 </style>
 
+
+
+<script>
+
+$(document).ready(function() {
+
+Info = {
+	width: 300,
+	height: 300,
+	debug: false,
+	j2sPath: "http://127.0.0.1/jsmol/j2s",
+	color: "0xC0C0C0",
+    disableJ2SLoadMonitor: true,
+    disableInitialConsole: true,
+	addSelectionOptions: false,
+	use: "HTML5",
+	readyFunction: null,
+	script: "set antialiasDisplay; zoom 110;load http://127.0.0.1/breit_tb13_85.cif"
+};
+
+$("#jsmoldiv").html(Jmol.getAppletHtml("jmolApplet0", Info))
+
+});
+
+
+</script>
+
+
+
+
 </head>
 
 <body>
 
 <div class="container">
 
-
 <form action="strflog.cgi" enctype="multipart/form-data" method="POST">
 <h1>StructureFinder</h1>
-    <div id="mystrtable">
+    <div id="mystrtable" class="col-md-12">
     <table class="table table-striped table-bordered table-hover table-responsive">
         <thead>
             <tr>
@@ -75,10 +111,10 @@ body {
     </table>
     </div>
 </form>
+</div>
 
 
-
-
+<div class="container">
 <h4>Search structures</h4>
 <form action="strflog.cgi" enctype="multipart/form-data" method="POST">
     <div class="form-group row">
@@ -105,7 +141,7 @@ body {
     </div>
 </form>
 
-
+<span id=jsmoldiv></span>
 
 <div class="row">
     <div class="col-sm-10">
@@ -125,23 +161,13 @@ body {
   <a href="mailto:daniel.kratzert@ac.uni-freiburg.de">daniel.kratzert@ac.uni-freiburg.de</a>
 </address>
 
-
 <!-- The main container div: -->
 </div>
 
 
 
-<!-- Placed at the end of the document so the pages load faster
-<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-<script src="http://netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
--->
-<script src="http://127.0.0.1/jquery/jquery.min.js"></script>
-<script src="http://127.0.0.1/bootstrap3/js/bootstrap-3.2.0.min.js"></script>
-<script src="http://127.0.0.1/jasny-bootstrap/js/jasny-bootstrap-3.1.3.min.js"></script>
-
+<!-- Javascript functions start here: -->
 <script>
-
 
 jQuery(document).ready(function($) {
 
@@ -177,8 +203,9 @@ jQuery(document).ready(function($) {
 
 });
 
-
 </script>
+
+
 
 </body>
 </html>
