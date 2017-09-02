@@ -6,6 +6,9 @@ import pathlib
 from string import Template
 
 import sys
+
+import displaymol
+from displaymol import mol_file_writer
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher import database_handler
@@ -43,7 +46,9 @@ def application():
         ids = search_text(structures, text)
         html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
     elif strid and mol:
-        print(get_residuals_table(structures, strid))
+        cell = structures.get_cell_by_id(strid)[:6]
+        m = mol_file_writer.MolFile(strid, structures, cell)
+        print(m.make_mol())
         return
     elif strid:
         print(get_all_cif_val_table(structures, strid))

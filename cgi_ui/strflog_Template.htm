@@ -133,18 +133,18 @@ body {
 
     <div class="col-md-4">
         <span id="residualstable2"></span>
-<!--
+
         <table class="table">
         <tbody>
             <tr><td><b>Space Group</b></td><td>P 2 1 / c</td></tr>
             <tr><td><b>Z</b></td><td>4</td></tr>
             <tr><td><b>Sum Formula</b></td><td>C5H8</td></tr>
         </tbody>
-        </table> -->
+        </table>
     </div>
 
     <div class="col-md-4" style="border-color: lightgray;
-              border-style: none; border-width: thin; border-radius: 5px;">
+              border-style: solid; border-width: thin; border-radius: 5px; width: 300px; height: 300px">
         <span id="jsmoldiv"></span>
     </div>
 
@@ -180,20 +180,21 @@ $MyMol
 <script>
 
 jQuery(document).ready(function($) {
-    /*
+
+    // some options for JSmol:
     var Info;
     Info = {
-        width: 200,
-        height: 250,
-        color: "0xFFFFFF",
+        width: 275,
+        height: 292,
+        color: "0xf0f0f0",
         shadeAtoms: false,
-        //addSelectionOptions: false,
+        addSelectionOptions: false,
         use: "HTML5",
         readyFunction: null,
         defaultModel: "",
         bondWidth: 2,
-        zoomScaling: 8,
-        pinchScaling: 6.0,
+        zoomScaling: 5,
+        pinchScaling: 5.0,
         mouseDragFactor: 0.5,
         touchDragFactor: 0.15,
         multipleBondSpacing: 0,
@@ -201,35 +202,36 @@ jQuery(document).ready(function($) {
         spinRateY: 0.05,
         spinFPS: 20,
         spin: true,
-        debug: true
+        debug: false,
+        j2sPath: ""
     };
 
-    Jmol._document = null;
-    Jmol.getTMApplet("jmol", Info);
-    ("#jsmoldiv").html(jmol._code);
-    var mol = $('html').html().split("MOL DATA\n")[1].split("-->")[0];
-    jmol.__loadModel(mol);
-    */
-
-    // height of cif list to 35% of the screen height
+    // height of cif list to 35% of the screen height:
     $(document).ready(function(){
         //gets the window's height
         var b = $(window).height();
         var h = b * 0.35;
         $("#mystrtable").css("height", h);
     });
+
     function get_table_data(id, element) {
         //get data and replace text
     }
+
     $('#mystrtable').find('tr').click(function() {
         var idstr = $(this).find("a").attr("id");
-        //if(idstr) {
-        //    alert(idstr);
-        //}
+        // we got the id string, now we can have fun with it:
+
+        // Get molecule data and display the molecule:
         $.post("strflog.cgi", {id: idstr, molecule: true}, function(result){
             //alert(result)
-            document.getElementById("residualstable2").innerHTML = result;
+            Jmol._document = null;
+            Jmol.getTMApplet("jmol", Info);
+            $("#jsmoldiv").html(jmol._code);
+            jmol.__loadModel(result);  // jmol has to be lower-case!?!
         });
+
+        // display the big cif data table:
         $.post("strflog.cgi", {id: idstr}, function(result){
             //alert(result)
             document.getElementById("residuals").innerHTML = result;
