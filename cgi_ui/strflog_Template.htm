@@ -5,12 +5,12 @@
 
     <link rel="stylesheet" href="http://127.0.0.1/bootstrap3/css/bootstrap.min.css">
     <link rel="stylesheet" href="http://127.0.0.1/jasny-bootstrap/css/jasny-bootstrap.min.css">
-
     <script src="http://127.0.0.1/jquery/jquery.min.js"></script>
     <script src="http://127.0.0.1/bootstrap3/js/bootstrap-3.2.0.min.js"></script>
     <script src="http://127.0.0.1/jasny-bootstrap/js/jasny-bootstrap-3.1.3.min.js"></script>
 
-    <script src="http://127.0.0.1/jsmol/JSmol.min.nojq.js"></script>
+    <script src="http://127.0.0.1/JSmol_dk.nojq.lite.js"></script>
+
 
     <!--
     <script href="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -59,46 +59,6 @@ body {
 
 </style>
 
-
-
-<script>
-
-$(document).ready(function() {
-
-Info = {
-	width: 300,
-	height: 300,
-    cache: false,
-	debug: false,
-    color: "#f0f0f0",
-	j2sPath: "http://127.0.0.1/jsmol/j2s",
-    disableJ2SLoadMonitor: true,
-    disableInitialConsole: true,
-	addSelectionOptions: false,
-	use: "HTML5",
-    appletLoadingImage: "none",
-    //menuFile: "fileName",
-    readyFunction: null,
-	script: "set antialiasDisplay; " +
-            "load http://127.0.0.1/breit_tb13_85.cif; " +
-            "set spinX 0; set spinY 20; set spinZ 13; set spinFps 30;" +
-            "set frank off;" +
-            "zoom 130; spin on;" +
-            "color bonds opaque [xffa500]; " +
-            "set smartAromatic false;" +
-            "set bondRadiusMilliAngstroms 150;" +
-            "set applySymmetryToBonds true;"
-
-};
-
-$("#jsmoldiv").html(Jmol.getAppletHtml("jmolApplet0", Info))
-
-
-
-});
-
-
-</script>
 
 </head>
 
@@ -212,14 +172,44 @@ $("#jsmoldiv").html(Jmol.getAppletHtml("jmolApplet0", Info))
 <!-- The main container div: -->
 </div>
 
-
+<!-- MOL DATA
+$MyMol
+-->
 
 <!-- Javascript functions start here: -->
 <script>
-var id = 0;
-var element = "";
 
 jQuery(document).ready(function($) {
+    /*
+    var Info;
+    Info = {
+        width: 200,
+        height: 250,
+        color: "0xFFFFFF",
+        shadeAtoms: false,
+        //addSelectionOptions: false,
+        use: "HTML5",
+        readyFunction: null,
+        defaultModel: "",
+        bondWidth: 2,
+        zoomScaling: 8,
+        pinchScaling: 6.0,
+        mouseDragFactor: 0.5,
+        touchDragFactor: 0.15,
+        multipleBondSpacing: 0,
+        spinRateX: -0.08,
+        spinRateY: 0.05,
+        spinFPS: 20,
+        spin: true,
+        debug: true
+    };
+
+    Jmol._document = null;
+    Jmol.getTMApplet("jmol", Info);
+    ("#jsmoldiv").html(jmol._code);
+    var mol = $('html').html().split("MOL DATA\n")[1].split("-->")[0];
+    jmol.__loadModel(mol);
+    */
 
     // height of cif list to 35% of the screen height
     $(document).ready(function(){
@@ -236,7 +226,6 @@ jQuery(document).ready(function($) {
         //if(idstr) {
         //    alert(idstr);
         //}
-        //$("#jsmoldiv").html(Jmol.ajax("http://127.0.0.1/cgi-bin/strflog.cgi", "id="+idstr))
         $.post("strflog.cgi", {id: idstr, molecule: true}, function(result){
             //alert(result)
             document.getElementById("residualstable2").innerHTML = result;
