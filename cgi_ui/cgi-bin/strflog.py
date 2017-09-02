@@ -32,6 +32,7 @@ def application():
     cell = form.getvalue("cell")
     text = form.getfirst("text")
     strid = form.getvalue("id")
+    mol = form.getvalue("molecule")
     dbfilename = "./structuredb.sqlite"
     #dbfilename = "./structures_22.08.2017.sqlite"
     structures = database_handler.StructureTable(dbfilename)
@@ -41,20 +42,25 @@ def application():
     elif text:
         ids = search_text(structures, text)
         html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
-    else:
-        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
-    if strid:
+    elif strid and mol:
+        print(get_residuals_table(structures, strid))
+        return
+    elif strid:
         print(get_all_cif_val_table(structures, strid))
         return
+    else:
+        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
     print(html_txt)
     # print(ids)  # For debug
     # print("<br>Cell:", cell)  # For debug
+
 
 def get_residuals_table(structures: StructureTable, structure_id: int) -> str:
     """
     Returns a table with the most important residuals of a structure.
     """
-    pass
+    return "Hooray!"
+
 
 def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     """

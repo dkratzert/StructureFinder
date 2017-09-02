@@ -173,14 +173,14 @@ $("#jsmoldiv").html(Jmol.getAppletHtml("jmolApplet0", Info))
 
     <div class="col-md-4">
         <span id="residualstable2"></span>
-
+<!--
         <table class="table">
         <tbody>
             <tr><td><b>Space Group</b></td><td>P 2 1 / c</td></tr>
             <tr><td><b>Z</b></td><td>4</td></tr>
             <tr><td><b>Sum Formula</b></td><td>C5H8</td></tr>
         </tbody>
-        </table>
+        </table> -->
     </div>
 
     <div class="col-md-4" style="border-color: lightgray;
@@ -236,22 +236,15 @@ jQuery(document).ready(function($) {
         //if(idstr) {
         //    alert(idstr);
         //}
-        if (window.XMLHttpRequest) {
-            // AJAX mit IE7+, Chrome, Firefox, Safari, Opera
-            var xmlhttp = new XMLHttpRequest();
-        }
-        xmlhttp.onreadystatechange = function() {
-            // check if server returned the data:
-            if (xmlhttp.readyState===4 && xmlhttp.status===200) {
-                // search for id and replace with residuals text:
-                document.getElementById("residuals").innerHTML = xmlhttp.responseText;
-                //$("#jsmoldiv").html(Jmol.ajax("http://127.0.0.1/cgi-bin/strflog.cgi", "id="+idstr))
-            }
-        };
-        // Make a POST request to the server
-        xmlhttp.open("POST", "strflog.cgi", true);
-        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xmlhttp.send("id="+idstr);
+        //$("#jsmoldiv").html(Jmol.ajax("http://127.0.0.1/cgi-bin/strflog.cgi", "id="+idstr))
+        $.post("strflog.cgi", {id: idstr, molecule: true}, function(result){
+            //alert(result)
+            document.getElementById("residualstable2").innerHTML = result;
+        });
+        $.post("strflog.cgi", {id: idstr}, function(result){
+            //alert(result)
+            document.getElementById("residuals").innerHTML = result;
+        });
     });
 
 });
