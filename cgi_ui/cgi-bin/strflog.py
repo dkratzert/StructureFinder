@@ -7,6 +7,8 @@ from string import Template
 
 import sys
 
+import math
+
 import displaymol
 from displaymol import mol_file_writer
 from lattice import lattice
@@ -36,9 +38,15 @@ def application():
     text = form.getfirst("text")
     strid = form.getvalue("id")
     mol = form.getvalue("molecule")
+    resid1 = form.getvalue("residuals1")
+    resid2 = form.getvalue("residuals2")
     dbfilename = "./structuredb.sqlite"
     #dbfilename = "./structures_22.08.2017.sqlite"
     structures = database_handler.StructureTable(dbfilename)
+    cif_dic = None
+    if strid and (resid1 or resid2):
+        request = """select * from residuals where StructureId = {}""".format(strid)
+        cif_dic = structures.get_row_as_dict(request)
     if cell:
         ids = find_cell(structures, cell)
         html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
@@ -50,6 +58,12 @@ def application():
         m = mol_file_writer.MolFile(strid, structures, cell)
         print(m.make_mol())
         return
+    elif strid and resid1:
+        print(get_residuals_table1(structures, strid, cif_dic))
+        return
+    elif strid and resid2:
+        print(get_residuals_table2(structures, strid, cif_dic))
+        return
     elif strid:
         print(get_all_cif_val_table(structures, strid))
         return
@@ -60,11 +74,91 @@ def application():
     # print("<br>Cell:", cell)  # For debug
 
 
-def get_residuals_table(structures: StructureTable, structure_id: int) -> str:
+def get_residuals_table1(structures: StructureTable, structure_id: int, cif_dic: dict) -> str:
     """
     Returns a table with the most important residuals of a structure.
     """
-    return "Hooray!"
+    #cell = structures.get_cell_by_id(structure_id)
+    if not cif_dic:
+        return ""
+    table1 = """
+    <table class="table table-bordered" id='resitable1'>
+        <tbody>
+        <tr><td><b>Space Group</b></td>                 <td>{0}</td></tr>
+        <tr><td><b>Z</b></td>                           <td>{1}</td></tr>
+        <tr><td><b>Sum Formula</b></td>                 <td>{2}</td></tr>
+        <tr><td><b>Temperature [K]</b></td>             <td>{3}</td></tr>
+        <tr><td><b><i>wR</i><sub>2</sub></b></td>       <td>{4}</td></tr>
+        <tr><td><b><i>R<i/><sub>1</sub></b></td>        <td>{5}</td></tr>
+        <tr><td><b>Goof</b></td>                        <td>{6}</td></tr>
+        <tr><td><b>Max Shift/esd</b></td>               <td>{7}</td></tr>
+        <tr><td><b>Peak / Hole [e&angst;<sup>-3</sup>]</b></td>   <td>{8} / {9}</td></tr>
+        <tr><td><b><i>R</i>(int)</b></td>               <td>{10}</td></tr>
+        <tr><td><b><i>R</i>&sigma;</b></td>             <td>{11}</td></tr>
+        </tbody>
+    </table>
+    """.format(cif_dic['_space_group_name_H_M_alt'],
+               cif_dic['_cell_formula_units_Z'],
+               cif_dic['_chemical_formula_sum'],
+               cif_dic['_diffrn_ambient_temperature'],
+               cif_dic['_refine_ls_wR_factor_ref'],
+               cif_dic['_refine_ls_R_factor_gt'],
+               cif_dic['_refine_ls_goodness_of_fit_ref'],
+               cif_dic['_refine_ls_shift_su_max'],
+               cif_dic['_refine_diff_density_max'], cif_dic['_refine_diff_density_min'],
+               cif_dic['_diffrn_reflns_av_R_equivalents'],
+               cif_dic['_diffrn_reflns_av_unetI_netI']
+               )
+    return table1
+
+
+def get_residuals_table2(structures: StructureTable, structure_id: int, cif_dic: dict) -> str:
+    """
+    Returns a table with the most important residuals of a structure.
+    """
+    #cell = structures.get_cell_by_id(structure_id)
+    if not cif_dic:
+        return ""
+    wavelen = cif_dic['_diffrn_radiation_wavelength']
+    thetamax = cif_dic['_diffrn_reflns_theta_max']
+    # d = lambda/2sin(theta):
+    try:
+        d = wavelen / (2 * math.sin(math.radians(thetamax)))
+    except(ZeroDivisionError, TypeError):
+        d = 0.0
+    try:
+        compl = cif_dic['_diffrn_measured_fraction_theta_max'] * 100
+        if not compl:
+            compl = 0.0
+    except TypeError:
+        compl = 0.0
+    table2 = """
+    <table class="table table-bordered" id='resitable2'>
+        <tbody>
+        <tr><td><b>Total num. Refl.</b></td>                 <td>{0}</td></tr>
+        <tr><td><b>Parameters</b></td>                           <td>{1}</td></tr>
+        <tr><td><b>data/param</b></td>                 <td>{2:<5.1f}</td></tr>
+        <tr><td><b>Restraints</b></td>             <td>{3}</td></tr>
+        <tr><td><b>&theta;(max) [&deg;]</b></td>       <td>{4}</td></tr>
+        <tr><td><b>&theta;(full) [&deg;]</b></td>        <td>{5}</td></tr>
+        <tr><td><b>d [&angst;]</b></td>                        <td>{6:5.3f}</td></tr>
+        <tr><td><b>complete [%]</b></td>               <td>{7:<5.1f}</td></tr>
+        <tr><td><b>Wavelength [&angst;]</b></td>   <td>{8}</td></tr>
+        <tr><td><b>CCDC Number</b></td>               <td>{9}</td></tr>
+        </tbody>
+    </table>
+    """.format(cif_dic['_diffrn_reflns_number'],
+               cif_dic['_refine_ls_number_parameters'],
+               cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters'],
+               cif_dic['_refine_ls_number_restraints'],
+               thetamax,
+               cif_dic['_diffrn_reflns_theta_full'],
+               d,
+               compl,
+               wavelen,
+               cif_dic['_database_code_depnum_ccdc_archive']
+               )
+    return table2
 
 
 def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
@@ -72,7 +166,7 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     Returns a html table with the residuals values of a structure.
     """
     # starting table header (the div is for css):
-    table_string = """<h4>Structure Properties</h4>
+    table_string = """<h4>All CIF values</h4>
                         <div id="myresidualtable">
                         <table class="table table-striped table-bordered" style="white-space: pre">
                             <thead>
