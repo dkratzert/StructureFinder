@@ -152,6 +152,12 @@ body {
 </form>
 
 <div class="row">
+    <div class="col-lg-12">
+        <span id="cellrow"></span>
+    </div>
+</div>
+
+<div class="row">
     <div class="col-md-4">
         <span id="residualstable1"></span>
     </div>
@@ -239,6 +245,12 @@ jQuery(document).ready(function($) {
             jmol.__loadModel(result);  // jmol has to be lower-case!?!
             $("#jsmolcolumn").css("height", 300);
             $("#jsmolcolumn").css("border-style", "solid");
+        });
+
+        // Get unit cell row:
+        $.post("strflog.cgi", {id: idstr, unitcell: true}, function(result){
+            //alert(result)
+            document.getElementById("cellrow").innerHTML = result;
         });
 
         // display the big cif data table:

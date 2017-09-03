@@ -40,6 +40,7 @@ def application():
     mol = form.getvalue("molecule")
     resid1 = form.getvalue("residuals1")
     resid2 = form.getvalue("residuals2")
+    unitcell = form.getvalue("unitcell")
     dbfilename = "./structuredb.sqlite"
     #dbfilename = "./structures_22.08.2017.sqlite"
     structures = database_handler.StructureTable(dbfilename)
@@ -54,9 +55,12 @@ def application():
         ids = search_text(structures, text)
         html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
     elif strid and mol:
-        cell = structures.get_cell_by_id(strid)[:6]
-        m = mol_file_writer.MolFile(strid, structures, cell)
+        cell_list = structures.get_cell_by_id(strid)[:6]
+        m = mol_file_writer.MolFile(strid, structures, cell_list)
         print(m.make_mol())
+        return
+    elif strid and unitcell:
+        print(structures.get_cell_by_id(strid)[:6])
         return
     elif strid and resid1:
         print(get_residuals_table1(structures, strid, cif_dic))
