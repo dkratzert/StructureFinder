@@ -7,9 +7,11 @@
     <link rel="stylesheet" href="http://127.0.0.1/jasny-bootstrap/css/jasny-bootstrap.min.css">
     <script src="http://127.0.0.1/jquery/jquery.min.js"></script>
     <script src="http://127.0.0.1/bootstrap3/js/bootstrap-3.2.0.min.js"></script>
+    <!-- Not needed at the moment:
     <script src="http://127.0.0.1/jasny-bootstrap/js/jasny-bootstrap-3.1.3.min.js"></script>
-
+    -->
     <script src="http://127.0.0.1/JSmol_dk.nojq.lite.js"></script>
+    <script src="jquery/jquery.stickytableheaders.js"></script>
 
     <!--
     <script href="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
@@ -93,7 +95,6 @@ body {
 </head>
 
 
-
 <body>
 
 
@@ -126,10 +127,10 @@ body {
     </div>
 </form>
 
-    
+
 <form action="strflog.cgi" enctype="multipart/form-data" method="POST">
     <div id="mystrtable">
-    <table class="table table-striped table-bordered table-hover table-responsive">
+    <table class="table table-striped table-bordered table-hover">
         <thead>
             <tr>
                 <th> filename </th>
@@ -195,6 +196,8 @@ $MyMol
 <!-- Javascript functions start here: -->
 <script>
 
+    //$("table").stickyTableHeaders();
+
 jQuery(document).ready(function($) {
 
     // some options for JSmol:
@@ -223,10 +226,6 @@ jQuery(document).ready(function($) {
     };
 
 
-    function get_table_data(id, element) {
-        //get data and replace text
-    }
-
     $('#mystrtable').find('tr').click(function() {
         var idstr = $(this).find("a").attr("id");
         // we got the id string, now we can have fun with it:
@@ -239,7 +238,6 @@ jQuery(document).ready(function($) {
             $("#jsmoldiv").html(jmol._code);
             jmol.__loadModel(result);  // jmol has to be lower-case!?!
             $("#jsmolcolumn").css("height", 300).css("border-style", "solid");
-            //$("#jsmolcolumn")
         });
 
         // Get unit cell row:
@@ -269,6 +267,7 @@ jQuery(document).ready(function($) {
     });
 
 });
+
 
 </script>
 

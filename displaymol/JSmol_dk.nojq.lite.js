@@ -2489,45 +2489,48 @@ Jmol._TMApplet._getApplet = function(id, Info, checkOnly) {
 
 Jmol.getTMApplet = Jmol._TMApplet._getApplet;
 
-;(function(tm){
+(function(tm){
 
 tm._CPK = ["#FF1493", "#FFFFFF", "#D9FFFF",
-	//'Li',     'Be',      'B',        'C',      'N',       'O',       'F',      'Ne',
+	// 'Li',     'Be',      'B',        'C',      'N',       'O',       'F',      'Ne',
 	"#CC80FF", "#C2FF00", "#FFB5B5", "#797979", "#3050F8", "#FF0D0D", "#90e001", "#B3E3F5",
-	//'Na',      'Mg',     'Al',     'Si',       'P',      'S',       'Cl',       'Ar',
+	// 'Na',      'Mg',     'Al',     'Si',       'P',      'S',       'Cl',       'Ar',
 	"#AB5CF2", "#8AFF00", "#BFA6A6", "#F0C8A0", "#FF8000", "#eeee2c", "#1ff001", "#80D1E3",
-	//'K',       'Ca',     'Sc',      'Ti',       'V',       'Cr',     'Mn',        'Fe',
+	// 'K',       'Ca',     'Sc',      'Ti',       'V',       'Cr',     'Mn',        'Fe',
 	"#8F40D4", "#3DFF00", "#E6E6E6", "#BFC2C7", "#A6A6AB", "#8A99C7", "#9C7AC7", "#E06633",
-	        // 'Co',  	'Ni', 		'Cu', 		'Zn', 		'Ga', 	'Ge',		 'As', 		'Se', 	'Br', 		'Kr',
-			"#F090A0", "#50D050", "#C88033", "#7D80B0", "#C28F8F", "#668F8F", "#BD80E3", "#FFA100", "#A62929", "#5CB8D1",
-	"#702EB0", "#00FF00", "#94FFFF", "#94E0E0", "#73C2C9", "#54B5B5", "#3B9E9E", "#248F8F", 
-		"#0A7D8C", "#006985", "#C0C0C0", "#FFD98F", "#A67573", "#668080", "#9E63B5", "#D47A00", "#940094", "#429EB0", 
-	"#57178F", "#00C900"] // through barium
-	//  "#70D4FF", "#FFFFC7", "#D9FFC7", "#C7FFC7", "#A3FFC7", "#8FFFC7", "#61FFC7", "#45FFC7", "#30FFC7", "#1FFFC7", "#00FF9C", "#00E675", "#00D452", "#00BF38", "#00AB24", "#4DC2FF", "#4DA6FF", "#2194D6", "#267DAB", "#266696", "#175487", "#D0D0E0", "#FFD123", "#B8B8D0", "#A6544D", "#575961", "#9E4FB5", "#AB5C00", "#754F45", "#428296", "#420066", "#007D00", "#70ABFA", "#00BAFF", "#00A1FF", "#008FFF", "#0080FF", "#006BFF", "#545CF2", "#785CE3", "#8A4FE3", "#A136D4", "#B31FD4", "#B31FBA", "#B30DA6", "#BD0D87", "#C70066", "#CC0059", "#D1004F", "#D90045", "#E00038", "#E6002E", "#EB0026"]; 
+	// 'Co',  	'Ni', 		'Cu', 		'Zn', 		'Ga', 	'Ge',		 'As', 		'Se', 	'Br', 		'Kr',
+	"#F090A0", "#50D050", "#C88033", "#7D80B0", "#C28F8F", "#668F8F", "#BD80E3", "#FFA100", "#A62929", "#5CB8D1",
+	// 'Rb',     'Sr',       'Y',      'Zr',      'Nb',      'Mo',      'Tc',     'Ru',
+	"#702EB0", "#00FF00", "#94FFFF", "#94E0E0", "#73C2C9", "#54B5B5", "#3B9E9E", "#248F8F",
+	// 'Rh',     'Pd',      'Ag',       'Cd',      'In',     'Sn',       'Sb',      'Te',      'I',      'Xe',
+	"#0A7D8C", "#006985", "#C0C0C0", "#FFD98F", "#A67573", "#668080", "#9E63B5", "#D47A00", "#940094", "#429EB0",
+	// 'Cs',     'Ba',
+	"#57178F", "#00C900"];  // through barium
+	//  "#70D4FF", "#FFFFC7", "#D9FFC7", "#C7FFC7", "#A3FFC7", "#8FFFC7", "#61FFC7", "#45FFC7", "#30FFC7", "#1FFFC7", "#00FF9C", "#00E675", "#00D452", "#00BF38", "#00AB24", "#4DC2FF", "#4DA6FF", "#2194D6", "#267DAB", "#266696", "#175487", "#D0D0E0", "#FFD123", "#B8B8D0", "#A6544D", "#575961", "#9E4FB5", "#AB5C00", "#754F45", "#428296", "#420066", "#007D00", "#70ABFA", "#00BAFF", "#00A1FF", "#008FFF", "#0080FF", "#006BFF", "#545CF2", "#785CE3", "#8A4FE3", "#A136D4", "#B31FD4", "#B31FBA", "#B30DA6", "#BD0D87", "#C70066", "#CC0059", "#D1004F", "#D90045", "#E00038", "#E6002E", "#EB0026"];
 tm._elem = ['X', 'H', 'He', 
 	'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 
 	'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 
 	'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 
 	'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 
 	'Cs', 'Ba', 
-		'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 
-			 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb','Bi', 'Po', 'At', 'Rn', 
+	'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',
+	'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb','Bi', 'Po', 'At', 'Rn',
 	'Fr', 'Ra', 
-		'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
+	'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
 tm._elemNo = {};
 
-;(function(proto) {
+(function(proto) {
 
 // A user-available function
 
 proto.spin = function(TF) {
 	this.__Info.spin = TF;
 	this._spin(TF);
-}
+};
 
 proto._spin = function(TF) {
 	if (this._spinThread)clearTimeout(this._spinThread);
-	if (this.spinFPS == 0 || this.spinRateX == 0 && this.spinRateY == 0)
+	if (this.spinFPS === 0 || this.spinRateX === 0 && this.spinRateY === 0)
 		TF = false;
 	if (!TF) return;
 	var me = this;
@@ -2537,7 +2540,7 @@ proto._spin = function(TF) {
 		this._draw();
 	}
 	this._spinThread = setTimeout(function(){me._spin(true)}, delay);
-}
+};
 
 proto._initParams = function() {
 	this.zoom = this.__Info.defaultZoom || 130;
@@ -2547,7 +2550,7 @@ proto._initParams = function() {
 	this.rotation = new tm.M3();
 	this.shadeAtoms = false;
 	this._setParams();
-}
+};
 
 proto._setParams = function() {
 	this.bondWidth = this.__Info.bondWidth || 5;
@@ -2563,14 +2566,15 @@ proto._setParams = function() {
 	this.shadeAtoms = this.__Info.shadeAtoms || false;
 	if (this.shadeAtoms && !p)
 		this._setAtomShades();
-}
+};
 
 proto._setAtomShades = function() {
 	if (!this.atoms)
 		return;
 	for (var i = this.atoms.length; --i >= 0;)
 		this.atoms[i].color50 = this._getColor(this.atoms[i].color, 0.5);
-}
+};
+
 proto._createCanvas = function(id, Info) {
 	Jmol._setObject(this, id, Info);
 	this._color = this._color.replace(/0x/,"#");
@@ -2608,7 +2612,7 @@ proto._createCanvas2d = function(doReplace) {
 	canvas.id = this._id + "_canvas2d";
 	container.append(canvas);
 	setTimeout(this._id+"._start()",10);
-}
+};
 
 proto._start = function() {
 	Jmol._jsSetMouse(this._canvas);  
@@ -2618,11 +2622,11 @@ proto._start = function() {
 		this._loadFile(this._src);
 	this._showInfo(true);
 	this._showInfo(false);
-}      
+};
 
 proto._search = function(query, script){
 	Jmol._search(this, query, script);
-}
+};
 
 proto._searchDatabase = function(query, database, script){
 	this._showInfo(false);
@@ -2632,11 +2636,11 @@ proto._searchDatabase = function(query, database, script){
 	}
 	var dm = database + query; 
 	this._loadFile(dm, script);
-}
+};
 
 proto.__loadModel = function(mol) {
 	this._spin(false);
-	if (mol == "''")mol = this._mol;
+	if (mol === "''")mol = this._mol;
 	if (!mol) {
 		alert("No model data.");
 		return;
@@ -2653,7 +2657,7 @@ proto._showInfo = function(tf) {
 	Jmol.$html(Jmol.$(this, "infoheaderspan"), this._infoHeader);
 	if (this._info)
 		Jmol.$html(Jmol.$(this, "infodiv"), this._info);
-	if ((!this._isInfoVisible) == (!tf))
+	if ((!this._isInfoVisible) === (!tf))
 		return;
 	this._isInfoVisible = tf;
 	Jmol.$setVisible(Jmol.$(this, "infotablediv"), tf);
@@ -2682,11 +2686,11 @@ proto._script = function(cmd) {
   var s = cmd.split(";");
   for (var i = 0; i < s.length; i++) {
     cmd = s[i].trim();
-    if (cmd == "image") {
+    if (cmd === "image") {
             window.open(this._canvas.toDataURL("image/png"));
-    } else if (cmd.indexOf("load ") == 0) {
+    } else if (cmd.indexOf("load ") === 0) {
       this._loadFile(cmd.substring(5).trim());
-    } else if (cmd.indexOf("spin ") == 0) {
+    } else if (cmd.indexOf("spin ") === 0) {
       this.spin(cmd.toLowerCase().indexOf("off") < 0);
     }
   }
