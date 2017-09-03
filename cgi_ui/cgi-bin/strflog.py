@@ -60,7 +60,15 @@ def application():
         print(m.make_mol())
         return
     elif strid and unitcell:
-        print(structures.get_cell_by_id(strid)[:6])
+        c = structures.get_cell_by_id(strid)
+        cstr = """<i>a</i> = {}&nbsp;&angst;&nbsp;
+                  <i>b</i> = {}&nbsp;&angst;&nbsp;
+                  <i>c</i> = {}&nbsp;&angst;&nbsp; 
+                  <i>&alpha;</i> = {}&deg;&nbsp;
+                  <i>&beta;</i> = {}&deg;&nbsp;
+                  <i>&gamma;</i> = {}&deg;&nbsp;
+                  <i>V</i> = {}&nbsp;&angst;<sup>3</sup> """.format(*c)
+        print(cstr)
         return
     elif strid and resid1:
         print(get_residuals_table1(structures, strid, cif_dic))
