@@ -60,16 +60,7 @@ def application():
         print(m.make_mol())
         return
     elif strid and unitcell:
-        c = structures.get_cell_by_id(strid)
-        cstr = """<b>Unit cell parameter:</b>&nbsp;&nbsp; 
-                  <i>a</i> = {}&nbsp;&angst;,&nbsp;
-                  <i>b</i> = {}&nbsp;&angst;,&nbsp;
-                  <i>c</i> = {}&nbsp;&angst;,&nbsp; 
-                  <i>&alpha;</i> = {}&deg;,&nbsp;
-                  <i>&beta;</i> = {}&deg;,&nbsp;
-                  <i>&gamma;</i> = {}&deg;,&nbsp;
-                  <i>V</i> = {}&nbsp;&angst;<sup>3</sup> """.format(*c)
-        print(cstr)
+        print(get_cell_parameters(structures, strid))
         return
     elif strid and resid1:
         print(get_residuals_table1(structures, strid, cif_dic))
@@ -85,6 +76,22 @@ def application():
     print(html_txt)
     # print(ids)  # For debug
     # print("<br>Cell:", cell)  # For debug
+
+
+def get_cell_parameters(structures: StructureTable, strid: str) -> str:
+    """
+    Resturns unit cell parameters as html formated string.
+    """
+    c = structures.get_cell_by_id(strid)
+    cstr = """<b>Unit Cell:</b>&nbsp;&nbsp; 
+                      <i>a</i> = {}&nbsp;&angst;,&nbsp;
+                      <i>b</i> = {}&nbsp;&angst;,&nbsp;
+                      <i>c</i> = {}&nbsp;&angst;,&nbsp; 
+                      <i>&alpha;</i> = {}&deg;,&nbsp;
+                      <i>&beta;</i> = {}&deg;,&nbsp;
+                      <i>&gamma;</i> = {}&deg;,&nbsp;
+                      <i>V</i> = {}&nbsp;&angst;<sup>3</sup> """.format(*c)
+    return cstr
 
 
 def get_residuals_table1(structures: StructureTable, structure_id: int, cif_dic: dict) -> str:
