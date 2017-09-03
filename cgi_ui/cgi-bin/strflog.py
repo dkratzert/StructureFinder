@@ -61,12 +61,13 @@ def application():
         return
     elif strid and unitcell:
         c = structures.get_cell_by_id(strid)
-        cstr = """<i>a</i> = {}&nbsp;&angst;&nbsp;
-                  <i>b</i> = {}&nbsp;&angst;&nbsp;
-                  <i>c</i> = {}&nbsp;&angst;&nbsp; 
-                  <i>&alpha;</i> = {}&deg;&nbsp;
-                  <i>&beta;</i> = {}&deg;&nbsp;
-                  <i>&gamma;</i> = {}&deg;&nbsp;
+        cstr = """<b>Unit cell parameter:</b>&nbsp;&nbsp; 
+                  <i>a</i> = {}&nbsp;&angst;,&nbsp;
+                  <i>b</i> = {}&nbsp;&angst;,&nbsp;
+                  <i>c</i> = {}&nbsp;&angst;,&nbsp; 
+                  <i>&alpha;</i> = {}&deg;,&nbsp;
+                  <i>&beta;</i> = {}&deg;,&nbsp;
+                  <i>&gamma;</i> = {}&deg;,&nbsp;
                   <i>V</i> = {}&nbsp;&angst;<sup>3</sup> """.format(*c)
         print(cstr)
         return
@@ -90,13 +91,16 @@ def get_residuals_table1(structures: StructureTable, structure_id: int, cif_dic:
     """
     Returns a table with the most important residuals of a structure.
     """
-    #cell = structures.get_cell_by_id(structure_id)
+    if cif_dic['_diffrn_reflns_av_unetI_netI']:
+        rsigma = " / {}".format(cif_dic['_diffrn_reflns_av_unetI_netI'])
+    else:
+        rsigma = " "
     if not cif_dic:
         return ""
     table1 = """
     <table class="table table-bordered" id='resitable1'>
         <tbody>
-        <tr><td><b>Space Group</b></td>                 <td>{0}</td></tr>
+        <tr><td style='width: 40%'><b>Space Group</b></td>                 <td>{0}</td></tr>
         <tr><td><b>Z</b></td>                           <td>{1}</td></tr>
         <tr><td><b>Sum Formula</b></td>                 <td>{2}</td></tr>
         <tr><td><b>Temperature [K]</b></td>             <td>{3}</td></tr>
@@ -104,9 +108,8 @@ def get_residuals_table1(structures: StructureTable, structure_id: int, cif_dic:
         <tr><td><b><i>R<i/><sub>1</sub></b></td>        <td>{5}</td></tr>
         <tr><td><b>Goof</b></td>                        <td>{6}</td></tr>
         <tr><td><b>Max Shift/esd</b></td>               <td>{7}</td></tr>
-        <tr><td><b>Peak / Hole [e&angst;<sup>-3</sup>]</b></td>   <td>{8} / {9}</td></tr>
-        <tr><td><b><i>R</i>(int)</b></td>               <td>{10}</td></tr>
-        <tr><td><b><i>R</i>&sigma;</b></td>             <td>{11}</td></tr>
+        <tr><td><b>Peak / Hole [e&angst;<sup>-3</sup>]</b></td>                     <td>{8} / {9}  </td></tr>
+        <tr><td><b><i>R</i><sub>int</sub> / <i>R</i>&sigma;</b></b></td>     <td>{10}{11} </td></tr>
         </tbody>
     </table>
     """.format(cif_dic['_space_group_name_H_M_alt'],
@@ -119,7 +122,7 @@ def get_residuals_table1(structures: StructureTable, structure_id: int, cif_dic:
                cif_dic['_refine_ls_shift_su_max'],
                cif_dic['_refine_diff_density_max'], cif_dic['_refine_diff_density_min'],
                cif_dic['_diffrn_reflns_av_R_equivalents'],
-               cif_dic['_diffrn_reflns_av_unetI_netI']
+               rsigma
                )
     return table1
 
@@ -147,7 +150,7 @@ def get_residuals_table2(structures: StructureTable, structure_id: int, cif_dic:
     table2 = """
     <table class="table table-bordered" id='resitable2'>
         <tbody>
-        <tr><td><b>Total num. Refl.</b></td>                 <td>{0}</td></tr>
+        <tr><td style='width: 40%'><b>Total num. Refl.</b></td>                 <td>{0}</td></tr>
         <tr><td><b>Parameters</b></td>                           <td>{1}</td></tr>
         <tr><td><b>data/param</b></td>                 <td>{2:<5.1f}</td></tr>
         <tr><td><b>Restraints</b></td>             <td>{3}</td></tr>

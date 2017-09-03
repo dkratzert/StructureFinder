@@ -43,29 +43,24 @@ body {
 }
 
 #resitable1 tr td {
-    line-height: 8px;
-    min-height: 8px;
-    height: 8px;
+    line-height: 13px;
+    height: 13px;
     overflow: auto;
-    /*font-size: 11px;*/
 }
 
 #resitable2 tr td {
-    line-height: 8px;
-    min-height: 8px;
-    height: 8px;
+    line-height: 13px;
+    height: 13px;
     overflow: auto;
-    /*font-size: 11px;*/
 }
 
 #jsmolcolumn {
     width: 300px;
     height: 1px;
-    border-color: lightgray;
-    border-style: hidden;
-    border-width: thin;
+    border: thin hidden lightgray;
     border-radius: 5px;
 }
+
 
 /*
 #myresidualtable {
@@ -101,31 +96,11 @@ body {
 
 <body>
 
-<div class="container">
 
-<form action="strflog.cgi" enctype="multipart/form-data" method="POST">
+<div class="container">
 <h2>StructureFinder</h2>
-    <div id="mystrtable">
-    <table class="table table-striped table-bordered table-hover table-responsive">
-        <thead>
-            <tr>
-                <th> filename </th>
-                <th> dataname </th>
-                <th> directory </th>
-            </tr>
-        </thead>
-        <tbody class="rowlink" data-link="row" data-target="a.id">
-            $logtablecolumns
-        </tbody>
-    </table>
-    </div>
-</form>
-</div>
 
 
-<br>
-<div class="container">
-<!--<h4>Search structures</h4>-->
 <form action="strflog.cgi" enctype="multipart/form-data" method="POST">
     <div class="form-group row">
         <div class="col-sm-6">
@@ -151,9 +126,30 @@ body {
     </div>
 </form>
 
+<form action="strflog.cgi" enctype="multipart/form-data" method="POST">
+    <div id="mystrtable">
+    <table class="table table-striped table-bordered table-hover table-responsive">
+        <thead>
+            <tr>
+                <th> filename </th>
+                <th> dataname </th>
+                <th> directory </th>
+            </tr>
+        </thead>
+        <tbody class="rowlink" data-link="row" data-target="a.id">
+            $logtablecolumns
+        </tbody>
+    </table>
+    </div>
+</form>
+
+<br>
+
 <div class="row">
-    <div type="button" class="btn btn-light col-lg-12">
-        <span id="cellrow"></span>
+    <div class="col-md-12">
+    <table class="table table-striped invisible" id="celltable">
+        <tr><td id="cellrow"> </td></tr>
+    </table>
     </div>
 </div>
 
@@ -181,8 +177,6 @@ body {
     </div>
 </div>
 
-<br>
-<br>
 <br>
 <br>
 <address>
@@ -243,13 +237,14 @@ jQuery(document).ready(function($) {
             Jmol.getTMApplet("jmol", Info);
             $("#jsmoldiv").html(jmol._code);
             jmol.__loadModel(result);  // jmol has to be lower-case!?!
-            $("#jsmolcolumn").css("height", 300);
-            $("#jsmolcolumn").css("border-style", "solid");
+            $("#jsmolcolumn").css("height", 300).css("border-style", "solid");
+            //$("#jsmolcolumn")
         });
 
         // Get unit cell row:
         $.post("strflog.cgi", {id: idstr, unitcell: true}, function(result){
             //alert(result)
+            $("#celltable").removeClass('invisible');
             document.getElementById("cellrow").innerHTML = result;
         });
 
