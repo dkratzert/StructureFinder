@@ -86,13 +86,21 @@ body {
 
 
 <script>
+    function copyToClipboard(element) {
+        var $temp = $("<input>");
+        $("body").append($temp);
+        $temp.val($(element).text()).select();
+        document.execCommand("copy");
+        $temp.remove();
+    }
+
     // height of cif list to 35% of the screen height:
     $(document).ready(function(){
         //gets the window's height
         var b = $(window).height();
         var h = b * 0.35;
         $("#mystrtable").css("height", h).removeClass('invisible');
-    });
+});
 </script>
 
 </head>
@@ -154,7 +162,8 @@ body {
     <div class="col-md-12">
         <h5><span class="invisible" id="cellrow" > </span>
         <span class="btn btn-default glyphicon glyphicon-copy invisible" id="cellbtn"
-              data-toggle="tooltip" title="Copy cell to clipboard."></span></h5>
+              data-toggle="tooltip" title="Copy cell to clipboard."
+              onclick="copyToClipboard('#hidden-cell')"></span></h5>
     </div>
 </div>
 
@@ -191,36 +200,49 @@ body {
 <!-- The main container div: -->
 </div>
 
-<!-- MOL DATA
-$MyMol
--->
+
 
 <!-- Javascript functions start here: -->
 <script>
 
-    //$("table").stickyTableHeaders();
 
 jQuery(document).ready(function($) {
 
-    function hexc(colorval) {
-        var parts = colorval.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-        delete(parts[0]);
-        for (var i = 1; i <= 3; ++i) {
-            parts[i] = parseInt(parts[i]).toString(16);
-            if (parts[i].length === 1) parts[i] = '0' + parts[i];
+    setTimeout(function() {
+        $(this).data('canFireRequest', true)
+    }, 800);  // milliseconds to wait
+
+    $(function get_more_table_rows(lastid){
+        //lastid: last id of table row
+        $.post("strflog.cgi", {id: idstr, lastid: lastid}, function(result){
+            // result: table rows
+            // alert(result)
+            // Wait a moment before the next ajax request:
+            if ($(this).data('canFireRequest')) {
+                // Ajax request goes here
+                $('#mystrtable').find('tbody:last').append(result);
+                $(this).data('canFireRequest', false);
+            }
+        });
+    });
+
+    // recognizes scrolling near end of table and calls ajax
+    // funtion to load more data:
+    $("#mystrtable").scroll(function () {
+        var curpos = $("#mystrtable").scrollTop();
+        var tbheight = $("#mystrtable-body").height();
+        if (curpos + (0.4*tbheight) >= tbheight ) {
+            //alert(curpos +"  "+ tbheight);
+            //dostuff
+            $('#mystrtable').find('tbody:last').append("<tr><td>foo</td><td>bar</td><td>bas</td></tr>").delay(30000);
         }
-        color = '#' + parts.join('');
-
-        return color;
-    }
-    var color = $(this.body).css("background-color");
-
+    });
     // some options for JSmol:
     var Info;
     Info = {
         width: 275,
         height: 292,
-        color: color,
+        color: $(this.body).css("background-color"),
         //color: "0xf0f0f0",
         shadeAtoms: false,
         addSelectionOptions: false,
@@ -240,16 +262,6 @@ jQuery(document).ready(function($) {
         debug: false,
         j2sPath: ""
     };
-
-    function copyToClipboard(elementId) {
-        //var aux = document.createElement("input");
-        //aux.setAttribute("value", document.getElementById(elementId).innerHTML);
-        //document.body.appendChild(aux);
-        hidden-cell.select();
-        document.execCommand("copy");
-        //document.body.removeChild(aux);
-        alert(document.getElementById('hidden-cell'))
-    }
 
     $('#mystrtable-body').find('tr').click(function() {
         var idstr = $(this).find("a").attr("strid");
@@ -292,7 +304,6 @@ jQuery(document).ready(function($) {
         });
     });
 
-    $('#cellbtn').click(copyToClipboard('hidden-cell'))
 
 });
 

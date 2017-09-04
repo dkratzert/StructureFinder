@@ -90,7 +90,7 @@ def get_cell_parameters(structures: StructureTable, strid: str) -> str:
                       <i>&beta;</i> = {4}&deg;,&nbsp;
                       <i>&gamma;</i> = {5}&deg;,&nbsp;
                       <i>V</i> = {6}&nbsp;&angst;<sup>3</sup>&nbsp;&nbsp;&nbsp;&nbsp; 
-            <div class='hidden' id='hidden-cell'>{0} {1} {2} {3} {4} {5} {6}</div>          
+            <div class='hidden' id='hidden-cell'>{0}  {1}  {2}  {3}  {4}  {5}</div>          
             
             """.format(*c)
     return cstr
@@ -156,6 +156,10 @@ def get_residuals_table2(structures: StructureTable, structure_id: int, cif_dic:
             compl = 0.0
     except TypeError:
         compl = 0.0
+    try:
+        data_to_param = cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters']
+    except TypeError:
+        data_to_param = 0
     table2 = """
     <table class="table table-bordered" id='resitable2'>
         <tbody>
@@ -173,7 +177,7 @@ def get_residuals_table2(structures: StructureTable, structure_id: int, cif_dic:
     </table>
     """.format(cif_dic['_diffrn_reflns_number'],
                cif_dic['_refine_ls_number_parameters'],
-               cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters'],
+               data_to_param,
                cif_dic['_refine_ls_number_restraints'],
                thetamax,
                cif_dic['_diffrn_reflns_theta_full'],
