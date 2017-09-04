@@ -157,7 +157,7 @@ body {
               data-toggle="tooltip" title="Copy cell to clipboard."></span></h5>
     </div>
 </div>
-    
+
 <div class="row">
     <div class="col-md-4">
         <span id="residualstable1"></span>
@@ -242,12 +242,13 @@ jQuery(document).ready(function($) {
     };
 
     function copyToClipboard(elementId) {
-        var aux = document.createElement("input");
-        aux.setAttribute("value", document.getElementById(elementId).innerHTML);
-        document.body.appendChild(aux);
-        aux.select();
+        //var aux = document.createElement("input");
+        //aux.setAttribute("value", document.getElementById(elementId).innerHTML);
+        //document.body.appendChild(aux);
+        hidden-cell.select();
         document.execCommand("copy");
-        document.body.removeChild(aux);
+        //document.body.removeChild(aux);
+        alert(document.getElementById('hidden-cell'))
     }
 
     $('#mystrtable-body').find('tr').click(function() {
@@ -290,6 +291,8 @@ jQuery(document).ready(function($) {
             document.getElementById("residualstable2").innerHTML = result;
         });
     });
+
+    $('#cellbtn').click(copyToClipboard('hidden-cell'))
 
 });
 
