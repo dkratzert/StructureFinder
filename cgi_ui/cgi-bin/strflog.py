@@ -1,5 +1,5 @@
+#!C:\tools\Python-3.6.2_64\pythonw.exe
 #!/usr/local/bin/python3.6
-# !C:\tools\Python-3.6.2_64\pythonw.exe
 
 import cgi
 import pathlib
@@ -78,8 +78,6 @@ def application():
         ids = range(1, 20)
         html_txt = process_data(structures, ids, lrange=True).decode('utf-8', 'ignore')
     print(html_txt)
-    # print(ids)  # For debug
-    # print("<br>Cell:", cell)  # For debug
 
 
 def get_more_table_rows(structures: StructureTable, lastid: (str, int)) -> str:
@@ -105,13 +103,16 @@ def get_cell_parameters(structures: StructureTable, strid: str) -> str:
     """
     c = structures.get_cell_by_id(strid)
     cstr = """<b>Unit Cell:</b>&nbsp;&nbsp; 
-                      <i>a</i> = {}&nbsp;&angst;,&nbsp;
-                      <i>b</i> = {}&nbsp;&angst;,&nbsp;
-                      <i>c</i> = {}&nbsp;&angst;,&nbsp; 
-                      <i>&alpha;</i> = {}&deg;,&nbsp;
-                      <i>&beta;</i> = {}&deg;,&nbsp;
-                      <i>&gamma;</i> = {}&deg;,&nbsp;
-                      <i>V</i> = {}&nbsp;&angst;<sup>3</sup> """.format(*c)
+                      <i>a</i> = {0}&nbsp;&angst;,&nbsp;
+                      <i>b</i> = {1}&nbsp;&angst;,&nbsp;
+                      <i>c</i> = {2}&nbsp;&angst;,&nbsp; 
+                      <i>&alpha;</i> = {3}&deg;,&nbsp;
+                      <i>&beta;</i> = {4}&deg;,&nbsp;
+                      <i>&gamma;</i> = {5}&deg;,&nbsp;
+                      <i>V</i> = {6}&nbsp;&angst;<sup>3</sup>&nbsp;&nbsp;&nbsp;&nbsp; 
+            <div class='hidden' id='hidden-cell'>{0}  {1}  {2}  {3}  {4}  {5}</div>          
+            
+            """.format(*c)
     return cstr
 
 
@@ -136,7 +137,7 @@ def get_residuals_table1(structures: StructureTable, structure_id: int, cif_dic:
         <tr><td><b><i>R<i/><sub>1</sub></b></td>        <td>{5}</td></tr>
         <tr><td><b>Goof</b></td>                        <td>{6}</td></tr>
         <tr><td><b>Max Shift/esd</b></td>               <td>{7}</td></tr>
-        <tr><td><b>Peak / Hole [e&angst;<sup>-3</sup>]</b></td>                     <td>{8} / {9}  </td></tr>
+        <tr><td><b>Peak / Hole [e&angst;<sup>&minus;3</sup>]</b></td>                     <td>{8} / {9}  </td></tr>
         <tr><td><b><i>R</i><sub>int</sub> / <i>R</i>&sigma;</b></b></td>     <td>{10}{11} </td></tr>
         </tbody>
     </table>
@@ -175,24 +176,28 @@ def get_residuals_table2(structures: StructureTable, structure_id: int, cif_dic:
             compl = 0.0
     except TypeError:
         compl = 0.0
+    try:
+        data_to_param = cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters']
+    except TypeError:
+        data_to_param = 0
     table2 = """
     <table class="table table-bordered" id='resitable2'>
         <tbody>
-        <tr><td style='width: 40%'><b>Total num. Refl.</b></td>                 <td>{0}</td></tr>
-        <tr><td><b>Parameters</b></td>                           <td>{1}</td></tr>
-        <tr><td><b>data/param</b></td>                 <td>{2:<5.1f}</td></tr>
-        <tr><td><b>Restraints</b></td>             <td>{3}</td></tr>
-        <tr><td><b>&theta;(max) [&deg;]</b></td>       <td>{4}</td></tr>
-        <tr><td><b>&theta;(full) [&deg;]</b></td>        <td>{5}</td></tr>
-        <tr><td><b>d [&angst;]</b></td>                        <td>{6:5.3f}</td></tr>
-        <tr><td><b>complete [%]</b></td>               <td>{7:<5.1f}</td></tr>
-        <tr><td><b>Wavelength [&angst;]</b></td>   <td>{8}</td></tr>
-        <tr><td><b>CCDC Number</b></td>               <td>{9}</td></tr>
+        <tr><td style='width: 40%'><b>Total num. Refl.</b></td>     <td>{0}</td></tr>
+        <tr><td><b>Parameters</b></td>                              <td>{1}</td></tr>
+        <tr><td><b>data/param</b></td>                              <td>{2:<5.1f}</td></tr>
+        <tr><td><b>Restraints</b></td>                              <td>{3}</td></tr>
+        <tr><td><b>&theta;(max) [&deg;]</b></td>                    <td>{4}</td></tr>
+        <tr><td><b>&theta;(full) [&deg;]</b></td>                   <td>{5}</td></tr>
+        <tr><td><b>d [&angst;]</b></td>                             <td>{6:5.3f}</td></tr>
+        <tr><td><b>complete [%]</b></td>                            <td>{7:<5.1f}</td></tr>
+        <tr><td><b>Wavelength [&angst;]</b></td>                    <td>{8}</td></tr>
+        <tr><td><b>CCDC Number</b></td>                             <td>{9}</td></tr>
         </tbody>
     </table>
     """.format(cif_dic['_diffrn_reflns_number'],
                cif_dic['_refine_ls_number_parameters'],
-               cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters'],
+               data_to_param,
                cif_dic['_refine_ls_number_restraints'],
                thetamax,
                cif_dic['_diffrn_reflns_theta_full'],
@@ -321,7 +326,7 @@ def process_data(structures: StructureTable, idlist: (list, range) = None, lrang
     table_string = ""
     for i in structures.get_all_structure_names(idlist, lrange):
         table_string += '<tr> ' \
-                        '   <td> <a id="{3}">{0} </a></td> ' \
+                        '   <td> <a strid="{3}">{0} </a></td> ' \
                         '   <td> {1} </a></td> ' \
                         '   <td> {2} </a></td> ' \
                         '</tr> \n' \

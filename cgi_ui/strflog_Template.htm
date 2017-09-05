@@ -12,7 +12,7 @@
     <script src="http://127.0.0.1/jquery/jquery.stickytableheaders.js"></script>
     <script src="jquery/jquery.jscroll.js"></script>
     -->
-    <script src="http://127.0.0.1/JSmol_dk.nojq.lite.js"></script>
+    <script src="http://127.0.0.1/jsmol/JSmol_dk.nojq.lite.js"></script>
 
 
     <!--
@@ -25,7 +25,8 @@
 
 
 body {
-    background-color: #f0f0f0;
+    /*background-color: #f0f0f0;*/
+    background-color: #ffffff;
     /*font-size: 1.3em; */
     font-size: 12px;
     line-height: inherit;
@@ -85,13 +86,21 @@ body {
 
 
 <script>
+    function copyToClipboard(element) {
+        var $temp = $("<input>");
+        $("body").append($temp);
+        $temp.val($(element).text()).select();
+        document.execCommand("copy");
+        $temp.remove();
+    }
+
     // height of cif list to 35% of the screen height:
     $(document).ready(function(){
         //gets the window's height
         var b = $(window).height();
         var h = b * 0.35;
-        $("#mystrtable").css("height", h);
-    });
+        $("#mystrtable").css("height", h).removeClass('invisible');
+});
 </script>
 
 </head>
@@ -131,16 +140,16 @@ body {
 
 
 <form action="strflog.cgi" enctype="multipart/form-data" method="POST">
-    <div id="mystrtable">
+    <div id="mystrtable" class="invisible">
     <table class="table table-striped table-bordered table-hover">
-        <thead>
+        <thead class="rowlink-skip">
             <tr>
-                <th> filename </th>
-                <th> dataname </th>
-                <th> directory </th>
+                <th class="rowlink-skip"> filename </th>
+                <th class="rowlink-skip"> dataname </th>
+                <th class="rowlink-skip"> directory </th>
             </tr>
         </thead>
-        <tbody class="rowlink" data-link="row" data-target="a.id">
+        <tbody class="rowlink" id="mystrtable-body">
             $logtablecolumns
         </tbody>
     </table>
@@ -151,9 +160,10 @@ body {
 
 <div class="row">
     <div class="col-md-12">
-    <table class="table table-striped invisible" id="celltable">
-        <tr><td id="cellrow"> </td></tr>
-    </table>
+        <h5><span class="invisible" id="cellrow" > </span>
+        <span class="btn btn-default glyphicon glyphicon-copy invisible" id="cellbtn"
+              data-toggle="tooltip" title="Copy cell to clipboard."
+              onclick="copyToClipboard('#hidden-cell')"></span></h5>
     </div>
 </div>
 
@@ -165,10 +175,9 @@ body {
     <div class="col-md-4">
         <span id="residualstable2"></span>
     </div>
-    <div class="col-md-4" id="jsmolcolumn">
+    <div class="col-md-4" id="jsmolcolumn" data-toggle="tooltip" title="Asymmetric Unit">
         <span id="jsmoldiv"></span>
     </div>
-
 </div>
 
 
@@ -191,23 +200,50 @@ body {
 <!-- The main container div: -->
 </div>
 
-<!-- MOL DATA
-$MyMol
--->
+
 
 <!-- Javascript functions start here: -->
 <script>
 
-    //$("table").stickyTableHeaders();
 
 jQuery(document).ready(function($) {
 
+    setTimeout(function() {
+        $(this).data('canFireRequest', true)
+    }, 800);  // milliseconds to wait
+
+    $(function get_more_table_rows(lastid){
+        //lastid: last id of table row
+        $.post("strflog.cgi", {id: idstr, lastid: lastid}, function(result){
+            // result: table rows
+            // alert(result)
+            // Wait a moment before the next ajax request:
+            if ($(this).data('canFireRequest')) {
+                // Ajax request goes here
+                $('#mystrtable').find('tbody:last').append(result);
+                $(this).data('canFireRequest', false);
+            }
+        });
+    });
+
+    // recognizes scrolling near end of table and calls ajax
+    // funtion to load more data:
+    $("#mystrtable").scroll(function () {
+        var curpos = $("#mystrtable").scrollTop();
+        var tbheight = $("#mystrtable-body").height();
+        if (curpos + (0.4*tbheight) >= tbheight ) {
+            //alert(curpos +"  "+ tbheight);
+            //dostuff
+            $('#mystrtable').find('tbody:last').append("<tr><td>foo</td><td>bar</td><td>bas</td></tr>").delay(30000);
+        }
+    });
     // some options for JSmol:
     var Info;
     Info = {
         width: 275,
         height: 292,
-        color: "0xf0f0f0",
+        color: $(this.body).css("background-color"),
+        //color: "0xf0f0f0",
         shadeAtoms: false,
         addSelectionOptions: false,
         use: "HTML5",
@@ -227,9 +263,8 @@ jQuery(document).ready(function($) {
         j2sPath: ""
     };
 
-
-    $('#mystrtable').find('tr').click(function() {
-        var idstr = $(this).find("a").attr("id");
+    $('#mystrtable-body').find('tr').click(function() {
+        var idstr = $(this).find("a").attr("strid");
         // we got the id string, now we can have fun with it:
 
         // Get molecule data and display the molecule:
@@ -245,7 +280,8 @@ jQuery(document).ready(function($) {
         // Get unit cell row:
         $.post("strflog.cgi", {id: idstr, unitcell: true}, function(result){
             //alert(result)
-            $("#celltable").removeClass('invisible');
+            $("#cellrow").removeClass('invisible');
+            $("#cellbtn").removeClass('invisible');
             document.getElementById("cellrow").innerHTML = result;
         });
 
@@ -267,6 +303,7 @@ jQuery(document).ready(function($) {
             document.getElementById("residualstable2").innerHTML = result;
         });
     });
+
 
 });
 
