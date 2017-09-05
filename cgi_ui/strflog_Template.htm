@@ -42,9 +42,9 @@ body {
 }
 
 #mystrtable tr td {
-    line-height: 5px;
-    min-height: 5px;
-    height: 5px;
+    line-height: 14px;
+    min-height: 14px;
+    height: 14px;
 }
 
 #resitable1 tr td {
@@ -141,7 +141,7 @@ body {
 
 <form action="strflog.cgi" enctype="multipart/form-data" method="POST">
     <div id="mystrtable" class="invisible">
-    <table class="table table-striped table-bordered table-hover">
+    <table class="table table-striped table-bordered table-hover" id="testt">
         <thead class="rowlink-skip">
             <tr>
                 <th class="rowlink-skip"> filename </th>
@@ -208,41 +208,53 @@ body {
 
 jQuery(document).ready(function($) {
 
-    setTimeout(function() {
-        $(this).data('canFireRequest', true)
-    }, 800);  // milliseconds to wait
+    var mytable = $("#mystrtable");
+    var mytable_body = $("#mystrtable-body");
 
-    $(function get_more_table_rows(lastid){
+    var canFireRequest = true;
+
+    function get_more_table_rows(lastid) {
         //lastid: last id of table row
-        $.post("strflog.cgi", {id: idstr, lastid: lastid}, function(result){
+        $.post("strflog.cgi", {last_row: lastid}, function (result) {
             // result: table rows
-            // alert(result)
+            //alert("foo");
+            //mytable.find('tbody:last').append(result);
             // Wait a moment before the next ajax request:
-            if ($(this).data('canFireRequest')) {
+            if (canFireRequest === true) {
                 // Ajax request goes here
-                $('#mystrtable').find('tbody:last').append(result);
-                $(this).data('canFireRequest', false);
+                mytable.find('tbody:last').append(result);
+                //alert('foo');
+                canFireRequest = false;
             }
+            setTimeout(function() {
+                canFireRequest = true;
+            }, 500);
         });
-    });
-
+    }
+    /* // currently not working:
     // recognizes scrolling near end of table and calls ajax
     // funtion to load more data:
-    $("#mystrtable").scroll(function () {
-        var curpos = $("#mystrtable").scrollTop();
-        var tbheight = $("#mystrtable-body").height();
-        if (curpos + (0.4*tbheight) >= tbheight ) {
+    mytable.scroll(function () {
+        var curpos = mytable.scrollTop();
+        var tbheight = mytable_body.height();
+        //alert(curpos +"  "+ tbheight);
+        if (curpos + (0.1*tbheight) >= tbheight ) {
             //alert(curpos +"  "+ tbheight);
-            //dostuff
-            $('#mystrtable').find('tbody:last').append("<tr><td>foo</td><td>bar</td><td>bas</td></tr>").delay(30000);
+            //$('#mystrtable').find('tbody:last').append("<tr><td>foo</td><td>bar</td><td>bas</td></tr>"); // just for test
+            var lastid = mytable_body.find("tr").find('a').last().attr('strid');
+            //alert(lastid);
+            //get_more_table_rows(lastid);
         }
     });
+    */
+
     // some options for JSmol:
+    var bgcolor = $(this.body).css("background-color");
     var Info;
     Info = {
         width: 275,
         height: 292,
-        color: $(this.body).css("background-color"),
+        color: bgcolor,
         //color: "0xf0f0f0",
         shadeAtoms: false,
         addSelectionOptions: false,
@@ -252,8 +264,8 @@ jQuery(document).ready(function($) {
         bondWidth: 2,
         zoomScaling: 5,
         pinchScaling: 5.0,
-        mouseDragFactor: 0.5,
-        touchDragFactor: 0.15,
+        mouseDragFactor: 0.9,
+        touchDragFactor: 0.9,
         multipleBondSpacing: 0,
         spinRateX: -0.08,
         spinRateY: 0.05,
@@ -263,7 +275,7 @@ jQuery(document).ready(function($) {
         j2sPath: ""
     };
 
-    $('#mystrtable-body').find('tr').click(function() {
+    mytable_body.find('tr').click(function() {
         var idstr = $(this).find("a").attr("strid");
         // we got the id string, now we can have fun with it:
 

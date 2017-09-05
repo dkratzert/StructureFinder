@@ -373,13 +373,11 @@ class StructureTable():
         else:
             return False
 
-    def get_all_structure_names(self, ids: list = None, lrange: bool = False) -> list:
+    def get_all_structure_names(self, ids: list=None) -> list:
         """
         returns all fragment names in the database, sorted by name
         :returns [id, meas, path, filename, data]
         """
-        if lrange and len(ids) <= 1:
-            range = False
         if ids:
             if len(ids) > 1:  # a collection of ids
                 ids = tuple(ids)

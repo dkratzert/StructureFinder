@@ -41,7 +41,7 @@ def application():
     resid1 = form.getvalue("residuals1")
     resid2 = form.getvalue("residuals2")
     unitcell = form.getvalue("unitcell")
-    next_rows = form.getvalue("next")
+    last_row = form.getvalue("last_row")
     dbfilename = "./structuredb.sqlite"
     # dbfilename = "./structures_22.08.2017.sqlite"
     structures = database_handler.StructureTable(dbfilename)
@@ -72,11 +72,12 @@ def application():
     elif strid:
         print(get_all_cif_val_table(structures, strid))
         return
-    elif next_rows and ids:
-        html_txt = get_more_table_rows(structures, lastid=strid)
+    elif last_row:
+        html_txt = get_more_table_rows(structures, lastid=last_row)
     else:  # regular database list:
-        ids = range(1, 20)
-        html_txt = process_data(structures, ids, lrange=True).decode('utf-8', 'ignore')
+        #ids = range(1, 200)
+        ids = []
+        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
     print(html_txt)
 
 
@@ -84,18 +85,22 @@ def get_more_table_rows(structures: StructureTable, lastid: (str, int)) -> str:
     """
     Returns the next package of table rows for continuos scrolling.
     """
-    last_is_there = structures.has_index(lastid+50)
+    lastid = int(lastid)
+    last_is_there = structures.has_index(lastid+200)
     if last_is_there:
-        ids = range(lastid+1, lastid+51)
-        html_txt = process_data(structures, ids, lrange=True).decode('utf-8', 'ignore')
+        ids = range(lastid+1, lastid+201)
+        html_txt = process_data(structures, ids, onlyrows=True).decode('utf-8', 'ignore')
     else:
         lastrow = structures.database.get_lastrowid()
         if lastrow > lastid+1:
             ids = range(lastid+1, lastrow)
+            print('####1')
         else:
+            print('####2')
             ids = [lastid+1]
-        html_txt = process_data(structures, ids, lrange=False).decode('utf-8', 'ignore')
+        html_txt = process_data(structures, ids, onlyrows=True).decode('utf-8', 'ignore')
     return html_txt
+
 
 def get_cell_parameters(structures: StructureTable, strid: str) -> str:
     """
@@ -103,12 +108,12 @@ def get_cell_parameters(structures: StructureTable, strid: str) -> str:
     """
     c = structures.get_cell_by_id(strid)
     cstr = """<b>Unit Cell:</b>&nbsp;&nbsp; 
-                      <i>a</i> = {0}&nbsp;&angst;,&nbsp;
-                      <i>b</i> = {1}&nbsp;&angst;,&nbsp;
-                      <i>c</i> = {2}&nbsp;&angst;,&nbsp; 
-                      <i>&alpha;</i> = {3}&deg;,&nbsp;
-                      <i>&beta;</i> = {4}&deg;,&nbsp;
-                      <i>&gamma;</i> = {5}&deg;,&nbsp;
+                      <i>a</i> = {0:>8.3f}&nbsp;&angst;,&nbsp;
+                      <i>b</i> = {1:>8.3f}&nbsp;&angst;,&nbsp;
+                      <i>c</i> = {2:>8.3f}&nbsp;&angst;,&nbsp; 
+                      <i>&alpha;</i> = {3:>8.3f}&deg;,&nbsp;
+                      <i>&beta;</i> = {4:>8.3f}&deg;,&nbsp;
+                      <i>&gamma;</i> = {5:>8.3f}&deg;,&nbsp;
                       <i>V</i> = {6}&nbsp;&angst;<sup>3</sup>&nbsp;&nbsp;&nbsp;&nbsp; 
             <div class='hidden' id='hidden-cell'>{0}  {1}  {2}  {3}  {4}  {5}</div>          
             
@@ -312,7 +317,7 @@ def search_text(structures: StructureTable, search_string: str) -> list:
     return idlist
 
 
-def process_data(structures: StructureTable, idlist: (list, range) = None, lrange: bool = False):
+def process_data(structures: StructureTable, idlist: (list, range) = None, onlyrows = False):
     """
     Structure.Id,           0
     Structure.measurement,  1
@@ -324,7 +329,7 @@ def process_data(structures: StructureTable, idlist: (list, range) = None, lrang
     if not structures:
         return []
     table_string = ""
-    for i in structures.get_all_structure_names(idlist, lrange):
+    for i in structures.get_all_structure_names(idlist):
         table_string += '<tr> ' \
                         '   <td> <a strid="{3}">{0} </a></td> ' \
                         '   <td> {1} </a></td> ' \
@@ -336,6 +341,8 @@ def process_data(structures: StructureTable, idlist: (list, range) = None, lrang
                     i[0]
                     )
         # i[0] -> id
+    if onlyrows:
+        return table_string.encode('ascii', 'ignore')
     try:
         p = pathlib.Path("cgi_ui/strflog_Template.htm")
         t = Template(p.read_bytes().decode('utf-8', 'ignore'))
