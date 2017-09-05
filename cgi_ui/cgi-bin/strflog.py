@@ -1,5 +1,5 @@
 #!/usr/local/bin/python3.6
-#!C:\tools\Python-3.6.2_64\pythonw.exe
+# !C:\tools\Python-3.6.2_64\pythonw.exe
 
 import cgi
 import pathlib
@@ -17,7 +17,7 @@ from searcher import database_handler
 import html
 import cgitb
 
-#sys.stderr = sys.stdout
+# sys.stderr = sys.stdout
 cgitb.enable()
 
 from searcher.database_handler import StructureTable
@@ -41,8 +41,9 @@ def application():
     resid1 = form.getvalue("residuals1")
     resid2 = form.getvalue("residuals2")
     unitcell = form.getvalue("unitcell")
+    next_rows = form.getvalue("next")
     dbfilename = "./structuredb.sqlite"
-    #dbfilename = "./structures_22.08.2017.sqlite"
+    # dbfilename = "./structures_22.08.2017.sqlite"
     structures = database_handler.StructureTable(dbfilename)
     cif_dic = None
     if strid and (resid1 or resid2):
@@ -71,12 +72,32 @@ def application():
     elif strid:
         print(get_all_cif_val_table(structures, strid))
         return
-    else:
-        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
+    elif next_rows and ids:
+        html_txt = get_more_table_rows(structures, lastid=strid)
+    else:  # regular database list:
+        ids = range(1, 20)
+        html_txt = process_data(structures, ids, lrange=True).decode('utf-8', 'ignore')
     print(html_txt)
     # print(ids)  # For debug
     # print("<br>Cell:", cell)  # For debug
 
+
+def get_more_table_rows(structures: StructureTable, lastid: (str, int)) -> str:
+    """
+    Returns the next package of table rows for continuos scrolling.
+    """
+    last_is_there = structures.has_index(lastid+50)
+    if last_is_there:
+        ids = range(lastid+1, lastid+51)
+        html_txt = process_data(structures, ids, lrange=True).decode('utf-8', 'ignore')
+    else:
+        lastrow = structures.database.get_lastrowid()
+        if lastrow > lastid+1:
+            ids = range(lastid+1, lastrow)
+        else:
+            ids = [lastid+1]
+        html_txt = process_data(structures, ids, lrange=False).decode('utf-8', 'ignore')
+    return html_txt
 
 def get_cell_parameters(structures: StructureTable, strid: str) -> str:
     """
@@ -138,7 +159,7 @@ def get_residuals_table2(structures: StructureTable, structure_id: int, cif_dic:
     """
     Returns a table with the most important residuals of a structure.
     """
-    #cell = structures.get_cell_by_id(structure_id)
+    # cell = structures.get_cell_by_id(structure_id)
     if not cif_dic:
         return ""
     wavelen = cif_dic['_diffrn_radiation_wavelength']
@@ -252,12 +273,12 @@ def find_cell(structures: StructureTable, cellstr: str) -> list:
             dic = structures.get_row_as_dict(request)
             try:
                 lattice2 = mat_lattice.Lattice.from_parameters(
-                    float(dic['a']),
-                    float(dic['b']),
-                    float(dic['c']),
-                    float(dic['alpha']),
-                    float(dic['beta']),
-                    float(dic['gamma']))
+                        float(dic['a']),
+                        float(dic['b']),
+                        float(dic['c']),
+                        float(dic['alpha']),
+                        float(dic['beta']),
+                        float(dic['gamma']))
             except ValueError:
                 continue
             map = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
@@ -286,7 +307,7 @@ def search_text(structures: StructureTable, search_string: str) -> list:
     return idlist
 
 
-def process_data(structures: StructureTable, idlist: list = None):
+def process_data(structures: StructureTable, idlist: (list, range) = None, lrange: bool = False):
     """
     Structure.Id,           0
     Structure.measurement,  1
@@ -298,7 +319,7 @@ def process_data(structures: StructureTable, idlist: list = None):
     if not structures:
         return []
     table_string = ""
-    for i in structures.get_all_structure_names(idlist):
+    for i in structures.get_all_structure_names(idlist, lrange):
         table_string += '<tr> ' \
                         '   <td> <a id="{3}">{0} </a></td> ' \
                         '   <td> {1} </a></td> ' \
