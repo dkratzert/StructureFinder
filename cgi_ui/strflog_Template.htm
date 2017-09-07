@@ -156,6 +156,21 @@ body {
     </div>
 </form>
 
+<div>
+    <ul class="pagination pagination-small hidden">
+        <li><a href="#">1</a></li>
+        <li><a href="#">2</a></li>
+        <li><a href="#">3</a></li>
+        <li><a href="#">4</a></li>
+        <li><a href="#">5</a></li>
+        <li><a href="#">6</a></li>
+        <li><a href="#">7</a></li>
+        <li><a href="#">8</a></li>
+        <li><a href="#">9</a></li>
+        <li><a href="#">10</a></li>
+    </ul>
+</div>
+
 <br>
 
 <div class="row">
@@ -231,7 +246,9 @@ jQuery(document).ready(function($) {
             }, 500);
         });
     }
-    /* // currently not working:
+
+    /*
+    // currently not working:
     // recognizes scrolling near end of table and calls ajax
     // funtion to load more data:
     mytable.scroll(function () {
@@ -280,8 +297,7 @@ jQuery(document).ready(function($) {
         // we got the id string, now we can have fun with it:
 
         // Get molecule data and display the molecule:
-        $.post("strflog.cgi", {id: idstr, molecule: true}, function(result){
-            //alert(result)
+        $.post(url="strflog.cgi", data={id: idstr, molecule: true}, function(result){
             Jmol._document = null;
             Jmol.getTMApplet("jmol", Info);
             $("#jsmoldiv").html(jmol._code);
@@ -290,28 +306,24 @@ jQuery(document).ready(function($) {
         });
 
         // Get unit cell row:
-        $.post("strflog.cgi", {id: idstr, unitcell: true}, function(result){
-            //alert(result)
+        $.post(url="strflog.cgi", data={id: idstr, unitcell: true}, function(result){
             $("#cellrow").removeClass('invisible');
             $("#cellbtn").removeClass('invisible');
             document.getElementById("cellrow").innerHTML = result;
         });
 
         // display the big cif data table:
-        $.post("strflog.cgi", {id: idstr}, function(result){
-            //alert(result)
+        $.post(url="strflog.cgi", data={id: idstr}, function(result) {
             document.getElementById("residuals").innerHTML = result;
         });
 
         // Get residuals table 1:
-        $.post("strflog.cgi", {id: idstr, residuals1: true}, function(result){
-            //alert(result)
+        $.post(url="strflog.cgi", data={id: idstr, residuals1: true}, function(result) {
             document.getElementById("residualstable1").innerHTML = result;
         });
 
         // Get residuals table 2:
-        $.post("strflog.cgi", {id: idstr, residuals2: true}, function(result){
-            //alert(result)
+        $.post(url="strflog.cgi", data={id: idstr, residuals2: true}, function(result) {
             document.getElementById("residualstable2").innerHTML = result;
         });
     });
