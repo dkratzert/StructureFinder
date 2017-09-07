@@ -1,0 +1,328 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <title>StructureFinder</title>
+
+    <link rel="stylesheet" href="http://127.0.0.1/bootstrap3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://127.0.0.1/jasny-bootstrap/css/jasny-bootstrap.min.css">
+    <script src="http://127.0.0.1/jquery/jquery.min.js"></script>
+    <script src="http://127.0.0.1/bootstrap3/js/bootstrap-3.2.0.min.js"></script>
+    <!-- Not needed at the moment:
+    <script src="http://127.0.0.1/jasny-bootstrap/js/jasny-bootstrap-3.1.3.min.js"></script>
+    <script src="http://127.0.0.1/jquery/jquery.stickytableheaders.js"></script>
+    <script src="jquery/jquery.jscroll.js"></script>
+    -->
+    <script src="http://127.0.0.1/jsmol/JSmol_dk.nojq.lite.js"></script>
+
+
+    <!--
+    <script href="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script href="https://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
+   -->
+
+
+<style type="text/css">
+
+
+body {
+    /*background-color: #f0f0f0;*/
+    background-color: #ffffff;
+    /*font-size: 1.3em; */
+    font-size: 12px;
+    line-height: inherit;
+}
+
+#mystrtable {
+    /* Format the whole table */
+    height: 350px; /* Will be changed by Javascript below */
+    /*max-width: 100%;*/
+    overflow: auto;
+    outline: solid 1px;
+    box-shadow: 0 0 3pt 2pt #cfcfcf;
+}
+
+#mystrtable tr td {
+    line-height: 14px;
+    min-height: 14px;
+    height: 14px;
+}
+
+#resitable1 tr td {
+    line-height: 13px;
+    height: 13px;
+    overflow: auto;
+}
+
+#resitable2 tr td {
+    line-height: 13px;
+    height: 13px;
+    overflow: auto;
+}
+
+#jsmolcolumn {
+    width: 300px;
+    height: 1px;
+    border: thin hidden lightgray;
+    border-radius: 5px;
+}
+
+
+/*
+#myresidualtable {
+    max-width: 70%;
+    alignment: left;
+    overflow: auto;
+}*/
+/*
+#myresidualtable tr td {
+    line-height: 8px;
+    min-height: 8px;
+    height: 8px;
+    font-size: 1.2em;
+}
+*/
+
+</style>
+
+
+<script>
+    function copyToClipboard(element) {
+        var $temp = $("<input>");
+        $("body").append($temp);
+        $temp.val($(element).text()).select();
+        document.execCommand("copy");
+        $temp.remove();
+    }
+
+    // height of cif list to 35% of the screen height:
+    $(document).ready(function(){
+        //gets the window's height
+        var b = $(window).height();
+        var h = b * 0.35;
+        $("#mystrtable").css("height", h).removeClass('invisible');
+});
+</script>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+<h2>StructureFinder</h2>
+
+
+<form action="strflog.cgi" enctype="multipart/form-data" method="POST">
+    <div class="form-group row">
+        <div class="col-sm-6">
+            <div class="input-group input-group-sm">
+                <input type="text" class="form-control" placeholder="Search Unit Cell" id="cell" name="cell">
+                    <div class="input-group-btn">
+                    <button class="btn btn-default" type="submit">
+                        <i class="glyphicon glyphicon-search"></i>
+                    </button>
+                    </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="input-group input-group-sm">
+                <input type="text" class="form-control" placeholder="Search Text" id="text" name="text">
+                    <div class="input-group-btn">
+                    <button class="btn btn-default" type="submit">
+                        <i class="glyphicon glyphicon-search"></i>
+                    </button>
+                    </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<form action="strflog.cgi" enctype="multipart/form-data" method="POST">
+    <div id="mystrtable" class="invisible">
+    <table class="table table-striped table-bordered table-hover" id="testt">
+        <thead class="rowlink-skip">
+            <tr>
+                <th class="rowlink-skip"> filename </th>
+                <th class="rowlink-skip"> dataname </th>
+                <th class="rowlink-skip"> directory </th>
+            </tr>
+        </thead>
+        <tbody class="rowlink" id="mystrtable-body">
+            $logtablecolumns
+        </tbody>
+    </table>
+    </div>
+</form>
+
+<br>
+
+<div class="row">
+    <div class="col-md-12">
+        <h5><span class="invisible" id="cellrow" > </span>
+        <span class="btn btn-default glyphicon glyphicon-copy invisible" id="cellbtn"
+              data-toggle="tooltip" title="Copy cell to clipboard."
+              onclick="copyToClipboard('#hidden-cell')"></span></h5>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <span id="residualstable1"></span>
+    </div>
+
+    <div class="col-md-4">
+        <span id="residualstable2"></span>
+    </div>
+    <div class="col-md-4" id="jsmolcolumn" data-toggle="tooltip" title="Asymmetric Unit">
+        <span id="jsmoldiv"></span>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-sm-10">
+        <span id="residuals"></span>
+    </div>
+    <div class="col-sm-2">
+
+    </div>
+</div>
+
+<br>
+<br>
+<address>
+  <strong>StructureFinder by Daniel Kratzert</strong><br>
+  <a href="mailto:daniel.kratzert@ac.uni-freiburg.de">daniel.kratzert@ac.uni-freiburg.de</a>
+</address>
+
+<!-- The main container div: -->
+</div>
+
+
+
+<!-- Javascript functions start here: -->
+<script>
+
+
+jQuery(document).ready(function($) {
+
+    var mytable = $("#mystrtable");
+    var mytable_body = $("#mystrtable-body");
+
+    var canFireRequest = true;
+
+    function get_more_table_rows(lastid) {
+        //lastid: last id of table row
+        $.post("strflog.cgi", {last_row: lastid}, function (result) {
+            // result: table rows
+            //alert("foo");
+            //mytable.find('tbody:last').append(result);
+            // Wait a moment before the next ajax request:
+            if (canFireRequest === true) {
+                // Ajax request goes here
+                mytable.find('tbody:last').append(result);
+                //alert('foo');
+                canFireRequest = false;
+            }
+            setTimeout(function() {
+                canFireRequest = true;
+            }, 500);
+        });
+    }
+    /* // currently not working:
+    // recognizes scrolling near end of table and calls ajax
+    // funtion to load more data:
+    mytable.scroll(function () {
+        var curpos = mytable.scrollTop();
+        var tbheight = mytable_body.height();
+        //alert(curpos +"  "+ tbheight);
+        if (curpos + (0.1*tbheight) >= tbheight ) {
+            //alert(curpos +"  "+ tbheight);
+            //$('#mystrtable').find('tbody:last').append("<tr><td>foo</td><td>bar</td><td>bas</td></tr>"); // just for test
+            var lastid = mytable_body.find("tr").find('a').last().attr('strid');
+            //alert(lastid);
+            //get_more_table_rows(lastid);
+        }
+    });
+    */
+
+    // some options for JSmol:
+    var bgcolor = $(this.body).css("background-color");
+    var Info;
+    Info = {
+        width: 275,
+        height: 292,
+        color: bgcolor,
+        //color: "0xf0f0f0",
+        shadeAtoms: false,
+        addSelectionOptions: false,
+        use: "HTML5",
+        readyFunction: null,
+        defaultModel: "",
+        bondWidth: 2,
+        zoomScaling: 5,
+        pinchScaling: 5.0,
+        mouseDragFactor: 0.9,
+        touchDragFactor: 0.9,
+        multipleBondSpacing: 0,
+        spinRateX: -0.08,
+        spinRateY: 0.05,
+        spinFPS: 20,
+        spin: true,
+        debug: false,
+        j2sPath: ""
+    };
+
+    mytable_body.find('tr').click(function() {
+        var idstr = $(this).find("a").attr("strid");
+        // we got the id string, now we can have fun with it:
+
+        // Get molecule data and display the molecule:
+        $.post("strflog.cgi", {id: idstr, molecule: true}, function(result){
+            //alert(result)
+            Jmol._document = null;
+            Jmol.getTMApplet("jmol", Info);
+            $("#jsmoldiv").html(jmol._code);
+            jmol.__loadModel(result);  // jmol has to be lower-case!?!
+            $("#jsmolcolumn").css("height", 300).css("border-style", "solid");
+        });
+
+        // Get unit cell row:
+        $.post("strflog.cgi", {id: idstr, unitcell: true}, function(result){
+            //alert(result)
+            $("#cellrow").removeClass('invisible');
+            $("#cellbtn").removeClass('invisible');
+            document.getElementById("cellrow").innerHTML = result;
+        });
+
+        // display the big cif data table:
+        $.post("strflog.cgi", {id: idstr}, function(result){
+            //alert(result)
+            document.getElementById("residuals").innerHTML = result;
+        });
+
+        // Get residuals table 1:
+        $.post("strflog.cgi", {id: idstr, residuals1: true}, function(result){
+            //alert(result)
+            document.getElementById("residualstable1").innerHTML = result;
+        });
+
+        // Get residuals table 2:
+        $.post("strflog.cgi", {id: idstr, residuals2: true}, function(result){
+            //alert(result)
+            document.getElementById("residualstable2").innerHTML = result;
+        });
+    });
+
+
+});
+
+
+</script>
+
+
+
+</body>
+</html>

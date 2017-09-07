@@ -3,15 +3,14 @@ MOl V3000 format
 """
 import os
 
-import searcher.database_handler
 from searcher import misc, elements
-
+from searcher.database_handler import StructureTable
 
 class MolFile():
     """
     This mol file writer is only to use the file with JSmol, not to implement the standard exactly!
     """
-    def __init__(self, id: str, db: searcher.database_handler.StructureTable, cell: tuple):
+    def __init__(self, id: str, db: StructureTable, cell: tuple):
         self.db = db
         self.atoms = self.db.get_atoms_table(id, cell, cartesian=True)
         self.bonds = self.get_conntable_from_atoms()

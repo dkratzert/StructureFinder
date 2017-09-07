@@ -373,22 +373,22 @@ class StructureTable():
         else:
             return False
 
-    def get_all_structure_names(self, ids: list = None) -> list:
+    def get_all_structure_names(self, ids: list=None) -> list:
         """
         returns all fragment names in the database, sorted by name
         :returns [id, meas, path, filename, data]
         """
         if ids:
-            if len(ids) > 1:
+            if len(ids) > 1:  # a collection of ids
                 ids = tuple(ids)
                 req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
                          Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
-            else:
+            else:  # only one id
                 req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
                             Structure.dataname FROM Structure WHERE Structure.Id == ?'''
                 rows = [list(i) for i in self.database.db_request(req, ids[0])]
                 return rows
-        else:
+        else:  # just all
             req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
                                      Structure.dataname FROM Structure'''
         try:
@@ -444,6 +444,8 @@ class StructureTable():
         req = '''SELECT Id FROM ? WHERE ?.Id = ?'''
         if self.database.db_request(req, (table, table, Id)):
             return True
+        else:
+            return False
 
     def fill_structures_table(self, path, filename, structure_id, measurement_id, dataname):
         """
@@ -780,7 +782,7 @@ class StructureTable():
             ids = self.database.db_request(req, text, text, text, text)
         except (TypeError, sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
             print('DB request error.', e)
-            return False
+            return tuple([])
         return ids
 
     def find_by_elements(self, elements: list, anyresult: bool = False) -> list:

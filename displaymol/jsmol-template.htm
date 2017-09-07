@@ -2,7 +2,8 @@
 <html>
 <head>
 <meta charset="utf-8">
-<script type="text/javascript" src="JSmol.full.lite.js"></script>
+<script src="jquery.min.js"></script>
+<script src="JSmol_dk.nojq.lite.js"></script>
 
 <!-- 
 A template to display molecules with JSmol Lite.
@@ -16,36 +17,30 @@ $MyMol
 
 <script type="text/javascript"> 
 
-var Info;
-
-;(function() {
-
-
-Info = {
-	width: 200,
-	height: 250,
-	color: "0xFFFFFF",
-    shadeAtoms: false,
-	addSelectionOptions: false,
-	use: "HTML5",
-	readyFunction: null,
-	defaultModel: "",
-    bondWidth: 2,
-    zoomScaling: 8,
-    pinchScaling: 6.0,
-    mouseDragFactor: 0.5,
-    touchDragFactor: 0.15,
-    multipleBondSpacing: 0,
-    spinRateX: -0.08,
-    spinRateY: 0.05,
-    spinFPS: 20,
-    spin:true,
-    debug: false
-}
-
-})();
 
 $(window).ready(function() {
+  var Info;
+  Info = {
+      width: 200,
+      height: 250,
+      color: "0xFFFFFF",
+      shadeAtoms: false,
+      addSelectionOptions: false,
+      use: "HTML5",
+      readyFunction: null,
+      defaultModel: "",
+      bondWidth: 2,
+      zoomScaling: 8,
+      pinchScaling: 6.0,
+      mouseDragFactor: 0.5,
+      touchDragFactor: 0.15,
+      multipleBondSpacing: 0,
+      spinRateX: -0.08,
+      spinRateY: 0.05,
+      spinFPS: 20,
+      spin: true,
+      debug: false
+  };
   Jmol._document = null;
   Jmol.getTMApplet("jmol", Info);
   $("#apphere").html(jmol._code);

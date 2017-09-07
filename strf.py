@@ -575,7 +575,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
                     idlist.extend(self.structures.find_by_volume(volume, threshold))
             else:
                 idlist = self.structures.find_by_volume(volume, threshold)
-                idlist = self.structures.find_by_volume(volume, threshold)
         except (ValueError, AttributeError):
             if not self.full_list:
                 self.ui.cifList_treeWidget.clear()
