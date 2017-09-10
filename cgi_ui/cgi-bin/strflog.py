@@ -22,6 +22,12 @@ cgitb.enable()
 
 from searcher.database_handler import StructureTable
 
+"""
+TODO:
+- http://w2ui.com/web/docs/1.5/grid
+- Implement get_json_table() like method for w2ui.
+"""
+
 
 def application():
     """
