@@ -6,7 +6,7 @@
 
     <link rel="stylesheet" href="http://127.0.0.1/w2ui/w2ui-1.4.min.css">
     <link rel="stylesheet" href="http://127.0.0.1/bootstrap3/css/bootstrap.min.css">
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="http://127.0.0.1/jquery/jquery.min.js"></script>
     <script src="http://127.0.0.1/bootstrap3/js/bootstrap-3.2.0.min.js"></script>
     <script src="http://127.0.0.1/jsmol/JSmol_dk.nojq.lite.js"></script>
     <script src="http://127.0.0.1/w2ui/w2ui-1.4.min.js"></script>
@@ -57,6 +57,7 @@ body {
         var b = $(window).height();
         var h = b * 0.35;
         $("#mygrid").css("height", h);
+
 
 });
 
@@ -171,7 +172,9 @@ $('#mygrid').w2grid({
         { field: 'path', caption: 'directory', type: 'text' }
     ],
     sortData: [{ field: 'dataname', direction: 'ASC' }]
+
 });
+
 
 
     // some options for JSmol:
@@ -200,10 +203,10 @@ $('#mygrid').w2grid({
         debug: false,
         j2sPath: ""
     };
-    /*
-   // var mytable_body = $('#grid');
-    mytable_body.find('tr').click(function() {
-        var idstr = $(this).find("a").attr("strid");
+
+w2ui.mygrid.on('click', function(event) {
+
+        var idstr = w2ui.mygrid.getSelection();
         // we got the id string, now we can have fun with it:
 
         // Get molecule data and display the molecule:
@@ -237,7 +240,7 @@ $('#mygrid').w2grid({
             document.getElementById("residualstable2").innerHTML = result;
         });
     });
-*/
+
 });
 
 
