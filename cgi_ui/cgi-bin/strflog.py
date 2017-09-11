@@ -1,5 +1,6 @@
-#!C:\tools\Python-3.6.2_64\pythonw.exe
 #!/usr/local/bin/python3.6
+#!C:\tools\Python-3.6.2_64\pythonw.exe
+
 
 import cgi
 import pathlib
@@ -38,7 +39,7 @@ def application():
     """
     ids = []
     print("Content-Type: text/html; charset=utf-8\n")
-    p = pathlib.Path('test.log')
+    #p = pathlib.Path('test.log')
     form = cgi.FieldStorage()
     cell = form.getvalue("cell")
     text = form.getfirst("text")
@@ -48,21 +49,19 @@ def application():
     resid2 = form.getvalue("residuals2")
     unitcell = form.getvalue("unitcell")
     records = form.getfirst('cmd')
-    #dbfilename = "./structuredb.sqlite"
-    dbfilename = "./structures_22.08.2017.sqlite"
+    dbfilename = "./structuredb.sqlite"
+    #dbfilename = "./structures_22.08.2017.sqlite"
     structures = database_handler.StructureTable(dbfilename)
     cif_dic = None
-    #p = pathlib.Path('test.log')
-    #p.write_text('foobar')
     if strid and (resid1 or resid2):
         request = """select * from residuals where StructureId = {}""".format(strid)
         cif_dic = structures.get_row_as_dict(request)
     if cell:
         ids = find_cell(structures, cell)
-        html_txt = process_data(structures, ids)#.decode('utf-8', 'ignore')
+        # TODO: have to return JSON here
     elif text:
         ids = search_text(structures, text)
-        html_txt = process_data(structures, ids)#.decode('utf-8', 'ignore')
+        # TODO: have to return JSON here
     elif strid and mol:
         cell_list = structures.get_cell_by_id(strid)[:6]
         m = mol_file_writer.MolFile(strid, structures, cell_list)
@@ -81,12 +80,7 @@ def application():
         print(get_all_cif_val_table(structures, strid))
         return
     if form.getfirst('cmd') == 'get-records':
-        j = json.dumps({"records": structures.get_all_structures_as_dict(),
-                        "total": structures.database.get_lastrowid()}, indent=2)
-        print(j)
-        p.write_text(j)
-        #p.write_text(records)
-        #print(j)
+        print(get_structures_json(structures))
         return
     else:  # regular database list:
         #j = json.dumps(structures.get_all_structures_as_dict())
@@ -100,7 +94,8 @@ def get_structures_json(structures: StructureTable) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
-    return structures.get_all_structures_as_dict()
+    return json.dumps({"records": structures.get_all_structures_as_dict(),
+                        "total": structures.database.get_lastrowid()}, indent=2)
 
 
 def get_cell_parameters(structures: StructureTable, strid: str) -> str:

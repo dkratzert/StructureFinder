@@ -151,30 +151,32 @@ body {
 
 jQuery(document).ready(function($) {
 
-$('#mygrid').w2grid({
-    name: 'mygrid',
-    header: 'StructureFinder',
-    url: 'http://127.0.0.1/cgi-bin/strflog.cgi',
-    method: 'GET',
-    show: {
-        toolbar: false,
-        footer: true
-    },
-    columns: [
-        { field: 'recid', caption: 'ID', size: '50px', sortable: true, attr: 'align=center' },
-        { field: 'filename', caption: 'filename', size: '30%', sortable: true, resizable: true },
-        { field: 'dataname', caption: 'dataname', size: '20%', sortable: true, resizable: true },
-        { field: 'path', caption: 'directory', size: '50%', sortable: true, resizable: true }
-    ],
-    searches: [
-        { field: 'filename', caption: 'filename', type: 'text' },
-        { field: 'dataname', caption: 'dataname', type: 'text' },
-        { field: 'path', caption: 'directory', type: 'text' }
-    ],
-    sortData: [{ field: 'dataname', direction: 'ASC' }]
-
-});
-
+    $('#mygrid').w2grid({
+        name: 'mygrid',
+        header: 'StructureFinder',
+        url: 'http://127.0.0.1/cgi-bin/strflog.cgi',
+        method: 'GET',
+        show: {
+            toolbar: true,
+            footer: true
+        },
+        columns: [
+            {field: 'recid', caption: 'ID', size: '50px', sortable: true, attr: 'align=center'},
+            {field: 'filename', caption: 'filename', size: '30%', sortable: true, resizable: true},
+            {field: 'dataname', caption: 'dataname', size: '20%', sortable: true, resizable: true},
+            {field: 'path', caption: 'directory', size: '50%', sortable: true, resizable: true}
+        ],
+        searches: [
+            {field: 'filename', caption: 'filename', type: 'text'},
+            {field: 'dataname', caption: 'dataname', type: 'text'},
+            {field: 'path', caption: 'directory', type: 'text'}
+        ],
+        sortData: [{field: 'dataname', direction: 'ASC'}],
+        onSelect:function(event) {
+            myfunc(event.recid);
+            //console.log(record);
+        }
+    });
 
 
     // some options for JSmol:
@@ -204,45 +206,42 @@ $('#mygrid').w2grid({
         j2sPath: ""
     };
 
-w2ui.mygrid.on('click', function(event) {
-
-        var idstr = w2ui.mygrid.getSelection();
-        // we got the id string, now we can have fun with it:
+    function myfunc(idstr) {
 
         // Get molecule data and display the molecule:
-        $.post(url="strflog.cgi", data={id: idstr, molecule: true}, function(result){
+        $.post(url = "strflog.cgi", data = {id: idstr, molecule: true}, function (result) {
             Jmol._document = null;
             Jmol.getTMApplet("jmol", Info);
             $("#jsmoldiv").html(jmol._code);
-            jmol.__loadModel(result);  // jmol has to be lower-case!?!
-            $("#mygrid").css("height", 300);
+            jmol.__loadModel(result);
+            $("#jsmolcolumn").css("border-style", "solid").css("height", 300);
         });
 
         // Get unit cell row:
-        $.post(url="strflog.cgi", data={id: idstr, unitcell: true}, function(result){
+        $.post(url = "strflog.cgi", data = {id: idstr, unitcell: true}, function (result) {
             $("#cellrow").removeClass('invisible');
             $("#cellbtn").removeClass('invisible');
             document.getElementById("cellrow").innerHTML = result;
         });
 
         // display the big cif data table:
-        $.post(url="strflog.cgi", data={id: idstr}, function(result) {
+        $.post(url = "strflog.cgi", data = {id: idstr}, function (result) {
             document.getElementById("residuals").innerHTML = result;
         });
 
         // Get residuals table 1:
-        $.post(url="strflog.cgi", data={id: idstr, residuals1: true}, function(result) {
+        $.post(url = "strflog.cgi", data = {id: idstr, residuals1: true}, function (result) {
             document.getElementById("residualstable1").innerHTML = result;
         });
 
         // Get residuals table 2:
-        $.post(url="strflog.cgi", data={id: idstr, residuals2: true}, function(result) {
+        $.post(url = "strflog.cgi", data = {id: idstr, residuals2: true}, function (result) {
             document.getElementById("residualstable2").innerHTML = result;
         });
-    });
+
+    }
 
 });
-
 
 </script>
 
