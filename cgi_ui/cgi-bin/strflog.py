@@ -58,7 +58,8 @@ def application():
         cif_dic = structures.get_row_as_dict(request)
     if cell:
         ids = find_cell(structures, cell)
-        # TODO: have to return JSON here
+        print(get_structures_json(structures, ids))
+        return
     elif text:
         ids = search_text(structures, text)
         # TODO: have to return JSON here
@@ -90,12 +91,12 @@ def application():
     print(html_txt)
 
 
-def get_structures_json(structures: StructureTable) -> dict:
+def get_structures_json(structures: StructureTable, ids: list=None) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
-    return json.dumps({"records": structures.get_all_structures_as_dict(),
-                        "total": structures.database.get_lastrowid()}, indent=2)
+    dic = structures.get_all_structures_as_dict(ids)
+    return json.dumps({"records": dic, "total": len(dic), "status": "success"}, indent=2)
 
 
 def get_cell_parameters(structures: StructureTable, strid: str) -> str:

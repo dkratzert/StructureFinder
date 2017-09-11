@@ -383,11 +383,15 @@ class StructureTable():
         >>> dbfilename = "../structuredb.sqlite"
         >>> structures = StructureTable(dbfilename)
         >>> structures.get_all_structures_as_dict()
-
         """
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
-        req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
+        if ids:
+            ids = tuple(ids)
+            req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
+                                     Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
+        else:
+            req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
                                              Structure.dataname FROM Structure'''
         rows = self.database.db_request(req, many=False)
         self.database.cur.close()
