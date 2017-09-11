@@ -288,7 +288,10 @@ class DatabaseRequest():
     def dict_factory(self, cursor, row):
         d = {}
         for idx, col in enumerate(cursor.description):
-            d[col[0]] = row[idx]
+            if isinstance(row[idx], bytes):
+                d[col[0]] = row[idx].decode('utf-8', 'ignore')
+            else:
+                d[col[0]] = row[idx]
         return d
 
     def __del__(self):
@@ -372,6 +375,26 @@ class StructureTable():
             return iter(all_structures)
         else:
             return False
+
+    def get_all_structures_as_dict(self, ids: list=None) -> dict:
+        """
+        Returns the list of structures as dictionary.
+
+        >>> dbfilename = "../structuredb.sqlite"
+        >>> structures = StructureTable(dbfilename)
+        >>> structures.get_all_structures_as_dict()
+
+        """
+        self.database.con.row_factory = self.database.dict_factory
+        self.database.cur = self.database.con.cursor()
+        req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
+                                             Structure.dataname FROM Structure'''
+        rows = self.database.db_request(req, many=False)
+        self.database.cur.close()
+        # setting row_factory back to regular touple base requests:
+        self.database.con.row_factory = None
+        self.database.cur = self.database.con.cursor()
+        return rows
 
     def get_all_structure_names(self, ids: list=None) -> list:
         """

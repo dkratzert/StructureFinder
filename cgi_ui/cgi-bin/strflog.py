@@ -3,8 +3,7 @@
 
 import cgi
 import pathlib
-from string import Template
-
+import json
 import sys
 
 import math
@@ -39,6 +38,7 @@ def application():
     """
     ids = []
     print("Content-Type: text/html; charset=utf-8\n")
+    p = pathlib.Path('test.log')
     form = cgi.FieldStorage()
     cell = form.getvalue("cell")
     text = form.getfirst("text")
@@ -47,20 +47,22 @@ def application():
     resid1 = form.getvalue("residuals1")
     resid2 = form.getvalue("residuals2")
     unitcell = form.getvalue("unitcell")
-    last_row = form.getvalue("last_row")
-    dbfilename = "./structuredb.sqlite"
-    # dbfilename = "./structures_22.08.2017.sqlite"
+    records = form.getfirst('cmd')
+    #dbfilename = "./structuredb.sqlite"
+    dbfilename = "./structures_22.08.2017.sqlite"
     structures = database_handler.StructureTable(dbfilename)
     cif_dic = None
+    #p = pathlib.Path('test.log')
+    #p.write_text('foobar')
     if strid and (resid1 or resid2):
         request = """select * from residuals where StructureId = {}""".format(strid)
         cif_dic = structures.get_row_as_dict(request)
     if cell:
         ids = find_cell(structures, cell)
-        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
+        html_txt = process_data(structures, ids)#.decode('utf-8', 'ignore')
     elif text:
         ids = search_text(structures, text)
-        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
+        html_txt = process_data(structures, ids)#.decode('utf-8', 'ignore')
     elif strid and mol:
         cell_list = structures.get_cell_by_id(strid)[:6]
         m = mol_file_writer.MolFile(strid, structures, cell_list)
@@ -78,34 +80,27 @@ def application():
     elif strid:
         print(get_all_cif_val_table(structures, strid))
         return
-    elif last_row:
-        html_txt = get_more_table_rows(structures, lastid=last_row)
+    if form.getfirst('cmd') == 'get-records':
+        j = json.dumps({"records": structures.get_all_structures_as_dict(),
+                        "total": structures.database.get_lastrowid()}, indent=2)
+        print(j)
+        p.write_text(j)
+        #p.write_text(records)
+        #print(j)
+        return
     else:  # regular database list:
-        #ids = range(1, 200)
+        #j = json.dumps(structures.get_all_structures_as_dict())
+        #p.write_text(j)
         ids = []
-        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
+        html_txt = process_data(structures, ids)
     print(html_txt)
 
 
-def get_more_table_rows(structures: StructureTable, lastid: (str, int)) -> str:
+def get_structures_json(structures: StructureTable) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
-    lastid = int(lastid)
-    last_is_there = structures.has_index(lastid+200)
-    if last_is_there:
-        ids = range(lastid+1, lastid+201)
-        html_txt = process_data(structures, ids, onlyrows=True).decode('utf-8', 'ignore')
-    else:
-        lastrow = structures.database.get_lastrowid()
-        if lastrow > lastid+1:
-            ids = range(lastid+1, lastrow)
-            print('####1')
-        else:
-            print('####2')
-            ids = [lastid+1]
-        html_txt = process_data(structures, ids, onlyrows=True).decode('utf-8', 'ignore')
-    return html_txt
+    return structures.get_all_structures_as_dict()
 
 
 def get_cell_parameters(structures: StructureTable, strid: str) -> str:
@@ -323,7 +318,7 @@ def search_text(structures: StructureTable, search_string: str) -> list:
     return idlist
 
 
-def process_data(structures: StructureTable, idlist: (list, range) = None, onlyrows = False):
+def process_data(structures: StructureTable, idlist: (list, range) = None):
     """
     Structure.Id,           0
     Structure.measurement,  1
@@ -334,29 +329,13 @@ def process_data(structures: StructureTable, idlist: (list, range) = None, onlyr
     """
     if not structures:
         return []
-    table_string = ""
-    for i in structures.get_all_structure_names(idlist):
-        table_string += '<tr> ' \
-                        '   <td> <a strid="{3}">{0} </a></td> ' \
-                        '   <td> {1} </a></td> ' \
-                        '   <td> {2} </a></td> ' \
-                        '</tr> \n' \
-            .format(i[3].decode('utf-8', errors='ignore'),
-                    i[4].decode('utf-8', errors='ignore'),
-                    i[2].decode('utf-8', errors='ignore'),
-                    i[0]
-                    )
-        # i[0] -> id
-    if onlyrows:
-        return table_string.encode('ascii', 'ignore')
     try:
         p = pathlib.Path("cgi_ui/strflog_Template.htm")
-        t = Template(p.read_bytes().decode('utf-8', 'ignore'))
+        t = p.read_bytes().decode('utf-8', 'ignore')
     except FileNotFoundError:
         p = pathlib.Path("./strflog_Template.htm")
-        t = Template(p.read_bytes().decode('utf-8', 'ignore'))
-    replacedict = {"logtablecolumns": table_string, "CSearch": "Search", "TSearch": "Search"}
-    return str(t.safe_substitute(replacedict)).encode('ascii', 'ignore')
+        t = p.read_bytes().decode('utf-8', 'ignore')
+    return t
 
 
 if __name__ == "__main__":
