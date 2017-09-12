@@ -819,7 +819,7 @@ class StructureTable():
         >>> db = StructureTable('../structuredb.sqlite')
         >>> db.database.initialize_db()
         >>> db.find_by_elements(['Al', 'ca'])
-        {11, 3, 6, 15}
+        [11, 3, 6, 15]
         """
         import re
         structures = []
@@ -841,11 +841,11 @@ class StructureTable():
             matches.append(res)
         if matches:
             if anyresult:
-                return set(misc.flatten(matches))
+                return list(set(misc.flatten(matches)))
             else:
-                return set(matches[0]).intersection(*matches)
+                return list(set(matches[0]).intersection(*matches))
         else:
-            return set()
+            return []
 
     def find_biggest_cell(self):
         """
