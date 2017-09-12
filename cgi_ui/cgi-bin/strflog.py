@@ -1,5 +1,5 @@
-#!/usr/local/bin/python3.6
 #!C:\tools\Python-3.6.2_64\pythonw.exe
+#!/usr/local/bin/python3.6
 
 
 import cgi
@@ -49,8 +49,8 @@ def application():
     resid2 = form.getvalue("residuals2")
     unitcell = form.getvalue("unitcell")
     records = form.getfirst('cmd')
-    dbfilename = "./structuredb.sqlite"
-    #dbfilename = "./structures_22.08.2017.sqlite"
+    #dbfilename = "./structuredb.sqlite"
+    dbfilename = "./structures_22.08.2017.sqlite"
     structures = database_handler.StructureTable(dbfilename)
     cif_dic = None
     if strid and (resid1 or resid2):
@@ -62,7 +62,8 @@ def application():
         return
     elif text:
         ids = search_text(structures, text)
-        # TODO: have to return JSON here
+        print(get_structures_json(structures, ids))
+        return
     elif strid and mol:
         cell_list = structures.get_cell_by_id(strid)[:6]
         m = mol_file_writer.MolFile(strid, structures, cell_list)
@@ -83,9 +84,7 @@ def application():
     if form.getfirst('cmd') == 'get-records':
         print(get_structures_json(structures))
         return
-    else:  # regular database list:
-        #j = json.dumps(structures.get_all_structures_as_dict())
-        #p.write_text(j)
+    else:
         ids = []
         html_txt = process_data(structures, ids)
     print(html_txt)
@@ -96,6 +95,7 @@ def get_structures_json(structures: StructureTable, ids: list=None) -> dict:
     Returns the next package of table rows for continuos scrolling.
     """
     dic = structures.get_all_structures_as_dict(ids)
+
     return json.dumps({"records": dic, "total": len(dic), "status": "success"}, indent=2)
 
 

@@ -58,7 +58,6 @@ body {
         var h = b * 0.35;
         $("#mygrid").css("height", h);
 
-
 });
 
 </script>
@@ -73,13 +72,13 @@ body {
 <h2>StructureFinder</h2>
 
 
-<form action="http://127.0.0.1/cgi-bin/strflog.cgi" enctype="multipart/form-data" method="POST">
+<div class="form-horizontal" id="foo">
     <div class="form-group row">
         <div class="col-sm-6">
             <div class="input-group input-group-sm">
-                <input type="text" class="form-control" placeholder="Search Unit Cell" id="cell" name="cell">
+                <input type="text" class="form-control" placeholder="Search Unit Cell" id="cellsrch" name="cell">
                     <div class="input-group-btn">
-                    <button class="btn btn-default" type="submit">
+                    <button class="btn btn-default" type="submit" id="cellsrchbutton">
                         <i class="glyphicon glyphicon-search"></i>
                     </button>
                     </div>
@@ -87,16 +86,16 @@ body {
         </div>
         <div class="col-sm-6">
             <div class="input-group input-group-sm">
-                <input type="text" class="form-control" placeholder="Search Text" id="text" name="text">
+                <input type="text" class="form-control" placeholder="Search Text" id="textsrch" name="text">
                     <div class="input-group-btn">
-                    <button class="btn btn-default" type="submit">
+                    <button class="btn btn-default" type="submit" id="textsrchbutton">
                         <i class="glyphicon glyphicon-search"></i>
                     </button>
                     </div>
             </div>
         </div>
     </div>
-</form>
+</div>
 
 <div id="mygrid" style="height: 450px"></div>
 
@@ -104,7 +103,7 @@ body {
 <div class="row">
     <div class="col-md-12">
         <h5><span class="invisible" id="cellrow" > </span>
-        <span class="btn btn-default glyphicon glyphicon-copy invisible" id="cellbtn"
+        <span class="btn btn-default glyphicon glyphicon-copy invisible" id="cell_copy_btn"
               data-toggle="tooltip" title="Copy cell to clipboard."
               onclick="copyToClipboard('#hidden-cell')"></span></h5>
     </div>
@@ -151,29 +150,54 @@ body {
 
 jQuery(document).ready(function($) {
 
+    $("#textsrchbutton").click(function(event) {
+        var txt = document.getElementById("textsrch").value;
+        txtsearch(txt);
+    });
+     $('#textsrch').keypress(function(e) {
+        if (e.which === 13) {  // enter key
+            var txt = document.getElementById("textsrch").value;
+            txtsearch(txt);
+            //console.log(cell);
+        }
+    });
+
+    $("#cellsrchbutton").click(function(event) {
+        var cell = document.getElementById("cellsrch").value;
+        cellsearch(cell);
+    });
+    $('#cellsrch').keypress(function(e) {
+        if (e.which === 13) {  // enter key
+            var cell = document.getElementById("cellsrch").value;
+            cellsearch(cell);
+            //console.log(cell);
+        }
+    });
+
+
     $('#mygrid').w2grid({
         name: 'mygrid',
         header: 'StructureFinder',
         url: 'http://127.0.0.1/cgi-bin/strflog.cgi',
         method: 'GET',
         show: {
-            toolbar: true,
-            footer: true
+            toolbar: false,
+            footer: true,
         },
         columns: [
-            {field: 'recid', caption: 'ID', size: '50px', sortable: true, attr: 'align=center'},
-            {field: 'filename', caption: 'filename', size: '30%', sortable: true, resizable: true},
-            {field: 'dataname', caption: 'dataname', size: '20%', sortable: true, resizable: true},
-            {field: 'path', caption: 'directory', size: '50%', sortable: true, resizable: true}
+            {field: 'recid', caption: 'ID', size: '45px', sortable: true, attr: 'align=center'},
+            {field: 'filename', caption: 'filename', size: '20%', sortable: true, resizable: true},
+            {field: 'dataname', caption: 'dataname', size: '15%', sortable: true, resizable: true},
+            {field: 'path', caption: 'directory', size: '65%', sortable: true, resizable: true}
         ],
         searches: [
             {field: 'filename', caption: 'filename', type: 'text'},
             {field: 'dataname', caption: 'dataname', type: 'text'},
             {field: 'path', caption: 'directory', type: 'text'}
         ],
-        sortData: [{field: 'dataname', direction: 'ASC'}],
+        //sortData: [{field: 'dataname', direction: 'ASC'}],
         onSelect:function(event) {
-            myfunc(event.recid);
+            showprop(event.recid);
             //console.log(record);
         }
     });
@@ -206,8 +230,24 @@ jQuery(document).ready(function($) {
         j2sPath: ""
     };
 
-    function myfunc(idstr) {
 
+    function cellsearch(cell) {
+        w2ui['mygrid'].request('get-records', params={cell: cell}, url=w2ui['mygrid'].url,
+            function(result) {
+                console.log(result);
+            }
+        );
+    }
+
+    function txtsearch(text) {
+        w2ui['mygrid'].request('get-records', params={text: text}, url=w2ui['mygrid'].url,
+            function(result) {
+                console.log(result);
+            }
+        );
+    }
+
+    function showprop(idstr) {
         // Get molecule data and display the molecule:
         $.post(url = "strflog.cgi", data = {id: idstr, molecule: true}, function (result) {
             Jmol._document = null;
@@ -220,7 +260,7 @@ jQuery(document).ready(function($) {
         // Get unit cell row:
         $.post(url = "strflog.cgi", data = {id: idstr, unitcell: true}, function (result) {
             $("#cellrow").removeClass('invisible');
-            $("#cellbtn").removeClass('invisible');
+            $("#cell_copy_btn").removeClass('invisible');
             document.getElementById("cellrow").innerHTML = result;
         });
 
@@ -238,9 +278,7 @@ jQuery(document).ready(function($) {
         $.post(url = "strflog.cgi", data = {id: idstr, residuals2: true}, function (result) {
             document.getElementById("residualstable2").innerHTML = result;
         });
-
     }
-
 });
 
 </script>

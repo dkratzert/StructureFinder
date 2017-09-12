@@ -388,7 +388,7 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         if ids:
             ids = tuple(ids)
-            req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
+            req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
                                      Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
         else:
             req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
