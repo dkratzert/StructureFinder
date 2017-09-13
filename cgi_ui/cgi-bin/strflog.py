@@ -21,8 +21,8 @@ TODO:
 - Add options like "more results".
 """
 
-dbfilename = "./structuredb.sqlite"
-#dbfilename = "./structures_22.08.2017.sqlite"
+#dbfilename = "./structuredb.sqlite"
+dbfilename = "./structures_22.08.2017.sqlite"
 
 def application(dbfilename):
     """
@@ -206,6 +206,7 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     Returns a html table with the residuals values of a structure.
     """
     # starting table header (the div is for css):
+    # style="white-space: pre": preserves white space
     table_string = """<h4>All CIF values</h4>
                         <div id="myresidualtable">
                         <table class="table table-striped table-bordered" style="white-space: pre">

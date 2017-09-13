@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <title>StructureFinder</title>
 
@@ -109,7 +109,8 @@ $(document).ready(function(){
 </div>
 
 
-<button data-toggle="collapse" data-target="#options">Search options</button>
+<a class="btn btn-primary btn-xs" data-toggle="collapse" data-target="#options">Search options</a>
+
 <!-- The collapsible for search options: -->
 <div id="options" class="collapse">
     <div class="checkbox">
@@ -119,6 +120,66 @@ $(document).ready(function(){
         <label><input type="checkbox" id="supercells"> Find sub- and supercells.</label>
     </div>
 </div>
+
+<a class="btn btn-primary btn-xs" data-toggle="collapse" data-target="#adv-search">Advanced Search</a>
+
+<!-- The collapsible for search options: -->
+<div id="adv-search" class="collapse">
+    <table>
+        <thead>
+        <tr>
+            <th style="background-color: #96f8a1">Should contain</th>
+            <th style="background-color: #f7a2a3">Should not contain</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon" id="elements_in">Elements</span>
+                    <input type="text" class="form-control form-sm" placeholder="C H O ..." aria-describedby="basic-addon1">
+                </div>
+            </td>
+            <td>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon" id="text_in">Any Text</span>
+                    <input type="text" class="form-control form-sm" placeholder="" aria-describedby="basic-addon1">
+                </div>
+            </td>
+        </tr>
+        <!------------------------------------>
+        <tr>
+            <td>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon" id="elements_out">Elements</span>
+                    <input type="text" class="form-control form-sm" placeholder="C H O ..." aria-describedby="basic-addon1">
+                </div>
+            </td>
+            <td>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon" id="text_out">Any Text</span>
+                    <input type="text" class="form-control form-sm" placeholder="" aria-describedby="basic-addon1">
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div class="input-group input-group-md" style="width: 100%">
+                    <span class="input-group-addon" id="cell_adv">Uni cell</span>
+                    <input type="text" class="form-control  " placeholder="" aria-describedby="basic-addon1">
+                </div>
+            
+                <div class="input-group input-group-md" style="width: 100%">
+                    <span class="input-group-addon" id="text_adv">Any Text</span>
+                    <input type="text" class="form-control  " placeholder="" aria-describedby="basic-addon1">
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <a type="button" class="btn btn-success"> Search </a>
+</div>
+
 
 <div id="mygrid" style="height: 450px"></div>
 
