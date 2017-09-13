@@ -85,7 +85,7 @@ $(document).ready(function(){
 <h2>StructureFinder</h2>
 
 
-<div class="form-group row">
+<div class="form-group row" id="mainsearch">
     <div class="col-sm-6">
         <div class="input-group input-group-sm">
             <input type="text" class="form-control" placeholder="Search Unit Cell" id="cellsrch" name="cell">
@@ -111,7 +111,7 @@ $(document).ready(function(){
 
 
 
-<a class="btn btn-primary btn-xs" data-toggle="collapse" data-target="#adv-search">Advanced Search</a>
+<a class="btn btn-primary btn-xs" data-toggle="collapse" data-target="#adv-search" id="advsearch-button">Advanced Search</a>
 
 <!-- The collapsible for search options: -->
 <div id="adv-search" class="collapse">
@@ -230,6 +230,9 @@ $(document).ready(function(){
 <script>
 
 jQuery(document).ready(function($) {
+
+    //$("#advsearch-button").toggle()
+
     // Button clicked:
     $("#textsrchbutton").click(function(event) {
         var txt = document.getElementById("textsrch").value;
