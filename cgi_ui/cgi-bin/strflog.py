@@ -3,58 +3,58 @@
 
 import cgi
 import pathlib
-from string import Template
-
-import sys
-
+import json
 import math
 
-import displaymol
 from displaymol import mol_file_writer
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher import database_handler
-import html
-import cgitb
-
-# sys.stderr = sys.stdout
-cgitb.enable()
 
 from searcher.database_handler import StructureTable
+import cgitb
 
+cgitb.enable()
 
-def application():
+"""
+TODO:
+- Add options like "more results".
+"""
+
+dbfilename = "./structuredb.sqlite"
+#dbfilename = "./structures_22.08.2017.sqlite"
+
+def application(dbfilename):
     """
     The main application of the StructureFinder web interface.
-    <link rel="stylesheet" href="bootstrap3/css/bootstrap.min.css">
-    <link rel="stylesheet" href="jasny-bootstrap/css/jasny-bootstrap.min.css">
-    <script type="text/javascript" href="jquery/jquery.min.js"></script>
-    <script type="text/javascript" href="jasny-bootstrap/js/jasny-bootstrap.min.js"></script>
     """
     ids = []
     print("Content-Type: text/html; charset=utf-8\n")
+    #p = pathlib.Path('test.log')
     form = cgi.FieldStorage()
-    cell = form.getvalue("cell")
-    text = form.getfirst("text")
+    cell_search = form.getvalue("cell_search")
+    text_search = form.getfirst("text_search")
+    more_results = (form.getfirst("more") == "true")
+    sublattice = (form.getfirst("supercell") == "true")
     strid = form.getvalue("id")
     mol = form.getvalue("molecule")
     resid1 = form.getvalue("residuals1")
     resid2 = form.getvalue("residuals2")
     unitcell = form.getvalue("unitcell")
-    last_row = form.getvalue("last_row")
-    dbfilename = "./structuredb.sqlite"
-    # dbfilename = "./structures_22.08.2017.sqlite"
+    records = form.getfirst('cmd')
     structures = database_handler.StructureTable(dbfilename)
     cif_dic = None
     if strid and (resid1 or resid2):
         request = """select * from residuals where StructureId = {}""".format(strid)
         cif_dic = structures.get_row_as_dict(request)
-    if cell:
-        ids = find_cell(structures, cell)
-        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
-    elif text:
-        ids = search_text(structures, text)
-        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
+    if cell_search:
+        ids = find_cell(structures, cell_search, more_results=more_results, sublattice=sublattice)
+        print(get_structures_json(structures, ids))
+        return
+    elif text_search:
+        ids = search_text(structures, text_search)
+        print(get_structures_json(structures, ids))
+        return
     elif strid and mol:
         cell_list = structures.get_cell_by_id(strid)[:6]
         m = mol_file_writer.MolFile(strid, structures, cell_list)
@@ -72,34 +72,21 @@ def application():
     elif strid:
         print(get_all_cif_val_table(structures, strid))
         return
-    elif last_row:
-        html_txt = get_more_table_rows(structures, lastid=last_row)
-    else:  # regular database list:
-        #ids = range(1, 200)
+    if records == 'get-records':
+        print(get_structures_json(structures))
+        return
+    else:
         ids = []
-        html_txt = process_data(structures, ids).decode('utf-8', 'ignore')
+        html_txt = process_data(structures, ids)
     print(html_txt)
 
 
-def get_more_table_rows(structures: StructureTable, lastid: (str, int)) -> str:
+def get_structures_json(structures: StructureTable, ids: list=None) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
-    lastid = int(lastid)
-    last_is_there = structures.has_index(lastid+200)
-    if last_is_there:
-        ids = range(lastid+1, lastid+201)
-        html_txt = process_data(structures, ids, onlyrows=True).decode('utf-8', 'ignore')
-    else:
-        lastrow = structures.database.get_lastrowid()
-        if lastrow > lastid+1:
-            ids = range(lastid+1, lastrow)
-            print('####1')
-        else:
-            print('####2')
-            ids = [lastid+1]
-        html_txt = process_data(structures, ids, onlyrows=True).decode('utf-8', 'ignore')
-    return html_txt
+    dic = structures.get_all_structures_as_dict(ids)
+    return json.dumps({"total": len(dic), "records": dic, "status": "success"}, indent=2)
 
 
 def get_cell_parameters(structures: StructureTable, strid: str) -> str:
@@ -251,30 +238,35 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     return table_string
 
 
-def find_cell(structures: StructureTable, cellstr: str) -> list:
+def find_cell(structures: StructureTable, cellstr: str, sublattice=False, more_results=False) -> list:
     """
     Finds unit cells in db. Rsturns hits a a list of ids.
     """
     try:
         cell = [float(x) for x in cellstr.strip().split()]
     except (TypeError, ValueError) as e:
-        print(e)
+        #print(e)
         return []
     if len(cell) != 6:
-        print("No valid cell!")
         return []
-    # if self.ui.moreResultsCheckBox.isChecked() or \
-    #        self.ui.ad_moreResultscheckBox.isChecked():
-    threshold = 0.08
-    ltol = 0.09
-    atol = 1.8
-    # else:
-    #    threshold = 0.03
-    #    ltol = 0.001
-    #    atol = 1
-    # try:
+    if more_results:
+        threshold = 0.08
+        ltol = 0.09
+        atol = 1.8
+    else:
+        threshold = 0.03
+        ltol = 0.001
+        atol = 1
     volume = lattice.vol_unitcell(*cell)
-    idlist = structures.find_by_volume(volume, threshold)
+    if sublattice:
+        vol1 = volume * 0.5
+        vol2 = volume * 2
+        idlist = []
+        for v in (volume, vol1, vol2):
+            # First a list of structures where the volume is similar:
+            idlist.extend(structures.find_by_volume(volume, threshold))
+    else:
+        idlist = structures.find_by_volume(volume, threshold)
     idlist2 = []
     if idlist:
         lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
@@ -312,12 +304,13 @@ def search_text(structures: StructureTable, search_string: str) -> list:
         #  bad hack, should make this return ids like cell search
         idlist = [x[0] for x in structures.find_by_strings(search_string)]
     except AttributeError as e:
-        print("Error 1")
-        print(e)
+        pass
+        #print("Error 1")
+        #print(e)
     return idlist
 
 
-def process_data(structures: StructureTable, idlist: (list, range) = None, onlyrows = False):
+def process_data(structures: StructureTable, idlist: (list, range) = None):
     """
     Structure.Id,           0
     Structure.measurement,  1
@@ -328,33 +321,17 @@ def process_data(structures: StructureTable, idlist: (list, range) = None, onlyr
     """
     if not structures:
         return []
-    table_string = ""
-    for i in structures.get_all_structure_names(idlist):
-        table_string += '<tr> ' \
-                        '   <td> <a strid="{3}">{0} </a></td> ' \
-                        '   <td> {1} </a></td> ' \
-                        '   <td> {2} </a></td> ' \
-                        '</tr> \n' \
-            .format(i[3].decode('utf-8', errors='ignore'),
-                    i[4].decode('utf-8', errors='ignore'),
-                    i[2].decode('utf-8', errors='ignore'),
-                    i[0]
-                    )
-        # i[0] -> id
-    if onlyrows:
-        return table_string.encode('ascii', 'ignore')
     try:
         p = pathlib.Path("cgi_ui/strflog_Template.htm")
-        t = Template(p.read_bytes().decode('utf-8', 'ignore'))
+        t = p.read_bytes().decode('utf-8', 'ignore')
     except FileNotFoundError:
         p = pathlib.Path("./strflog_Template.htm")
-        t = Template(p.read_bytes().decode('utf-8', 'ignore'))
-    replacedict = {"logtablecolumns": table_string, "CSearch": "Search", "TSearch": "Search"}
-    return str(t.safe_substitute(replacedict)).encode('ascii', 'ignore')
+        t = p.read_bytes().decode('utf-8', 'ignore')
+    return t
 
 
 if __name__ == "__main__":
-    application()
+    application(dbfilename)
     """
     try:
         import wsgiref.simple_server
