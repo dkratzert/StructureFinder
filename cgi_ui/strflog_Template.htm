@@ -20,6 +20,10 @@ body {
     line-height: inherit;
 }
 
+.border-right {
+    border-right: 1px solid #bcbcbc;
+}
+
 #resitable1 tr td {
     line-height: 13px;
     height: 13px;
@@ -59,10 +63,12 @@ $(document).ready(function(){
     $("#mygrid").css("height", h);
 });
 
-
+// Not used at the moment:
+/*
 $(document).ready(function(){
     $('[data-toggle="cell_tooltip"]').tooltip();
 });
+*/
 
 
 
@@ -166,12 +172,13 @@ $(document).ready(function(){
 <script>
 
 jQuery(document).ready(function($) {
-
+    // Button clicked:
     $("#textsrchbutton").click(function(event) {
         var txt = document.getElementById("textsrch").value;
         txtsearch(txt);
     });
-     $('#textsrch').keypress(function(e) {
+    // Enter key pressed in search field:
+    $('#textsrch').keypress(function(e) {
         if (e.which === 13) {  // enter key
             var txt = document.getElementById("textsrch").value;
             txtsearch(txt);
@@ -191,7 +198,7 @@ jQuery(document).ready(function($) {
         }
     });
 
-
+    // The main structures table:
     $('#mygrid').w2grid({
         name: 'mygrid',
         header: 'StructureFinder',
@@ -202,10 +209,10 @@ jQuery(document).ready(function($) {
             footer: true
         },
         columns: [
-            {field: 'recid', caption: 'ID', size: '45px', sortable: true, attr: 'align=center'},
-            {field: 'filename', caption: 'filename', size: '20%', sortable: true, resizable: true},
-            {field: 'dataname', caption: 'dataname', size: '15%', sortable: true, resizable: true},
-            {field: 'path', caption: 'directory', size: '65%', sortable: true, resizable: true}
+            {field: 'recid',    caption: 'ID',        size: '45px', sortable: false, attr: 'align=center'},
+            {field: 'filename', caption: 'filename',  size: '20%',  sortable: false, resizable: true},
+            {field: 'dataname', caption: 'dataname',  size: '15%',  sortable: false, resizable: true},
+            {field: 'path',     caption: 'directory', size: '65%',  sortable: false, resizable: true}
         ],
         searches: [
             {field: 'filename', caption: 'filename', type: 'text'},
@@ -272,16 +279,17 @@ jQuery(document).ready(function($) {
 
 
     function cellsearch(cell) {
-        var more = $('#more_results').is(':checked');
+        var more_res = $('#more_results').is(':checked');
         var supercell = $('#supercells').is(':checked');
         cell = cell.replace(/\s+/g, ' ').trim();
         if (isValidCell(cell)) {
             //console.log('cell: '+"'"+cell+"'");
-            w2ui['mygrid'].request('get-records', params = {cell_search: cell, more: more, supercell: supercell},
+            w2ui['mygrid'].request('get-records', params = {cell_search: cell, more: more_res, supercell: supercell},
                 url = w2ui['mygrid'].url,
                 function (result) {
                     //console.log('cell:');
                     //console.log(result);
+                    console.log(more_res);
                 }
             );
         }

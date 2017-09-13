@@ -34,8 +34,8 @@ def application(dbfilename):
     form = cgi.FieldStorage()
     cell_search = form.getvalue("cell_search")
     text_search = form.getfirst("text_search")
-    more_results = (form.getvalue("more") == "true")
-    sublattice = (form.getvalue("supercell") == "true")
+    more_results = (form.getfirst("more") == "true")
+    sublattice = (form.getfirst("supercell") == "true")
     strid = form.getvalue("id")
     mol = form.getvalue("molecule")
     resid1 = form.getvalue("residuals1")
@@ -48,7 +48,7 @@ def application(dbfilename):
         request = """select * from residuals where StructureId = {}""".format(strid)
         cif_dic = structures.get_row_as_dict(request)
     if cell_search:
-        ids = find_cell(structures, cell_search, more_results, sublattice)
+        ids = find_cell(structures, cell_search, more_results=more_results, sublattice=sublattice)
         print(get_structures_json(structures, ids))
         return
     elif text_search:
