@@ -18,7 +18,7 @@ cgitb.enable()
 
 """
 TODO:
-- Add options like "more results".
+- Hide regular search when doing advanced.
 """
 
 #dbfilename = "./structuredb.sqlite"

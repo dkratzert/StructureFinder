@@ -109,40 +109,38 @@ $(document).ready(function(){
 </div>
 
 
-<a class="btn btn-primary btn-xs" data-toggle="collapse" data-target="#options">Search options</a>
 
-<!-- The collapsible for search options: -->
-<div id="options" class="collapse">
-    <div class="checkbox">
-        <label><input type="checkbox" id="more_results"> More cell search results. </label>
-    </div>
-    <div class="checkbox">
-        <label><input type="checkbox" id="supercells"> Find sub- and supercells.</label>
-    </div>
-</div>
 
 <a class="btn btn-primary btn-xs" data-toggle="collapse" data-target="#adv-search">Advanced Search</a>
 
 <!-- The collapsible for search options: -->
 <div id="adv-search" class="collapse">
+
+    <div class="btn-group btn-group-md" role="group">
+        <label><input type="checkbox" id="more_results"> More cell search results. </label> &nbsp;
+        <label><input type="checkbox" id="supercells"> Find sub- and supercells.</label>
+    </div>
+
     <table>
         <thead>
         <tr>
-            <th style="background-color: #96f8a1">Should contain</th>
-            <th style="background-color: #f7a2a3">Should not contain</th>
+            <th style="background-color: #adffa7">Should contain</th>
+            <th> &nbsp;&nbsp;</th>
+            <th style="background-color: #fec9cd">Should not contain</th>
         </tr>
         </thead>
         <tbody>
         <tr>
             <td>
-                <div class="input-group input-group-sm">
+                <div class="input-group input-group-sm" style="width: 100%">
                     <span class="input-group-addon" id="elements_in">Elements</span>
                     <input type="text" class="form-control form-sm" placeholder="C H O ..." aria-describedby="basic-addon1">
                 </div>
             </td>
+            <td> </td>
             <td>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-addon" id="text_in">Any Text</span>
+                <div class="input-group input-group-sm" style="width: 100%">
+                    <span class="input-group-addon" id="text_in">Elements</span>
                     <input type="text" class="form-control form-sm" placeholder="" aria-describedby="basic-addon1">
                 </div>
             </td>
@@ -150,27 +148,23 @@ $(document).ready(function(){
         <!------------------------------------>
         <tr>
             <td>
-                <div class="input-group input-group-sm">
-                    <span class="input-group-addon" id="elements_out">Elements</span>
+                <div class="input-group input-group-sm" style="width: 100%">
+                    <span class="input-group-addon" id="elements_out">Any Text</span>
                     <input type="text" class="form-control form-sm" placeholder="C H O ..." aria-describedby="basic-addon1">
                 </div>
             </td>
+            <td> </td>
             <td>
-                <div class="input-group input-group-sm">
+                <div class="input-group input-group-sm" style="width: 100%">
                     <span class="input-group-addon" id="text_out">Any Text</span>
                     <input type="text" class="form-control form-sm" placeholder="" aria-describedby="basic-addon1">
                 </div>
             </td>
         </tr>
         <tr>
-            <td colspan="2">
-                <div class="input-group input-group-md" style="width: 100%">
+            <td colspan="3">
+                <div class="input-group input-group-sm" style="width: 100%">
                     <span class="input-group-addon" id="cell_adv">Uni cell</span>
-                    <input type="text" class="form-control  " placeholder="" aria-describedby="basic-addon1">
-                </div>
-            
-                <div class="input-group input-group-md" style="width: 100%">
-                    <span class="input-group-addon" id="text_adv">Any Text</span>
                     <input type="text" class="form-control  " placeholder="" aria-describedby="basic-addon1">
                 </div>
             </td>
@@ -178,14 +172,17 @@ $(document).ready(function(){
         </tbody>
     </table>
     <a type="button" class="btn btn-success"> Search </a>
-</div>
-
+</div><br>
+<!-- End of collapsible for search options. -->
 
 <div id="mygrid" style="height: 450px"></div>
 
 
-<div class="row">
-    <div class="col-md-12">
+
+
+
+<div class="panel panel-default">
+    <div class="panel-body">
         <h5><span class="invisible" id="cellrow" > </span>
         <span class="btn btn-default glyphicon glyphicon-copy invisible" id="cell_copy_btn"
               data-toggle="tooltip" title="Copy cell to clipboard."
