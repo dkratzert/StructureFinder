@@ -84,8 +84,8 @@ $(document).ready(function(){
 <div class="container">
 <h2>StructureFinder</h2>
 
-
-<div class="form-group row" id="mainsearch">
+<span id="mainsearch">
+<div class="form-group row">
     <div class="col-sm-6">
         <div class="input-group input-group-sm">
             <input type="text" class="form-control" placeholder="Search Unit Cell" id="cellsrch" name="cell">
@@ -107,7 +107,7 @@ $(document).ready(function(){
         </div>
     </div>
 </div>
-
+</span>
 
 
 
@@ -213,8 +213,6 @@ $(document).ready(function(){
     </div>
 </div>
 
-<br>
-<br>
 <address>
   <strong>StructureFinder by Daniel Kratzert</strong><br>
   <a href="mailto:daniel.kratzert@ac.uni-freiburg.de">daniel.kratzert@ac.uni-freiburg.de</a>
@@ -231,7 +229,9 @@ $(document).ready(function(){
 
 jQuery(document).ready(function($) {
 
-    //$("#advsearch-button").toggle()
+    $("#advsearch-button").click(function(){
+        $("#mainsearch").toggle("fast", "swing");
+    });
 
     // Button clicked:
     $("#textsrchbutton").click(function(event) {

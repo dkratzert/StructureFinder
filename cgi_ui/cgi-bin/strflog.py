@@ -1,5 +1,5 @@
-#!C:\tools\Python-3.6.2_64\pythonw.exe
 #!/usr/local/bin/python3.6
+#!C:\tools\Python-3.6.2_64\pythonw.exe
 
 import cgi
 import pathlib
@@ -21,8 +21,8 @@ TODO:
 - Hide regular search when doing advanced.
 """
 
-#dbfilename = "./structuredb.sqlite"
-dbfilename = "./structures_22.08.2017.sqlite"
+dbfilename = "./structuredb.sqlite"
+#dbfilename = "./structures_22.08.2017.sqlite"
 
 def application(dbfilename):
     """
