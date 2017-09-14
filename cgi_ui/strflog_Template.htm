@@ -63,20 +63,15 @@ $(document).ready(function(){
     $("#mygrid").css("height", h);
 });
 
-// Not used at the moment:
-/*
 $(document).ready(function(){
     $('[data-toggle="cell_tooltip"]').tooltip();
 });
-*/
-
 
 
 </script>
 
 
 </head>
-
 
 <body>
 
@@ -116,53 +111,51 @@ $(document).ready(function(){
 <!-- The collapsible for search options: -->
 <div id="adv-search" class="collapse">
 
-    <div class="btn-group btn-group" role="group">
-        <label><input type="checkbox" id="more_results"> More cell search results. </label> &nbsp;
-        <label><input type="checkbox" id="supercells"> Find sub- and supercells.</label>
+    <div class="btn-group" role="group">
+        <label><input type="checkbox" id="more_results"> More cell search results </label> &nbsp;&nbsp;
+        <label><input type="checkbox" id="supercells"> Find sub- and supercells</label>
     </div>
 
     <div class="row">
-        <div class="col-sm-6">
-            <div class="alert-md alert-success" role="alert">Should contain</div>
+        <div class="column col-xs-6">
+            <div class="input-group input-group-sm has-success">
+                <span class="input-group-addon" id="elements_in" data-toggle="tooltip" title="Should contain">Elements</span>
+                <input type="text" class="form-control form-sm" placeholder="C H O ..." aria-describedby="elements_in">
+            </div>
         </div>
-        <div class="col-sm-6">
-            <div class="alert-md alert-danger" role="alert">Should not contain</div>
-        </div>
-        <div class="col-sm-6">
-                <div class="input-group input-group-sm has-success">
-                    <span class="input-group-addon" id="elements_in" aria-setsize="5">Elements</span>
-                    <input type="text" class="form-control form-sm" placeholder="C H O ..." aria-describedby="basic-addon1">
-                </div>
-        </div>
-        <div class="col-sm-6">
-                <div class="input-group input-group-sm has-error">
-                    <span class="input-group-addon" id="text_in">Elements</span>
-                    <input type="text" class="form-control form-sm" placeholder="" aria-describedby="basic-addon1">
-                </div>
+        <div class="column col-xs-6">
+            <div class="input-group input-group-sm has-error">
+                <span class="input-group-addon" id="elements_out" data-toggle="tooltip" title="Should not contain">Elements</span>
+                <input type="text" class="form-control form-sm" placeholder="C H O ..." aria-describedby="elements_out">
+            </div>
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-6">
-                <div class="input-group input-group-sm has-success">
-                    <span class="input-group-addon" id="elements_out" aria-setsize="5">Any Text</span>
-                    <input type="text" class="form-control form-sm" placeholder="C H O ..." aria-describedby="basic-addon1">
-                </div>
+        <div class="column col-xs-6">
+            <div class="input-group input-group-sm has-success ">
+                <span class="input-group-addon" id="text_in" data-toggle="tooltip" title="Should contain">Any Text</span>
+                <input type="text" class="form-control form-sm" placeholder="" aria-describedby="text_in">
+            </div>
         </div>
-        <div class="col-sm-6">
-                <div class="input-group input-group-sm has-error">
-                    <span class="input-group-addon" id="text_out">Any Text</span>
-                    <input type="text" class="form-control form-sm" placeholder="" aria-describedby="basic-addon1">
-                </div>
+        <div class="column col-xs-6">
+            <div class="input-group input-group-sm has-error">
+                <span class="input-group-addon" id="text_out" data-toggle="tooltip" title="Should not contain">Any Text</span>
+                <input type="text" class="form-control form-sm" placeholder="" aria-describedby="text_out">
+            </div>
         </div>
-        <div class="col-sm-6">
-                <div class="input-group input-group-sm">
-                    <span class="input-group-addon" id="cell_adv">Uni cell</span>
-                    <input type="text" class="form-control  " placeholder="" aria-describedby="basic-addon1">
-                </div>
+    </div>
+    <div class="row">
+        <div class="column col-xs-6">
+            <div class="input-group input-group-sm">
+                <span class="input-group-addon" id="cell_adv">Uni cell</span>
+                <input type="text" class="form-control form-sm" placeholder="" aria-describedby="basic-addon1">
+            </div>
+        </div>
+        <div class="column col-xs-6">
+            <a type="button" class="btn btn-sm btn-success"> Search </a>
         </div>
     </div>
 
-<a type="button" class="btn btn-success"> Search </a>
 <br>
 </div>
 <!-- End of collapsible for search options. -->

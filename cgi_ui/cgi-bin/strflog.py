@@ -1,5 +1,5 @@
-#!/usr/local/bin/python3.6
 #!C:\tools\Python-3.6.2_64\pythonw.exe
+#!/usr/local/bin/python3.6
 
 import cgi
 import pathlib
