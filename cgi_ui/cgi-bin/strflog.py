@@ -179,10 +179,10 @@ def get_residuals_table2(structures: StructureTable, structure_id: int, cif_dic:
         <tr><td><b>Parameters</b></td>                              <td>{1}</td></tr>
         <tr><td><b>data/param</b></td>                              <td>{2:<5.1f}</td></tr>
         <tr><td><b>Restraints</b></td>                              <td>{3}</td></tr>
-        <tr><td><b>&theta;(max) [&deg;]</b></td>                    <td>{4}</td></tr>
-        <tr><td><b>&theta;(full) [&deg;]</b></td>                   <td>{5}</td></tr>
+        <tr><td><b>&theta;<sub>max</sub> [&deg;]</b></td>                    <td>{4}</td></tr>
+        <tr><td><b>&theta;<sub>full</sub> [&deg;]</b></td>                   <td>{5}</td></tr>
         <tr><td><b>d [&angst;]</b></td>                             <td>{6:5.3f}</td></tr>
-        <tr><td><b>complete [%]</b></td>                            <td>{7:<5.1f}</td></tr>
+        <tr><td><b>completeness [%]</b></td>                            <td>{7:<5.1f}</td></tr>
         <tr><td><b>Wavelength [&angst;]</b></td>                    <td>{8}</td></tr>
         <tr><td><b>CCDC Number</b></td>                             <td>{9}</td></tr>
         </tbody>
