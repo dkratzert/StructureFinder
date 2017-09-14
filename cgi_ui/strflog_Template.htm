@@ -84,102 +84,90 @@ $(document).ready(function(){
 <div class="container">
 <h2>StructureFinder</h2>
 
-<span id="mainsearch">
-<div class="form-group row">
+<a type="button" class="btn btn-default btn-xs" data-toggle="collapse" data-target="#adv-search"
+        id="advsearch-button">Advanced Search</a>
+
+<div class="form-group row" id="mainsearch">
     <div class="col-sm-6">
         <div class="input-group input-group-sm">
             <input type="text" class="form-control" placeholder="Search Unit Cell" id="cellsrch" name="cell">
-                <div class="input-group-btn">
+                <div class="input-group-sm input-group-btn">
                 <button class="btn btn-default" type="submit" id="cellsrchbutton">
                     <i class="glyphicon glyphicon-search"></i>
                 </button>
                 </div>
+            </input>
         </div>
     </div>
     <div class="col-sm-6">
         <div class="input-group input-group-sm">
             <input type="text" class="form-control" placeholder="Search Text" id="textsrch" name="text">
-                <div class="input-group-btn">
+                <div class="input-group-sm input-group-btn">
                 <button class="btn btn-default" type="submit" id="textsrchbutton">
                     <i class="glyphicon glyphicon-search"></i>
                 </button>
                 </div>
+            </input>
         </div>
     </div>
 </div>
-</span>
 
-
-
-<a class="btn btn-primary btn-xs" data-toggle="collapse" data-target="#adv-search" id="advsearch-button">Advanced Search</a>
 
 <!-- The collapsible for search options: -->
 <div id="adv-search" class="collapse">
 
-    <div class="btn-group btn-group-md" role="group">
+    <div class="btn-group btn-group" role="group">
         <label><input type="checkbox" id="more_results"> More cell search results. </label> &nbsp;
         <label><input type="checkbox" id="supercells"> Find sub- and supercells.</label>
     </div>
 
-    <table>
-        <thead>
-        <tr>
-            <th style="background-color: #adffa7">Should contain</th>
-            <th> &nbsp;&nbsp;</th>
-            <th style="background-color: #fec9cd">Should not contain</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>
-                <div class="input-group input-group-sm" style="width: 100%">
-                    <span class="input-group-addon" id="elements_in">Elements</span>
+    <div class="row">
+        <div class="col-sm-6">
+            <div class="alert-md alert-success" role="alert">Should contain</div>
+        </div>
+        <div class="col-sm-6">
+            <div class="alert-md alert-danger" role="alert">Should not contain</div>
+        </div>
+        <div class="col-sm-6">
+                <div class="input-group input-group-sm has-success">
+                    <span class="input-group-addon" id="elements_in" aria-setsize="5">Elements</span>
                     <input type="text" class="form-control form-sm" placeholder="C H O ..." aria-describedby="basic-addon1">
                 </div>
-            </td>
-            <td> </td>
-            <td>
-                <div class="input-group input-group-sm" style="width: 100%">
+        </div>
+        <div class="col-sm-6">
+                <div class="input-group input-group-sm has-error">
                     <span class="input-group-addon" id="text_in">Elements</span>
                     <input type="text" class="form-control form-sm" placeholder="" aria-describedby="basic-addon1">
                 </div>
-            </td>
-        </tr>
-        <!------------------------------------>
-        <tr>
-            <td>
-                <div class="input-group input-group-sm" style="width: 100%">
-                    <span class="input-group-addon" id="elements_out">Any Text</span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+                <div class="input-group input-group-sm has-success">
+                    <span class="input-group-addon" id="elements_out" aria-setsize="5">Any Text</span>
                     <input type="text" class="form-control form-sm" placeholder="C H O ..." aria-describedby="basic-addon1">
                 </div>
-            </td>
-            <td> </td>
-            <td>
-                <div class="input-group input-group-sm" style="width: 100%">
+        </div>
+        <div class="col-sm-6">
+                <div class="input-group input-group-sm has-error">
                     <span class="input-group-addon" id="text_out">Any Text</span>
                     <input type="text" class="form-control form-sm" placeholder="" aria-describedby="basic-addon1">
                 </div>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="3">
-                <div class="input-group input-group-sm" style="width: 100%">
+        </div>
+        <div class="col-sm-6">
+                <div class="input-group input-group-sm">
                     <span class="input-group-addon" id="cell_adv">Uni cell</span>
                     <input type="text" class="form-control  " placeholder="" aria-describedby="basic-addon1">
                 </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    <a type="button" class="btn btn-success"> Search </a>
-</div><br>
+        </div>
+    </div>
+
+<a type="button" class="btn btn-success"> Search </a>
+<br>
+</div>
 <!-- End of collapsible for search options. -->
 
 <div id="mygrid" style="height: 450px"></div>
-
-
-
-
 
 <div class="panel panel-default">
     <div class="panel-body">
@@ -229,8 +217,15 @@ $(document).ready(function(){
 
 jQuery(document).ready(function($) {
 
-    $("#advsearch-button").click(function(){
+    var advbutton = $('#advsearch-button');
+    advbutton.click(function(){
+        var button_text = advbutton.text();
         $("#mainsearch").toggle("fast", "swing");
+        if (button_text.split(" ")[0] === "Advanced") {
+            advbutton.html("Simple Search");
+        } else {
+            advbutton.html("Advanced Search");
+        }
     });
 
     // Button clicked:
