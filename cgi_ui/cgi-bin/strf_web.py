@@ -21,8 +21,8 @@ TODO:
 - Hide regular search when doing advanced.
 """
 
-dbfilename = "./structuredb.sqlite"
-#dbfilename = "./structures_22.08.2017.sqlite"
+#dbfilename = "./structuredb.sqlite"
+dbfilename = "./structures_13.09.2017.sqlite"
 
 def application(dbfilename):
     """
@@ -323,23 +323,14 @@ def process_data(structures: StructureTable, idlist: (list, range) = None):
     if not structures:
         return []
     try:
-        p = pathlib.Path("cgi_ui/strflog_Template.htm")
+        p = pathlib.Path("cgi_ui/strf_web_Template.htm")
         t = p.read_bytes().decode('utf-8', 'ignore')
     except FileNotFoundError:
-        p = pathlib.Path("./strflog_Template.htm")
+        p = pathlib.Path("./strf_web_Template.htm")
         t = p.read_bytes().decode('utf-8', 'ignore')
     return t
 
 
 if __name__ == "__main__":
     application(dbfilename)
-    """
-    try:
-        import wsgiref.simple_server
 
-        server = wsgiref.simple_server.make_server('127.0.0.1', 8000, application)
-        server.serve_forever()
-        print("Webserver running...")
-    except KeyboardInterrupt:
-        print("Webserver stopped...")
-    """
