@@ -35,14 +35,22 @@ body {
     height: 13px;
     overflow: auto;
 }
-/*
-#jsmolcolumn {
-    width: 300px;
-    height: 1px;
-    border: thin hidden lightgray;
-    border-radius: 5px;
+
+.btn-group {
+    padding-bottom: 4px;
+    padding-top: 4px;
 }
-*/
+
+.input-group {
+    padding-bottom: 2px;
+    padding-top: 2px;
+}
+
+.input-group-addon {
+    min-width:70px;
+    text-align:left;
+}
+
 </style>
 
 
@@ -81,8 +89,10 @@ $(document).ready(function(){
 <div class="container">
 <h2>StructureFinder</h2>
 
+
 <a type="button" class="btn btn-default btn-xs" data-toggle="collapse" data-target="#adv-search"
         id="advsearch-button">Advanced Search</a>
+
 
 <div class="form-group row" id="mainsearch">
     <div class="col-sm-6">
@@ -153,8 +163,8 @@ $(document).ready(function(){
                 <input type="text" class="form-control form-sm" placeholder="" aria-describedby="basic-addon1">
             </div>
         </div>
-        <div class="column col-xs-6">
-            <a type="button" class="btn btn-sm btn-success"> Search </a>
+        <div class="column col-xs-6" style="padding-top: 2px;">
+            <a type="button" class="btn btn-sm btn-success" style="min-width:70px"> Search </a>
         </div>
     </div>
 
@@ -168,10 +178,10 @@ $(document).ready(function(){
     <div class="column col-lg-12">
         <div class="panel panel-default">
             <div class="panel-body">
-                <h5><span class="invisible" id="cellrow" > </span>
+                <span class="invisible" id="cellrow" style="font-size: 14px"> </span>
                 <span class="btn btn-default glyphicon glyphicon-copy invisible" id="cell_copy_btn"
                       data-toggle="tooltip" title="Copy cell to clipboard."
-                      onclick="copyToClipboard('#hidden-cell')"></span></h5>
+                      onclick="copyToClipboard('#hidden-cell')"></span>
             </div>
         </div>
     </div>
