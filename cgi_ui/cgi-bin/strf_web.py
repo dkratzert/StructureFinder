@@ -18,7 +18,8 @@ cgitb.enable()
 
 """
 TODO:
-- Hide regular search when doing advanced.
+- finish advanced search
+- index modification time, make it searchable.
 """
 
 dbfilename = "./structuredb.sqlite"
@@ -328,21 +329,21 @@ def search_elements(structures: StructureTable, elements: str, anyresult: bool =
     return list(res)
 
 
-def advanced_search(cell, elincl, elexcl, txt, txt_ex, structures):
+def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results, structures) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
     """
     excl = []
     incl = []
-
-    cell = [float(x) for x in cell.strip().split()]
+    results = []
+    cell = [float(x) for x in cellstr.strip().split()]
 
     if cell and len(cell) == 6:
-        cellres = find_cell(cell)
+        cellres = find_cell(structures, cellstr, sublattice=sublattice, more_results=more_results)
         incl.append(cellres)
     if elincl:
-        incl.append(search_elements(elincl))
+        incl.append(search_elements(structures, elincl))
     if txt:
         if len(txt) >= 2 and "*" not in txt:
             txt = '*' + txt + '*'
@@ -352,7 +353,7 @@ def advanced_search(cell, elincl, elexcl, txt, txt_ex, structures):
         except(IndexError, KeyError):
             incl.append([idlist])  # only one result
     if elexcl:
-        excl.append(search_elements(elexcl, anyresult=True))
+        excl.append(search_elements(structures, elexcl, anyresult=True))
     if txt_ex:
         if len(txt_ex) >= 2 and "*" not in txt_ex:
             txt_ex = '*' + txt_ex + '*'
@@ -364,10 +365,9 @@ def advanced_search(cell, elincl, elexcl, txt, txt_ex, structures):
     if incl:
         results = set(incl[0]).intersection(*incl)
     if excl:
-        display_structures_by_idlist(list(results - set(misc.flatten(excl))))
+        return list(results - set(misc.flatten(excl)))
     else:
-        display_structures_by_idlist(list(results))
-
+        return list(results)
 
 
 def process_data(structures: StructureTable, idlist: (list, range) = None):
