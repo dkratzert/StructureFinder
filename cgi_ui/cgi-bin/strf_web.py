@@ -1,5 +1,5 @@
-#!C:\tools\Python-3.6.2_64\pythonw.exe
 #!/usr/local/bin/python3.6
+#!C:\tools\Python-3.6.2_64\pythonw.exe
 
 import cgi
 import pathlib
@@ -9,7 +9,7 @@ import math
 from displaymol import mol_file_writer
 from lattice import lattice
 from pymatgen.core import mat_lattice
-from searcher import database_handler
+from searcher import database_handler, misc
 
 from searcher.database_handler import StructureTable
 import cgitb
@@ -21,8 +21,8 @@ TODO:
 - Hide regular search when doing advanced.
 """
 
-#dbfilename = "./structuredb.sqlite"
-dbfilename = "./structures_13.09.2017.sqlite"
+dbfilename = "./structuredb.sqlite"
+#dbfilename = "./structures_13.09.2017.sqlite"
 
 def application(dbfilename):
     """
@@ -309,6 +309,65 @@ def search_text(structures: StructureTable, search_string: str) -> list:
         #print("Error 1")
         #print(e)
     return idlist
+
+
+def search_elements(structures: StructureTable, elements: str, anyresult: bool = False) -> list:
+    """
+    list(set(l).intersection(l2))
+    """
+    formula = []
+    res = []
+    try:
+        formula = misc.get_list_of_elements(elements)
+    except KeyError:
+        return []
+    try:
+        res = structures.find_by_elements(formula, anyresult=anyresult)
+    except AttributeError:
+        pass
+    return list(res)
+
+
+def advanced_search(cell, elincl, elexcl, txt, txt_ex, structures):
+    """
+    Combines all the search fields. Collects all includes, all excludes ad calculates
+    the difference.
+    """
+    excl = []
+    incl = []
+
+    cell = [float(x) for x in cell.strip().split()]
+
+    if cell and len(cell) == 6:
+        cellres = find_cell(cell)
+        incl.append(cellres)
+    if elincl:
+        incl.append(search_elements(elincl))
+    if txt:
+        if len(txt) >= 2 and "*" not in txt:
+            txt = '*' + txt + '*'
+        idlist = structures.find_by_strings(txt)
+        try:
+            incl.append([i[0] for i in idlist])
+        except(IndexError, KeyError):
+            incl.append([idlist])  # only one result
+    if elexcl:
+        excl.append(search_elements(elexcl, anyresult=True))
+    if txt_ex:
+        if len(txt_ex) >= 2 and "*" not in txt_ex:
+            txt_ex = '*' + txt_ex + '*'
+        idlist = structures.find_by_strings(txt_ex)
+        try:
+            excl.append([i[0] for i in idlist])
+        except(IndexError, KeyError):
+            excl.append([idlist])  # only one result
+    if incl:
+        results = set(incl[0]).intersection(*incl)
+    if excl:
+        display_structures_by_idlist(list(results - set(misc.flatten(excl))))
+    else:
+        display_structures_by_idlist(list(results))
+
 
 
 def process_data(structures: StructureTable, idlist: (list, range) = None):
