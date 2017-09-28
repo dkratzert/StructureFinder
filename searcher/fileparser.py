@@ -265,6 +265,8 @@ class Cif():
             self.cif_data['_space_group_name_Hall'] = self.cif_data['_symmetry_space_group_name_Hall']
         if '_symmetry_Int_Tables_number' in self.cif_data:
             self.cif_data['_space_group_IT_number'] = self.cif_data['_symmetry_Int_Tables_number']
+        if '_diffrn_reflns_av_sigmaI/netI' in self.cif_data:
+            self.cif_data['_diffrn_reflns_av_unetI/netI'] = self.cif_data['_diffrn_reflns_av_sigmaI/netI']
 
     def __iter__(self):
         """

@@ -329,9 +329,10 @@ jQuery(document).ready(function($) {
         if (!isValidCell(cell)) {
             cell = "";
         }
-        w2ui['mygrid'].request('get-records', params = {advcell: cell, text_in: text_in, text_out: text_out,
-                                                        elements_in: elements_in, elements_out: elements_out},
-            url = w2ui['mygrid'].url,
+        var gridparams = {advcell: cell, text_in: text_in, text_out: text_out,
+                            elements_in: elements_in, elements_out: elements_out};
+        console.log(gridparams);
+        w2ui['mygrid'].request('get-records', gridparams, w2ui['mygrid'].url,
             function (result) {
                 console.log(result);
             }
