@@ -423,7 +423,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         except ValueError:
             pass
         try:  # R1:
-            self.ui.r1LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_R_factor_gt']))
+            if cif_dic['_refine_ls_R_factor_gt']:
+                self.ui.r1LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_R_factor_gt']))
+            else:
+                self.ui.r1LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_R_factor_all']))
         except ValueError:
             pass
         self.ui.zLineEdit.setText("{}".format(cif_dic['_cell_formula_units_Z']))
@@ -433,6 +436,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             sumform = ''
         self.ui.formLabel.setText("{}".format(sumform))
         self.ui.reflTotalLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_number']))
+        self.ui.uniqReflLineEdit.setText("{}".format(cif_dic['_refine_ls_number_reflns']))
+        self.ui.refl2sigmaLineEdit.setText("{}".format(cif_dic['_reflns_number_gt']))
         self.ui.goofLineEdit.setText("{}".format(cif_dic['_refine_ls_goodness_of_fit_ref']))
         self.ui.SpaceGroupLineEdit.setText("{}".format(cif_dic['_space_group_name_H_M_alt']))
         self.ui.temperatureLineEdit.setText("{}".format(cif_dic['_diffrn_ambient_temperature']))
@@ -826,6 +831,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.wR2LineEdit.clear()
         self.ui.zLineEdit.clear()
         self.ui.cCDCNumberLineEdit.clear()
+        self.ui.refl2sigmaLineEdit.clear()
+        self.ui.uniqReflLineEdit.clear()
 
 
 class RunIndexerThread(QtCore.QThread):
