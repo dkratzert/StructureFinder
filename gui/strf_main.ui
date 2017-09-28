@@ -510,7 +510,7 @@
                  <item row="0" column="0">
                   <widget class="QLabel" name="reflTotalLabel">
                    <property name="text">
-                    <string>Total num. Refl.</string>
+                    <string>Measured Refl.</string>
                    </property>
                    <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -527,7 +527,7 @@
                  <item row="1" column="0">
                   <widget class="QLabel" name="uniqReflLabel">
                    <property name="text">
-                    <string>Uniq Refl.</string>
+                    <string>Independent Refl.</string>
                    </property>
                   </widget>
                  </item>
@@ -537,7 +537,7 @@
                  <item row="2" column="0">
                   <widget class="QLabel" name="refl2sigmaLabel">
                    <property name="text">
-                    <string>Refl. &gt; 2sigma</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Refl. &amp;gt;2&amp;sigma;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                   </widget>
                  </item>

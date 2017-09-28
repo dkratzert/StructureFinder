@@ -390,9 +390,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def display_properties(self, structure_id: str, cif_dic: dict) -> bool:
         """
         Displays the residuals from the cif file
+        Measured Refl.
+        Independent Refl.
+        Reflections Used
 
-        _refine_ls_number_reflns -> unique reflect.
-        _reflns_number_gt        -> unique über 2sigma
+        _refine_ls_number_reflns -> unique reflect. (Independent reflections)
+        _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
         self.clear_fields()
         self.ui.allCifTreeWidget.clear()
