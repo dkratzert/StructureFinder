@@ -692,17 +692,18 @@ class StructureTable():
                 cif.cif_data['_diffrn_measured_fraction_theta_max'],   # completeness, Fraction of unique reflections measured to θmax
                 cif.cif_data['_diffrn_measured_fraction_theta_full'],  # Fraction of unique reflections measured to θfull
                 cif.cif_data['_reflns_number_total'],               # Number of symmetry-independent reflections excluding
-                                                                    # systematic absences.
+                                                                    #   systematic absences.
                 cif.cif_data['_reflns_number_gt'],                  # Number of reflections > σ threshold
                 cif.cif_data['_reflns_threshold_expression'],       # σ expression for F, F2 or I threshold
                 cif.cif_data['_reflns_Friedel_coverage'],           # The proportion of Friedel-related reflections
-                                                                    # present in the number of reported unique reflections
+                                                                    #   present in the number of reported unique reflections
                 cif.cif_data['_computing_structure_solution'],      # Reference to structure-solution software
                 cif.cif_data['_computing_structure_refinement'],    # Reference to structure-refinement software
                 cif.cif_data['_refine_special_details'],            # Details about the refinement
                 cif.cif_data['_refine_ls_structure_factor_coef'],   # Code for F, F2 or I used in least-squares refinement
                 cif.cif_data['_refine_ls_weighting_details'],       # Weighting expression
-                cif.cif_data['_refine_ls_number_reflns'],           # Number of reflections used in refinement
+                cif.cif_data['_refine_ls_number_reflns'],           # The number of unique reflections contributing to the
+                                                                    #   least-squares refinement calculation.
                 cif.cif_data['_refine_ls_number_parameters'],       # Number of parameters refined
                 cif.cif_data['_refine_ls_number_restraints'],       # Number of restraints applied during refinement
                 cif.cif_data['_refine_ls_R_factor_all'],

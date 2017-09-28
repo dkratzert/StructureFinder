@@ -42,7 +42,7 @@ if py36:
 
 __metaclass__ = type  # use new-style classes
 
-VERSION = 10
+VERSION = 11
 """
 TODO:
 - disable molecule on windows7 32 bit?
@@ -390,6 +390,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def display_properties(self, structure_id: str, cif_dic: dict) -> bool:
         """
         Displays the residuals from the cif file
+
+        _refine_ls_number_reflns -> unique reflect.
+        _reflns_number_gt        -> unique über 2sigma
         """
         self.clear_fields()
         self.ui.allCifTreeWidget.clear()
