@@ -859,6 +859,19 @@ class StructureTable():
         else:
             return []
 
+    def find_by_date(self, start='0000-01-01', end='NOW'):
+        """
+        Find structures between start and end date.
+
+        >>> db = StructureTable('../structuredb.sqlite')
+        >>> db.database.initialize_db()
+        >>> db.find_by_date()
+        """
+        req = """
+              SELECT StructureId FROM Residuals WHERE modification_time between DATE(?) AND DATE(?);
+              """
+        return searcher.misc.flatten([list(x) for x in self.database.db_request(req, start, end)])
+
     def find_biggest_cell(self):
         """
         finds the structure with the biggest cell in the db
@@ -876,8 +889,12 @@ class StructureTable():
             
 if __name__ == '__main__':
     #searcher.filecrawler.put_cifs_in_db(searchpath='../')
-    db = DatabaseRequest('./structuredb.sqlite')
-#    db.database.initialize_db()
-    out = db.get_lastrowid()
+    #db = DatabaseRequest('./structuredb.sqlite')
+    #db.initialize_db()
+    db = StructureTable('../../structurefinder.sqlite')
+    db.database.initialize_db()
+    out = db.find_by_date(start="2017-08-19")
+    #out = db.get_cell_by_id(12)
+    #out = db.find_by_strings('*p-1*')
     print(out)
 
