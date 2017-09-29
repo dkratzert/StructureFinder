@@ -2645,7 +2645,10 @@ proto.__loadModel = function(mol) {
 		alert("No model data.");
 		return;
 	}
-	this._parse(mol);
+	var p = this._parse(mol);
+	if (p === 0) {
+		return 0;
+	}
 	this._initParams();
 	this._draw();
 	this._showInfo(false);
@@ -2861,15 +2864,18 @@ proto._transform = function(pt, spt, c, mat, f, sc) {
 	b[2] = -b[2];
 	for (var i = 3; --i >= 0;)
 		spt[i] = b[i] + sc[i];  
-}
+};
 
 
 //  adaptable --- 
 
 proto._parse = function(data) {
 	// just .mol file data for now
-	this._parseSDF(data);
-}
+	var p = this._parseSDF(data);
+	if (p === 0) {
+		return 0;
+	}
+};
 
 proto._parseSDF = function(sdf) {
 	this._mol = sdf;
@@ -2880,8 +2886,11 @@ proto._parseSDF = function(sdf) {
 	var pt = 3;
 	var line = lines[pt++];
 	//alert(line)
-	this.nAtoms = parseFloat(line.substring(0, 5));
+	this.nAtoms = parseInt(line.substring(0, 5));
 	//alert(this.nAtoms)
+	if (!this.nAtoms) {
+		return 0; // go out of parser in case of malformed file
+	}
 	this.nBonds = parseFloat(line.substring(5, 10));
 	//alert(this.nBonds)
 	this.atoms = Array(this.nAtoms);
@@ -2914,7 +2923,7 @@ proto._parseSDF = function(sdf) {
 		var d = tm._distance(a1.xyz, xyz); 
 		var p1 = (a1.radius < d ? tm._getPointAlong(a1.xyz, xyz, a1.radius/d) : [0, 0, 99999]);
 		var p2 = (a2.radius < d ? tm._getPointAlong(a2.xyz, xyz, a2.radius/d) : [0, 0, 99999]);
-		//color: "#FFBF00"
+		//color: "#FFBF00" <- bond color
 		this.elements[ept++] = this.bonds[i] = {type:1, atoms: [a1, a2], xyz:xyz, pts:[p1,p2], sxyz:[0, 0, 0], spts:[[0,0,0],[0,0,0]], order: 1, color: "#DF7401"};
 	}
 	//alert(this.atoms.length + " atoms " + this.bonds.length + " bonds")
