@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "10"
+#define MyAppVersion "11"
 #define MyAppPublisher "Daniel Kratzert"
 #define pzipfile "Python3.6.1-32.7z"
 
@@ -45,7 +45,7 @@ AppSupportPhone=+49 761 203 6156
 VersionInfoProductName=StructureFinder
 AlwaysShowComponentsList=False
 ShowComponentSizes=False
-
+SetupIconFile="..\icons\strf.ico"
 
 
 [UninstallRun]

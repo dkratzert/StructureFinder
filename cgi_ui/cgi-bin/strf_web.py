@@ -144,6 +144,10 @@ def get_residuals_table1(structures: StructureTable, structure_id: int, cif_dic:
         rsigma = " "
     if not cif_dic:
         return ""
+    if cif_dic['_refine_diff_density_max']:
+        peakhole = "{} / {}".format(cif_dic['_refine_diff_density_max'], cif_dic['_refine_diff_density_min'])
+    else:
+        peakhole = " "
     table1 = """
     <table class="table table-bordered" id='resitable1'>
         <tbody>
@@ -155,8 +159,9 @@ def get_residuals_table1(structures: StructureTable, structure_id: int, cif_dic:
         <tr><td><b><i>R<i/><sub>1</sub></b></td>        <td>{5}</td></tr>
         <tr><td><b>Goof</b></td>                        <td>{6}</td></tr>
         <tr><td><b>Max Shift/esd</b></td>               <td>{7}</td></tr>
-        <tr><td><b>Peak / Hole [e&angst;<sup>&minus;3</sup>]</b></td>                     <td>{8} / {9}  </td></tr>
-        <tr><td><b><i>R</i><sub>int</sub> / <i>R</i>&sigma;</b></b></td>     <td>{10}{11} </td></tr>
+        <tr><td><b>Peak / Hole [e&angst;<sup>&minus;3</sup>]</b></td>             <td>{8}</td></tr>
+        <tr><td><b><i>R</i><sub>int</sub> / <i>R</i>&sigma;</b></b></td>    <td>{9}{10} </td></tr>
+        <tr><td><b>Wavelength [&angst;]</b></td>                      <td>{11}</td></tr>
         </tbody>
     </table>
     """.format(cif_dic['_space_group_name_H_M_alt'],
@@ -167,9 +172,10 @@ def get_residuals_table1(structures: StructureTable, structure_id: int, cif_dic:
                cif_dic['_refine_ls_R_factor_gt'],
                cif_dic['_refine_ls_goodness_of_fit_ref'],
                cif_dic['_refine_ls_shift_su_max'],
-               cif_dic['_refine_diff_density_max'], cif_dic['_refine_diff_density_min'],
+               peakhole,
                cif_dic['_diffrn_reflns_av_R_equivalents'],
-               rsigma
+               rsigma,
+               cif_dic['_diffrn_radiation_wavelength']
                )
     return table1
 
@@ -201,7 +207,9 @@ def get_residuals_table2(structures: StructureTable, structure_id: int, cif_dic:
     table2 = """
     <table class="table table-bordered" id='resitable2'>
         <tbody>
-        <tr><td style='width: 40%'><b>Total num. Refl.</b></td>     <td>{0}</td></tr>
+        <tr><td style='width: 40%'><b>Measured Refl.</b></td>       <td>{0}</td></tr>
+        <tr><td><b>Independent Refl.</b></td>                       <td>{9}</td></tr>
+        <tr><td><b>Indep. Refl. [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>                       <td>{10}</td></tr>
         <tr><td><b>Parameters</b></td>                              <td>{1}</td></tr>
         <tr><td><b>data/param</b></td>                              <td>{2:<5.1f}</td></tr>
         <tr><td><b>Restraints</b></td>                              <td>{3}</td></tr>
@@ -209,8 +217,7 @@ def get_residuals_table2(structures: StructureTable, structure_id: int, cif_dic:
         <tr><td><b>&theta;<sub>full</sub> [&deg;]</b></td>                   <td>{5}</td></tr>
         <tr><td><b>d [&angst;]</b></td>                             <td>{6:5.3f}</td></tr>
         <tr><td><b>completeness [%]</b></td>                            <td>{7:<5.1f}</td></tr>
-        <tr><td><b>Wavelength [&angst;]</b></td>                    <td>{8}</td></tr>
-        <tr><td><b>CCDC Number</b></td>                             <td>{9}</td></tr>
+        <tr><td><b>CCDC Number</b></td>                             <td>{8}</td></tr>
         </tbody>
     </table>
     """.format(cif_dic['_diffrn_reflns_number'],
@@ -221,8 +228,9 @@ def get_residuals_table2(structures: StructureTable, structure_id: int, cif_dic:
                cif_dic['_diffrn_reflns_theta_full'],
                d,
                compl,
-               wavelen,
-               cif_dic['_database_code_depnum_ccdc_archive']
+               cif_dic['_database_code_depnum_ccdc_archive'],
+               cif_dic['_refine_ls_number_reflns'],
+               cif_dic['_reflns_number_gt']
                )
     return table2
 
