@@ -171,6 +171,8 @@ class DatabaseRequest():
                         _diffrn_reflns_av_unetI_netI            REAL,
                         _database_code_depnum_ccdc_archive      TEXT,
                         _shelx_res_file                         TEXT,
+                        modification_time                       DATE,
+                        file_size                               INTEGER,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
                         REFERENCES Structure(Id)
@@ -652,12 +654,14 @@ class StructureTable():
                     _refine_diff_density_min,
                     _diffrn_reflns_av_unetI_netI,
                     _database_code_depnum_ccdc_archive,
-                    _shelx_res_file
+                    _shelx_res_file,
+                    modification_time,
+                    file_size
                     ) 
                 VALUES
                     (
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                     );
                 '''
         result = self.database.db_request(req,
@@ -719,7 +723,9 @@ class StructureTable():
                 cif.cif_data['_refine_diff_density_min'],           # Deepest hole
                 cif.cif_data['_diffrn_reflns_av_unetI/netI'],       # R(sigma)
                 cif.cif_data['_database_code_depnum_ccdc_archive'],  # CCDC number
-                cif.cif_data['_shelx_res_file']                      # The content of the SHELXL res file
+                cif.cif_data['_shelx_res_file'],                     # The content of the SHELXL res file
+                cif.cif_data['modification_time'],
+                cif.cif_data['file_size']
                 )
         return result
 

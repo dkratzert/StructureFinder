@@ -18,7 +18,7 @@ import pathlib
 
 
 class Cif():
-    def __init__(self):
+    def __init__(self, options):
         """
         A cif file parsing object optimized for speed and simplicity.
         It can not handle multi cif files.
@@ -86,7 +86,9 @@ class Cif():
             "_refine_diff_density_max": '',
             "_refine_diff_density_min": '',
             "_database_code_depnum_ccdc_archive": '',
-            "_shelx_res_file": ''
+            "_shelx_res_file": '',
+            "modification_time": options['modification_time'],
+            "file_size": options['file_size']
             }
 
     def parsefile(self, txt):

@@ -152,9 +152,12 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
     zipcifs = 0
     time1 = time.clock()
     filelist = filewalker_walk(str(searchpath))
+    options = {}
     for filepth, name in filelist:
         fullpath = os.path.join(filepth, name)
-        cif = fileparser.Cif()
+        options['modification_time'] = time.strftime('%m/%d/%Y', time.gmtime(os.path.getmtime(fullpath)))
+        options['file_size'] = int(os.stat(str(fullpath)).st_size)
+        cif = fileparser.Cif(options=options)
         if self:
             if prognum == 20:
                 prognum = 0
