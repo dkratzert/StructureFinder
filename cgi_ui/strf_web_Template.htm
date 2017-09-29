@@ -228,7 +228,9 @@ jQuery(document).ready(function($) {
         var elements_in = document.getElementById("elements_in").value;
         var elements_out = document.getElementById("elements_out").value;
         var cell_adv = document.getElementById("cell_adv").value;
-        advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv);
+        var more_res = $('#more_results').is(':checked');
+        var supercell = $('#supercells').is(':checked');
+        advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res, supercell);
     });
 
     // Switch between advanced and simple search:
@@ -324,14 +326,15 @@ jQuery(document).ready(function($) {
         j2sPath: "."
     };
 
-    function advanced_search(text_in, text_out, elements_in, elements_out, cell_adv) {
+    function advanced_search(text_in, text_out, elements_in, elements_out, cell_adv, more_res, supercell) {
         var cell = cell_adv.replace(/\s+/g, ' ').trim();
         if (!isValidCell(cell)) {
             cell = "";
         }
-        var gridparams = {advcell: cell, text_in: text_in, text_out: text_out,
-                            elements_in: elements_in, elements_out: elements_out};
-        console.log(gridparams);
+        var advanced = true;
+        var gridparams = {adv: advanced, cell_search: cell, text_in: text_in, text_out: text_out, elements_in: elements_in,
+                            elements_out: elements_out, more: more_res, supercell: supercell};
+        //console.log(gridparams);
         w2ui['mygrid'].request('get-records', gridparams, w2ui['mygrid'].url,
             function (result) {
                 console.log(result);
@@ -369,20 +372,20 @@ jQuery(document).ready(function($) {
         var supercell = $('#supercells').is(':checked');
         cell = cell.replace(/\s+/g, ' ').trim();
         if (isValidCell(cell)) {
-            //console.log('cell: '+"'"+cell+"'");
-            w2ui['mygrid'].request('get-records', params = {cell_search: cell, more: more_res, supercell: supercell},
+            var advanced = false;
+            w2ui['mygrid'].request('get-records', params = {adv: advanced, cell_search: cell, more: more_res, supercell: supercell},
                 url = w2ui['mygrid'].url,
                 function (result) {
-                    //console.log('cell:');
-                    //console.log(result);
-                    console.log(more_res);
+                    console.log(result);
+                    //console.log(more_res);
                 }
             );
         }
     }
 
     function txtsearch(text) {
-        w2ui['mygrid'].request('get-records', params={text_search: text}, url=w2ui['mygrid'].url,
+        var advanced = false;
+        w2ui['mygrid'].request('get-records', params={adv: advanced, text_search: text}, url=w2ui['mygrid'].url,
             function(result) {
                 //console.log(result);
             }

@@ -18,7 +18,7 @@ cgitb.enable()
 
 """
 TODO:
-- finish advanced search
+- make cell search input from simple and advanced look same
 - index modification time, make it searchable.
 """
 
@@ -31,7 +31,6 @@ def application(dbfilename):
     """
     ids = []
     print("Content-Type: text/html; charset=utf-8\n")
-    #p = pathlib.Path('test.log')
     form = cgi.FieldStorage()
     cell_search = form.getvalue("cell_search")
     text_search = form.getfirst("text_search")
@@ -42,9 +41,20 @@ def application(dbfilename):
     resid1 = form.getvalue("residuals1")
     resid2 = form.getvalue("residuals2")
     unitcell = form.getvalue("unitcell")
+    adv = (form.getfirst("adv") == "true")
     records = form.getfirst('cmd')
     structures = database_handler.StructureTable(dbfilename)
     cif_dic = None
+    #debug_output(cell_search, text_search, more_results, sublattice, strid, mol, resid1, resid2, unitcell, adv)
+    if adv:
+        elincl = form.getvalue("elements_in")
+        elexcl = form.getvalue("elements_out")
+        txt_in = form.getvalue("text_in")
+        txt_ex = form.getvalue("text_out")
+        ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt=txt_in, txt_ex=txt_ex,
+                                sublattice=sublattice, more_results=more_results, structures=structures)
+        print(get_structures_json(structures, ids))
+        return
     if strid and (resid1 or resid2):
         request = """select * from residuals where StructureId = {}""".format(strid)
         cif_dic = structures.get_row_as_dict(request)
@@ -80,6 +90,21 @@ def application(dbfilename):
         ids = []
         html_txt = process_data(structures, ids)
     print(html_txt)
+
+
+def debug_output(cell_search, text_search, more_results, sublattice, strid, mol, resid1, resid2, unitcell, adv):
+    p = pathlib.Path('test.log')
+    p.write_text("cell_search: {} \n"
+                 "text_search: {} \n"
+                 "more_results: {} \n"
+                 "sublattice: {} \n"
+                 "strid: {} \n"
+                 "mol: {} \n"
+                 "resid1: {} \n"
+                 "resid2: {} \n"
+                 "unitcell: {} \n"
+                 "adv: {} \n\n\n\n\n".format(cell_search, text_search, more_results,
+                                             sublattice, strid, mol, resid1, resid2, unitcell, adv))
 
 
 def get_structures_json(structures: StructureTable, ids: list=None) -> dict:
