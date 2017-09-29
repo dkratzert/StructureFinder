@@ -20,6 +20,25 @@ cgitb.enable()
 TODO:
 - handle empty search fields. Especially in adv search (get rid of "no json format errors)
 - finish date search fields
+
+For the date fields:
+
+<div class="w2ui-field">
+    <label>Date Range:</label>
+    <div>
+        <input type="us-date1">-
+        <input type="us-date2">
+    </div>
+</div>
+
+$('input[type=us-date1]').w2field('date', {
+    format: 'yyyy-m-d',
+    end: $('input[type=us-date2]')
+});
+$('input[type=us-date2]').w2field('date', {
+    format: 'yyyy-m-d',
+    start: $('input[type=us-date1]')
+});
 """
 
 dbfilename = "./structuredb.sqlite"
