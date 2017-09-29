@@ -18,8 +18,8 @@ cgitb.enable()
 
 """
 TODO:
-- make cell search input from simple and advanced look same
-- index modification time, make it searchable.
+- handle empty search fields. Especially in adv search (get rid of "no json format errors)
+- finish date search fields
 """
 
 dbfilename = "./structuredb.sqlite"
