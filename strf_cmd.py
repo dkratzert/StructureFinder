@@ -68,6 +68,8 @@ else:
         except OSError as e:
             print("Unable to collect files:")
             print(e)
+        except KeyboardInterrupt:
+            print("Goodbye ...")
         print("---------------------")
     time2 = time.clock()
     diff = time2 - time1
