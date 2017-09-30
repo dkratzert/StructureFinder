@@ -165,11 +165,25 @@ $(document).ready(function(){
                 <input type="text" class="form-control form-sm" style="font-style: italic" placeholder="a b c &alpha; &beta; &gamma;" id="cell_adv">
             </div>
         </div>
-        <div class="column col-xs-6" style="padding-top: 2px;">
-            <a type="button" class="btn btn-sm btn-success" id="advsearch-button" style="min-width:75px"> Search </a>
+        <div class="column col-xs-6">
+            <div class="input-group input-group-sm">
+                <span class="input-group-addon">Date</span>
+                <input class="form-inline form-sm" style="height: 100%" type="us-date1"> and
+                <input class="form-inline form-sm" type="us-date2">
+            </div>
+            <a type="button" class="btn btn-sm btn-success" id="advsearch-button" style="min-width:90px"> Search </a>
         </div>
 
-    <!--<script>$('input[type=us-date]').w2field('date');</script>-->
+    <script>
+    $('input[type=us-date1]').w2field('date', {
+        format: 'yyyy-mm-dd',
+        end: $('input[type=us-date2]')
+    });
+    $('input[type=us-date2]').w2field('date', {
+        format: 'yyyy-mm-dd',
+        start: $('input[type=us-date1]')
+    });
+    </script>
     </div>
 
 <br>
