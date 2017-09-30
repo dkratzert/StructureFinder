@@ -69,7 +69,7 @@ else:
             print("Unable to collect files:")
             print(e)
         except KeyboardInterrupt:
-            print("Goodbye ...")
+            sys.exit()
         print("---------------------")
     time2 = time.clock()
     diff = time2 - time1
