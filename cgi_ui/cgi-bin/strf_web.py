@@ -24,8 +24,8 @@ TODO:
 
 """
 
-dbfilename = "./structuredb.sqlite"
-#dbfilename = "./structures_13.09.2017.sqlite"
+#dbfilename = "./structuredb.sqlite"
+dbfilename = "./structures_30.09.2017.sqlite"
 
 def application(dbfilename):
     """
@@ -379,7 +379,7 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
     if not date1:
         date1 = '0000-01-01'
     if not date2:
-        end = 'NOW'
+        date2 = 'NOW'
     result = structures.find_by_date(date1, date2)
     return result
 
@@ -394,8 +394,9 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     incl = []
     date_results = []
     results = []
-    cell = [float(x) for x in cellstr.strip().split()]
-
+    cell = []
+    if cellstr:
+        cell = [float(x) for x in cellstr.strip().split()]
     if cell and len(cell) == 6:
         cellres = find_cell(structures, cellstr, sublattice=sublattice, more_results=more_results)
         incl.append(cellres)
@@ -403,13 +404,6 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
         incl.append(search_elements(structures, elincl))
     if any([date1, date2]):
         date_results = find_dates(structures, date1, date2)
-        # ist this necessary?
-        if date1 and not date2:
-            pass
-        if date2 and not date1:
-            pass
-        if date1 and date2:
-            pass
     if txt:
         if len(txt) >= 2 and "*" not in txt:
             txt = '*' + txt + '*'
@@ -430,12 +424,14 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
             excl.append([idlist])  # only one result
     if incl:
         results = set(incl[0]).intersection(*incl)
-    if excl:
-        return list(results - set(misc.flatten(excl)))
-    else:
         if date_results:
             results = set(date_results).intersection(results)
-        return list(results)
+    else:
+        results = date_results
+    if excl:
+        # excl list should not be in the resukts at all
+        return list(results - set(misc.flatten(excl)))
+    return list(results)
 
 
 def process_data(structures: StructureTable, idlist: (list, range) = None):

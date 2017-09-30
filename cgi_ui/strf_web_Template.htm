@@ -356,7 +356,7 @@ jQuery(document).ready(function($) {
         var advanced = true;
         var gridparams = {adv: advanced, cell_search: cell, text_in: text_in, text_out: text_out, elements_in: elements_in,
                             elements_out: elements_out, more: more_res, supercell: supercell, date1:date1, date2: date2};
-        //console.log(gridparams);
+        console.log(gridparams);
         w2ui['mygrid'].request('get-records', gridparams, w2ui['mygrid'].url,
             function (result) {
                 //console.log(result);
