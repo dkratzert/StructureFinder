@@ -19,6 +19,7 @@ cgitb.enable()
 """
 TODO:
 - handle empty search fields. Especially in adv search (get rid of "no json format errors)
+- Figure out how guest and other users are handled with "Open APEX Database" button.
 - finish date search fields
 
 For the date fields:
@@ -55,7 +56,7 @@ def application(dbfilename):
     text_search = form.getfirst("text_search")
     more_results = (form.getfirst("more") == "true")
     sublattice = (form.getfirst("supercell") == "true")
-    strid = form.getvalue("id")
+    str_id = form.getvalue("id")
     mol = form.getvalue("molecule")
     resid1 = form.getvalue("residuals1")
     resid2 = form.getvalue("residuals2")
@@ -64,7 +65,7 @@ def application(dbfilename):
     records = form.getfirst('cmd')
     structures = database_handler.StructureTable(dbfilename)
     cif_dic = None
-    #debug_output(cell_search, text_search, more_results, sublattice, strid, mol, resid1, resid2, unitcell, adv)
+    #debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2, unitcell, adv)
     if adv:
         elincl = form.getvalue("elements_in")
         elexcl = form.getvalue("elements_out")
@@ -74,8 +75,8 @@ def application(dbfilename):
                                 sublattice=sublattice, more_results=more_results, structures=structures)
         print(get_structures_json(structures, ids))
         return
-    if strid and (resid1 or resid2):
-        request = """select * from residuals where StructureId = {}""".format(strid)
+    if str_id and (resid1 or resid2):
+        request = """select * from residuals where StructureId = {}""".format(str_id)
         cif_dic = structures.get_row_as_dict(request)
     if cell_search:
         ids = find_cell(structures, cell_search, more_results=more_results, sublattice=sublattice)
@@ -85,22 +86,22 @@ def application(dbfilename):
         ids = search_text(structures, text_search)
         print(get_structures_json(structures, ids))
         return
-    elif strid and mol:
-        cell_list = structures.get_cell_by_id(strid)[:6]
-        m = mol_file_writer.MolFile(strid, structures, cell_list)
+    elif str_id and mol:
+        cell_list = structures.get_cell_by_id(str_id)[:6]
+        m = mol_file_writer.MolFile(str_id, structures, cell_list)
         print(m.make_mol())
         return
-    elif strid and unitcell:
-        print(get_cell_parameters(structures, strid))
+    elif str_id and unitcell:
+        print(get_cell_parameters(structures, str_id))
         return
-    elif strid and resid1:
-        print(get_residuals_table1(structures, strid, cif_dic))
+    elif str_id and resid1:
+        print(get_residuals_table1(structures, str_id, cif_dic))
         return
-    elif strid and resid2:
-        print(get_residuals_table2(structures, strid, cif_dic))
+    elif str_id and resid2:
+        print(get_residuals_table2(structures, str_id, cif_dic))
         return
-    elif strid:
-        print(get_all_cif_val_table(structures, strid))
+    elif str_id:
+        print(get_all_cif_val_table(structures, str_id))
         return
     if records == 'get-records':
         print(get_structures_json(structures))
