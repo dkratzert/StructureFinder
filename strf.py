@@ -29,14 +29,12 @@ from datetime import date
 from lattice import lattice
 from apex import apeximporter
 from displaymol import mol_file_writer
+import misc.update_check
+from misc import update_check
 from pymatgen.core import mat_lattice
 from searcher import constants, misc, filecrawler, database_handler
 from searcher.constants import py36
 from searcher.fileparser import Cif
-
-uic.compileUiDir('./gui')
-from gui.strf_main import Ui_stdbMainwindow
-from gui.strf_dbpasswd import Ui_PasswdDialog
 
 if py36:
     """Only import this if Python 3.6 is used."""
@@ -113,6 +111,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 self.show_full_list()
             except IndexError:
                 pass
+        if update_check.is_update_needed():
+            self.statusBar().showMessage('A new Version of StructureFinder is available at '
+                                         'https://www.xs3.uni-freiburg.de/research/structurefinder')
+
 
     def connect_signals_and_slots(self):
         """
@@ -877,6 +879,9 @@ class RunIndexerThread(QtCore.QThread):
 
 
 if __name__ == "__main__":
+    uic.compileUiDir('./gui')
+    from gui.strf_main import Ui_stdbMainwindow
+    from gui.strf_dbpasswd import Ui_PasswdDialog
     # later http://www.pyinstaller.org/
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
