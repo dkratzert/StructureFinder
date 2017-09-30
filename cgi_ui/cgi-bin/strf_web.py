@@ -22,24 +22,6 @@ TODO:
 - Figure out how guest and other users are handled with "Open APEX Database" button.
 - finish date search fields
 
-For the date fields:
-
-<div class="w2ui-field">
-    <label>Date Range:</label>
-    <div>
-        <input type="us-date1">-
-        <input type="us-date2">
-    </div>
-</div>
-
-$('input[type=us-date1]').w2field('date', {
-    format: 'yyyy-m-d',
-    end: $('input[type=us-date2]')
-});
-$('input[type=us-date2]').w2field('date', {
-    format: 'yyyy-m-d',
-    start: $('input[type=us-date1]')
-});
 """
 
 dbfilename = "./structuredb.sqlite"
@@ -71,8 +53,12 @@ def application(dbfilename):
         elexcl = form.getvalue("elements_out")
         txt_in = form.getvalue("text_in")
         txt_ex = form.getvalue("text_out")
+        date1 = form.getvalue("date1")
+        date2 = form.getvalue("date2")
+        #debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2, unitcell, adv, date1, date2)
         ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt=txt_in, txt_ex=txt_ex,
-                                sublattice=sublattice, more_results=more_results, structures=structures)
+                                sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
+                                structures=structures)
         print(get_structures_json(structures, ids))
         return
     if str_id and (resid1 or resid2):
@@ -112,7 +98,7 @@ def application(dbfilename):
     print(html_txt)
 
 
-def debug_output(cell_search, text_search, more_results, sublattice, strid, mol, resid1, resid2, unitcell, adv):
+def debug_output(cell_search, text_search, more_results, sublattice, strid, mol, resid1, resid2, unitcell, adv, date1="", date2=""):
     p = pathlib.Path('test.log')
     p.write_text("cell_search: {} \n"
                  "text_search: {} \n"
@@ -123,8 +109,12 @@ def debug_output(cell_search, text_search, more_results, sublattice, strid, mol,
                  "resid1: {} \n"
                  "resid2: {} \n"
                  "unitcell: {} \n"
+                 "date1: {} \n"
+                 "date2: {} \n"
                  "adv: {} \n\n\n\n\n".format(cell_search, text_search, more_results,
-                                             sublattice, strid, mol, resid1, resid2, unitcell, adv))
+                                             sublattice, strid, mol, resid1, resid2, unitcell,
+                                             date1, date2, adv
+                                             ))
 
 
 def get_structures_json(structures: StructureTable, ids: list=None) -> dict:
@@ -382,7 +372,8 @@ def search_elements(structures: StructureTable, elements: str, anyresult: bool =
     return list(res)
 
 
-def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results, structures) -> list:
+def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
+                    date1: str=None, date2: str=None, structures=None) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
@@ -397,6 +388,10 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
         incl.append(cellres)
     if elincl:
         incl.append(search_elements(structures, elincl))
+    if any(date1, date2):
+        if date1:
+            pass
+        if date2:
     if txt:
         if len(txt) >= 2 and "*" not in txt:
             txt = '*' + txt + '*'
