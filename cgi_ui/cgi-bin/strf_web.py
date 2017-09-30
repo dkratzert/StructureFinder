@@ -18,9 +18,6 @@ cgitb.enable()
 
 """
 TODO:
-- handle empty search fields. Especially in adv search (get rid of "no json format errors)
-- Figure out how guest and other users are handled with "Open APEX Database" button.
-- finish date search fields
 
 """
 

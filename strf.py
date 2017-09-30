@@ -24,6 +24,8 @@ import tempfile
 import time
 
 from PyQt5 import QtWidgets, QtCore, QtGui, uic
+from datetime import date
+
 from lattice import lattice
 from apex import apeximporter
 from displaymol import mol_file_writer
@@ -42,10 +44,10 @@ if py36:
 
 __metaclass__ = type  # use new-style classes
 
-VERSION = 11
+VERSION = 12
 """
 TODO:
-- add modification time to database and make it searchable.
+- Figure out how guest and other users are handled with "Open APEX Database" button.
 - disable molecule on windows7 32 bit? Maybe disabling spin helps?
 - Improve text search (in cif file)
 - add version checker
@@ -87,6 +89,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
         self.connect_signals_and_slots()
+        self.ui.dateEdit2.setDate(QtCore.QDate(date.today()))
         if py36:
             molf = pathlib.Path("./displaymol/jsmol.htm")
             molf.write_text(data=' ', encoding="utf-8", errors='ignore')
@@ -166,13 +169,20 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Combines all the search fields. Collects all includes, all excludes ad calculates
         the difference.
         """
+        if not self.structures:
+            return
         excl = []
         incl = []
+        date_results = []
         try:
             cell = [float(x) for x in self.ui.ad_unitCellLineEdit.text().strip().split()]
         except (TypeError, ValueError):
             self.statusBar().showMessage('Invalid unit cell!')
             return False
+        date1 = self.ui.dateEdit1.text()
+        date2 = self.ui.dateEdit2.text()
+        if any([date1, date2]):
+            date_results = self.find_dates(date1, date2)
         elincl = self.ui.ad_elementsIncLineEdit.text().strip(' ')
         elexcl = self.ui.ad_elementsExclLineEdit.text().strip(' ')
         txt = self.ui.ad_textsearch.text().strip(' ')
@@ -202,7 +212,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 excl.append([idlist])  # only one result
         if incl:
             results = set(incl[0]).intersection(*incl)
+            if date_results:
+                results = set(date_results).intersection(results)
         else:
+            results = date_results
+        if not results:
             self.statusBar().showMessage('Found 0 structures.')
             return
         if excl:
@@ -520,6 +534,18 @@ class StartStructureDB(QtWidgets.QMainWindow):
         p2 = pathlib.Path("./displaymol/jsmol.htm")
         p2.write_text(data=content, encoding="utf-8", errors='ignore')
         self.view.reload()
+
+    @QtCore.pyqtSlot('QString')
+    def find_dates(self, date1: str, date2: str) -> list:
+        """
+        Returns a list if id between date1 and date2
+        """
+        if not date1:
+            date1 = '0000-01-01'
+        if not date2:
+            date2 = 'NOW'
+        result = self.structures.find_by_date(date1, date2)
+        return result
 
     @QtCore.pyqtSlot('QString')
     def search_text(self, search_string: str) -> bool:
