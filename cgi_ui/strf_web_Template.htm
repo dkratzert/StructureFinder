@@ -165,24 +165,26 @@ $(document).ready(function(){
                 <input type="text" class="form-control form-sm" style="font-style: italic" placeholder="a b c &alpha; &beta; &gamma;" id="cell_adv">
             </div>
         </div>
-        <div class="column col-xs-6">
-            <div class="input-group input-group-sm">
-                <span class="input-group-addon">Date</span>
-                <input class="form-inline form-sm" style="height: 100%" type="us-date1"> and
-                <input class="form-inline form-sm" type="us-date2">
+        <div class="column col-md-4">
+            <div class="input-group input-group-sm w2ui-field">
+                <span class="input-group-addon">Date from</span>
+                <input class="input-sm" style="height: 100%" type="us-date1">
+                <span class="input-group-addon">to</span>
+                <input class="input-sm" type="us-date2">
             </div>
             <a type="button" class="btn btn-sm btn-success" id="advsearch-button" style="min-width:90px"> Search </a>
         </div>
 
     <script>
-    $('input[type=us-date1]').w2field('date', {
-        format: 'yyyy-mm-dd',
-        end: $('input[type=us-date2]')
-    });
-    $('input[type=us-date2]').w2field('date', {
-        format: 'yyyy-mm-dd',
-        start: $('input[type=us-date1]')
-    });
+        var d1 = $('input[type=us-date1]');
+        d1.w2field('date', {
+            format: 'yyyy-mm-dd',
+            end: d1
+        });
+        $('input[type=us-date2]').w2field('date', {
+            format: 'yyyy-mm-dd',
+            start: d1
+        });
     </script>
     </div>
 
@@ -238,7 +240,6 @@ $(document).ready(function(){
 <script>
 
 jQuery(document).ready(function($) {
-
     // Do advanced search:
     $("#advsearch-button").click(function(event) {
         var txt_in = document.getElementById("text_in").value;
@@ -248,6 +249,8 @@ jQuery(document).ready(function($) {
         var cell_adv = document.getElementById("cell_adv").value;
         var more_res = $('#more_results').is(':checked');
         var supercell = $('#supercells').is(':checked');
+        var datefield = $('input[type=us-date1]');
+        console.log(datefield);
         advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res, supercell);
     });
 

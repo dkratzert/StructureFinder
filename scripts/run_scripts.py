@@ -1,5 +1,11 @@
 
 import os
+import platform
 
-os.system("copy_windows_web.cmd")
+plat = platform.system()
+
+if plat == 'windows':
+    os.system("copy_windows_web.cmd")
+else:
+    os.system("sh ./mac_copyfiles.sh")
 
