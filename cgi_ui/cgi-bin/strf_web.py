@@ -372,6 +372,18 @@ def search_elements(structures: StructureTable, elements: str, anyresult: bool =
     return list(res)
 
 
+def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
+    """
+    Returns a list if id between date1 and date2
+    """
+    if not date1:
+        date1 = '0000-01-01'
+    if not date2:
+        end = 'NOW'
+    result = structures.find_by_date(date1, date2)
+    return result
+
+
 def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
                     date1: str=None, date2: str=None, structures=None) -> list:
     """
@@ -380,6 +392,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     """
     excl = []
     incl = []
+    date_results = []
     results = []
     cell = [float(x) for x in cellstr.strip().split()]
 
@@ -388,10 +401,15 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
         incl.append(cellres)
     if elincl:
         incl.append(search_elements(structures, elincl))
-    if any(date1, date2):
-        if date1:
+    if any([date1, date2]):
+        date_results = find_dates(structures, date1, date2)
+        # ist this necessary?
+        if date1 and not date2:
             pass
-        if date2:
+        if date2 and not date1:
+            pass
+        if date1 and date2:
+            pass
     if txt:
         if len(txt) >= 2 and "*" not in txt:
             txt = '*' + txt + '*'
@@ -415,6 +433,8 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     if excl:
         return list(results - set(misc.flatten(excl)))
     else:
+        if date_results:
+            results = set(date_results).intersection(results)
         return list(results)
 
 
