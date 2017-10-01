@@ -305,12 +305,14 @@ def find_cell(structures: StructureTable, cellstr: str, sublattice=False, more_r
     volume = lattice.vol_unitcell(*cell)
     idlist = []
     if sublattice:
+        # sub- and superlattices:
         for v in [volume * x for x in (0.25, 0.5, 1, 2, 3, 4)]:
             # First a list of structures where the volume is similar:
             idlist.extend(structures.find_by_volume(v, threshold))
     else:
         idlist = structures.find_by_volume(volume, threshold)
     idlist2 = []
+    # Real lattice comparing in G6:
     if idlist:
         lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
         for num, i in enumerate(idlist):

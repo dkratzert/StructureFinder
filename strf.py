@@ -48,11 +48,10 @@ TODO:
 - Figure out how guest and other users are handled with "Open APEX Database" button.
 - disable molecule on windows7 32 bit? Maybe disabling spin helps?
 - Improve text search (in cif file)
-- add version checker
 - refractor put_cifs_in_db()
 - Move indexer to extra thread
 - sort results by G6 distance
-- get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbo
+- get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 - grow structure.
   
 Search for:
@@ -278,8 +277,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.search_cell(self.ui.searchCellLineEDit.text())
 
     def import_cif_dirs(self):
-        #worker = RunIndexerThread(self)
-        #worker.start()
+        # worker = RunIndexerThread(self)
+        # worker.start()
         self.tmpfile = True
         self.statusBar().showMessage('')
         self.close_db()
@@ -607,8 +606,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         idlist = []
         try:
             volume = lattice.vol_unitcell(*cell)
-            # sub- and superlattice with doubled and halfed volume:
             if self.ui.sublattCheckbox.isChecked():
+                # sub- and superlattices:
                 for v in [volume * x for x in (0.25, 0.5, 1, 2, 3, 4)]:
                     # First a list of structures where the volume is similar:
                     idlist.extend(self.structures.find_by_volume(v, threshold))
@@ -619,7 +618,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 self.ui.cifList_treeWidget.clear()
                 self.statusBar().showMessage('Found 0 cells.')
             return []
-        # Get a smaller list where only cells are included that have a proper mapping to the input cell:
+        # Real lattice comparing in G6:
         idlist2 = []
         if idlist:
             lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
