@@ -115,7 +115,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.statusBar().showMessage('A new Version of StructureFinder is available at '
                                          'https://www.xs3.uni-freiburg.de/research/structurefinder')
 
-
     def connect_signals_and_slots(self):
         """
         Connects the signals and slot.
@@ -606,12 +605,15 @@ class StartStructureDB(QtWidgets.QMainWindow):
             volume = lattice.vol_unitcell(*cell)
             # sub- and superlattice with doubled and halfed volume:
             if self.ui.sublattCheckbox.isChecked():
+                vol0 = volume * 0.25
                 vol1 = volume * 0.5
                 vol2 = volume * 2
+                vol3 = volume * 3
+                vol4 = volume * 4
                 idlist = []
-                for v in (volume, vol1, vol2):
+                for v in (volume, vol0, vol1, vol2, vol3, vol4):
                     # First a list of structures where the volume is similar:
-                    idlist.extend(self.structures.find_by_volume(volume, threshold))
+                    idlist.extend(self.structures.find_by_volume(v, threshold))
             else:
                 idlist = self.structures.find_by_volume(volume, threshold)
         except (ValueError, AttributeError):

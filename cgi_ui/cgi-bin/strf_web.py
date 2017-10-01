@@ -1,5 +1,5 @@
 #!/usr/local/bin/python3.6
-#!C:\tools\Python-3.6.2_64\pythonw.exe
+# !C:\tools\Python-3.6.2_64\pythonw.exe
 
 import cgi
 import pathlib
@@ -21,8 +21,9 @@ TODO:
 
 """
 
-#dbfilename = "./structuredb.sqlite"
+# dbfilename = "./structuredb.sqlite"
 dbfilename = "./structures_30.09.2017.sqlite"
+
 
 def application(dbfilename):
     """
@@ -44,7 +45,7 @@ def application(dbfilename):
     records = form.getfirst('cmd')
     structures = database_handler.StructureTable(dbfilename)
     cif_dic = None
-    #debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2, unitcell, adv)
+    # debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2, unitcell, adv)
     if adv:
         elincl = form.getvalue("elements_in")
         elexcl = form.getvalue("elements_out")
@@ -52,10 +53,11 @@ def application(dbfilename):
         txt_ex = form.getvalue("text_out")
         date1 = form.getvalue("date1")
         date2 = form.getvalue("date2")
-        #debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2, unitcell, adv, date1, date2)
+        # debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2,
+        # unitcell, adv, date1, date2)
         ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt=txt_in, txt_ex=txt_ex,
-                                sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
-                                structures=structures)
+                              sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
+                              structures=structures)
         print(get_structures_json(structures, ids))
         return
     if str_id and (resid1 or resid2):
@@ -78,10 +80,10 @@ def application(dbfilename):
         print(get_cell_parameters(structures, str_id))
         return
     elif str_id and resid1:
-        print(get_residuals_table1(structures, str_id, cif_dic))
+        print(get_residuals_table1(cif_dic))
         return
     elif str_id and resid2:
-        print(get_residuals_table2(structures, str_id, cif_dic))
+        print(get_residuals_table2(cif_dic))
         return
     elif str_id:
         print(get_all_cif_val_table(structures, str_id))
@@ -91,11 +93,12 @@ def application(dbfilename):
         return
     else:
         ids = []
-        html_txt = process_data(structures, ids)
+        html_txt = process_data()
     print(html_txt)
 
 
-def debug_output(cell_search, text_search, more_results, sublattice, strid, mol, resid1, resid2, unitcell, adv, date1="", date2=""):
+def debug_output(cell_search, text_search, more_results, sublattice, strid, mol,
+                 resid1, resid2, unitcell, adv, date1="", date2=""):
     p = pathlib.Path('test.log')
     p.write_text("cell_search: {} \n"
                  "text_search: {} \n"
@@ -114,7 +117,7 @@ def debug_output(cell_search, text_search, more_results, sublattice, strid, mol,
                                              ))
 
 
-def get_structures_json(structures: StructureTable, ids: list=None) -> dict:
+def get_structures_json(structures: StructureTable, ids: list = None) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
@@ -141,7 +144,7 @@ def get_cell_parameters(structures: StructureTable, strid: str) -> str:
     return cstr
 
 
-def get_residuals_table1(structures: StructureTable, structure_id: int, cif_dic: dict) -> str:
+def get_residuals_table1(cif_dic: dict) -> str:
     """
     Returns a table with the most important residuals of a structure.
     """
@@ -187,7 +190,7 @@ def get_residuals_table1(structures: StructureTable, structure_id: int, cif_dic:
     return table1
 
 
-def get_residuals_table2(structures: StructureTable, structure_id: int, cif_dic: dict) -> str:
+def get_residuals_table2(cif_dic: dict) -> str:
     """
     Returns a table with the most important residuals of a structure.
     """
@@ -287,7 +290,7 @@ def find_cell(structures: StructureTable, cellstr: str, sublattice=False, more_r
     try:
         cell = [float(x) for x in cellstr.strip().split()]
     except (TypeError, ValueError) as e:
-        #print(e)
+        # print(e)
         return []
     if len(cell) != 6:
         return []
@@ -301,12 +304,15 @@ def find_cell(structures: StructureTable, cellstr: str, sublattice=False, more_r
         atol = 1
     volume = lattice.vol_unitcell(*cell)
     if sublattice:
+        vol0 = volume * 0.25
         vol1 = volume * 0.5
         vol2 = volume * 2
+        vol3 = volume * 3
+        vol4 = volume * 4
         idlist = []
-        for v in (volume, vol1, vol2):
+        for v in (volume, vol0, vol1, vol2, vol3, vol4):
             # First a list of structures where the volume is similar:
-            idlist.extend(structures.find_by_volume(volume, threshold))
+            idlist.extend(structures.find_by_volume(v, threshold))
     else:
         idlist = structures.find_by_volume(volume, threshold)
     idlist2 = []
@@ -347,8 +353,8 @@ def search_text(structures: StructureTable, search_string: str) -> list:
         idlist = [x[0] for x in structures.find_by_strings(search_string)]
     except AttributeError as e:
         pass
-        #print("Error 1")
-        #print(e)
+        # print("Error 1")
+        # print(e)
     return idlist
 
 
@@ -382,7 +388,7 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
 
 
 def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
-                    date1: str=None, date2: str=None, structures=None) -> list:
+                    date1: str = None, date2: str = None, structures=None) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
@@ -431,17 +437,10 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     return list(results)
 
 
-def process_data(structures: StructureTable, idlist: (list, range) = None):
+def process_data():
     """
-    Structure.Id,           0
-    Structure.measurement,  1
-    Structure.path,         2
-    Structure.filename,     3
-    Structure.dataname      4
-    <a href="?id={3}">
+    Reads html template and replaces things.
     """
-    if not structures:
-        return []
     try:
         p = pathlib.Path("cgi_ui/strf_web_Template.htm")
         t = p.read_bytes().decode('utf-8', 'ignore')
@@ -453,4 +452,3 @@ def process_data(structures: StructureTable, idlist: (list, range) = None):
 
 if __name__ == "__main__":
     application(dbfilename)
-
