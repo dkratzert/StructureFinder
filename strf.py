@@ -100,7 +100,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.tabWidget.setCurrentIndex(0)
         self.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
         self.uipass = Ui_PasswdDialog()
-        self.ui.cifList_treeWidget.sortByColumn(0, 0)
+        # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         self.ui.cifList_treeWidget.addAction(self.ui.actionGo_to_All_CIF_Tab)
@@ -237,7 +237,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.full_list = False
         for i in searchresult:
             self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
-        self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        self.set_columnsize()
+        #self.ui.cifList_treeWidget.resizeColumnToContents(0)
         if idlist:
             self.ui.tabWidget.setCurrentIndex(0)
 
@@ -291,7 +292,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.abort_import_button.hide()
         filecrawler.put_cifs_in_db(self, searchpath=fname)
         self.ui.cifList_treeWidget.show()
-        self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        self.set_columnsize()
+        #self.ui.cifList_treeWidget.resizeColumnToContents(0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(1)
         #self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.abort_import_button.hide()
@@ -575,7 +577,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.statusBar().showMessage("Found {} entries.".format(len(idlist)))
             for i in idlist:
                 self.add_table_row(name=i[1], path=i[3], id=i[0], data=i[2])
-            self.ui.cifList_treeWidget.resizeColumnToContents(0)
+            self.set_columnsize()
+            #self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except:
             self.statusBar().showMessage("Nothing found.")
 
@@ -601,17 +604,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
             # self.show_full_list()
             return []
+        idlist = []
         try:
             volume = lattice.vol_unitcell(*cell)
             # sub- and superlattice with doubled and halfed volume:
             if self.ui.sublattCheckbox.isChecked():
-                vol0 = volume * 0.25
-                vol1 = volume * 0.5
-                vol2 = volume * 2
-                vol3 = volume * 3
-                vol4 = volume * 4
-                idlist = []
-                for v in (volume, vol0, vol1, vol2, vol3, vol4):
+                for v in [volume * x for x in (0.25, 0.5, 1, 2, 3, 4)]:
                     # First a list of structures where the volume is similar:
                     idlist.extend(self.structures.find_by_volume(v, threshold))
             else:
@@ -676,8 +674,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         for i in searchresult:
             self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
             # self.add_table_row(name, path, id)
+        self.set_columnsize()
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
-        self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        #self.ui.cifList_treeWidget.resizeColumnToContents(0)
         return True
 
     def search_elements(self, elements: str, anyresult: bool = False) -> list:
@@ -810,12 +809,23 @@ class StartStructureDB(QtWidgets.QMainWindow):
         h, m = divmod(m, 60)
         self.ui.statusbar.showMessage('Added {} APEX entries in: {:>2d} h, {:>2d} m, {:>3.2f} s'
                                       .format(n, int(h), int(m), s), msecs=0)
-        self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        # self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        #self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        self.set_columnsize()
         if py36:
             self.structures.populate_fulltext_search_table()
         self.structures.database.commit_db("Committed")
         self.abort_import_button.hide()
+
+    def set_columnsize(self):
+        """
+        Sets columnsize of main structure list.
+        """
+        self.ui.cifList_treeWidget.sortByColumn(0, 0)
+        treewidth = self.ui.cifList_treeWidget.width()
+        self.ui.cifList_treeWidget.setColumnWidth(0, treewidth / 4)
+        self.ui.cifList_treeWidget.setColumnWidth(1, treewidth / 5)
+        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        # self.ui.cifList_treeWidget.resizeColumnToContents(1)
 
     def show_full_list(self) -> None:
         """
@@ -831,7 +841,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
         mess = "Loaded {} entries.".format(id)
         self.statusBar().showMessage(mess, msecs=5000)
-        self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        self.set_columnsize()
+        #self.ui.cifList_treeWidget.resizeColumnToContents(0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
         self.ui.tabWidget.setCurrentIndex(0)

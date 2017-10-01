@@ -303,14 +303,9 @@ def find_cell(structures: StructureTable, cellstr: str, sublattice=False, more_r
         ltol = 0.001
         atol = 1
     volume = lattice.vol_unitcell(*cell)
+    idlist = []
     if sublattice:
-        vol0 = volume * 0.25
-        vol1 = volume * 0.5
-        vol2 = volume * 2
-        vol3 = volume * 3
-        vol4 = volume * 4
-        idlist = []
-        for v in (volume, vol0, vol1, vol2, vol3, vol4):
+        for v in [volume * x for x in (0.25, 0.5, 1, 2, 3, 4)]:
             # First a list of structures where the volume is similar:
             idlist.extend(structures.find_by_volume(v, threshold))
     else:

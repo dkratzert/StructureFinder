@@ -172,7 +172,7 @@
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="maintab">
        <attribute name="title">
@@ -208,10 +208,10 @@
              <enum>Qt::ScrollBarAsNeeded</enum>
             </property>
             <property name="sortingEnabled">
-             <bool>true</bool>
+             <bool>false</bool>
             </property>
             <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
+             <bool>false</bool>
             </attribute>
             <column>
              <property name="text">
