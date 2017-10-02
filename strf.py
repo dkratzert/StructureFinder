@@ -22,15 +22,16 @@ import string
 import sys
 import tempfile
 import time
-
-from PyQt5 import QtWidgets, QtCore, QtGui, uic
 from datetime import date
 
-from lattice import lattice
+from PyQt5 import QtWidgets, QtCore, QtGui, uic
+
+import misc.update_check
 from apex import apeximporter
 from displaymol import mol_file_writer
-import misc.update_check
+from lattice import lattice
 from misc import update_check
+from misc.version import VERSION
 from pymatgen.core import mat_lattice
 from searcher import constants, misc, filecrawler, database_handler
 from searcher.constants import py36
@@ -42,7 +43,6 @@ if py36:
 
 __metaclass__ = type  # use new-style classes
 
-VERSION = 10
 """
 TODO:
 - Figure out how guest and other users are handled with "Open APEX Database" button.

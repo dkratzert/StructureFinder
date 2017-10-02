@@ -892,7 +892,19 @@ class StructureTable():
         else:
             return False
                   
-            
+    def get_database_version(self):
+        """
+        >>> db = StructureTable('../structuredb.sqlite')
+        >>> db.database.initialize_db()
+        >>> db.get_database_version()
+        """
+        req = """
+              SELECT format_version FROM database_format;
+              """
+        version = self.database.db_request(req)
+        if not version:
+            version = 0
+        return version
             
 if __name__ == '__main__':
     #searcher.filecrawler.put_cifs_in_db(searchpath='../')

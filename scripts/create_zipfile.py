@@ -5,7 +5,7 @@ from zipfile import ZipFile
 
 import os
 
-from strf import VERSION
+from misc.version import VERSION
 
 version = VERSION
 
@@ -33,6 +33,9 @@ files = [
     "pg8000/__init__.py",
     "pg8000/_version.py",
     "pg8000/core.py",
+    "misc/__init__.py",
+    "misc/update_check.py",
+    "misc/version.py"
     ]
 
 

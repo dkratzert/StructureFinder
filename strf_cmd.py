@@ -8,7 +8,7 @@ from misc import update_check
 from searcher import filecrawler, database_handler
 
 #from searcher.spinner import Spinner
-from strf import VERSION
+from misc.version import VERSION
 
 parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect cif files to a '
                                              'database.\n'
