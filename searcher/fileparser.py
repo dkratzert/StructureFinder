@@ -17,14 +17,16 @@ from pprint import pprint
 import pathlib
 
 
-class Cif():
-    def __init__(self, options):
+class Cif(object):
+    def __init__(self, options=None):
         """
         A cif file parsing object optimized for speed and simplicity.
         It can not handle multi cif files.
         :param file: input filename object
         :type file: Path
         """
+        if options is None:
+            options = {'modification_time': "", 'file_size': ""}
         self.cif_data = {
             "data": '',
             "_cell_length_a": '',

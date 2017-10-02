@@ -78,7 +78,10 @@ def application(dbfilename):
         print(m.make_mol())
         return
     elif str_id and unitcell:
-        print(get_cell_parameters(structures, str_id))
+        try:
+            print(get_cell_parameters(structures, str_id))
+        except ValueError:
+            return
         return
     elif str_id and resid1:
         print(get_residuals_table1(cif_dic))
