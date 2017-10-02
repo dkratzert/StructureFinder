@@ -42,7 +42,7 @@ if py36:
 
 __metaclass__ = type  # use new-style classes
 
-VERSION = 12
+VERSION = 10
 """
 TODO:
 - Figure out how guest and other users are handled with "Open APEX Database" button.
@@ -110,7 +110,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 self.show_full_list()
             except IndexError:
                 pass
-        if update_check.is_update_needed():
+        if update_check.is_update_needed(VERSION=VERSION):
             self.statusBar().showMessage('A new Version of StructureFinder is available at '
                                          'https://www.xs3.uni-freiburg.de/research/structurefinder')
 

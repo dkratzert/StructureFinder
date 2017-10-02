@@ -4,10 +4,11 @@ import argparse
 
 import time
 
+from misc import update_check
 from searcher import filecrawler, database_handler
 
 #from searcher.spinner import Spinner
-
+from strf import VERSION
 
 parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect cif files to a '
                                              'database.\n'
@@ -36,11 +37,16 @@ parser.add_argument("-o",
 
 args = parser.parse_args()
 
+def check_update():
+    if update_check.is_update_needed(VERSION=VERSION):
+        print('A new Version of StructureFinder is available at '
+              'https://www.xs3.uni-freiburg.de/research/structurefinder')
 
 ncifs = 0
 try:
     if not args.dir:
         parser.print_help()
+        check_update()
         sys.exit()
 except IndexError:
     print("No valid search directory given.\n")
@@ -77,5 +83,6 @@ else:
     h, m = divmod(m, 60)
     tmessage = "\nTotal {3} cif files in '{4}'. Duration: {0:>2d} h, {1:>2d} m, {2:>3.2f} s"
     print(tmessage.format(int(h), int(m), s, ncifs, dbfilename))
+    check_update()
 
 

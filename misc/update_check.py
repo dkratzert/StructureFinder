@@ -11,23 +11,13 @@
 #
 from __future__ import print_function
 
-from strf import VERSION
-
 urlprefix = "http://www.xs3-data.uni-freiburg.de/structurefinder"
 
 from urllib.request import FancyURLopener
 
 
-class MyOpener(FancyURLopener):
-    """
-    Sets the user agent of the urllib http request.
-    """
-    version = 'STRF {}'.format(VERSION)
 
-myurlopen = MyOpener()
-
-
-def get_current_strf_version(silent=True):
+def get_current_strf_version(VERSION=0, silent=True):
     """
     determines the current version of DSR on the web server
 
@@ -40,6 +30,15 @@ def get_current_strf_version(silent=True):
     :type: str
     """
     import socket
+
+    # Have to do this here to prevent import problems:
+    class MyOpener(FancyURLopener):
+        """
+        Sets the user agent of the urllib http request.
+        """
+        version = 'STRF {}'.format(VERSION)
+
+    myurlopen = MyOpener()
     socket.setdefaulttimeout(3)
     FancyURLopener.version = "STRF-versioncheck {}".format(VERSION)
     try:
@@ -55,14 +54,14 @@ def get_current_strf_version(silent=True):
     return version
 
 
-def is_update_needed(silent=True):
+def is_update_needed(VERSION=0, silent=True):
     """
     Decides if an update of DSR is needed.
     :return: bool
     >>> is_update_needed()
     False
     """
-    version = get_current_strf_version(silent)
+    version = get_current_strf_version(VERSION=VERSION, silent=True)
     if int(VERSION) < int(version):
         return True
     else:

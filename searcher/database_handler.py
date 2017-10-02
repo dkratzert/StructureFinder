@@ -58,6 +58,13 @@ class DatabaseRequest():
         self.cur.execute("DROP TABLE IF EXISTS ElementSearch")
 
         self.cur.execute('''
+                    CREATE TABLE IF NOT EXISTS database_format (
+                        Id                  INTEGER NOT NULL,
+                        Format              INTEGER,
+                        PRIMARY KEY(Id));
+                    ''')
+
+        self.cur.execute('''
                     CREATE TABLE IF NOT EXISTS measurement (
                         Id    INTEGER NOT NULL,
                         name    VARCHAR(255),
