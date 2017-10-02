@@ -606,7 +606,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         idlist = []
         try:
             volume = lattice.vol_unitcell(*cell)
-            if self.ui.sublattCheckbox.isChecked():
+            if self.ui.sublattCheckbox.isChecked() or self.ui.ad_superlatticeCheckBox.isChecked():
                 # sub- and superlattices:
                 for v in [volume * x for x in (0.25, 0.5, 1, 2, 3, 4)]:
                     # First a list of structures where the volume is similar:
