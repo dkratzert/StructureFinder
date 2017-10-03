@@ -38,36 +38,45 @@ class Lattice(object):
             yn = (yn + 10.0) % 1.0
             zn = (zn + 10.0) % 1.0
             #name = get_atomlabel(name)  # name is now the atomic symbol
-            self.atoms[i] = (symbol, xn, yn, zn)
+            self.atoms[i] = (name, symbol, xn, yn, zn)
         mindist = 0.01  # Angstrom
         # For each atom, apply each symmetry operation to create a new atom.
         imax = len(self.atoms)
         i = 0
+        #maxmax = 20 * imax
         while i < imax:
-            at_type, x, y, z = self.atoms[i]
+            name, at_type, x, y, z = self.atoms[i]
             for op in self.symmcards:
-                xn, yn, zn = eval(op)
+                if not op.strip():
+                    continue
+                try:
+                    xn, yn, zn = eval(op)
+                except SyntaxError:
+                    continue
                 # Make sure that the new atom lies within the unit cell.
                 xn = (xn + 10.0) % 1.0
                 yn = (yn + 10.0) % 1.0
                 zn = (zn + 10.0) % 1.0
-                # Check if the new position is actually new, or the same as a previous
-                # atom.
+                # Check if the new position is actually new, or the same as a previous atom.
                 new_atom = True
                 for at in self.atoms:
-                    if abs(at[1] - xn) < mindist and abs(at[2] - yn) < mindist and abs(at[3] - zn) < mindist:
+                    if abs(at[2] - xn) < mindist and abs(at[3] - yn) < mindist and abs(at[4] - zn) < mindist:
                         new_atom = False
                         # Check that this is the same atom type.
-                        if at[0] != at_type:
-                            print('Invalid atom found')
-                # If the atom is new, add it to the list!
+                        if at[1] != at_type:
+                            #print("{}, {}".format(at[0], at_type))
+                            break
+                            #print('Invalid atom found')
+                # If the atom is new, add it to the list:
                 if new_atom:
-                    self.atoms.append((at_type, xn, yn, zn))  # add a 4-tuple
+                    self.atoms.append((name, at_type, xn, yn, zn))
             # Update the loop iterator.
             i = i + 1
             imax = len(self.atoms)
+            #if imax > maxmax:
+            #    break  # break after too many iterations
         return self.atoms
-        # TODO: add more lattice transations inside a max distance to current atoms.
+        # TODO: Use algorithm of george to get complete molecules:
 
 if __name__ == '__main__':
     cif = Cif()
