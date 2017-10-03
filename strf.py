@@ -371,8 +371,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if not self.structures.database.cur:
             return False
         structure_id = item.sibling(item.row(), 3).data()
-        request = """select * from residuals where StructureId = {}""".format(structure_id)
-        dic = self.structures.get_row_as_dict(request)
+        dic = self.structures.get_row_as_dict(structure_id)
         self.display_properties(structure_id, dic)
         self.structureId = structure_id
         return True

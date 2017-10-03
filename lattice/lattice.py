@@ -12,7 +12,12 @@ Created on 03.06.2017
 @author: Daniel Kratzert
 """
 from math import cos, radians, sqrt, sin
+from pprint import pprint
+
 import numpy as np
+
+from searcher.atoms import get_atomlabel
+from searcher.fileparser import Cif
 
 
 def vol_unitcell(a, b, c, al, be, ga):
@@ -30,7 +35,7 @@ def vol_unitcell(a, b, c, al, be, ga):
     8.0
 
     """
-    #ca, cb, cg = cos(radians(al)), cos(radians(be)), cos(radians(ga))
+    # ca, cb, cg = cos(radians(al)), cos(radians(be)), cos(radians(ga))
     v = a * b * c * sqrt(1 + 2 * cos(radians(al)) * cos(radians(be)) * cos(radians(ga))
                          - cos(radians(al)) ** 2 - cos(radians(be)) ** 2 - cos(radians(ga)) ** 2)
     return v
@@ -72,7 +77,8 @@ class A(object):
         Invert the matrix to do the opposite.
         """
         Am = np.matrix([[self.a, self.b * cos(self.gamma), self.c * cos(self.beta)],
-                         [0, self.b * sin(self.gamma),
-                          (self.c * (cos(self.alpha) - cos(self.beta) * cos(self.gamma)) / sin(self.gamma))],
-                         [0, 0, self.V / (self.a * self.b * sin(self.gamma))]])
+                        [0, self.b * sin(self.gamma),
+                         (self.c * (cos(self.alpha) - cos(self.beta) * cos(self.gamma)) / sin(self.gamma))],
+                        [0, 0, self.V / (self.a * self.b * sin(self.gamma))]])
         return Am
+

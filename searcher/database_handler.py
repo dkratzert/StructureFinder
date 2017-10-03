@@ -777,10 +777,11 @@ class StructureTable():
             self.database.cur.execute(optimize_queries)
             self.database.cur.execute(element_search)
 
-    def get_row_as_dict(self, request):
+    def get_row_as_dict(self, structure_id):
         """
         Returns a database row as dictionary
         """
+        request = """select * from residuals where StructureId = {}""".format(structure_id)
         # setting row_factory to dict for the cif keys:
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
