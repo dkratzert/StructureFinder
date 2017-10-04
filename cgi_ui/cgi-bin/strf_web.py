@@ -1,29 +1,25 @@
-#!C:\tools\Python-3.6.2_64\pythonw.exe
 #!/usr/local/bin/python3.6
-
+#!C:\tools\Python-3.6.2_64\pythonw.exe
 
 import cgi
 import pathlib
 import json
 import math
 from string import Template
-
 from displaymol import mol_file_writer
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher import database_handler, misc
-
 from searcher.database_handler import StructureTable
-#import cgitb
-
-#cgitb.enable()
-
+import cgitb
+cgitb.enable()
 """
 TODO:
 
 """
 
-site_ip = "10.4.13.169"
+#site_ip = "10.4.13.169"
+site_ip = "127.0.0.1"
 dbfilename = "./structurefinder.sqlite"
 #dbfilename = "./structures_30.09.2017.sqlite"
 
@@ -445,7 +441,6 @@ def process_data():
     t = p.read_text(encoding='utf-8', errors='ignore')
     d = dict(my_ip=site_ip)
     return Template(t).safe_substitute(d)
-    return t
 
 if __name__ == "__main__":
     application(dbfilename)

@@ -12,12 +12,7 @@ Created on 03.06.2017
 @author: Daniel Kratzert
 """
 from math import cos, radians, sqrt, sin
-from pprint import pprint
-
 import numpy as np
-
-from searcher.atoms import get_atomlabel
-from searcher.fileparser import Cif
 
 
 def vol_unitcell(a, b, c, al, be, ga):

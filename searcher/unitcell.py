@@ -11,7 +11,6 @@ Created on 03.10.2017
 
 @author: Daniel Kratzert
 """
-from searcher.atoms import get_atomlabel
 from searcher.database_handler import StructureTable
 from searcher.fileparser import Cif
 
