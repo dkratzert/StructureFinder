@@ -47,8 +47,15 @@ body {
 }
 
 .input-group-addon {
-    min-width:70px;
+    min-width:75px;
     text-align:left;
+}
+
+#jsmolcolumn {
+    /*margin-right: 15px;*/
+    margin-left: 15px;
+    width: 360px;
+    height: 340px;
 }
 
 </style>
@@ -99,7 +106,7 @@ $(document).ready(function(){
         <div class="input-group input-group-sm">
             <span class="input-group-addon" data-toggle="tooltip" title="Search for a Unit Cell">Unit Cell</span>
             <input type="text" class="form-control" placeholder="a b c &alpha; &beta; &gamma;" style="font-style: italic" id="cellsrch" name="cell">
-                <div class="input-group-sm input-group-btn">^
+                <div class="input-group-sm input-group-btn">
                 <button class="btn btn-default" type="submit" id="cellsrchbutton">
                     <i class="glyphicon glyphicon-search"></i>
                 </button>
@@ -324,7 +331,7 @@ jQuery(document).ready(function($) {
     var bgcolor = $(this.body).css("background-color");
     var Info;
     Info = {
-        width: 300,
+        width: 320,
         height: 300,
         color: bgcolor,
         //color: "0xf0f0f0",
