@@ -87,6 +87,7 @@ class Cif(object):
             "_refine_ls_shift/su_mean": '',
             "_refine_diff_density_max": '',
             "_refine_diff_density_min": '',
+            "_diffrn_reflns_av_unetI_netI": '',
             "_database_code_depnum_ccdc_archive": '',
             "_shelx_res_file": '',
             "modification_time": options['modification_time'],

@@ -6,6 +6,7 @@ import cgi
 import pathlib
 import json
 import math
+from string import Template
 
 from displaymol import mol_file_writer
 from lattice import lattice
@@ -13,17 +14,18 @@ from pymatgen.core import mat_lattice
 from searcher import database_handler, misc
 
 from searcher.database_handler import StructureTable
-import cgitb
+#import cgitb
 
-cgitb.enable()
+#cgitb.enable()
 
 """
 TODO:
 
 """
 
-# dbfilename = "./structuredb.sqlite"
-dbfilename = "./structures_30.09.2017.sqlite"
+site_ip = "10.4.13.169"
+dbfilename = "./structurefinder.sqlite"
+#dbfilename = "./structures_30.09.2017.sqlite"
 
 
 def application(dbfilename):
@@ -46,7 +48,7 @@ def application(dbfilename):
     records = form.getfirst('cmd')
     structures = database_handler.StructureTable(dbfilename)
     cif_dic = None
-    # debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2, unitcell, adv)
+    #debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2, unitcell, adv)
     if adv:
         elincl = form.getvalue("elements_in")
         elexcl = form.getvalue("elements_out")
@@ -62,8 +64,7 @@ def application(dbfilename):
         print(get_structures_json(structures, ids))
         return
     if str_id and (resid1 or resid2):
-        request = """select * from residuals where StructureId = {}""".format(str_id)
-        cif_dic = structures.get_row_as_dict(request)
+        cif_dic = structures.get_row_as_dict(str_id)
     if cell_search:
         ids = find_cell(structures, cell_search, more_results=more_results, sublattice=sublattice)
         print(get_structures_json(structures, ids))
@@ -152,9 +153,9 @@ def get_residuals_table1(cif_dic: dict) -> str:
     """
     Returns a table with the most important residuals of a structure.
     """
-    if cif_dic['_diffrn_reflns_av_unetI_netI']:
+    try:
         rsigma = " / {}".format(cif_dic['_diffrn_reflns_av_unetI_netI'])
-    else:
+    except (TypeError, ValueError):
         rsigma = " "
     if not cif_dic:
         return ""
@@ -266,8 +267,7 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
                             </thead>
                         <tbody>"""
     # get the residuals of the cif file as a dictionary:
-    request = """select * from residuals where StructureId = {}""".format(structure_id)
-    dic = structures.get_row_as_dict(request)
+    dic = structures.get_row_as_dict(structure_id)
     if not dic:
         return ""
     # filling table with data rows:
@@ -442,14 +442,11 @@ def process_data():
     """
     Reads html template and replaces things.
     """
-    try:
-        p = pathlib.Path("cgi_ui/strf_web_Template.htm")
-        t = p.read_bytes().decode('utf-8', 'ignore')
-    except FileNotFoundError:
-        p = pathlib.Path("./strf_web_Template.htm")
-        t = p.read_bytes().decode('utf-8', 'ignore')
+    p = pathlib.Path("./strf_web_Template.htm")
+    t = p.read_text(encoding='utf-8', errors='ignore')
+    d = dict(my_ip=site_ip)
+    return Template(t).safe_substitute(d)
     return t
-
 
 if __name__ == "__main__":
     application(dbfilename)
