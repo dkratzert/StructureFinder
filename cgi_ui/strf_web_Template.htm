@@ -3,7 +3,6 @@
 <head>
     <title>StructureFinder</title>
 
-
     <link rel="stylesheet" href="http://$my_ip/w2ui/w2ui-1.4.min.css">
     <link rel="stylesheet" href="http://$my_ip/bootstrap3/css/bootstrap.min.css">
     <script src="http://$my_ip/jquery/jquery.min.js"></script>
@@ -83,7 +82,6 @@ $(document).ready(function(){
 $(document).ready(function(){
     $('[data-toggle="cell_tooltip"]').tooltip();
 });
-
 
 </script>
 
@@ -237,8 +235,7 @@ $(document).ready(function(){
   <a href="mailto:daniel.kratzert@ac.uni-freiburg.de">daniel.kratzert@ac.uni-freiburg.de</a>
 </address>
 
-<!-- The main container div: -->
-</div>
+</div>  <!-- End of the main container div -->
 
 
 </body>
@@ -248,7 +245,8 @@ $(document).ready(function(){
 
 jQuery(document).ready(function($) {
     // Do advanced search:
-    $("#advsearch-button").click(function(event) {
+    var advanced_search_button = $("#advsearch-button")
+    advanced_search_button.click(function(event) {
         var txt_in = document.getElementById("text_in").value;
         var txt_out = document.getElementById("text_out").value;
         var elements_in = document.getElementById("elements_in").value;
@@ -295,6 +293,13 @@ jQuery(document).ready(function($) {
         if (e.which === 13) {  // enter key
             var cell = document.getElementById("cellsrch").value;
             cellsearch(cell);
+            //console.log(cell);
+        }
+    });
+
+    $('#cell_adv').keypress(function(e) {
+        if (e.which === 13) {  // enter key
+            advanced_search_button.click();
             //console.log(cell);
         }
     });
@@ -376,7 +381,7 @@ jQuery(document).ready(function($) {
         var scell = cell.split(" ");
         //console.log(scell);
         if (isNumericArray(scell)) {
-            return !(scell.length !== 6);
+            return !(scell.length !== 6); // return True if 6 values
         } else {
             return false;
         }
@@ -385,29 +390,27 @@ jQuery(document).ready(function($) {
     // Test if all values in array are numeric:
     function isNumericArray(array) {
         var isal = true;
-        //console.log(array);
         for (var i=0; i<array.length; i++) {
             if (!jQuery.isNumeric(array[i])) {
                 isal = false;
             }
         }
-        //console.log(isal);
         return isal;
     }
-
 
     function cellsearch(cell) {
         var more_res = $('#more_results').is(':checked');
         var supercell = $('#supercells').is(':checked');
-        cell = cell.replace(/\s+/g, ' ').trim();
+        cell = cell.replace(/\s+/g, ' ').trim();  // replace multiple spaces with one
         if (isValidCell(cell)) {
             var advanced = false;
-            w2ui['mygrid'].request('get-records', params = {adv: advanced, cell_search: cell, more: more_res, supercell: supercell},
-                url = w2ui['mygrid'].url,
-                function (result) {
-                    //console.log(result);
-                    //console.log(more_res);
-                }
+            w2ui['mygrid'].request('get-records', params = {adv: advanced, cell_search: cell,
+                                                            more: more_res, supercell: supercell},
+                                url = w2ui['mygrid'].url,
+                                            function (result) {
+                                                //console.log(result);
+                                                //console.log(more_res);
+                                            }
             );
         }
     }
@@ -453,8 +456,6 @@ jQuery(document).ready(function($) {
         $.post(url = cgifile, data = {id: idstr}, function (result) {
             document.getElementById("residuals").innerHTML = result;
         });
-
-
     }
 });
 
