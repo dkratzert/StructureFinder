@@ -320,8 +320,7 @@ def find_cell(structures: StructureTable, cellstr: str, sublattice=False, more_r
     if idlist:
         lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
         for num, i in enumerate(idlist):
-            request = """select * from cell where StructureId = {}""".format(i)
-            dic = structures.get_row_as_dict(request)
+            dic = structures.get_cell_as_dict(i)
             try:
                 lattice2 = mat_lattice.Lattice.from_parameters(
                         float(dic['a']),

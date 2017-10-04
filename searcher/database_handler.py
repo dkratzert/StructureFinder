@@ -792,6 +792,21 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return dic
 
+    def get_cell_as_dict(self, structure_id):
+        """
+        Returns a database row as dictionary
+        """
+        request = """select * from cell where StructureId = {}""".format(structure_id)
+        # setting row_factory to dict for the cif keys:
+        self.database.con.row_factory = self.database.dict_factory
+        self.database.cur = self.database.con.cursor()
+        dic = self.database.db_fetchone(request)
+        self.database.cur.close()
+        # setting row_factory back to regular touple base requests:
+        self.database.con.row_factory = None
+        self.database.cur = self.database.con.cursor()
+        return dic
+
     def find_by_volume(self, volume, threshold=0.03):
         """
         Searches cells with volume between upper and lower limit
