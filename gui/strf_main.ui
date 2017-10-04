@@ -172,7 +172,7 @@
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="maintab">
        <attribute name="title">
@@ -546,7 +546,7 @@
                  <item row="2" column="0">
                   <widget class="QLabel" name="refl2sigmaLabel">
                    <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Indep. Refl. [&lt;span style=&quot; font-style:italic;&quot;&gt;I&lt;/span&gt;&amp;gt;2σ(&lt;span style=&quot; font-style:italic;&quot;&gt;I&lt;/span&gt;)]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Data with [&lt;span style=&quot; font-style:italic;&quot;&gt;I&lt;/span&gt;&amp;gt;2σ(&lt;span style=&quot; font-style:italic;&quot;&gt;I&lt;/span&gt;)]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                   </widget>
                  </item>

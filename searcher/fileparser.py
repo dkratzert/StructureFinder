@@ -272,9 +272,9 @@ class Cif(object):
         if '_diffrn_reflns_av_sigmaI/netI' in self.cif_data:
             self.cif_data['_diffrn_reflns_av_unetI/netI'] = self.cif_data['_diffrn_reflns_av_sigmaI/netI']
 
-    def __iter__(self):
+    def __iter__(self) -> dict:
         """
-        an iterable for the Cif object
+        An iterable for the Cif object
         :return: cif entries
         """
         if self.ok:
@@ -297,7 +297,7 @@ class Cif(object):
         else:
             return ''
 
-    def __str__(self):
+    def __str__(self) -> str:
         """ 
         The string representation for print(self)
         """

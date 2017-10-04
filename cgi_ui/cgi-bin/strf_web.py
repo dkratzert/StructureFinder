@@ -223,7 +223,7 @@ def get_residuals_table2(cif_dic: dict) -> str:
         <tbody>
         <tr><td style='width: 40%'><b>Measured Refl.</b></td>       <td>{0}</td></tr>
         <tr><td><b>Independent Refl.</b></td>                       <td>{9}</td></tr>
-        <tr><td><b>Indep. Refl. [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>                       <td>{10}</td></tr>
+        <tr><td><b>Data with [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>                       <td>{10}</td></tr>
         <tr><td><b>Parameters</b></td>                              <td>{1}</td></tr>
         <tr><td><b>data/param</b></td>                              <td>{2:<5.1f}</td></tr>
         <tr><td><b>Restraints</b></td>                              <td>{3}</td></tr>

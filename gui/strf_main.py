@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file './gui/strf_main.ui'
+# Form implementation generated from reading ui file './gui\strf_main.ui'
 #
-# Created by: PyQt5 UI code generator 5.8.2
+# Created by: PyQt5 UI code generator 5.9
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -667,7 +667,7 @@ class Ui_stdbMainwindow(object):
         self.actionGo_to_All_CIF_Tab.setObjectName("actionGo_to_All_CIF_Tab")
 
         self.retranslateUi(stdbMainwindow)
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(0)
         self.actionExit.triggered.connect(stdbMainwindow.close)
         QtCore.QMetaObject.connectSlotsByName(stdbMainwindow)
         stdbMainwindow.setTabOrder(self.importDirButton, self.importDatabaseButton)
@@ -729,7 +729,7 @@ class Ui_stdbMainwindow(object):
         self.label.setText(_translate("stdbMainwindow", "Sum Formula:"))
         self.reflTotalLabel.setText(_translate("stdbMainwindow", "Measured Refl."))
         self.uniqReflLabel.setText(_translate("stdbMainwindow", "Independent Refl."))
-        self.refl2sigmaLabel.setText(_translate("stdbMainwindow", "<html><head/><body><p>Indep. Refl. [<span style=\" font-style:italic;\">I</span>&gt;2σ(<span style=\" font-style:italic;\">I</span>)]</p></body></html>"))
+        self.refl2sigmaLabel.setText(_translate("stdbMainwindow", "<html><head/><body><p>Data with [<span style=\" font-style:italic;\">I</span>&gt;2σ(<span style=\" font-style:italic;\">I</span>)]</p></body></html>"))
         self.wavelengthLabel.setText(_translate("stdbMainwindow", "Wavelength [Å]"))
         self.SpaceGrouplabel.setText(_translate("stdbMainwindow", "Space Group"))
         self.zLabel.setText(_translate("stdbMainwindow", "Z"))
