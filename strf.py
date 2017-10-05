@@ -220,7 +220,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.statusBar().showMessage('Found 0 structures.')
             return
         if excl:
-            self.display_structures_by_idlist(list(results - set(misc.flatten(excl))))
+            try:
+                self.display_structures_by_idlist(list(results - set(misc.flatten(excl))))
+            except TypeError:
+                return
         else:
             self.display_structures_by_idlist(list(results))
 
