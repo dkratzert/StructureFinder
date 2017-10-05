@@ -1,5 +1,5 @@
-#!/usr/local/bin/python3.6
 #!C:\tools\Python-3.6.2_64\pythonw.exe
+#!/usr/local/bin/python3.6
 
 import cgi
 import pathlib
@@ -18,8 +18,8 @@ TODO:
 
 """
 
-#site_ip = "10.4.13.169"
-site_ip = "127.0.0.1"
+site_ip = "10.4.13.169"
+#site_ip = "127.0.0.1"
 dbfilename = "./structurefinder.sqlite"
 #dbfilename = "./structures_30.09.2017.sqlite"
 
@@ -421,7 +421,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
             excl.append([i[0] for i in idlist])
         except(IndexError, KeyError):
             excl.append([idlist])  # only one result
-    if incl:
+    if incl and incl[0]:
         results = set(incl[0]).intersection(*incl)
         if date_results:
             results = set(date_results).intersection(results)

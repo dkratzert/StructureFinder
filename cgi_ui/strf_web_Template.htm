@@ -98,14 +98,14 @@ $(document).ready(function(){
 <a type="button" class="btn btn-default btn-xs" data-toggle="collapse" data-target="#adv-search"
         id="toggle_advsearch-button">Advanced Search</a>
 
-<!-- The collapsible for simple search options: -->
+<!-- ------------  The collapsible for simple search options: -----------------  -->
 <div class="form-group row" id="mainsearch">
     <div class="col-sm-6">
         <div class="input-group input-group-sm">
             <span class="input-group-addon" data-toggle="tooltip" title="Search for a Unit Cell">Unit Cell</span>
-            <input type="text" class="form-control" placeholder="a b c &alpha; &beta; &gamma;" style="font-style: italic" id="cellsrch" name="cell">
+            <input type="text" class="form-control" placeholder="a b c &alpha; &beta; &gamma;" style="font-style: italic" id="smpl_cellsrch" name="cell">
                 <div class="input-group-sm input-group-btn">
-                <button class="btn btn-default" type="submit" id="cellsrchbutton">
+                <button class="btn btn-default" type="submit" id="smpl_cellsrchbutton">
                     <i class="glyphicon glyphicon-search"></i>
                 </button>
                 </div>
@@ -115,9 +115,9 @@ $(document).ready(function(){
     <div class="col-sm-6">
         <div class="input-group input-group-sm">
             <span class="input-group-addon" data-toggle="tooltip" title="Search for a Unit Cell">Text</span>
-            <input type="text" class="form-control" placeholder="Search Text" id="textsrch" name="text">
+            <input type="text" class="form-control" placeholder="Search Text" id="smpl_textsrch" name="text">
                 <div class="input-group-sm input-group-btn">
-                    <button class="btn btn-default" type="submit" id="textsrchbutton">
+                    <button class="btn btn-default" type="submit" id="smpl_textsrchbutton">
                         <i class="glyphicon glyphicon-search"></i>
                 </button>
                 </div>
@@ -125,7 +125,7 @@ $(document).ready(function(){
         </div>
     </div>
 </div>
-
+<!-- ---------------------    End of simple search     ----------------------    -->
 
 <!-- The collapsible for Advanced search options: -->
 <div id="adv-search" class="collapse">
@@ -137,13 +137,13 @@ $(document).ready(function(){
 
     <div class="row">
         <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-success">
+            <div class="input-group input-group-sm has-success advsearchfields">
                 <span class="input-group-addon" data-toggle="tooltip" title="Should contain">Elements</span>
                 <input type="text" class="form-control form-sm" placeholder="C H O ..." id="elements_in">
             </div>
         </div>
         <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-error">
+            <div class="input-group input-group-sm has-error advsearchfields">
                 <span class="input-group-addon" data-toggle="tooltip" title="Should not contain">Elements</span>
                 <input type="text" class="form-control form-sm" placeholder="C H O ..." id="elements_out">
             </div>
@@ -151,13 +151,13 @@ $(document).ready(function(){
     </div>
     <div class="row">
         <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-success ">
+            <div class="input-group input-group-sm has-success advsearchfields">
                 <span class="input-group-addon" data-toggle="tooltip" title="Should contain">Text</span>
                 <input type="text" class="form-control form-sm" placeholder="" id="text_in">
             </div>
         </div>
         <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-error">
+            <div class="input-group input-group-sm has-error advsearchfields">
                 <span class="input-group-addon" data-toggle="tooltip" title="Should not contain">Text</span>
                 <input type="text" class="form-control form-sm" placeholder="" id="text_out">
             </div>
@@ -165,13 +165,13 @@ $(document).ready(function(){
     </div>
     <div class="row">
         <div class="column col-xs-6">
-            <div class="input-group input-group-sm">
+            <div class="input-group input-group-sm advsearchfields">
                 <span class="input-group-addon">Uni Cell</span>
                 <input type="text" class="form-control form-sm" style="font-style: italic" placeholder="a b c &alpha; &beta; &gamma;" id="cell_adv">
             </div>
         </div>
         <div class="column col-md-4">
-            <div class="input-group input-group-sm w2ui-field">
+            <div class="input-group input-group-sm w2ui-field advsearchfields">
                 <span class="input-group-addon">Date from</span>
                 <input class="input-sm w2field" type="text" id="date1">
                 <span class="input-group-addon">to</span>
@@ -245,7 +245,7 @@ $(document).ready(function(){
 
 jQuery(document).ready(function($) {
     // Do advanced search:
-    var advanced_search_button = $("#advsearch-button")
+    var advanced_search_button = $("#advsearch-button");
     advanced_search_button.click(function(event) {
         var txt_in = document.getElementById("text_in").value;
         var txt_out = document.getElementById("text_out").value;
@@ -272,32 +272,36 @@ jQuery(document).ready(function($) {
     });
 
     // Button clicked:
-    $("#textsrchbutton").click(function(event) {
-        var txt = document.getElementById("textsrch").value;
+    $("#smpl_textsrchbutton").click(function(event) {
+        var txt = document.getElementById("smpl_textsrch").value;
         txtsearch(txt);
+        //console.log(txt);
     });
-    // Enter key pressed in search field:
-    $('#textsrch').keypress(function(e) {
+
+    $("#smpl_cellsrchbutton").click(function(event) {
+        var cell = document.getElementById("smpl_cellsrch").value;
+        cellsearch(cell);
+    });
+
+    // Enter key pressed in simple search fields:
+    $('#smpl_textsrch').keypress(function(e) {
         if (e.which === 13) {  // enter key
-            var txt = document.getElementById("textsrch").value;
+            var txt = document.getElementById("smpl_textsrch").value;
             txtsearch(txt);
-            //console.log(cell);
+            //console.log(txt);
         }
     });
 
-    $("#cellsrchbutton").click(function(event) {
-        var cell = document.getElementById("cellsrch").value;
-        cellsearch(cell);
-    });
-    $('#cellsrch').keypress(function(e) {
+    $('#smpl_cellsrch').keypress(function(e) {
         if (e.which === 13) {  // enter key
-            var cell = document.getElementById("cellsrch").value;
+            var cell = document.getElementById("smpl_cellsrch").value;
             cellsearch(cell);
             //console.log(cell);
         }
     });
 
-    $('#cell_adv').keypress(function(e) {
+    // Enter key pressed in one of the advanced search fields:
+    $('.advsearchfields').keypress(function(e) {
         if (e.which === 13) {  // enter key
             advanced_search_button.click();
             //console.log(cell);
@@ -368,10 +372,10 @@ jQuery(document).ready(function($) {
         var advanced = true;
         var gridparams = {adv: advanced, cell_search: cell, text_in: text_in, text_out: text_out, elements_in: elements_in,
                             elements_out: elements_out, more: more_res, supercell: supercell, date1:date1, date2: date2};
-        console.log(gridparams);
+        //console.log(gridparams);
         w2ui['mygrid'].request('get-records', gridparams, w2ui['mygrid'].url,
             function (result) {
-                //console.log(result);
+                console.log(result);
             }
         );
     }

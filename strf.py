@@ -210,7 +210,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 excl.append([i[0] for i in idlist])
             except(IndexError, KeyError):
                 excl.append([idlist])  # only one result
-        if incl:
+        if incl and incl[0]:
             results = set(incl[0]).intersection(*incl)
             if date_results:
                 results = set(date_results).intersection(results)
