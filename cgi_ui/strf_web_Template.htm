@@ -65,7 +65,7 @@ var cgifile = 'http://$my_ip/cgi-bin/strf_web.cgi';
 
 function copyToClipboard(element) {
     var $temp = $("<input>");
-    $("body").append($temp);
+    $("body").prepend($temp);
     $temp.val($(element).text()).select();
     document.execCommand("copy");
     $temp.remove();
