@@ -429,7 +429,10 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
         results = date_results
     if excl:
         # excl list should not be in the resukts at all
-        return list(results - set(misc.flatten(excl)))
+        try:
+            return list(results - set(misc.flatten(excl)))
+        except TypeError:
+            return []
     return list(results)
 
 
