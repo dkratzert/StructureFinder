@@ -627,8 +627,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.statusBar().clearMessage()
             for num, i in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist) - 1)
-                request = """select * from cell where StructureId = {}""".format(i)
-                dic = self.structures.get_row_as_dict(request)
+                dic = self.structures.get_cell_as_dict(i)
                 try:
                     lattice2 = mat_lattice.Lattice.from_parameters(
                             float(dic['a']),
