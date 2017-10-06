@@ -11,10 +11,10 @@ from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher import database_handler, misc
 from searcher.database_handler import StructureTable
-import cgitb
-cgitb.enable()
+#import cgitb
+#cgitb.enable()
 """
-TODO:
+TODO: Fix Sn S distinction
 
 """
 

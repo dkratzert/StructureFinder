@@ -127,9 +127,9 @@ def distance(x1: float, y1: float, z1: float,
              x2: float, y2: float, z2: float) -> float:
     """
     distance between two points in space for orthogonal axes.
-    >>> distance(1, 1, 1, 2, 2, 2, 4)
-    1.7321
-    >>> distance(1, 0, 0, 2, 0, 0, 4)
+    >>> distance(1, 1, 1, 2, 2, 2)
+    1.7320508075688772
+    >>> distance(1, 0, 0, 2, 0, 0)
     1.0
     """
     d = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
@@ -160,8 +160,10 @@ def formula_str_to_dict(sumform: str or bytes) -> dict:
     e.g. C12H6O3Mn7
     Find two-char atoms, them one-char, and see if numbers are in between.
 
+    >>> formula_str_to_dict("SSn")
+    {'S': '', 'Sn': ''}
     >>> formula_str_to_dict("S1Cl")
-    {'S': '1', 'Cl': '1'}
+    {'S': '1', 'Cl': ''}
     >>> formula_str_to_dict("C12H6O3Mn7")
     {'C': '12', 'H': '6', 'O': '3', 'Mn': '7'}
     >>> formula_str_to_dict("C12 H60 O3 Mn7")
