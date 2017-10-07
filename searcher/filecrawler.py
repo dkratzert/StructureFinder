@@ -223,9 +223,6 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 self.abort_import_button.hide()
                 self.decide_import = True
                 break
-    if self:
-        self.progress.hide()
-    structures.populate_fulltext_search_table()
     structures.database.commit_db()
     time2 = time.clock()
     diff = time2 - time1

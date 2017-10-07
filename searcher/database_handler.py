@@ -54,8 +54,6 @@ class DatabaseRequest():
         #self.cur.execute("DROP TABLE IF EXISTS Atoms")
         #self.cur.execute("DROP TABLE IF EXISTS niggli_cell")
         #self.cur.execute("DROP TABLE IF EXISTS Residuals")
-        self.cur.execute("DROP TABLE IF EXISTS txtsearch")
-        self.cur.execute("DROP TABLE IF EXISTS ElementSearch")
 
         self.cur.execute('''
                     CREATE TABLE IF NOT EXISTS database_format (
@@ -102,24 +100,6 @@ class DatabaseRequest():
                           ON DELETE CASCADE
                           ON UPDATE NO ACTION);
                     ''')
-        if py36:
-            # The simple tokenizer is best for my purposes:
-            self.cur.execute("""
-                CREATE VIRTUAL TABLE txtsearch USING 
-                        fts4(StructureId    INTEGER, 
-                             filename       TEXT, 
-                             dataname       TEXT, 
-                             path           TEXT,
-                             shelx_res_file TEXT,
-                                tokenize=simple "tokenchars= .=-_");  
-            """)
-            # Now the table for element search:
-            self.cur.execute("""
-                CREATE VIRTUAL TABLE ElementSearch USING
-                        fts4(StructureId        INTEGER,
-                        _chemical_formula_sum   TEXT,
-                            tokenize=simple 'tokenchars= 0123456789');
-            """)
 
         self.cur.execute('''
                     CREATE TABLE IF NOT EXISTS Residuals (
@@ -231,6 +211,34 @@ class DatabaseRequest():
                                   ON UPDATE NO ACTION);
                     '''
                     )
+
+    def init_textsearch(self):
+        """
+        Initializes the full text search (fts) tables.
+        """
+        self.cur.execute("DROP TABLE IF EXISTS txtsearch")
+        self.cur.execute("DROP TABLE IF EXISTS ElementSearch")
+
+        # The simple tokenizer is best for my purposes (A self-written tokenizer would even be better):
+        self.cur.execute("""
+            CREATE VIRTUAL TABLE txtsearch USING 
+                    fts4(StructureId    INTEGER, 
+                         filename       TEXT, 
+                         dataname       TEXT, 
+                         path           TEXT,
+                         shelx_res_file TEXT,
+                            tokenize=simple "tokenchars= .=-_");  
+                          """
+        )
+
+        # Now the table for element search:
+        self.cur.execute("""
+            CREATE VIRTUAL TABLE ElementSearch USING
+                    fts4(StructureId        INTEGER,
+                    _chemical_formula_sum   TEXT,
+                        tokenize=simple 'tokenchars= 0123456789');
+                      """
+        )
 
     def get_lastrowid(self):
         """
@@ -587,20 +595,6 @@ class StructureTable():
     def fill_residuals_table(self, structure_id, cif):
         """
         Fill the table with residuals of the refinement.
-
-        c.execute('CREATE TABLE {tn} ({nf} {ft} PRIMARY KEY)'\
-        .format(tn=table_name2, nf=new_field, ft=field_type))
-        http://sebastianraschka.com/Articles/2014_sqlite_in_python_tutorial.html
-        # A) Adding a new column without a row value
-        c.execute("ALTER TABLE {tn} ADD COLUMN '{cn}' {ct}"\
-        .format(tn=table_name, cn=new_column1, ct=column_type))
-
-        intab = "aeiou"
-        outtab = "12345"
-        trantab = maketrans(intab, outtab)
-
-        str = "this is string example....wow!!!";
-        print str.translate(trantab)
         :param cif:
         :param structure_id:
         :param param:
@@ -667,7 +661,7 @@ class StructureTable():
                     ) 
                 VALUES
                     (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                     );
                 '''
@@ -748,7 +742,6 @@ class StructureTable():
         """
         Populates the fts4 table with data to search for text.
         _publ_contact_author_name
-        TODO: merge with residuals
         """
         populate_index = """
         INSERT INTO txtsearch (
@@ -764,18 +757,15 @@ class StructureTable():
                 str.path,
                 res._shelx_res_file
                     FROM Structure AS str
-                        INNER JOIN Residuals AS res WHERE str.Id = res.Id;
-        """
-        optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize');"""
+                        INNER JOIN Residuals AS res WHERE str.Id = res.Id; """
+        optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize'); """
         element_search = """
             INSERT INTO ElementSearch(StructureId,
                                     _chemical_formula_sum) 
-                SELECT Id, _chemical_formula_sum FROM residuals; 
-        """
-        if py36:
-            self.database.cur.execute(populate_index)
-            self.database.cur.execute(optimize_queries)
-            self.database.cur.execute(element_search)
+                  SELECT Id, _chemical_formula_sum FROM residuals; """
+        self.database.cur.execute(populate_index)
+        self.database.cur.execute(optimize_queries)
+        self.database.cur.execute(element_search)
 
     def get_row_as_dict(self, structure_id):
         """
@@ -926,10 +916,12 @@ if __name__ == '__main__':
     #searcher.filecrawler.put_cifs_in_db(searchpath='../')
     #db = DatabaseRequest('./structuredb.sqlite')
     #db.initialize_db()
-    db = StructureTable('../../structurefinder.sqlite')
-    db.database.initialize_db()
-    out = db.find_by_date(start="2017-08-19")
+    db = StructureTable('./structuredb.sqlite')
+    #db.database.initialize_db()
+    #out = db.find_by_date(start="2017-08-19")
     #out = db.get_cell_by_id(12)
-    #out = db.find_by_strings('*p-1*')
+    #out = db.find_by_strings('dk')
+    out = db.find_by_elements(['C', 'O', 'N', 'S', 'Sn'])
     print(out)
+    print(len(out))
 

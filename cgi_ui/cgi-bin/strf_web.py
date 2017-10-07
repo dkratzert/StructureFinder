@@ -1,5 +1,5 @@
-#!C:\tools\Python-3.6.2_64\pythonw.exe
 #!/usr/local/bin/python3.6
+#!C:\tools\Python-3.6.2_64\pythonw.exe
 
 import cgi
 import pathlib
@@ -15,12 +15,12 @@ from searcher.database_handler import StructureTable
 #cgitb.enable()
 """
 TODO: Fix Sn S distinction
-
+- Display number of search results in unit cell field.
 """
 
-site_ip = "10.4.13.169"
-#site_ip = "127.0.0.1"
-dbfilename = "./structurefinder.sqlite"
+#site_ip = "10.4.13.169"
+site_ip = "127.0.0.1"
+dbfilename = "./structuredb.sqlite"
 #dbfilename = "./structures_30.09.2017.sqlite"
 
 

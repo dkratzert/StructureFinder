@@ -53,6 +53,8 @@ except IndexError:
     print("Please run this as 'stdb_rmd [directory]'\n")
     print("stdb_cmd will search for .cif files in [directory] recoursively.")
 else:
+    db = None
+    structures = None
     time1 = time.clock()
     if args.outfile:
         dbfilename = args.outfile
@@ -77,6 +79,9 @@ else:
         except KeyboardInterrupt:
             sys.exit()
         print("---------------------")
+    if db and structures:
+        db.init_textsearch()
+        structures.populate_fulltext_search_table()
     time2 = time.clock()
     diff = time2 - time1
     m, s = divmod(diff, 60)

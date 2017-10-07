@@ -45,6 +45,8 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
+- Make Elements space separated!
+- Fich search for 'S' and 'Sn'
 - Figure out how guest and other users are handled with "Open APEX Database" button.
 - disable molecule on windows7 32 bit? Maybe disabling spin helps?
 - Improve text search (in cif file)
@@ -177,8 +179,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         try:
             cell = [float(x) for x in self.ui.ad_unitCellLineEdit.text().strip().split()]
         except (TypeError, ValueError):
-            self.statusBar().showMessage('Invalid unit cell!')
-            return False
+            #self.statusBar().showMessage('Invalid unit cell!')
+            cell = []
         date1 = self.ui.dateEdit1.text()
         date2 = self.ui.dateEdit2.text()
         if any([date1, date2]):
@@ -293,6 +295,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.progress.hide()
             self.abort_import_button.hide()
         filecrawler.put_cifs_in_db(self, searchpath=fname)
+        self.progress.hide()
+        self.structures.database.init_textsearch()
+        self.structures.populate_fulltext_search_table()
+        self.structures.database.commit_db()
         self.ui.cifList_treeWidget.show()
         self.set_columnsize()
         #self.ui.cifList_treeWidget.resizeColumnToContents(0)
@@ -419,10 +425,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.allCifTreeWidget.clear()
         cell = self.structures.get_cell_by_id(structure_id)
         if not cell:
-            self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
+            #self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
             return False
-        if py36:
-            self.display_molecule(cell, structure_id)
+        self.display_molecule(cell, structure_id)
         self.ui.cifList_treeWidget.setFocus()
         if not cif_dic:
             return False
@@ -811,8 +816,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
                                       .format(n, int(h), int(m), s), msecs=0)
         #self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.set_columnsize()
-        if py36:
-            self.structures.populate_fulltext_search_table()
+        self.structures.database.init_textsearch()
+        self.structures.populate_fulltext_search_table()
         self.structures.database.commit_db("Committed")
         self.abort_import_button.hide()
 

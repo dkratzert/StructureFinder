@@ -2638,7 +2638,7 @@ Jmol.getTMApplet = Jmol._TMApplet._getApplet;
             this._spin(false);
             if (mol === "''") mol = this._mol;
             if (!mol) {
-                alert("No model data.");
+                //alert("No model data.");
                 return;
             }
             var p = this._parse(mol);
