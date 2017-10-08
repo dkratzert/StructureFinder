@@ -262,18 +262,18 @@ def remove_file(filename):
     return True
 
 
-def is_valid_cell(cell: (list, tuple) = None):
+def is_valid_cell(cell: (list, tuple) = None) -> list:
     """
     Checks is a unit cell is valid
     """
     if not cell:
-        return False
+        return []
     try:
         cell = [float(x) for x in cell.strip().split()]
     except (TypeError, ValueError):
-        return False
+        return []
     if len(cell) != 6:
-        return False
+        return []
     return cell
 
 

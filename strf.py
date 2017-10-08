@@ -85,10 +85,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.structures = None
         self.apx = None
         self.structureId = ''
+        self.passwd = ''
         self.show()
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
         self.connect_signals_and_slots()
+        # Set both to today() to distinquish between a modified and unmodified date field.
+        self.ui.dateEdit1.setDate(QtCore.QDate(date.today()))
         self.ui.dateEdit2.setDate(QtCore.QDate(date.today()))
         if py36:
             molf = pathlib.Path("./displaymol/jsmol.htm")
@@ -139,7 +142,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.actionImport_file.triggered.connect(self.import_cif_database)
         self.ui.actionSave_Database.triggered.connect(self.save_database)
         self.ui.actionCopy_Unit_Cell.triggered.connect(self.copyUnitCell)
-        self.ui.actionGo_to_All_CIF_Tab.triggered.connect(self.onClickItem)
+        self.ui.actionGo_to_All_CIF_Tab.triggered.connect(self.on_click_item)
         # Other fields:
         if py36:
             self.ui.txtSearchEdit.textChanged.connect(self.search_text)
@@ -147,18 +150,17 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.ui.txtSearchEdit.setText("For full test search, use a modern Operating system.")
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
-        self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.onClickItem)
+        self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
 
-    def onClickItem(self, item):
+    def on_click_item(self, item):
         self.ui.tabWidget.setCurrentIndex(1)
 
     def copyUnitCell(self):
         if self.structureId:
-            cell = ''
             try:
                 cell = "{:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f}" \
                     .format(*self.structures.get_cell_by_id(self.structureId))
-            except:
+            except Exception:
                 return False
             clipboard = QtWidgets.QApplication.clipboard()
             clipboard.setText(cell)
@@ -178,11 +180,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         incl = []
         date_results = []
         cell = is_valid_cell(self.ui.ad_unitCellLineEdit.text().strip().split())
-        if not cell:
-            cell = []
         date1 = self.ui.dateEdit1.text()
         date2 = self.ui.dateEdit2.text()
-        if any([date1, date2]):
+        if date1 != date2:
             date_results = self.find_dates(date1, date2)
         elincl = self.ui.ad_elementsIncLineEdit.text().strip(' ')
         elexcl = self.ui.ad_elementsExclLineEdit.text().strip(' ')
@@ -239,7 +239,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for i in searchresult:
-            self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
+            self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
         self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         if idlist:
@@ -331,11 +331,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.view.reload()
         try:
             self.structures.database.cur.close()
-        except:
+        except Exception:
             pass
         try:
             self.structures.database.con.close()
-        except:
+        except Exception:
             pass
         try:
             os.close(self.dbfdesc)
@@ -570,9 +570,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if len(search_string) == 0:
             self.show_full_list()
             return False
-        if len(search_string) >= 2:
-            if not "*" in search_string:
-                search_string = "{}{}{}".format('*', search_string, '*')
+        if len(search_string) >= 2 and "*" not in search_string:
+            search_string = "{}{}{}".format('*', search_string, '*')
         try:
             idlist = self.structures.find_by_strings(search_string)
         except AttributeError as e:
@@ -580,7 +579,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         try:
             self.statusBar().showMessage("Found {} entries.".format(len(idlist)))
             for i in idlist:
-                self.add_table_row(name=i[1], path=i[3], id=i[0], data=i[2])
+                self.add_table_row(name=i[1], path=i[3], structure_id=i[0], data=i[2])
             self.set_columnsize()
             # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except Exception:
@@ -624,8 +623,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
                             float(dic['gamma']))
                 except ValueError:
                     continue
-                map = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
-                if map:
+                mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
+                if mapping:
                     # pprint.pprint(map[3])
                     idlist2.append(i)
         return idlist2
@@ -671,7 +670,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for i in searchresult:
-            self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
+            self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
             # self.add_table_row(name, path, id)
         self.set_columnsize()
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
@@ -683,7 +682,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         list(set(l).intersection(l2))
         """
         self.statusBar().showMessage('')
-        formula = []
         res = []
         try:
             formula = misc.get_list_of_elements(elements)
@@ -696,13 +694,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
             pass
         return list(res)
 
-    def add_table_row(self, name: str, path: str, data: bytes, id: str) -> None:
+    def add_table_row(self, name: str, path: str, data: bytes, structure_id: str) -> None:
         """
-        Adds a line to the search results table
-        :type name: str, bytes
-        :type path: str, bytes
-        :type id: str
-        :return: None
+        Adds a line to the search results table.
         """
         if isinstance(name, bytes):
             name = name.decode("utf-8", "surrogateescape")
@@ -714,7 +708,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         tree_item.setText(0, name)  # name
         tree_item.setText(1, data)  # data
         tree_item.setText(2, path)  # path
-        tree_item.setData(3, 0, id)  # id
+        tree_item.setData(3, 0, structure_id)  # id
         self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
 
     def import_cif_database(self) -> bool:
@@ -792,7 +786,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                                                  structure_id=n, structures=self.structures)
                 if not tst:
                     continue
-                self.add_table_row(name=i[8], data=i[8], path=i[12], id=str(n))
+                self.add_table_row(name=i[8], data=i[8], path=i[12], structure_id=str(n))
                 n += 1
                 if n % 300 == 0:
                     self.structures.database.commit_db()
@@ -830,16 +824,16 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def show_full_list(self) -> None:
         """
         Displays the complete list of structures
-        [id, meas, path, filename, data]
+        [structure_id, meas, path, filename, data]
         """
         self.ui.cifList_treeWidget.clear()
-        id = 0
+        structure_id = 0
         if not self.structures:
             return
         for i in self.structures.get_all_structure_names():
-            id = i[0]
-            self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
-        mess = "Loaded {} entries.".format(id)
+            structure_id = i[0]
+            self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
+        mess = "Loaded {} entries.".format(structure_id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)

@@ -210,7 +210,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                         continue
                     if self:
                         self.add_table_row(name=z.cifname, path=fullpath,
-                                           data=cif.cif_data['data'], id=str(n))
+                                           data=cif.cif_data['data'], structure_id=str(n))
                     n += 1
                     num += 1
                     if n % 1000 == 0:
