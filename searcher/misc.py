@@ -260,3 +260,22 @@ def remove_file(filename):
             print('Can not delete {}'.format(filename))
             return False
     return True
+
+
+def is_valid_cell(cell: (list, tuple) = None):
+    """
+    Checks is a unit cell is valid
+    """
+    if not cell:
+        return False
+    try:
+        cell = [float(x) for x in cell.strip().split()]
+    except (TypeError, ValueError):
+        return False
+    if len(cell) != 6:
+        return False
+    return cell
+
+
+if __name__ == '__main__':
+    pass

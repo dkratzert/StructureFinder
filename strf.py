@@ -36,6 +36,7 @@ from pymatgen.core import mat_lattice
 from searcher import constants, misc, filecrawler, database_handler
 from searcher.constants import py36
 from searcher.fileparser import Cif
+from searcher.misc import is_valid_cell
 
 if py36:
     """Only import this if Python 3.6 is used."""
@@ -176,10 +177,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         excl = []
         incl = []
         date_results = []
-        try:
-            cell = [float(x) for x in self.ui.ad_unitCellLineEdit.text().strip().split()]
-        except (TypeError, ValueError):
-            #self.statusBar().showMessage('Invalid unit cell!')
+        cell = is_valid_cell(self.ui.ad_unitCellLineEdit.text().strip().split())
+        if not cell:
             cell = []
         date1 = self.ui.dateEdit1.text()
         date2 = self.ui.dateEdit2.text()
@@ -189,7 +188,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         elexcl = self.ui.ad_elementsExclLineEdit.text().strip(' ')
         txt = self.ui.ad_textsearch.text().strip(' ')
         txt_ex = self.ui.ad_textsearch_excl.text().strip(' ')
-        if cell and len(cell) == 6:
+        if cell:
             cellres = self.search_cell_idlist(cell)
             incl.append(cellres)
         if elincl:
@@ -242,7 +241,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         for i in searchresult:
             self.add_table_row(name=i[3], path=i[2], id=i[0], data=i[4])
         self.set_columnsize()
-        #self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         if idlist:
             self.ui.tabWidget.setCurrentIndex(0)
 
@@ -267,12 +266,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Initializes a QWebengine to view the molecule.
         """
         self.view = QWebEngineView()
-        #QtWebEngine.initialize()
+        # QtWebEngine.initialize()
         self.view.load(QtCore.QUrl.fromLocalFile(os.path.abspath("./displaymol/jsmol.htm")))
         self.view.setMaximumWidth(250)
         self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
-        #self.view.show()
+        # self.view.show()
 
     @QtCore.pyqtSlot(name="cell_state_changed")
     def cell_state_changed(self):
@@ -301,9 +300,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.structures.database.commit_db()
         self.ui.cifList_treeWidget.show()
         self.set_columnsize()
-        #self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        #self.ui.cifList_treeWidget.resizeColumnToContents(1)
-        #self.ui.cifList_treeWidget.sortByColumn(0, 0)
+        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        # self.ui.cifList_treeWidget.resizeColumnToContents(1)
+        # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.abort_import_button.hide()
 
     def progressbar(self, curr: float, min: float, max: float) -> None:
@@ -391,7 +390,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         status = False
         save_name, tst = QtWidgets.QFileDialog.getSaveFileName(self, caption='Save File', directory='./',
-                                                                     filter="*.sqlite")
+                                                               filter="*.sqlite")
         if save_name:
             if shutil._samefile(self.dbfilename, save_name):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
@@ -425,7 +424,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.allCifTreeWidget.clear()
         cell = self.structures.get_cell_by_id(structure_id)
         if not cell:
-            #self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
             return False
         self.display_molecule(cell, structure_id)
         self.ui.cifList_treeWidget.setFocus()
@@ -584,32 +582,15 @@ class StartStructureDB(QtWidgets.QMainWindow):
             for i in idlist:
                 self.add_table_row(name=i[1], path=i[3], id=i[0], data=i[2])
             self.set_columnsize()
-            #self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        except:
+            # self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        except Exception:
             self.statusBar().showMessage("Nothing found.")
 
-    def search_cell_idlist(self, cell: list) -> list:
+    def search_cell_idlist(self, cell: list, threshold: float = 0, ltol: float = 0, atol: float = 0) -> list:
         """
         Searches for a unit cell and resturns a list of found database ids.
+        This method does not validate the cell. This has to be done before!
         """
-        if self.ui.moreResultsCheckBox.isChecked() or \
-                self.ui.ad_moreResultscheckBox.isChecked():
-            threshold = 0.08
-            ltol = 0.09
-            atol = 1.8
-        else:
-            threshold = 0.03
-            ltol = 0.001
-            atol = 1
-        try:
-            if not self.structures:
-                return []  # Empty database
-        except:
-            return []  # No database cursor
-        if len(cell) != 6:
-            self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
-            # self.show_full_list()
-            return []
         idlist = []
         try:
             volume = lattice.vol_unitcell(*cell)
@@ -654,20 +635,33 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         searches db for given cell via the cell volume
         """
-        try:
-            cell = [float(x) for x in search_string.strip().split()]
-        except (TypeError, ValueError):
-            return False
+        cell = is_valid_cell(search_string)
         self.ui.txtSearchEdit.clear()
-        if not search_string:
-            self.full_list = True
-            self.show_full_list()
+        if not cell:
+            if self.ui.searchCellLineEDit.text():
+                self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
+                return False
+            else:
+                self.full_list = True  # Set status where full list is displayed
+                self.show_full_list()
+            if self.full_list:
+                return False
             return False
-        if len(cell) != 6:
-            self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
-            # self.show_full_list()
-            return False
-        idlist = self.search_cell_idlist(cell)
+        if self.ui.moreResultsCheckBox.isChecked() or \
+                self.ui.ad_moreResultscheckBox.isChecked():
+            threshold = 0.08
+            ltol = 0.09
+            atol = 1.8
+        else:
+            threshold = 0.03
+            ltol = 0.001
+            atol = 1
+        try:
+            if not self.structures:
+                return False  # Empty database
+        except Exception:
+            return False  # No database cursor
+        idlist = self.search_cell_idlist(cell, threshold=threshold, ltol=ltol, atol=atol)
         if not idlist:
             self.ui.cifList_treeWidget.clear()
             self.statusBar().showMessage('Found 0 cells.', msecs=0)
@@ -681,7 +675,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             # self.add_table_row(name, path, id)
         self.set_columnsize()
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
-        #self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         return True
 
     def search_elements(self, elements: str, anyresult: bool = False) -> list:
@@ -815,7 +809,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         h, m = divmod(m, 60)
         self.ui.statusbar.showMessage('Added {} APEX entries in: {:>2d} h, {:>2d} m, {:>3.2f} s'
                                       .format(n, int(h), int(m), s), msecs=0)
-        #self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.set_columnsize()
         self.structures.database.init_textsearch()
         self.structures.populate_fulltext_search_table()
@@ -848,7 +842,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         mess = "Loaded {} entries.".format(id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.set_columnsize()
-        #self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
         self.ui.tabWidget.setCurrentIndex(0)
@@ -901,6 +895,7 @@ if __name__ == "__main__":
     uic.compileUiDir('./gui')
     from gui.strf_main import Ui_stdbMainwindow
     from gui.strf_dbpasswd import Ui_PasswdDialog
+
     # later http://www.pyinstaller.org/
     app = QtWidgets.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
