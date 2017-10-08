@@ -695,6 +695,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             formula = misc.get_list_of_elements(elements)
         except KeyError:
             self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
+            return []
         try:
             res = self.structures.find_by_elements(formula, anyresult=anyresult)
         except AttributeError:

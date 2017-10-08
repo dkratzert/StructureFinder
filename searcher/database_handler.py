@@ -843,7 +843,7 @@ class StructureTable():
 
         >>> db = StructureTable('../structuredb.sqlite')
         >>> db.database.initialize_db()
-        >>> db.find_by_elements(['Al', 'ca'])
+        >>> db.find_by_elements(['S', 'Sn'])
         [11, 3, 6, 15]
         """
         import re
@@ -852,16 +852,19 @@ class StructureTable():
         req = '''SELECT StructureId, _chemical_formula_sum from ElementSearch WHERE _chemical_formula_sum MATCH ?'''
         for el in elements:
             result = self.database.db_request(req, el+'*')
+            #for i in result:
+            #    print(i)
             if result:
                 if isinstance(result, int):
                     continue
                 else:
                     structures.extend(result)
         for el in elements:  # The second search excludes false hits like Ca instead of C
-            regex = re.compile(r'[\d|\s]?' + el + r'[\d|\s]*', re.IGNORECASE)
+            regex = re.compile(r'[\s|\d]?'+ el +'[\d|\s]+|[$]+', re.IGNORECASE)
             res = []
             for num, form in structures:
                 if regex.search(form):
+                    #print(form)
                     res.append(num)
             matches.append(res)
         if matches:
@@ -911,17 +914,33 @@ class StructureTable():
         if not version:
             version = 0
         return version
+
+    def get_sumform_by_id(self, structure_id):
+        """
+        returns the cell of a res file in the db
+        """
+        if not structure_id:
+            return False
+        req = '''SELECT _chemical_formula_sum FROM Residuals WHERE StructureId = ?'''
+        cell = self.database.db_request(req, structure_id)
+        if cell and len(cell) > 0:
+            return cell[0]
+        else:
+            return cell
             
 if __name__ == '__main__':
     #searcher.filecrawler.put_cifs_in_db(searchpath='../')
     #db = DatabaseRequest('./structuredb.sqlite')
     #db.initialize_db()
-    db = StructureTable('./structuredb.sqlite')
+    #db = StructureTable('./structuredb.sqlite')
+    db = StructureTable('../structurefinder.sqlite')
     #db.database.initialize_db()
     #out = db.find_by_date(start="2017-08-19")
     #out = db.get_cell_by_id(12)
     #out = db.find_by_strings('dk')
-    out = db.find_by_elements(['C', 'O', 'N', 'S', 'Sn'])
+    out = db.find_by_elements(['Sn'])
+    #out = db.get_sumform_by_id(10671)
     print(out)
     print(len(out))
+    '''10671 ﻿11145'''
 

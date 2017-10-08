@@ -20,8 +20,8 @@ TODO: Fix Sn S distinction
 
 #site_ip = "10.4.13.169"
 site_ip = "127.0.0.1"
-dbfilename = "./structuredb.sqlite"
-#dbfilename = "./structures_30.09.2017.sqlite"
+#dbfilename = "./structuredb.sqlite"
+dbfilename = "./structurefinder.sqlite"
 
 
 def application(dbfilename):

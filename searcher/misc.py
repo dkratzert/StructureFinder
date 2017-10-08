@@ -191,7 +191,7 @@ def formula_str_to_dict(sumform: str or bytes) -> dict:
     atlist = {}
     nums = []
     try:
-        sumform = sumform.upper().replace(' ', '').replace('\n', '')
+        sumform = sumform.upper().replace(' ', '').replace('\n', '').replace('\r', '')
     except AttributeError:
         print('Error in formula_str_to_dict')
         return atlist
