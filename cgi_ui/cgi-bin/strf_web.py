@@ -64,8 +64,10 @@ def application(dbfilename):
     if str_id and (resid1 or resid2):
         cif_dic = structures.get_row_as_dict(str_id)
     if cell_search:
-        ids = find_cell(structures, cell_search, more_results=more_results, sublattice=sublattice)
-        print(get_structures_json(structures, ids, show_all=False))
+        cell = is_valid_cell(cell_search)
+        if cell:
+            ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
+            print(get_structures_json(structures, ids, show_all=False))
         return
     elif text_search:
         ids = search_text(structures, text_search)
