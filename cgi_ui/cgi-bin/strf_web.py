@@ -433,6 +433,14 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
 def process_data():
     """
     Reads html template and replaces things.
+
+
+    p = "./strf_web_Template.htm"
+    with open(p, 'r') as f:
+        text = f.read()#.decode(encoding='utf-8', errors='ignore')
+    d = dict(my_ip=site_ip)
+    return Template(text).safe_substitute(d)
+
     """
     p = pathlib.Path("./strf_web_Template.htm")
     t = p.read_text(encoding='utf-8', errors='ignore')

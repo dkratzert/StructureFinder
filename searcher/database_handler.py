@@ -266,12 +266,13 @@ class DatabaseRequest():
         row = self.cur.fetchone()
         return row
 
-    def db_request(self, request, *args, many=False):
+    def db_request(self, request, *args, many=False) -> (list, tuple):
         """
         Performs a SQLite3 database request with "request" and optional arguments
         to insert parameters via "?" into the database request.
         A push request will return the last row-Id.
         A pull request will return the requested rows
+        :param many: Use executemany()
         :param request: sqlite database request like:
                     '''SELECT Structure.cell FROM Structure'''
         :type request: str
@@ -294,7 +295,7 @@ class DatabaseRequest():
             last_rowid = self.cur.lastrowid
         except OperationalError as e:
             print(e, "\nDB execution error")
-            return False
+            return []
         rows = self.cur.fetchall()
         if not rows:
             return tuple()
@@ -562,10 +563,12 @@ class StructureTable():
         if self.database.db_request(req, structure_id, name, element, x, y, z, occ, part):
             return True
 
-    def get_atoms_table(self, structure_id, cell='', cartesian=False):
+    def get_atoms_table(self, structure_id, cell=None, cartesian=False):
         """
         returns the atoms of structure with structure_id
         """
+        if cell is None:
+            cell = []
         req = """SELECT Name, element, x, y, z FROM Atoms WHERE StructureId = ?"""
         result = self.database.db_request(req, structure_id)
         if cartesian:
