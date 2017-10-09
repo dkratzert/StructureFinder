@@ -149,8 +149,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
-        self.ui.ad_elementsIncLineEdit.textChanged.connect(self.is_element_doubled)
-        self.ui.ad_elementsExclLineEdit.textChanged.connect(self.is_element_doubled)
+        #self.ui.ad_elementsIncLineEdit.textChanged.connect(self.is_element_doubled_incl)
+        #self.ui.ad_elementsExclLineEdit.textChanged.connect(self.is_element_doubled_excl)
 
     def on_click_item(self, item):
         self.ui.tabWidget.setCurrentIndex(1)
@@ -543,18 +543,34 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.view.reload()
 
     @QtCore.pyqtSlot('QString')
-    def is_element_doubled(self):
+    def is_element_doubled_incl(self, foo):
         """
         Determines if elements in the lists of included
         and excludes elements are duplicated.
         """
-        incl = formula_str_to_dict(self.ui.ad_elementsIncLineEdit.text())
-        excl = formula_str_to_dict(self.ui.ad_elementsExclLineEdit.text())
+        try:
+            incl = formula_str_to_dict(self.ui.ad_elementsIncLineEdit.text())
+            excl = formula_str_to_dict(self.ui.ad_elementsExclLineEdit.text())
+        except KeyError:
+            incl, excl = ('', '')
         for el in incl:
             if el in excl:
-                pass
-                #self.ui.ad_elementsIncLineEdit.undo()
-                #self.ui.ad_elementsExclLineEdit.undo()
+                self.ui.ad_elementsIncLineEdit.setText('')
+
+    @QtCore.pyqtSlot('QString')
+    def is_element_doubled_excl(self, foo):
+        """
+        Determines if elements in the lists of included
+        and excludes elements are duplicated.
+        """
+        try:
+            incl = formula_str_to_dict(self.ui.ad_elementsIncLineEdit.text())
+            excl = formula_str_to_dict(self.ui.ad_elementsExclLineEdit.text())
+        except KeyError:
+            incl, excl = ('', '')
+        for el in incl:
+            if el in excl:
+                self.ui.ad_elementsExclLineEdit.setText('')
 
     @QtCore.pyqtSlot('QString')
     def find_dates(self, date1: str, date2: str) -> list:
