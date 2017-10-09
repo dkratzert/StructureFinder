@@ -417,7 +417,7 @@ class StructureTable():
             req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
                                              Structure.dataname FROM Structure'''
         else:
-            return {'measurement': '', 'path': '', 'filename': '', 'dataname': ''}
+            return {}
         rows = self.database.db_request(req, many=False)
         self.database.cur.close()
         # setting row_factory back to regular touple base requests:
