@@ -2489,7 +2489,7 @@ Jmol.getTMApplet = Jmol._TMApplet._getApplet;
         // 'Li',     'Be',      'B',        'C',      'N',       'O',       'F',      'Ne',
         "#CC80FF", "#C2FF00", "#FFB5B5", "#797979", "#3050F8", "#FF0D0D", "#90e001", "#B3E3F5",
         // 'Na',      'Mg',     'Al',     'Si',       'P',      'S',       'Cl',       'Ar',
-        "#AB5CF2", "#8AFF00", "#BFA6A6", "#F0C8A0", "#FF8000", "#eeee2c", "#1ff001", "#80D1E3",
+        "#AB5CF2", "#8AFF00", "#BFA6A6", "#F0C8A0", "#FF8000", "#eeee2c", "#419941", "#80D1E3",
         // 'K',       'Ca',     'Sc',      'Ti',       'V',       'Cr',     'Mn',        'Fe',
         "#8F40D4", "#3DFF00", "#E6E6E6", "#BFC2C7", "#A6A6AB", "#8A99C7", "#9C7AC7", "#E06633",
         // 'Co',  	'Ni', 		'Cu', 		'Zn', 		'Ga', 	'Ge',		 'As', 		'Se', 	'Br', 		'Kr',
