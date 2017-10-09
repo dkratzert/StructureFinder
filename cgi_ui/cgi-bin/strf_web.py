@@ -1,5 +1,5 @@
-#!C:\tools\Python-3.6.2_64\pythonw.exe
 #!/usr/local/bin/python3.6
+# !C:\tools\Python-3.6.2_64\pythonw.exe
 
 import cgi
 import pathlib
@@ -11,18 +11,19 @@ from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher import database_handler, misc
 from searcher.database_handler import StructureTable
-#import cgitb
-#cgitb.enable()
+# import cgitb
+# cgitb.enable()
 from searcher.misc import is_valid_cell
 
 """
 TODO: Fix Sn S distinction
 - Display number of search results in unit cell field.
+- Prevent adding same element in include and exclude field
 """
 
-site_ip = "10.4.13.169"
-#site_ip = "127.0.0.1"
-#dbfilename = "./structuredb.sqlite"
+# site_ip = "10.4.13.169"
+site_ip = "127.0.0.1"
+# dbfilename = "./structuredb.sqlite"
 dbfilename = "./structurefinder.sqlite"
 
 
@@ -46,7 +47,7 @@ def application(dbfilename):
     records = form.getfirst('cmd')
     structures = database_handler.StructureTable(dbfilename)
     cif_dic = None
-    #debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2, unitcell, adv)
+    # debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2, unitcell, adv)
     if adv:
         elincl = form.getvalue("elements_in")
         elexcl = form.getvalue("elements_out")
@@ -121,7 +122,7 @@ def debug_output(cell_search, text_search, more_results, sublattice, strid, mol,
                                              ))
 
 
-def get_structures_json(structures: StructureTable, ids: list = None, show_all:bool=False) -> dict:
+def get_structures_json(structures: StructureTable, ids: list = None, show_all: bool = False) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
@@ -323,8 +324,8 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
                         float(dic['gamma']))
             except ValueError:
                 continue
-            map = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
-            if map:
+            mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
+            if mapping:
                 idlist2.append(i)
     if idlist2:
         return idlist2
@@ -448,6 +449,7 @@ def process_data():
     t = p.read_text(encoding='utf-8', errors='ignore')
     d = dict(my_ip=site_ip)
     return Template(t).safe_substitute(d)
+
 
 if __name__ == "__main__":
     application(dbfilename)

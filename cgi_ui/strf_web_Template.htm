@@ -126,22 +126,33 @@ $(document).ready(function(){
     </div>
 </div>
 <!-- ---------------------    End of simple search     ----------------------    -->
-
 <div id="more-cell-info" class="collapse">
-    <b>regular</b><br>
-    volume: &plusmn;3%, length: 0.001&nbsp;&angst;, angle: 1&deg;<br>
-<br>
-    <b>more results option</b><br>
-    volume: &plusmn;8&percnt;, length: 0.09&nbsp;&angst;, angle: 1.8&deg;<br>
+    <div class="row">
+        <div class="col-sm-6">
+            <b>regular</b><br>
+            volume: &plusmn;3%, length: 0.001&nbsp;&angst;, angle: 1&deg;<br>
+            <br>
+            <b>more results option</b><br>
+            volume: &plusmn;8&percnt;, length: 0.09&nbsp;&angst;, angle: 1.8&deg;<br>
+        </div>
+        <div class="col-sm-6">
+            <b>Sub- and Supercells</b>
+            <br>
+            Find also unit cells of 0.25, 0.5, 1, 2, 3, 4 the volume.
+        </div>
+    </div>
 </div>
-
 <!-- The collapsible for Advanced search options: -->
 <div id="adv-search" class="collapse">
 
-    <div class="btn-group" role="group">
-        <label><input type="checkbox" id="more_results"> More cell search results </label>
-        <a href="#"><span class="badge" id="more_info_badge">info</span></a> &nbsp;&nbsp;&nbsp;
-        <label><input type="checkbox" id="supercells"> Find sub- and supercells</label>
+    <div class="row">
+        <div class="col-xs-12">
+        <div class="btn-group btn-group-xs" role="group">
+            <label><input type="checkbox" id="more_results"> More cell search results </label>
+            <a href="#"><span class="label label-default" id="more_info_badge">info</span></a> &nbsp;&nbsp;&nbsp;
+            <label><input type="checkbox" id="supercells"> Find sub- and supercells</label>
+        </div>
+        </div>
     </div>
 
     <div class="row">
