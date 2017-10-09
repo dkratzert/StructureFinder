@@ -393,7 +393,7 @@ class StructureTable():
         else:
             return False
 
-    def get_all_structures_as_dict(self, ids: list=None) -> dict:
+    def get_all_structures_as_dict(self, ids: list=None, all:bool=False) -> dict:
         """
         Returns the list of structures as dictionary.
 
@@ -412,9 +412,11 @@ class StructureTable():
                 # only one id
                 req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
                                             Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(ids[0])
-        else:
+        elif all:
             req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
                                              Structure.dataname FROM Structure'''
+        else:
+            return {'measurement': '', 'path': '', 'filename': '', 'dataname': ''}
         rows = self.database.db_request(req, many=False)
         self.database.cur.close()
         # setting row_factory back to regular touple base requests:
@@ -918,6 +920,16 @@ class StructureTable():
     def get_sumform_by_id(self, structure_id):
         """
         returns the cell of a res file in the db
+
+        >>> db = StructureTable('../structurefinder.sqlite')
+        >>> all = db.find_by_elements(['Al', 'Au', 'Ag'])
+        >>> tst = []
+        >>> for i in all:
+        >>>    out = db.get_sumform_by_id(i)
+        >>>     if "Ag" in out[0]:
+        >>>         tst.append(out)
+        >>> len(all) == len(tst)
+        True
         """
         if not structure_id:
             return False
@@ -938,9 +950,13 @@ if __name__ == '__main__':
     #out = db.find_by_date(start="2017-08-19")
     #out = db.get_cell_by_id(12)
     #out = db.find_by_strings('dk')
-    out = db.find_by_elements(['Sn'])
-    #out = db.get_sumform_by_id(10671)
-    print(out)
-    print(len(out))
-    '''10671 ﻿11145'''
+    all = db.find_by_elements(['Al', 'Au', 'Ag'])
+    tst = []
+    for i in all:
+        out = db.get_sumform_by_id(i)
+        if "Ag" in out[0]:
+            tst.append(out)
+        #print(out)
+    print(len(all))
+    print(len(tst))
 

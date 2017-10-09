@@ -13,6 +13,8 @@ from searcher import database_handler, misc
 from searcher.database_handler import StructureTable
 #import cgitb
 #cgitb.enable()
+from searcher.misc import is_valid_cell
+
 """
 TODO: Fix Sn S distinction
 - Display number of search results in unit cell field.
@@ -63,11 +65,11 @@ def application(dbfilename):
         cif_dic = structures.get_row_as_dict(str_id)
     if cell_search:
         ids = find_cell(structures, cell_search, more_results=more_results, sublattice=sublattice)
-        print(get_structures_json(structures, ids))
+        print(get_structures_json(structures, ids, show_all=False))
         return
     elif text_search:
         ids = search_text(structures, text_search)
-        print(get_structures_json(structures, ids))
+        print(get_structures_json(structures, ids, show_all=False))
         return
     elif str_id and mol:
         cell_list = structures.get_cell_by_id(str_id)[:6]
@@ -90,10 +92,9 @@ def application(dbfilename):
         print(get_all_cif_val_table(structures, str_id))
         return
     if records == 'get-records':
-        print(get_structures_json(structures))
+        print(get_structures_json(structures, show_all=True))
         return
     else:
-        ids = []
         html_txt = process_data()
     print(html_txt)
 
@@ -118,11 +119,11 @@ def debug_output(cell_search, text_search, more_results, sublattice, strid, mol,
                                              ))
 
 
-def get_structures_json(structures: StructureTable, ids: list = None) -> dict:
+def get_structures_json(structures: StructureTable, ids: list = None, show_all:bool=False) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
-    dic = structures.get_all_structures_as_dict(ids)
+    dic = structures.get_all_structures_as_dict(ids, all=show_all)
     return json.dumps({"total": len(dic), "records": dic, "status": "success"}, indent=2)
 
 
@@ -283,17 +284,10 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     return table_string
 
 
-def find_cell(structures: StructureTable, cellstr: str, sublattice=False, more_results=False) -> list:
+def find_cell(structures: StructureTable, cell: list, sublattice=False, more_results=False) -> list:
     """
     Finds unit cells in db. Rsturns hits a a list of ids.
     """
-    try:
-        cell = [float(x) for x in cellstr.strip().split()]
-    except (TypeError, ValueError) as e:
-        # print(e)
-        return []
-    if len(cell) != 6:
-        return []
     if more_results:
         threshold = 0.08
         ltol = 0.09
@@ -395,13 +389,13 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     results = []
     cell = []
     if cellstr:
-        cell = [float(x) for x in cellstr.strip().split()]
-    if cell and len(cell) == 6:
-        cellres = find_cell(structures, cellstr, sublattice=sublattice, more_results=more_results)
+        cell = is_valid_cell(cellstr)
+    if cell:
+        cellres = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
         incl.append(cellres)
     if elincl:
         incl.append(search_elements(structures, elincl))
-    if any([date1, date2]):
+    if date1 != date2:
         date_results = find_dates(structures, date1, date2)
     if txt:
         if len(txt) >= 2 and "*" not in txt:

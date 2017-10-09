@@ -179,15 +179,15 @@ class StartStructureDB(QtWidgets.QMainWindow):
         excl = []
         incl = []
         date_results = []
-        cell = is_valid_cell(self.ui.ad_unitCellLineEdit.text().strip().split())
+        cell = is_valid_cell(self.ui.ad_unitCellLineEdit.text())
         date1 = self.ui.dateEdit1.text()
         date2 = self.ui.dateEdit2.text()
-        if date1 != date2:
-            date_results = self.find_dates(date1, date2)
         elincl = self.ui.ad_elementsIncLineEdit.text().strip(' ')
         elexcl = self.ui.ad_elementsExclLineEdit.text().strip(' ')
         txt = self.ui.ad_textsearch.text().strip(' ')
         txt_ex = self.ui.ad_textsearch_excl.text().strip(' ')
+        if date1 != date2:
+            date_results = self.find_dates(date1, date2)
         if cell:
             cellres = self.search_cell_idlist(cell)
             incl.append(cellres)
@@ -585,11 +585,20 @@ class StartStructureDB(QtWidgets.QMainWindow):
         except Exception:
             self.statusBar().showMessage("Nothing found.")
 
-    def search_cell_idlist(self, cell: list, threshold: float = 0, ltol: float = 0, atol: float = 0) -> list:
+    def search_cell_idlist(self, cell: list) -> list:
         """
         Searches for a unit cell and resturns a list of found database ids.
         This method does not validate the cell. This has to be done before!
         """
+        if self.ui.moreResultsCheckBox.isChecked() or \
+                self.ui.ad_moreResultscheckBox.isChecked():
+            threshold = 0.08
+            ltol = 0.09
+            atol = 1.8
+        else:
+            threshold = 0.03
+            ltol = 0.001
+            atol = 1
         idlist = []
         try:
             volume = lattice.vol_unitcell(*cell)
@@ -646,21 +655,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
             if self.full_list:
                 return False
             return False
-        if self.ui.moreResultsCheckBox.isChecked() or \
-                self.ui.ad_moreResultscheckBox.isChecked():
-            threshold = 0.08
-            ltol = 0.09
-            atol = 1.8
-        else:
-            threshold = 0.03
-            ltol = 0.001
-            atol = 1
         try:
             if not self.structures:
                 return False  # Empty database
         except Exception:
             return False  # No database cursor
-        idlist = self.search_cell_idlist(cell, threshold=threshold, ltol=ltol, atol=atol)
+        idlist = self.search_cell_idlist(cell)
         if not idlist:
             self.ui.cifList_treeWidget.clear()
             self.statusBar().showMessage('Found 0 cells.', msecs=0)

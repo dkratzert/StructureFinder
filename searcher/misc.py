@@ -262,7 +262,7 @@ def remove_file(filename):
     return True
 
 
-def is_valid_cell(cell: (list, tuple) = None) -> list:
+def is_valid_cell(cell: str = None) -> list:
     """
     Checks is a unit cell is valid
     """
