@@ -46,8 +46,6 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
-- Make Elements space separated!
-- Fich search for 'S' and 'Sn'
 - Figure out how guest and other users are handled with "Open APEX Database" button.
 - disable molecule on windows7 32 bit? Maybe disabling spin helps?
 - Improve text search (in cif file)
