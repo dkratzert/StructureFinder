@@ -108,6 +108,7 @@ class MolFile():
         for num1, at1 in enumerate(self.atoms, 1):
             name1 = at1[0]
             typ1 = at1[1]
+            ele1 = elements.ELEMENTS[typ1.capitalize()]
             x1 = at1[2]
             y1 = at1[3]
             z1 = at1[4]
@@ -122,7 +123,6 @@ class MolFile():
                 d = misc.distance(x1, y1, z1, x2, y2, z2)
                 # a bond is defined with less than the sum of the covalence
                 # radii plus the extra_param:
-                ele1 = elements.ELEMENTS[typ1.capitalize()]
                 ele2 = elements.ELEMENTS[typ2.capitalize()]
                 if d <= (ele1.covrad + ele2.covrad) + extra_param and d > (ele1.covrad or ele2.covrad):
                     conlist.append([num1, num2])
