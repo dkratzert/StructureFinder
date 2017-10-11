@@ -897,9 +897,7 @@ class StructureTable():
         """
         finds the structure with the biggest cell in the db
         """
-        #req = '''SELECT max(a), max(b), max(c) FROM cell'''
-        biggest = []
-        req = '''SELECT Id, a, b, c FROM cell GROUP BY Id ORDER BY a, b, c ASC'''#.format(edge)
+        req = '''SELECT Id, a, b, c FROM cell GROUP BY Id ORDER BY a, b, c ASC'''
         result = self.database.db_request(req)
         if result:
             return result[-1]

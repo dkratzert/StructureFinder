@@ -46,14 +46,16 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
+- Grow structure.
+- Make login infrastructure.
 - Figure out how guest and other users are handled with "Open APEX Database" button.
-- disable molecule on windows7 32 bit? Maybe disabling spin helps?
-- Improve text search (in cif file)
+- disable molecule on windows7 32 bit? 
+- Improve text search (in cif file). Figure out which tokenchars configuration works best.
 - refractor put_cifs_in_db()
 - Move indexer to extra thread
 - sort results by G6 distance
 - get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
-- grow structure.
+
   
 Search for:
 - draw structure (with JSME? Acros? Kekule?, https://github.com/ggasoftware/ketcher)
