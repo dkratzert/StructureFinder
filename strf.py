@@ -531,7 +531,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         templ = p.read_text(encoding='utf-8', errors='ignore')
         s = string.Template(templ)
         try:
-            tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6])
+            tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6], grow=False)
             mol = tst.make_mol()
         except (TypeError, KeyError):
             # print("Error in structure", structure_id, "while writing mol file.")

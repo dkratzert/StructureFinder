@@ -16,26 +16,29 @@ from searcher.fileparser import Cif
 
 
 class Lattice(object):
-    def __init__(self, atoms: list, symmcards: list):
+    def __init__(self, atoms: list, symmcards: list, cell:list):
         """
         Atoms:
         [(label, float(x), float(x), float(x)), (label, x, y, z), ...]
         Symmcards from cif file, e.g.:
         ['x, y, z', '-x, y+1/2, -z+1/2', '-x, -y, -z', 'x, -y-1/2, z-1/2']
         """
+        self.cell = cell
         self.atoms = atoms
         self.symmcards = [x.replace("/", "./") for x in (i for i in symmcards)]
 
     def grow_structure(self):
         """
         Grows the atoms according to symmetry.
+
+        This approach is way too slow to be useful!
         """
         # Make sure that all atoms are in the unit cell:
         for i in range(len(self.atoms)):
             (name, symbol, xn, yn, zn) = self.atoms[i]
-            xn = (xn + 10.0) % 1.0
-            yn = (yn + 10.0) % 1.0
-            zn = (zn + 10.0) % 1.0
+            xn = (xn + 10) % 1.0
+            yn = (yn + 10) % 1.0
+            zn = (zn + 10) % 1.0
             #name = get_atomlabel(name)  # name is now the atomic symbol
             self.atoms[i] = (name, symbol, xn, yn, zn)
         mindist = 0.01  # Angstrom
@@ -53,9 +56,9 @@ class Lattice(object):
                 except SyntaxError:
                     continue
                 # Make sure that the new atom lies within the unit cell.
-                xn = (xn + 10.0) % 1.0
-                yn = (yn + 10.0) % 1.0
-                zn = (zn + 10.0) % 1.0
+                xn = (xn + 10) % 1.0
+                yn = (yn + 10) % 1.0
+                zn = (zn + 10) % 1.0
                 # Check if the new position is actually new, or the same as a previous atom.
                 new_atom = True
                 for at in self.atoms:
