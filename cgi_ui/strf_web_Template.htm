@@ -190,6 +190,7 @@ $(document).ready(function(){
                 <span class="input-group-addon">Uni Cell</span>
                 <input type="text" class="form-control form-sm" style="font-style: italic" placeholder="a b c &alpha; &beta; &gamma;" id="cell_adv">
             </div>
+            <a type="button" class="btn btn-sm btn-success" id="advsearch-button" style="min-width:90px"> Search </a>
         </div>
         <div class="column col-md-4">
             <div class="input-group input-group-sm w2ui-field advsearchfields">
@@ -197,8 +198,9 @@ $(document).ready(function(){
                 <input class="input-sm w2field" type="text" id="date1">
                 <span class="input-group-addon">to</span>
                 <input class="input-sm" type="text" id="date2">
+                <a type="button" class="btn btn-sm btn-standard input-group-addon" id="lastmsearchlink"> From Last Month</a>
             </div>
-            <a type="button" class="btn btn-sm btn-success" id="advsearch-button" style="min-width:90px"> Search </a>
+
         </div>
 
     <script>
@@ -407,6 +409,16 @@ jQuery(document).ready(function($) {
             }
         );
     }
+
+    $('#lastmsearchlink').click(function(){
+        var date_now = new Date();
+        var month = date_now.getUTCMonth();
+        var day = date_now.getUTCDate();
+        var lastmonth = new Date(date_now.getUTCFullYear(), month-1, day);
+        var lastmdate = lastmonth.toISOString().split("T")[0];
+        console.log(lastmdate+ ' '+ date_now.toISOString().split("T")[0]);
+        advanced_search("", "", "", "", "", "", "", lastmdate, date_now.toISOString().split("T")[0]);
+    });
 
     // Test if a valid unit cell is in cell:
     function isValidCell(cell) {
