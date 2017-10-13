@@ -15,7 +15,7 @@
 <style type="text/css">
 
 body {
-    background-color: #ffffff;
+    /*background-color: #ffffff;*/
     font-size: 12px;
     line-height: inherit;
 }
@@ -47,7 +47,7 @@ body {
 }
 
 .input-group-addon {
-    min-width:75px;
+    min-width:55px;
     text-align:left;
 }
 
@@ -194,11 +194,14 @@ $(document).ready(function(){
         </div>
         <div class="column col-md-4">
             <div class="input-group input-group-sm w2ui-field advsearchfields">
-                <span class="input-group-addon">Date from</span>
-                <input class="input-sm w2field" type="text" id="date1">
+                <span class="input-group-addon" data-toggle="tooltip"
+                      title="Search for structures that were modified between two dates">Date from</span>
+                <input class="input-sm" type="text" id="date1">
                 <span class="input-group-addon">to</span>
                 <input class="input-sm" type="text" id="date2">
-                <a type="button" class="btn btn-sm btn-standard input-group-addon" id="lastmsearchlink"> From Last Month</a>
+                <a type="button" class="btn btn-sm btn-standard input-group-addon"
+                   data-toggle="tooltip" title="Search for structures modified during the last month."
+                   id="lastmsearchlink"> From Last Month</a>
             </div>
 
         </div>
