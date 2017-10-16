@@ -7,7 +7,8 @@ rm $DBPATH/structurefinder.sqlite
 
 LOGFILE=/var/log/strf.log
 touch $LOGFILE
-echo "DB created at: "$DATE >> $LOGFILE
+echo " " >> $LOGFILE
+echo "Start DB creation at: "$DATE >> $LOGFILE
 
 # Be aware that we are in the directory selected above!
 python3 /root/StructureFinder/strf_cmd.py \
@@ -17,3 +18,5 @@ python3 /root/StructureFinder/strf_cmd.py \
 -d xray \
 -d public/wissang/Ehemalige \
 -o $DBPATH/structurefinder.sqlite >> $LOGFILE
+
+echo "DB creation finished at: "$DATE >> $LOGFILE
