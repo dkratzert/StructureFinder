@@ -76,8 +76,11 @@ def application(dbfilename):
         return
     elif str_id and mol:
         cell_list = structures.get_cell_by_id(str_id)[:6]
-        m = mol_file_writer.MolFile(str_id, structures, cell_list)
-        print(m.make_mol())
+        try:
+            m = mol_file_writer.MolFile(str_id, structures, cell_list)
+            print(m.make_mol())
+        except KeyError:
+            print("")
         return
     elif str_id and unitcell:
         try:
