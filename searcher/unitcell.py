@@ -27,6 +27,12 @@ class Lattice(object):
         self.atoms = atoms
         self.symmcards = [x.replace("/", "./") for x in (i for i in symmcards)]
 
+    def calc_sdm(self):
+        """
+        Calculates shortest-distance matrix.
+        :return:
+        """
+
     def grow_structure(self):
         """
         Grows the atoms according to symmetry.
