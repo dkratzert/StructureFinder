@@ -1,6 +1,13 @@
 from textx.metamodel import metamodel_from_str
 from pathlib import Path
 
+"""
+CIF syntax at:
+
+https://www.iucr.org/resources/cif/spec/version1.1/cifsyntax
+
+"""
+
 grammar = r"""
 CIF:
     Comments? WhiteSpace? (DataBlock (WhiteSpace DataBlock)* (WhiteSpace)? )?
