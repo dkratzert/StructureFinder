@@ -15,11 +15,27 @@ DataBlockHeading:
 ;
 
 DATA_:
-    /[d]|[D][a]|[A][t]|[T][a]|[A]/
+    /(data|DATA)/
 ;
 
 DataItems:
     Tag=Tag  /.*/
+;
+
+LoopBlockHeading:
+    LOOP_/\S+/
+;
+
+LOOP_:
+    /(loop|LOOP)/
+;
+
+LoopHeader:
+    LOOP_/(WhiteSpace Tag)+/
+;
+
+WhiteSpace:
+    /(\s|\t|\r|\r\n|\n|TokenizedComments)+/
 ;
 
 WhiteSpace[noskipws]:
@@ -53,11 +69,10 @@ CharString:
 
 
 if __name__ == '__main__':
-    #mm = metamodel_from_str(grammar)
+    mm = metamodel_from_str(grammar)
 
     # Meta-model knows how to parse and instantiate models.
-    #model = mm.model_from_file('./test-data/p21c.cif')
+    model = mm.model_from_file('../test-data/p21c.cif')
 
-    #print(model)
-    tst = r""" 'C'  'C'   0.0033   0.0016
- 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'"""
+    print(model)
+
