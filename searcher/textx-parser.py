@@ -10,33 +10,32 @@ DataBlock:
   DataBlockHeading=DataBlockHeading DataItems=DataItems*
 ;
 
-DataBlockHeading:
-    DATA_/\S+/
+DATA:
+    /[d|D][a|A][t|T][a|A]/
 ;
 
-DATA_:
-    /(data|DATA)/
+DataBlockHeading:
+    DATA/_\S+/
 ;
+
 
 DataItems:
-    Tag=Tag  /.*/
+    TAG=TAG /.*/
 ;
 
-LoopBlockHeading:
-    LOOP_/\S+/
-;
 
 LOOP_:
-    /(loop|LOOP)/
+    '/[l|L][o|O][o|O][p|P]_/'
 ;
 
 LoopHeader:
-    LOOP_/(WhiteSpace Tag)+/
+    LOOP_/(WhiteSpace+TAG)+/
 ;
 
-WhiteSpace:
-    /(\s|\t|\r|\r\n|\n|TokenizedComments)+/
+LoopBody:
+    Value (WhiteSpace Value)*
 ;
+
 
 WhiteSpace[noskipws]:
     /(\s|\t|\r|\r\n|\n|TokenizedComments)+ /
@@ -47,22 +46,44 @@ Comments[noskipws]:
 ;
 
 TokenizedComments:
-    /( \s | \t | \r | \r\n | \n )+ Comments/
+    /(\s|\t|\r|\r\n|\n)+ Comments/
 ;
 
-Tag:
-    /_\S+/
+TAG:
+    /_.*/
 ;
 
 Value:
     /(\. | \? | NUMBER | CharString )/
 ;
 
-CharString:
-    /^\w+\s/
+NUMBER:
+    /(\+|\-)?\d.?\d?/
 ;
 
+CharString:
+    /UnquotedString | SingleQuotedString | DoubleQuotedString/
+;
 
+UnquotedString:
+    /OrdinaryChar (NonBlankChar)*/
+;
+
+NonBlankChar:
+    /OrdinaryChar | \" | \# | \' /
+;
+
+SingleQuotedString:
+    /\'(\S)*\'\s/
+;
+
+DoubleQuotedString:
+    /\"(\S)*\"\s/
+;
+
+OrdinaryChar:
+    /( \! | \% | \& | \( | \) | \* | \+ | \, | \- | \. | \/ | \: | \< | \= | \> | \? | \@ | \\ | \^ | \` | \{ | \| | \} | \~ )/
+;
 
 """
 
@@ -72,7 +93,7 @@ if __name__ == '__main__':
     mm = metamodel_from_str(grammar)
 
     # Meta-model knows how to parse and instantiate models.
-    model = mm.model_from_file('../test-data/p21c.cif')
+    model = mm.model_from_file('./test-data/p21c.cif')
 
     print(model)
 
