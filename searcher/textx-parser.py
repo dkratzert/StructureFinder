@@ -27,7 +27,7 @@ DataBlock:
 
 
 DataItems:
-    /Tag WhiteSpace Value | LoopHeader LoopBody/
+    Tag WhiteSpace Value | LoopHeader LoopBody
 ;
 
 
@@ -52,15 +52,15 @@ Comments:
 ;
 
 TokenizedComments:
-    /(\s|\t|\r|\r\n|\n)+ Comments/
+    /(\s|\t|\r|\r\n|\n)+/ Comments
 ;
 
 Tag:
-    /\_NonBlankChar+/
+    /\_/NonBlankChar+
 ;
 
 Value:
-    /\. | \? | Numeric | CharString | TextField/
+    /\./ | /\?/ | Numeric | CharString | TextField
 ;
 
 Numeric:
@@ -68,7 +68,7 @@ Numeric:
 ;
 
 Number:
-    / Integer | ( \+ | \- )?\d.?\d?/
+    Integer | /( \+ | \- )?\d.?\d?/
 ;
 
 Integer:
@@ -84,7 +84,7 @@ CharString:
 ;
 
 NonBlankChar:   
-    / OrdinaryChar | \" | \# | \' /
+    OrdinaryChar | /\"/|/\#/|/\'/
 ;
 
 UnquotedString:
@@ -93,7 +93,7 @@ UnquotedString:
 
 
 SingleQuotedString:
-    /\' AnyPrintChar* \' WhiteSpace/
+    /\'/ AnyPrintChar* /\'/ WhiteSpace
 ;
 
 DoubleQuotedString:
@@ -109,23 +109,19 @@ eol:
 ;
 
 SemiColonTextField:
-    /eol \; (AnyPrintChar)* eol ((TextLeadChar (AnyPrintChar)*)? eol)* \;/
+    eol /\;/ (AnyPrintChar)* eol ((TextLeadChar (AnyPrintChar)*)? eol)* /\;/
 ;
 
 OrdinaryChar:
-    /( \! | \% | \& | \( | \) | \* | \+ | \, | \- | \. | \/ | \: | \< | \= | \> 
-    | \? | \@ | \\ | \^ | \` | \{ | \| | \} | \~ |
-    0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
-    A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z |
-    a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z )?/
+    /([A-z]|[0-9]|\!|\%|\&|\(|\)|\*|\+|\,|\-|\.|\/|\:|\<|\=|\>|\?|\@|\\|\^|\`|\{|\||\}|\~)?/
 ;
 
 TextLeadChar:
-    /OrdinaryChar | \" | \# | \$ | \' | \_ | \s | \t | \[ | \]/
+    /OrdinaryChar|\"|\#|\$|\'|\_|\s|\t|\[|\]/
 ;
 
 AnyPrintChar:
-    /OrdinaryChar | \" | \# | \$ | \' | \_ | \s | \; | \[ | \]/
+    OrdinaryChar|/\"|\#|\$|\'|\_|\s|\;|\[|\]/
 ;
 
 """
