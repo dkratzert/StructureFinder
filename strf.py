@@ -76,7 +76,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.dbfdesc = None
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
-        self.ui.centralwidget.setMinimumSize(1200, 500)
+        self.ui.centralwidget.setMinimumSize(1000, 500)
         self.abort_import_button = QtWidgets.QPushButton("Abort (takes a while)")
         self.progress = QtWidgets.QProgressBar(self)
         self.progress.setFormat('')
