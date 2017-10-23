@@ -3,66 +3,69 @@ from pathlib import Path
 
 grammar = r"""
 CIF:
-  Comments? WhiteSpace? DataBlock+ WhiteSpace?
+    Comments? WhiteSpace? (DataBlock (WhiteSpace DataBlock)* (WhiteSpace)? )?
 ;
 
-DATA:
+DATA_:
     /[d|D][a|A][t|T][a|A]\_/
 ;
 
 DataBlockHeading:
-    /DATA(NonBlankChar)+/
+    DATA_/\w+/
 ;
 
 DataBlock:
-  DataBlockHeading (WhiteSpace DataItems)*
+    DataBlockHeading (WhiteSpace DataItems)*
 ;
 
 
 DataItems:
-    /TAG WhiteSpace Value | LoopHeader LoopBody/
+    /Tag WhiteSpace Value | LoopHeader LoopBody/
 ;
 
 
 LOOP_:
-    '/[l|L][o|O][o|O][p|P]_/'
+    /[l|L][o|O][o|O][p|P]_/
 ;
 
 LoopHeader:
-    LOOP_/(WhiteSpace+TAG)+/
+    LOOP_/(WhiteSpace+Tag)+/
 ;
 
 LoopBody:
-    /Value (WhiteSpace Value)*/
+    Value/(WhiteSpace Value)*/
 ;
-
 
 WhiteSpace:
     /(\s|\t|\r|\r\n|\n|TokenizedComments)+/
 ;
 
 Comments:
-    /(\#(AnyPrintChar)*$)+/
+    /(\#(AnyPrintChar)*)+/
 ;
 
 TokenizedComments:
     /(\s|\t|\r|\r\n|\n)+ Comments/
 ;
 
-TAG:
-    /_(NonBlankChar)+/
+Tag:
+    /\_NonBlankChar+/
 ;
 
 Value:
-    /(\. | \? | Numeric | CharString | TextField)/
+    /\. | \? | Numeric | CharString | TextField/
 ;
 
 Numeric:
-    / NUMBER+ | NUMBER+ \( UnsignedInteger+ \)/
+    Number | Number /\( UnsignedInteger+ \)/
 ;
 
-NUMBER:
-    /(\+|\-)?\d.?\d?/
+Number:
+    / Integer | ( \+ | \- )?\d.?\d?/
+;
+
+Integer:
+     /(\+|\-)?/ UnsignedInteger
 ;
 
 UnsignedInteger:
@@ -70,19 +73,20 @@ UnsignedInteger:
 ;
 
 CharString:
-    /UnquotedString | SingleQuotedString | DoubleQuotedString/
+    UnquotedString | SingleQuotedString | DoubleQuotedString
+;
+
+NonBlankChar:   
+    / OrdinaryChar | \" | \# | \' /
 ;
 
 UnquotedString:
-    /OrdinaryChar (NonBlankChar)*/
+    /(eol OrdinaryChar (NonBlankChar)*)+ | ((OrdinaryChar>|\;) NonBlankChar*)+/
 ;
 
-NonBlankChar:
-    /OrdinaryChar | \" | \# | \' /
-;
 
 SingleQuotedString:
-    / \' AnyPrintChar* \' WhiteSpace /
+    /\' AnyPrintChar* \' WhiteSpace/
 ;
 
 DoubleQuotedString:
@@ -90,7 +94,7 @@ DoubleQuotedString:
 ;
 
 TextField:
-    /SemiColonTextField/
+    SemiColonTextField
 ;
 
 eol:
@@ -106,15 +110,15 @@ OrdinaryChar:
     | \? | \@ | \\ | \^ | \` | \{ | \| | \} | \~ |
     0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
     A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z |
-    a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z |)?/
+    a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z )?/
 ;
 
 TextLeadChar:
-    / OrdinaryChar | \" | \# | \$ | \' | \_ | \s | \t | \[ | \] /
+    /OrdinaryChar | \" | \# | \$ | \' | \_ | \s | \t | \[ | \]/
 ;
 
 AnyPrintChar:
-    / OrdinaryChar | \" | \# | \$ | \' | \_ | \s | \; | \[ | \] /
+    /OrdinaryChar | \" | \# | \$ | \' | \_ | \s | \; | \[ | \]/
 ;
 
 """
