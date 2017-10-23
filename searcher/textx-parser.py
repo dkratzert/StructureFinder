@@ -3,24 +3,24 @@ from pathlib import Path
 
 grammar = r"""
 CIF:
-  Comments? DataBlock=DataBlock+
-;
-
-DataBlock:
-  DataBlockHeading=DataBlockHeading DataItems=DataItems*
+  Comments? WhiteSpace? DataBlock+ WhiteSpace?
 ;
 
 DATA:
-    /[d|D][a|A][t|T][a|A]/
+    /[d|D][a|A][t|T][a|A]\_/
 ;
 
 DataBlockHeading:
-    DATA/_\S+/
+    /DATA(NonBlankChar)+/
+;
+
+DataBlock:
+  DataBlockHeading (WhiteSpace DataItems)*
 ;
 
 
 DataItems:
-    TAG=TAG /.*/
+    /TAG WhiteSpace Value | LoopHeader LoopBody/
 ;
 
 
@@ -33,16 +33,16 @@ LoopHeader:
 ;
 
 LoopBody:
-    Value (WhiteSpace Value)*
+    /Value (WhiteSpace Value)*/
 ;
 
 
-WhiteSpace[noskipws]:
-    /(\s|\t|\r|\r\n|\n|TokenizedComments)+ /
+WhiteSpace:
+    /(\s|\t|\r|\r\n|\n|TokenizedComments)+/
 ;
 
-Comments[noskipws]:
-    /^#.*$/
+Comments:
+    /(\#(AnyPrintChar)*$)+/
 ;
 
 TokenizedComments:
@@ -50,15 +50,23 @@ TokenizedComments:
 ;
 
 TAG:
-    /_.*/
+    /_(NonBlankChar)+/
 ;
 
 Value:
-    /(\. | \? | NUMBER | CharString )/
+    /(\. | \? | Numeric | CharString | TextField)/
+;
+
+Numeric:
+    / NUMBER+ | NUMBER+ \( UnsignedInteger+ \)/
 ;
 
 NUMBER:
     /(\+|\-)?\d.?\d?/
+;
+
+UnsignedInteger:
+    /\d+/
 ;
 
 CharString:
@@ -74,15 +82,39 @@ NonBlankChar:
 ;
 
 SingleQuotedString:
-    /\'(\S)*\'\s/
+    / \' AnyPrintChar* \' WhiteSpace /
 ;
 
 DoubleQuotedString:
     /\"(\S)*\"\s/
 ;
 
+TextField:
+    /SemiColonTextField/
+;
+
+eol:
+    /\n|\r|\r\n/
+;
+
+SemiColonTextField:
+    /eol \; (AnyPrintChar)* eol ((TextLeadChar (AnyPrintChar)*)? eol)* \;/
+;
+
 OrdinaryChar:
-    /( \! | \% | \& | \( | \) | \* | \+ | \, | \- | \. | \/ | \: | \< | \= | \> | \? | \@ | \\ | \^ | \` | \{ | \| | \} | \~ )/
+    /( \! | \% | \& | \( | \) | \* | \+ | \, | \- | \. | \/ | \: | \< | \= | \> 
+    | \? | \@ | \\ | \^ | \` | \{ | \| | \} | \~ |
+    0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+    A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z |
+    a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z |)?/
+;
+
+TextLeadChar:
+    / OrdinaryChar | \" | \# | \$ | \' | \_ | \s | \t | \[ | \] /
+;
+
+AnyPrintChar:
+    / OrdinaryChar | \" | \# | \$ | \' | \_ | \s | \; | \[ | \] /
 ;
 
 """
@@ -90,7 +122,7 @@ OrdinaryChar:
 
 
 if __name__ == '__main__':
-    mm = metamodel_from_str(grammar)
+    mm = metamodel_from_str(grammar, skipws=False)
 
     # Meta-model knows how to parse and instantiate models.
     model = mm.model_from_file('./test-data/p21c.cif')
