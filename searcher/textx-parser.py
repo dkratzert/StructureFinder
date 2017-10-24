@@ -10,7 +10,7 @@ https://www.iucr.org/resources/cif/spec/version1.1/cifsyntax
 
 grammar = r"""
 CIF:
-    Comments? WhiteSpace? (DataBlock (WhiteSpace DataBlock)* (WhiteSpace)? )?
+    Comments? WhiteSpace? (DataBlock=DataBlock (WhiteSpace DataBlock)* (WhiteSpace)? )?
 ;
 
 DATA_:
@@ -22,12 +22,12 @@ DataBlockHeading:
 ;
 
 DataBlock:
-    DataBlockHeading (WhiteSpace DataItems)*
+    DataBlockHeading=DataBlockHeading (WhiteSpace DataItems)*
 ;
 
 
 DataItems:
-    Tag WhiteSpace Value | LoopHeader LoopBody
+    Tag=Tag WhiteSpace Value=Value | Loophead=LoopHeader Loopbody=LoopBody
 ;
 
 
@@ -60,15 +60,15 @@ Tag:
 ;
 
 Value:
-    /\./ | /\?/ | Numeric | CharString | TextField
+    /\.|\?/ | Numeric | CharString | TextField
 ;
 
 Numeric:
-    Number | Number /\( UnsignedInteger+ \)/
+    Number | Number /\(UnsignedInteger+\)/
 ;
 
 Number:
-    Integer | /( \+ | \- )?\d.?\d?/
+    Integer | /(\+|\-)?\d\.?\d?/
 ;
 
 Integer:
@@ -88,7 +88,7 @@ NonBlankChar:
 ;
 
 UnquotedString:
-    /(eol OrdinaryChar (NonBlankChar)*)+ | ((OrdinaryChar>|\;) NonBlankChar*)+/
+    (eol OrdinaryChar (NonBlankChar)*)+ | ((OrdinaryChar | /\;/) NonBlankChar*)+
 ;
 
 
@@ -129,7 +129,7 @@ AnyPrintChar:
 
 
 if __name__ == '__main__':
-    mm = metamodel_from_str(grammar, skipws=False)
+    mm = metamodel_from_str(grammar, skipws=False, autokwd=False)
 
     # Meta-model knows how to parse and instantiate models.
     model = mm.model_from_file('./test-data/p21c.cif')
