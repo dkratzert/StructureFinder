@@ -44,7 +44,7 @@ LoopBody:
 ;
 
 WhiteSpace:
-    /(\s|\t|\r|\r\n|\n|TokenizedComments)+/
+    /([ \t\n\r\f\v]|TokenizedComments)+/
 ;
 
 Comments:
@@ -113,7 +113,7 @@ SemiColonTextField:
 ;
 
 OrdinaryChar:
-    /([A-z]|[0-9]|\!|\%|\&|\(|\)|\*|\+|\,|\-|\.|\/|\:|\<|\=|\>|\?|\@|\\|\^|\`|\{|\||\}|\~)?/
+    /(\w|\!|\%|\&|\(|\)|\*|\+|\,|\-|\.|\/|\:|\<|\=|\>|\?|\@|\\|\^|\`|\{|\||\}|\~)?/
 ;
 
 TextLeadChar:
@@ -129,7 +129,7 @@ AnyPrintChar:
 
 
 if __name__ == '__main__':
-    mm = metamodel_from_str(grammar, skipws=False, autokwd=False)
+    mm = metamodel_from_str(grammar, skipws=False, autokwd=False, debug=False)
 
     # Meta-model knows how to parse and instantiate models.
     model = mm.model_from_file('./test-data/p21c.cif')
