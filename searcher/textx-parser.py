@@ -10,7 +10,7 @@ https://www.iucr.org/resources/cif/spec/version1.1/cifsyntax
 
 grammar = r"""
 CIF:
-    Comments? WhiteSpace? (DataBlock=DataBlock (WhiteSpace DataBlock)* (WhiteSpace)? )?
+    Comment? WhiteSpace? (DataBlock=DataBlock (WhiteSpace DataBlock)* (WhiteSpace)? )?
 ;
 
 DATA_:
@@ -47,12 +47,12 @@ WhiteSpace:
     /([ \t\n\r\f\v]|TokenizedComments)+/
 ;
 
-Comments:
+Comment:
     /(\#(AnyPrintChar)*)+/
 ;
 
 TokenizedComments:
-    /(\s|\t|\r|\r\n|\n|eol)+/ Comments
+    /(\s|\t|\r|\r\n|\n|eol)+/ Comment
 ;
 
 Tag:
@@ -121,7 +121,7 @@ TextLeadChar:
 ;
 
 AnyPrintChar:
-    OrdinaryChar|/\"|\#|\$|\'|\_|\s|\;|\[|\]/  // \s is not ok here?
+    OrdinaryChar | /\"|\#|\$|\'|\_|\s|\;|\[|\]/  // \s is not ok here?
 ;
 
 """
@@ -129,7 +129,7 @@ AnyPrintChar:
 
 
 if __name__ == '__main__':
-    mm = metamodel_from_str(grammar, skipws=False, autokwd=False, debug=False)
+    mm = metamodel_from_str(grammar, skipws=False, autokwd=False, debug=True)
 
     # Meta-model knows how to parse and instantiate models.
     model = mm.model_from_file('./test-data/p21c.cif')
