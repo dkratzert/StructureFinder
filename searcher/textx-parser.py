@@ -52,7 +52,7 @@ Comments:
 ;
 
 TokenizedComments:
-    /(\s|\t|\r|\r\n|\n)+/ Comments
+    /(\s|\t|\r|\r\n|\n|eol)+/ Comments
 ;
 
 Tag:
@@ -76,7 +76,7 @@ Integer:
 ;
 
 UnsignedInteger:
-    /\d+/
+    INT
 ;
 
 CharString:
@@ -117,11 +117,11 @@ OrdinaryChar:
 ;
 
 TextLeadChar:
-    /OrdinaryChar|\"|\#|\$|\'|\_|\s|\t|\[|\]/
+    /OrdinaryChar|\"|\#|\$|\'|\_|\s|\t|\[|\]/  // \s is not ok here?
 ;
 
 AnyPrintChar:
-    OrdinaryChar|/\"|\#|\$|\'|\_|\s|\;|\[|\]/
+    OrdinaryChar|/\"|\#|\$|\'|\_|\s|\;|\[|\]/  // \s is not ok here?
 ;
 
 """
