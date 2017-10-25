@@ -93,11 +93,11 @@ UnquotedString:
 
 
 SingleQuotedString:
-    /\'/ AnyPrintChar* /\'/ WhiteSpace
+    /\'/ AnyPrintChar*? /\'/WhiteSpace
 ;
 
 DoubleQuotedString:
-    /\"(\S)*\"\s/
+    /\"/ AnyPrintChar*? /\"/WhiteSpace
 ;
 
 TextField:
@@ -113,11 +113,11 @@ SemiColonTextField:
 ;
 
 OrdinaryChar:
-    /(\w|\!|\%|\&|\(|\)|\*|\+|\,|\-|\.|\/|\:|\<|\=|\>|\?|\@|\\|\^|\`|\{|\||\}|\~)?/
+    /\w|\!|\%|\&|\(|\)|\*|\+|\,|\-|\.|\/|\:|\<|\=|\>|\?|\@|\\|\^|\`|\{|\||\}|\~/
 ;
 
 TextLeadChar:
-    /OrdinaryChar|\"|\#|\$|\'|\_|\s|\t|\[|\]/  // \s is not ok here?
+    OrdinaryChar | /\"|\#|\$|\'|\_|\s|\t|\[|\]/  // \s is not ok here?
 ;
 
 AnyPrintChar:
