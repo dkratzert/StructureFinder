@@ -1,5 +1,6 @@
+#!C:\tools\Python-3.6.2_64\pythonw.exe
 #!/usr/local/bin/python3.6
-# !C:\tools\Python-3.6.2_64\pythonw.exe
+
 
 import cgi
 import pathlib
@@ -21,9 +22,9 @@ TODO: Fix Sn S distinction
 - Prevent adding same element in include and exclude field
 """
 
-# site_ip = "10.4.13.169"
-site_ip = "127.0.0.1"
-# dbfilename = "./structuredb.sqlite"
+site_ip = "10.4.13.169"
+#site_ip = "127.0.0.1"
+#dbfilename = "./structuredb.sqlite"
 dbfilename = "./structurefinder.sqlite"
 
 
