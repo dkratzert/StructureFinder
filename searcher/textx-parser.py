@@ -44,7 +44,7 @@ LoopBody:
 ;
 
 WhiteSpace:
-    /([ \t\n\r\f\v]|TokenizedComments)+/
+    /\s+/|TokenizedComments+
 ;
 
 Comment:
