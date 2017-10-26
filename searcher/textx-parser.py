@@ -93,11 +93,11 @@ UnquotedString:
 
 
 SingleQuotedString:
-    /\'/ AnyPrintChar*? /\'/WhiteSpace
+    (/\'/|AnyPrintChar|/\'/|WhiteSpace)*
 ;
 
 DoubleQuotedString:
-    /\"/ AnyPrintChar*? /\"/WhiteSpace
+    /\"/ AnyPrintChar* /\"/WhiteSpace
 ;
 
 TextField:
@@ -129,7 +129,7 @@ AnyPrintChar:
 
 
 if __name__ == '__main__':
-    mm = metamodel_from_str(grammar, skipws=False, autokwd=False, debug=True)
+    mm = metamodel_from_str(grammar, skipws=False, autokwd=False, debug=False)
 
     # Meta-model knows how to parse and instantiate models.
     model = mm.model_from_file('./test-data/p21c.cif')
