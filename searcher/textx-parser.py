@@ -14,11 +14,11 @@ CIF:
 ;
 
 DATA_:
-    /[d|D][a|A][t|T][a|A]\_/
+    /[dD][aA][tT][aA]_/
 ;
 
 DataBlockHeading:
-    DATA_/\w+/
+    data=DATA_/\w+/
 ;
 
 DataBlock:
@@ -32,7 +32,7 @@ DataItems:
 
 
 LOOP_:
-    /[l|L][o|O][o|O][p|P]_/
+    /[lL][oO][oO][pP]_/
 ;
 
 LoopHeader:
@@ -40,7 +40,7 @@ LoopHeader:
 ;
 
 LoopBody:
-    Value/(WhiteSpace Value)*/
+    LValue=Value/(WhiteSpace Value)*/
 ;
 
 WhiteSpace:
@@ -52,7 +52,7 @@ Comment:
 ;
 
 TokenizedComments:
-    /(\s|\t|\r|\r\n|\n|eol)+/ Comment
+    /(\s)+/  Comment
 ;
 
 Tag:
@@ -68,11 +68,11 @@ Numeric:
 ;
 
 Number:
-    Integer | /(\+|\-)?\d\.?\d?/
+    Integer | (('+'|'-')? /\d\.?\d?/)
 ;
 
 Integer:
-     /(\+|\-)?/ UnsignedInteger
+     ('+'|'-')? UnsignedInteger
 ;
 
 UnsignedInteger:
@@ -84,20 +84,20 @@ CharString:
 ;
 
 NonBlankChar:   
-    OrdinaryChar | /\"/|/\#/|/\'/
+    OrdinaryChar | /["#']/
 ;
 
 UnquotedString:
-    (eol OrdinaryChar (NonBlankChar)*)+ | ((OrdinaryChar | /\;/) NonBlankChar*)+
+    (eol OrdinaryChar NonBlankChar*)+ | ((OrdinaryChar | ';') NonBlankChar*)+
 ;
 
 
 SingleQuotedString:
-    (/\'/|AnyPrintChar|/\'/|WhiteSpace)*
+    ("'"|AnyPrintChar|"'"|WhiteSpace)*
 ;
 
 DoubleQuotedString:
-    /\"/ AnyPrintChar* /\"/WhiteSpace
+    '"' AnyPrintChar* '"' WhiteSpace
 ;
 
 TextField:
@@ -109,19 +109,19 @@ eol:
 ;
 
 SemiColonTextField:
-    eol /\;/ (AnyPrintChar)* eol ((TextLeadChar (AnyPrintChar)*)? eol)* /\;/
+    eol ";" (AnyPrintChar)* eol ((TextLeadChar AnyPrintChar*)? eol)* ";"
 ;
 
 OrdinaryChar:
-    /\w|\!|\%|\&|\(|\)|\*|\+|\,|\-|\.|\/|\:|\<|\=|\>|\?|\@|\\|\^|\`|\{|\||\}|\~/
+    /[\w+-.\/\?]/
 ;
 
 TextLeadChar:
-    OrdinaryChar | /\"|\#|\$|\'|\_|\s|\t|\[|\]/  // \s is not ok here?
+    OrdinaryChar | /["#$'_ \t\[\]]/  // \s is not ok here?
 ;
 
 AnyPrintChar:
-    OrdinaryChar | /\"|\#|\$|\'|\_|\s|\;|\[|\]/  // \s is not ok here?
+    OrdinaryChar | /["#$'_ ;\[\]]/  // \s is not ok here?
 ;
 
 """
@@ -129,10 +129,11 @@ AnyPrintChar:
 
 
 if __name__ == '__main__':
-    mm = metamodel_from_str(grammar, skipws=False, autokwd=False, debug=False)
+    mm = metamodel_from_str(grammar, skipws=False, autokwd=False, debug=True)
 
     # Meta-model knows how to parse and instantiate models.
-    model = mm.model_from_file('./test-data/p21c.cif')
-
-    print(model)
+    data = '\n'.join(open('./test-data/p21c.cif', 'r').readlines(805))
+    #model = mm.model_from_file('../test-data/p21c.cif')
+    model = mm.model_from_str(data)
+    print(model.DataBlock)
 
