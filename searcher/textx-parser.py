@@ -9,8 +9,12 @@ https://www.iucr.org/resources/cif/spec/version1.1/cifsyntax
 """
 
 grammar = r"""
-CIF:
-    Comment? WhiteSpace? DataBlock*=DataBlock WhiteSpace? 
+CIF:  // <Comments>? <WhiteSpace>? { <DataBlock> { <WhiteSpace> <DataBlock> }* { <WhiteSpace> }? }?
+    WhiteSpace? DataBlock*=DataBlock[/\s+/] WhiteSpace?
+;
+
+DataBlock:  //  <DataBlockHeading> {<WhiteSpace> { <DataItems> | <SaveFrame>} }*
+    DataBlockHeading (WhiteSpace items=DataItems)*
 ;
 
 DATA_:
@@ -18,58 +22,56 @@ DATA_:
 ;
 
 DataBlockHeading:
-    data=DATA_ NonBlankChar+
-;
-
-DataBlock:
-    DataBlockHeading=DataBlockHeading (WhiteSpace items*=DataItems)*
+    DATA_ NonBlankChar+
 ;
 
 
-DataItems:
-    Tag=Tag WhiteSpace Value=Value | LOOP_ Loophead+=LoopHeader Loopbody*=LoopBody
-;
-
-
-LOOP_:
-    /[lL][oO][oO][pP]_/
-;
-
-LoopHeader:
-    WhiteSpace Tag
-;
-
-LoopBody:
-    LValue*=Value (WhiteSpace LValue*=Value)*
+DataItems: //    <Tag> <WhiteSpace> <Value> |  <LoopHeader> <LoopBody>
+    tag=Tag WhiteSpace val=Value 
+    
+    //| LOOP_ Loophead+=LoopHeader Loopbody*=LoopBody
 ;
 
 WhiteSpace:
-    /\s+/ | TokenizedComments+
+    (/\ / | eol)+                   //| TokenizedComments+
 ;
 
-Comment:
-    /(\#(AnyPrintChar)*)+/
-;
+//LOOP_:
+//    loop*=/[lL][oO][oO][pP]_/
+//;
 
-TokenizedComments:
-    /\s+/  Comment
-;
+//LoopHeader:
+//    WhiteSpace Tag
+//;
+
+//LoopBody:
+//    LValue*=Value (WhiteSpace LValue*=Value)*
+//;
+
+
+//Comment:
+//    /(\#(AnyPrintChar)*)+/
+//;
+
+//TokenizedComments:
+//    /\s+/  Comment
+//;
 
 Tag:
     '_'NonBlankChar+
 ;
 
-Value:
-    '.' | '?' | Numeric | CharString | TextField+=SemiColonTextField
+Value:   //  { '.' | '?' | <Numeric> | <CharString> | <TextField> }
+    '.' | '?' | cstring*=CharString | STextField*=SemiColonTextField
 ;
 
-Numeric:
-    Number | Number '('INT+')'
-;
+//Numeric:  // Numeric values just as text for now
+//    Number | Number '('INT+')'
+//;
 
-Number:
-    INT | FLOAT  // (('+'|'-')? /\d\.?\d?/)
-;
+//Number:
+//    INT | FLOAT  // (('+'|'-')? /\d\.?\d?/)
+//;
 
 //Integer:
 //     ('+'|'-')? UnsignedInteger
@@ -93,7 +95,7 @@ UnquotedString:
 
 
 SingleQuotedString:
-    ("'"|AnyPrintChar|"'"|WhiteSpace)*
+    "'"AnyPrintChar*"'" WhiteSpace
 ;
 
 DoubleQuotedString:
@@ -109,7 +111,7 @@ eol:
 ;
 
 SemiColonTextField:
-    eol ";" (AnyPrintChar)* eol ((TextLeadChar AnyPrintChar*)? eol)* ";"
+    eol ';' (AnyPrintChar)* eol ((TextLeadChar AnyPrintChar*)? eol)* ';'
 ;
 
 OrdinaryChar:
