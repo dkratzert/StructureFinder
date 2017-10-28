@@ -10,7 +10,7 @@ https://www.iucr.org/resources/cif/spec/version1.1/cifsyntax
 
 grammar = r"""
 CIF:
-    Comment? WhiteSpace? (DataBlock=DataBlock (WhiteSpace DataBlock)* (WhiteSpace)? )?
+    Comment? WhiteSpace? DataBlock*=DataBlock WhiteSpace? 
 ;
 
 DATA_:
@@ -18,16 +18,16 @@ DATA_:
 ;
 
 DataBlockHeading:
-    data=DATA_/\w+/
+    data=DATA_ NonBlankChar+
 ;
 
 DataBlock:
-    DataBlockHeading=DataBlockHeading (WhiteSpace DataItems)*
+    DataBlockHeading=DataBlockHeading (WhiteSpace items*=DataItems)*
 ;
 
 
 DataItems:
-    Tag=Tag WhiteSpace Value=Value | Loophead=LoopHeader Loopbody=LoopBody
+    Tag=Tag WhiteSpace Value=Value | LOOP_ Loophead+=LoopHeader Loopbody*=LoopBody
 ;
 
 
@@ -36,15 +36,15 @@ LOOP_:
 ;
 
 LoopHeader:
-    LOOP_/(WhiteSpace+Tag)+/
+    WhiteSpace Tag
 ;
 
 LoopBody:
-    LValue=Value/(WhiteSpace Value)*/
+    LValue*=Value (WhiteSpace LValue*=Value)*
 ;
 
 WhiteSpace:
-    /\s+/|TokenizedComments+
+    /\s+/ | TokenizedComments+
 ;
 
 Comment:
@@ -52,32 +52,32 @@ Comment:
 ;
 
 TokenizedComments:
-    /(\s)+/  Comment
+    /\s+/  Comment
 ;
 
 Tag:
-    /\_/NonBlankChar+
+    '_'NonBlankChar+
 ;
 
 Value:
-    /\.|\?/ | Numeric | CharString | TextField
+    '.' | '?' | Numeric | CharString | TextField+=SemiColonTextField
 ;
 
 Numeric:
-    Number | Number /\(UnsignedInteger+\)/
+    Number | Number '('INT+')'
 ;
 
 Number:
-    Integer | (('+'|'-')? /\d\.?\d?/)
+    INT | FLOAT  // (('+'|'-')? /\d\.?\d?/)
 ;
 
-Integer:
-     ('+'|'-')? UnsignedInteger
-;
+//Integer:
+//     ('+'|'-')? UnsignedInteger
+//;
 
-UnsignedInteger:
-    INT
-;
+//UnsignedInteger:
+//    INT
+//;
 
 CharString:
     UnquotedString | SingleQuotedString | DoubleQuotedString
@@ -100,9 +100,9 @@ DoubleQuotedString:
     '"' AnyPrintChar* '"' WhiteSpace
 ;
 
-TextField:
-    SemiColonTextField
-;
+//TextField:
+//    SemiColonTextField
+//;
 
 eol:
     /\n|\r|\r\n/
@@ -117,11 +117,11 @@ OrdinaryChar:
 ;
 
 TextLeadChar:
-    OrdinaryChar | /["#$'_ \t\[\]]/  // \s is not ok here?
+    OrdinaryChar | /["#$'_ \t\[\]\(\)]/  
 ;
 
 AnyPrintChar:
-    OrdinaryChar | /["#$'_ ;\[\]]/  // \s is not ok here?
+    OrdinaryChar | /["#$'_ ;\[\]\(\)]/ 
 ;
 
 """
@@ -135,5 +135,5 @@ if __name__ == '__main__':
     data = '\n'.join(open('./test-data/p21c.cif', 'r').readlines(805))
     #model = mm.model_from_file('../test-data/p21c.cif')
     model = mm.model_from_str(data)
-    print(model.DataBlock)
+    print(model)
 
