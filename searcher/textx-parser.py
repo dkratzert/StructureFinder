@@ -10,11 +10,11 @@ https://www.iucr.org/resources/cif/spec/version1.1/cifsyntax
 
 grammar = r"""
 CIF:  // <Comments>? <WhiteSpace>? { <DataBlock> { <WhiteSpace> <DataBlock> }* { <WhiteSpace> }? }?
-    WhiteSpace? DataBlock*=DataBlock[/\s+/] WhiteSpace?
+    WhiteSpace? DataBlock*=DataBlock WhiteSpace?
 ;
 
 DataBlock:  //  <DataBlockHeading> {<WhiteSpace> { <DataItems> | <SaveFrame>} }*
-    DataBlockHeading (WhiteSpace items=DataItems)*
+    DataBlockHeading | (WhiteSpace | ditems+=DataItems)*
 ;
 
 DATA_:
@@ -27,26 +27,33 @@ DataBlockHeading:
 
 
 DataItems: //    <Tag> <WhiteSpace> <Value> |  <LoopHeader> <LoopBody>
-    tag=Tag WhiteSpace val=Value 
-    
-    //| LOOP_ Loophead+=LoopHeader Loopbody*=LoopBody
+    tag=Tag WhiteSpace+ val=Value //| (LoopHeader | LoopBody)
 ;
 
 WhiteSpace:
     (/\ / | eol)+                   //| TokenizedComments+
 ;
 
-//LOOP_:
-//    loop*=/[lL][oO][oO][pP]_/
-//;
+Tag:
+    '_'NonBlankChar+
+;
 
-//LoopHeader:
-//    WhiteSpace Tag
-//;
+Value:   //  { '.' | '?' | <Numeric> | <CharString> | <TextField> }
+    '.' | '?' | CharString | SemiColonTextField
+;
 
-//LoopBody:
-//    LValue*=Value (WhiteSpace LValue*=Value)*
-//;
+
+LOOP_:
+    loop*=/[lL][oO][oO][pP]_/
+;
+
+LoopHeader:   //  <LOOP_> {<WhiteSpace> <Tag>}+	
+    LOOP_(WhiteSpace | Tag)+
+;
+
+LoopBody:   //  <Value> { <WhiteSpace> <Value> }*
+    LValue*=Value (WhiteSpace LValue*=Value)*
+;
 
 
 //Comment:
@@ -56,14 +63,6 @@ WhiteSpace:
 //TokenizedComments:
 //    /\s+/  Comment
 //;
-
-Tag:
-    '_'NonBlankChar+
-;
-
-Value:   //  { '.' | '?' | <Numeric> | <CharString> | <TextField> }
-    '.' | '?' | cstring*=CharString | STextField*=SemiColonTextField
-;
 
 //Numeric:  // Numeric values just as text for now
 //    Number | Number '('INT+')'
@@ -94,12 +93,12 @@ UnquotedString:
 ;
 
 
-SingleQuotedString:
-    "'"AnyPrintChar*"'" WhiteSpace
+SingleQuotedString:  // <single_quote>{<AnyPrintChar>}* <single_quote> <WhiteSpace>
+    "'"AnyPrintChar*"'"WhiteSpace
 ;
 
 DoubleQuotedString:
-    '"' AnyPrintChar* '"' WhiteSpace
+    '"'AnyPrintChar*'"'WhiteSpace
 ;
 
 //TextField:
@@ -123,7 +122,7 @@ TextLeadChar:
 ;
 
 AnyPrintChar:
-    OrdinaryChar | /["#$'_ ;\[\]\(\)]/ 
+    OrdinaryChar | /[#$_ ;\[\]\(\)]/ 
 ;
 
 """
@@ -134,8 +133,11 @@ if __name__ == '__main__':
     mm = metamodel_from_str(grammar, skipws=False, autokwd=False, debug=True)
 
     # Meta-model knows how to parse and instantiate models.
-    data = '\n'.join(open('./test-data/p21c.cif', 'r').readlines(805))
+    data = ''.join(open('./test-data/p21c.cif', 'r').readlines()[:13])
+    print(data)
     #model = mm.model_from_file('../test-data/p21c.cif')
     model = mm.model_from_str(data)
+
     print(model)
+
 
