@@ -117,11 +117,11 @@ OrdinaryChar:
     /[\w+-.\/\?]/
 ;
 
-TextLeadChar:
-    OrdinaryChar | /["#$'_ \t\[\]\(\)]/  
+TextLeadChar: // Todo: add ' and " where no space after is allowed
+    OrdinaryChar | /["#$_ \t\[\]\(\)]/  
 ;
 
-AnyPrintChar:
+AnyPrintChar: // Todo: add ' and " where no space after is allowed
     OrdinaryChar | /[#$_ ;\[\]\(\)]/ 
 ;
 
