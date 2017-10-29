@@ -44,11 +44,11 @@ Value:   //  { '.' | '?' | <Numeric> | <CharString> | <TextField> }
 
 
 LOOP_:
-    loop*=/[lL][oO][oO][pP]_/
+    /[lL][oO][oO][pP]_/
 ;
 
 LoopHeader:   //  <LOOP_> {<WhiteSpace> <Tag>}+	
-    LOOP_(WhiteSpace | Tag)+
+    LOOP_ (WhiteSpace | Tag)+
 ;
 
 LoopBody:   //  <Value> { <WhiteSpace> <Value> }*
@@ -126,14 +126,94 @@ AnyPrintChar:
 ;
 
 """
+#######################################################################################
 
+lgrammar = r"""
+// Für loop_ brauche ich eine Liste in der jedes list-item ein dictionary ist, wo {key=loopheaditem, value=loopvalue} ist.
+// Der Loopheader bestimmt die keys, der body die values.
+// Also: [{"_atom_type_symbol": 'C', "_atom_type_description": 'C', "_atom_type_scat_dispersion_real": 0.0033,      
+//          "_atom_type_scat_dispersion_imag": 0.0016, 
+//          "_atom_type_scat_source": 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'}, {}, ... ]
+
+DataItems: //    <Tag> <WhiteSpace> <Value> |  <LoopHeader> <LoopBody>
+    (loop=LoopHeader LoopBody)+
+;
+
+WhiteSpace:
+    (/\ / | eol)+                   //| TokenizedComments+
+;
+
+LOOP_:
+    /[lL][oO][oO][pP]_/
+;
+
+LoopHeader:   //  <LOOP_> {<WhiteSpace> <Tag>}+	
+    LOOP_ (WhiteSpace | ltag+=Tag)+
+;
+
+LoopBody:   //  <Value> { <WhiteSpace> <Value> }*
+    (lval+=Value | WhiteSpace)* 
+;
+
+Tag:
+    '_'NonBlankChar+
+;
+
+Value:   //  { '.' | '?' | <Numeric> | <CharString> | <TextField> }
+    '.' | '?' | CharString | SemiColonTextField
+;
+
+
+CharString:
+    UnquotedString | SingleQuotedString | DoubleQuotedString
+;
+
+NonBlankChar:   
+    OrdinaryChar | /["#']/
+;
+
+UnquotedString:
+    eol OrdinaryChar NonBlankChar* | (OrdinaryChar | ';') NonBlankChar*
+;
+
+
+SingleQuotedString:  // <single_quote>{<AnyPrintChar>}* <single_quote> <WhiteSpace>
+    "'"AnyPrintChar*"'"WhiteSpace
+;
+
+DoubleQuotedString:
+    '"'AnyPrintChar*'"'WhiteSpace
+;
+
+
+eol:
+    /\n|\r|\r\n/
+;
+
+SemiColonTextField:
+    eol ';' (AnyPrintChar)* eol ((TextLeadChar AnyPrintChar*)? eol)* ';'
+;
+
+OrdinaryChar:
+    /[\w+-.\/\?]/
+;
+
+TextLeadChar:
+    OrdinaryChar | /["#$'_ \t\[\]\(\)]/  
+;
+
+AnyPrintChar:
+    OrdinaryChar | /[#$_ ;\[\]\(\)]/ 
+;
+
+"""
 
 
 if __name__ == '__main__':
-    mm = metamodel_from_str(grammar, skipws=False, autokwd=False, debug=True)
+    mm = metamodel_from_str(lgrammar, skipws=False, autokwd=False, debug=True)
 
     # Meta-model knows how to parse and instantiate models.
-    data = ''.join(open('./test-data/p21c.cif', 'r').readlines()[:13])
+    data = ''.join(open('./test-data/p21c.cif', 'r').readlines()[13:32])
     print(data)
     #model = mm.model_from_file('../test-data/p21c.cif')
     model = mm.model_from_str(data)
