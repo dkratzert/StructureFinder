@@ -129,11 +129,45 @@ AnyPrintChar:
 #######################################################################################
 
 lgrammar = r"""
-// Für loop_ brauche ich eine Liste in der jedes list-item ein dictionary ist, wo {key=loopheaditem, value=loopvalue} ist.
-// Der Loopheader bestimmt die keys, der body die values.
-// Also: [{"_atom_type_symbol": 'C', "_atom_type_description": 'C', "_atom_type_scat_dispersion_real": 0.0033,      
-//          "_atom_type_scat_dispersion_imag": 0.0016, 
-//          "_atom_type_scat_source": 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'}, {}, ... ]
+/* Für loop_ brauche ich eine Liste in der jedes list-item ein dictionary ist, wo {key=loopheaditem, value=loopvalue} ist.
+   Der Loopheader bestimmt die keys, der body die values.
+   Also: [{"_atom_type_symbol": 'C', "_atom_type_description": 'C', "_atom_type_scat_dispersion_real": 0.0033,      
+           "_atom_type_scat_dispersion_imag": 0.0016, 
+           "_atom_type_scat_source": 'International Tables Vol C Tables 4.2.6.8 and 6.1.1.4'}, {}, ... ]
+
+from textx.metamodel import metamodel_from_str
+
+grammar = '''
+LoopModel:
+  loops+=Loop    // each model has one or more entities
+;
+
+Loophead:
+   foo
+;
+
+Loop:
+  item+=loopheaditem 
+    attribute=Attribute     
+;
+
+Attribute:
+  loopheaditem type=[Entity]   // type is a reference to an entity. There are
+                              // built-in entities registered on the meta-model
+                              // for primitive types (integer, string)
+;
+'''
+
+class Entity(object):
+  def __init__(self, parent, name, attributes):
+    # build the dictionary
+
+
+# Use our Entity class. "Attribute" class will be created dynamically.
+entity_mm = metamodel_from_str(grammar, classes=[Entity])
+
+
+*/
 
 DataItems: //    <Tag> <WhiteSpace> <Value> |  <LoopHeader> <LoopBody>
     (loop=LoopHeader LoopBody)+
@@ -152,7 +186,7 @@ LoopHeader:   //  <LOOP_> {<WhiteSpace> <Tag>}+
 ;
 
 LoopBody:   //  <Value> { <WhiteSpace> <Value> }*
-    (lval+=Value | WhiteSpace)* 
+    (Value | WhiteSpace)*
 ;
 
 Tag:
