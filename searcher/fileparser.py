@@ -323,7 +323,8 @@ def delimit_line(line: str) -> list:
     ['-2 34', '234']
     >>> delimit_line("'x, y, z'")
     ['x, y, z']
-    
+    >>> delimit_line("'a dog's life'")
+    ["a dog's life"]
     """
     data = []
     line = line.split(' ')
