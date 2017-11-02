@@ -168,6 +168,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 try:
                     cifok = cif.parsefile(f.readlines())
                     if not cifok:
+                        print("Could not parse: {}.".format(fullpath))
                         continue
                 except IndexError:
                     continue
@@ -199,6 +200,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 try:
                     cifok = cif.parsefile(zippedfile)
                     if not cifok:
+                        print("Could not parse: {}.".format(fullpath))
                         continue
                 except IndexError:
                     continue
