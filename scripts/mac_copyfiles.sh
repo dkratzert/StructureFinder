@@ -7,3 +7,4 @@ sudo cp -v ../structuredb.sqlite /Library/WebServer/CGI-Executables/
 sudo cp -v ../cgi_ui/cgi-bin/favicon.ico /Library/WebServer/Documents/favicon.ico
 sudo cp -v ../displaymol/*.py /Library/WebServer/CGI-Executables/displaymol
 sudo cp -v ../displaymol/JSmol_dk.nojq.lite.js /Library/WebServer/Documents/jsmol/
+sudo cp -rv ../cgi_ui/clipboard /Library/WebServer/Documents/
