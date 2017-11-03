@@ -7,3 +7,5 @@ copy /Y D:\GitHub\StructureFinder\searcher\*.py D:\downloads\httpd-2.4.27-x64-vc
 copy /Y D:\GitHub\StructureFinder\misc\*.py D:\downloads\httpd-2.4.27-x64-vc14\Apache24\cgi-bin\misc\
 
 copy /Y D:\GitHub\StructureFinder\displaymol\JSmol_dk.nojq.lite.js D:\downloads\httpd-2.4.27-x64-vc14\Apache24\htdocs\jsmol
+
+copy /Y D:\GitHub\StructureFinder\cgi_ui\clipboard D:\downloads\httpd-2.4.27-x64-vc14\Apache24\htdocs\clipboard\
