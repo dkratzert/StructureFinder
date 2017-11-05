@@ -10,6 +10,7 @@
     <script src="http://$my_ip/bootstrap3/js/bootstrap.min.js"></script>
     <script src="http://$my_ip/jsmol/JSmol_dk.nojq.lite.js"></script>
     <script src="http://$my_ip/w2ui/w2ui-1.4.min.js"></script>
+    <script src="http://$my_ip/clipboard/clipboard.min.js"></script>
 
 
 <style type="text/css">
@@ -52,10 +53,10 @@ body {
 }
 
 #jsmolcolumn {
-    /*margin-right: 15px;*/
+    margin-right: 15px;
     margin-left: 15px;
     width: 360px;
-    height: 330px;
+    height: 320px;
 }
 
 </style>
@@ -63,14 +64,6 @@ body {
 
 <script>
 var cgifile = 'http://$my_ip/cgi-bin/strf_web.cgi';
-
-function copyToClipboard(element) {
-    var $temp = $("<input>");
-    $("body").prepend($temp);
-    $temp.val($(element).text()).select();
-    document.execCommand("copy");
-    $temp.remove();
-}
 
 // height of cif list to 35% of the screen height:
 $(document).ready(function(){
@@ -233,10 +226,10 @@ $(document).ready(function(){
     <div class="column col-lg-12">
         <div class="panel panel-default">
             <div class="panel-body">
-                <span class="invisible" id="cellrow" style="font-size: 14px"> </span>
+                <span class="invisible btn-group" id="cellrow" style="font-size: 14px"> </span>
                 <span class="btn btn-default glyphicon glyphicon-copy invisible" id="cell_copy_btn"
-                      data-toggle="tooltip" title="Copy cell to clipboard."
-                      onclick="copyToClipboard('#hidden-cell')"></span>
+                      data-toggle="tooltip" title="Copy cell to clipboard." data-clipboard-target="#hidden-cell">
+                </span>
             </div>
         </div>
     </div>
@@ -308,19 +301,20 @@ jQuery(document).ready(function($) {
         }
     });
 
-    // Button clicked:
+    // Text search Button clicked:
     $("#smpl_textsrchbutton").click(function(event) {
         var txt = document.getElementById("smpl_textsrch").value;
         txtsearch(txt);
         //console.log(txt);
     });
 
+    // Cell search Button clicked:
     $("#smpl_cellsrchbutton").click(function(event) {
         var cell = document.getElementById("smpl_cellsrch").value;
         cellsearch(cell);
     });
 
-    // Enter key pressed in simple search fields:
+    // Enter key pressed in the simple text search field:
     $('#smpl_textsrch').keypress(function(e) {
         if (e.which === 13) {  // enter key
             var txt = document.getElementById("smpl_textsrch").value;
@@ -329,6 +323,7 @@ jQuery(document).ready(function($) {
         }
     });
 
+    // Enter key pressed in the simple cell search field:
     $('#smpl_cellsrch').keypress(function(e) {
         if (e.which === 13) {  // enter key
             var cell = document.getElementById("smpl_cellsrch").value;
@@ -372,6 +367,49 @@ jQuery(document).ready(function($) {
             //console.log(record);
         }
     });
+
+
+    function showprop(idstr) {
+        /* This function uses AJAX POST calls to get the data of a structure and displays the below the main table. */
+        // Get residuals table 1:
+        $.post(url = cgifile, data = {id: idstr, residuals1: true}, function (result) {
+            document.getElementById("residualstable1").innerHTML = result;
+        });
+
+        // Get residuals table 2:
+        $.post(url = cgifile, data = {id: idstr, residuals2: true}, function (result) {
+            document.getElementById("residualstable2").innerHTML = result;
+        });
+
+        // Get molecule data and display the molecule:
+        var jsmolcol = $("#jsmolcolumn");
+        $.post(url = cgifile, data = {id: idstr, molecule: true}, function (result) {
+            Jmol._document = null;
+            Jmol.getTMApplet("jmol", Info);
+            jsmolcol.html(jmol._code);
+            jmol.__loadModel(result);
+            jsmolcol.removeClass('invisible');
+            var tbl = $('#residualstable2');
+            jsmolcol.css("height", tbl.height()-20);
+        });
+
+        // Get unit cell row:
+        $.post(url = cgifile, data = {id: idstr, unitcell: true}, function (result) {
+            $("#cellrow").removeClass('invisible');
+            $("#cell_copy_btn").removeClass('invisible');
+            document.getElementById("cellrow").innerHTML = result;
+
+            var clipboard = new Clipboard('.btn');
+            clipboard.on('success', function(e) {
+                e.clearSelection();
+            });
+        });
+
+        // display the big cif data table:
+        $.post(url = cgifile, data = {id: idstr}, function (result) {
+            document.getElementById("residuals").innerHTML = result;
+        });
+    }
 
     // some options for JSmol:
     var bgcolor = $(this.body).css("background-color");
@@ -475,39 +513,6 @@ jQuery(document).ready(function($) {
         );
     }
 
-    function showprop(idstr) {
-        // Get molecule data and display the molecule:
-        var jsmolcol = $("#jsmolcolumn");
-        $.post(url = cgifile, data = {id: idstr, molecule: true}, function (result) {
-            Jmol._document = null;
-            Jmol.getTMApplet("jmol", Info);
-            jsmolcol.html(jmol._code);
-            jmol.__loadModel(result);
-            jsmolcol.removeClass('invisible');
-        });
-
-        // Get unit cell row:
-        $.post(url = cgifile, data = {id: idstr, unitcell: true}, function (result) {
-            $("#cellrow").removeClass('invisible');
-            $("#cell_copy_btn").removeClass('invisible');
-            document.getElementById("cellrow").innerHTML = result;
-        });
-
-        // Get residuals table 1:
-        $.post(url = cgifile, data = {id: idstr, residuals1: true}, function (result) {
-            document.getElementById("residualstable1").innerHTML = result;
-        });
-
-        // Get residuals table 2:
-        $.post(url = cgifile, data = {id: idstr, residuals2: true}, function (result) {
-            document.getElementById("residualstable2").innerHTML = result;
-        });
-
-        // display the big cif data table:
-        $.post(url = cgifile, data = {id: idstr}, function (result) {
-            document.getElementById("residuals").innerHTML = result;
-        });
-    }
 });
 
 </script>
