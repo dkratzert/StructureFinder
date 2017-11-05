@@ -16,17 +16,15 @@ with open('../test-data/p-1_a.cif', 'r') as f:
     ciflines = f.readlines()
 
 
-"""
 T_SP = transition_space
 T_DATA = transition_data_tag
 T_COMMENT = transition_comment_line
 T_NEWLINE = transition_newline
 T_NEWL_or_SP = transition_newline_or_space
-T_TAG_or_LOOP = transition_tag_or_loop
 T_EOF = transition_end_of_file
 T_SEMICOL_S = transition_semicolon_field_start
 T_SEMICOL_E = transition_semicolon_field_end
-T_T_or_L = transition_tag_or_loop
+T_TAG_or_LOOP = transition_tag_or_loop
 T_TAG = transiton_tag_not_loop
 T_NOTEOL = transition_not_eol_plus_ordchar_or_semicol
 T_EOL = transition_eol_plus_ordchar
@@ -47,19 +45,87 @@ S_UNQUOTED_STRING = "STATE: A value as unquoted string"
 S_SINGLEQUOTED_STRING = "STATE: A value as singlequoted string"
 S_DOUBLEQUOTED_STRING = "STATE: A value as doublequoted string"
 
-"""
+
 
 FSM_MAP = (
     #  {'src':, 'dst':, 'condition':, 'callback': },
-    {'src': S_NEW_GROUP,
-        'dst': S_PRE,
-        'condition': "[A-Za-z|+|-|\d]",
-        'callback': T_APPEND_CHAR_PRE}  # 1
+    {'src'      : S_DATABLOCK,
+     'dst'      : S_WHITESP,
+     'condition': "[ \r\n]",
+     'callback' : T_TAG_or_LOOP},  # 1
+    {'src'      : S_DATABLOCK,
+     'dst'      : S_WHITESP,
+     'condition': "[ \r\n]",
+     'callback' : T_TAG_or_LOOP}  # 1
 )
+
+
+class Rule:
+    def __init__(self):
+        self.prefix = ""
+        self.subject = ""
+        self.op = None
+
+    def __repr__(self):
+        op = self.op
+        if not op:
+            op = ''
+        return "<Rule: {} {}({})>".format(op, self.prefix, self.subject)
+
+
+class RuleGroup:
+    def __init__(self, parent, level, op):
+        self.op = op
+        self.parent = parent
+        self.level = level
+        self.rule_count = 1
+        self.rules = [Rule(), ]
+
+    def __repr__(self):
+        return "<RuleGroup: {}>".format(self.__dict__)
+
+
+class Rule_Parse_FSM:
+
+    def __init__(self, input_lines):
+        self.input_lines = input_lines
+        self.current_state = S_START
+        self.group_current_level = 0
+        self.current_group = RuleGroup(None, self.group_current_level, None)
+        self.current_char = ''
+
+    def run(self):
+        for line in self.input_lines:
+            if not self.process_next(line):
+                print("skip '{}' in {}".format(line, self.current_state))
+
+    def process_next(self, achar):
+        self.current_char = achar
+        frozen_state = self.current_state
+        for transition in FSM_MAP:
+            if transition['src'] == frozen_state:
+                if self.iterate_re_evaluators(achar, transition):
+                    return True
+        return False
+
+    def iterate_re_evaluators(self, achar, transition):
+        condition = transition['condition_re_compiled']
+        if condition.match(achar):
+            self.update_state(
+                transition['dst'], transition['callback'])
+            return True
+        return False
+
+    def update_state(self, new_state, callback):
+        print("{} -> {} : {}".format(self.current_char,
+                                     self.current_state,
+                                     new_state))
+        self.current_state = new_state
+        callback(self)
 
 if __name__ == '__main__':
     pass
-    #import doctest
-    #failed, attempted = doctest.testmod()  # verbose=True)
-    #if failed == 0:
+    # import doctest
+    # failed, attempted = doctest.testmod()  # verbose=True)
+    # if failed == 0:
     #    print('passed all {} tests!'.format(attempted))
