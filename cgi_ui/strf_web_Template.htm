@@ -455,6 +455,7 @@ jQuery(document).ready(function($) {
         );
     }
 
+    // Search for structures of last month:
     $('#lastmsearchlink').click(function(){
         var date_now = new Date();
         var month = date_now.getUTCMonth();
@@ -462,6 +463,8 @@ jQuery(document).ready(function($) {
         var lastmonth = new Date(date_now.getUTCFullYear(), month-1, day);
         var lastmdate = lastmonth.toISOString().split("T")[0];
         console.log(lastmdate+ ' '+ date_now.toISOString().split("T")[0]);
+        //console.log(lastmdate+ ' '+ date_now.toISOString().split("T")[0]);
+        // From last month to now():
         advanced_search("", "", "", "", "", "", "", lastmdate, date_now.toISOString().split("T")[0]);
     });
 
