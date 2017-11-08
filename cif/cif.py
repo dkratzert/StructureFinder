@@ -12,29 +12,27 @@ Created on 01.11.2017
 @author: daniel
 """
 
-"""
-Callback functions for the cif file parser.
-"""
 
-
+# Callback functions for the cif file parser:
 def transition_comment_line(fsm_obj):
-    rule_count = fsm_obj.current_group.rule_count
-    fsm_obj.current_group.rules[rule_count - 1].op = fsm_obj.current_line
+    pass
 
 
 def transition_space(fsm_obj):
     pass
 
 
-def transition_data_tag(fsm_obj):
-    pass
-
-
 def transition_newline(fsm_obj):
-    pass
+    rule_count = fsm_obj.current_group.rule_count
+    fsm_obj.current_group.rules[rule_count - 1].op = fsm_obj.current_line
 
 
 def transition_newline_or_space(fsm_obj):
+    rule_count = fsm_obj.current_group.rule_count
+    fsm_obj.current_group.rules[rule_count - 1].op = fsm_obj.current_line
+
+
+def transition_data_tag(fsm_obj):
     pass
 
 
@@ -100,12 +98,12 @@ T_NOTEOL = transition_not_eol_plus_ordchar_or_semicol
 T_EOL = transition_eol_plus_ordchar
 T_SEMI_DATA = transition_semicolon_field_data
 T_SING_ST = transition_single_quoted_start
-T_SING_END = transition_single_quoted_end 
-T_DOUBL_ST = transition_double_quoted_start 
-T_DOUBL_END = transition_double_quoted_end  
+T_SING_END = transition_single_quoted_end
+T_DOUBL_ST = transition_double_quoted_start
+T_DOUBL_END = transition_double_quoted_end
 
-S_START = "SATE: Start of file"
-S_DATABLOCK = "SATE: Datablock begins"
+S_START = "STATE: Start of file"
+S_DATABLOCK = "STATE: Datablock begins"
 S_COMMENT = "STATE: A comment line"
 S_WHITESP = "STATE: Whitespace"
 S_DATAITEMS = "STATE: Dataitems of Datablock"
@@ -115,18 +113,28 @@ S_UNQUOTED_STRING = "STATE: A value as unquoted string"
 S_SINGLEQUOTED_STRING = "STATE: A value as singlequoted string"
 S_DOUBLEQUOTED_STRING = "STATE: A value as doublequoted string"
 
-
-
 FSM_MAP = (
-    #  {'src':, 'dst':, 'condition':, 'callback': },
-    {'src'      : S_DATABLOCK,
-     'dst'      : S_WHITESP,
+    #                            1:
+    {'src'      : S_START,
+     'dst'      : S_START,
      'condition': "[ \r\n]",
-     'callback' : T_TAG_or_LOOP},  # 1
-    {'src'      : S_DATABLOCK,
-     'dst'      : S_WHITESP,
+     'callback' : T_SP},
+    #                            2:
+    {'src'      : S_WHITESP,
+     'dst'      : S_START,
+     'condition': "[\r\n]",
+     'callback' : T_NEWLINE},
+    #                            3:
+    {'src'      : S_START,
+     'dst'      : S_COMMENT,
      'condition': "[ \r\n]",
-     'callback' : T_TAG_or_LOOP}  # 2
+     'callback' : T_COMMENT},
+    #                            4:
+    {'src'      : S_COMMENT,
+     'dst'      : S_START,
+     'condition': "[\r\n]",
+     'callback' : T_NEWLINE}
+
 )
 
 
@@ -156,7 +164,6 @@ class RuleGroup:
 
 
 class Rule_Parse_FSM:
-
     def __init__(self, input_lines):
         self.input_lines = input_lines
         self.current_state = S_START
@@ -165,7 +172,8 @@ class Rule_Parse_FSM:
         self.current_char = ''
 
     def run(self):
-        for line in self.input_lines:
+        for n, line in enumerate(self.input_lines):
+            print("{}: {}".format(n, line))
             if not self.process_next(line):
                 print("skip '{}' in {}".format(line, self.current_state))
 
@@ -182,7 +190,7 @@ class Rule_Parse_FSM:
         condition = transition['condition_re_compiled']
         if condition.match(achar):
             self.update_state(
-                transition['dst'], transition['callback'])
+                    transition['dst'], transition['callback'])
             return True
         return False
 
@@ -192,6 +200,7 @@ class Rule_Parse_FSM:
                                      new_state))
         self.current_state = new_state
         callback(self)
+
 
 if __name__ == '__main__':
     pass
