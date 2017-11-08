@@ -12,8 +12,78 @@ Created on 01.11.2017
 @author: daniel
 """
 
-with open('../test-data/p-1_a.cif', 'r') as f:
-    ciflines = f.readlines()
+"""
+Callback functions for the cif file parser.
+"""
+
+
+def transition_comment_line(fsm_obj):
+    rule_count = fsm_obj.current_group.rule_count
+    fsm_obj.current_group.rules[rule_count - 1].op = fsm_obj.current_line
+
+
+def transition_space(fsm_obj):
+    pass
+
+
+def transition_data_tag(fsm_obj):
+    pass
+
+
+def transition_newline(fsm_obj):
+    pass
+
+
+def transition_newline_or_space(fsm_obj):
+    pass
+
+
+def transition_end_of_file(fsm_obj):
+    pass
+
+
+def transition_semicolon_field_start(fsm_obj):
+    pass
+
+
+def transition_semicolon_field_end(fsm_obj):
+    pass
+
+
+def transition_tag_or_loop(fsm_obj):
+    pass
+
+
+def transiton_tag_not_loop(fsm_obj):
+    pass
+
+
+def transition_not_eol_plus_ordchar_or_semicol(fsm_obj):
+    pass
+
+
+def transition_eol_plus_ordchar(fsm_obj):
+    pass
+
+
+def transition_semicolon_field_data(fsm_obj):
+    pass
+
+
+def transition_single_quoted_start(fsm_obj):
+    pass
+
+
+def transition_single_quoted_end(fsm_obj):
+    pass
+
+
+def transition_double_quoted_start(fsm_obj):
+    pass
+
+
+def transition_double_quoted_end(fsm_obj):
+    pass
 
 
 T_SP = transition_space
@@ -56,7 +126,7 @@ FSM_MAP = (
     {'src'      : S_DATABLOCK,
      'dst'      : S_WHITESP,
      'condition': "[ \r\n]",
-     'callback' : T_TAG_or_LOOP}  # 1
+     'callback' : T_TAG_or_LOOP}  # 2
 )
 
 
@@ -125,7 +195,8 @@ class Rule_Parse_FSM:
 
 if __name__ == '__main__':
     pass
-    # import doctest
-    # failed, attempted = doctest.testmod()  # verbose=True)
-    # if failed == 0:
-    #    print('passed all {} tests!'.format(attempted))
+    with open('./test-data/p21c.cif', 'r') as f:
+        ciflines = f.readlines()
+    fsm = Rule_Parse_FSM(ciflines)
+    fsm.run()
+    print(fsm.current_group)
