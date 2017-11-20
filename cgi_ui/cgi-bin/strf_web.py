@@ -28,9 +28,9 @@ TODO: Fix Sn S distinction
 """
 
 #site_ip = "10.4.13.169"
-site_ip = "127.0.0.1"
-#dbfilename = "./structuredb.sqlite"
-dbfilename = "./structurefinder.sqlite"
+site_ip = "127.0.0.1:8080"
+dbfilename = "../structuredb.sqlite"
+#dbfilename = "./structurefinder.sqlite"
 app = Bottle()
 bottle.debug(True)
 
@@ -456,5 +456,5 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=80, reloader=True)
+    app.run(host='127.0.0.1', port=8080, reloader=True)
 
