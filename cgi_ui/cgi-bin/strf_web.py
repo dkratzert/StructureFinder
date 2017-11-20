@@ -2,11 +2,14 @@
 #!/usr/local/bin/python3.6
 
 
-import cgi
 import pathlib
 import json
 import math
 from string import Template
+
+from cgi_ui import bottle
+from cgi_ui.bottle import Bottle, static_file, route, template
+from cgi_ui.bottle import get, post, request, view
 from displaymol import mol_file_writer
 from lattice import lattice
 from pymatgen.core import mat_lattice
@@ -22,40 +25,44 @@ TODO: Fix Sn S distinction
 - Prevent adding same element in include and exclude field
 """
 
-site_ip = "10.4.13.169"
-#site_ip = "127.0.0.1"
+#site_ip = "10.4.13.169"
+site_ip = "127.0.0.1"
 #dbfilename = "./structuredb.sqlite"
 dbfilename = "./structurefinder.sqlite"
+bottle.TEMPLATE_PATH.append("./")
+app = Bottle()
+bottle.debug(True)
 
 
-def application(dbfilename):
+@app.route('/')
+def application():
     """
     The main application of the StructureFinder web interface.
     """
-    ids = []
+    '''
+    #d = parse.parse_qs(request_body)
     print("Content-Type: text/html; charset=utf-8\n")
-    form = cgi.FieldStorage()
-    cell_search = form.getvalue("cell_search")
-    text_search = form.getfirst("text_search")
-    more_results = (form.getfirst("more") == "true")
-    sublattice = (form.getfirst("supercell") == "true")
-    str_id = form.getvalue("id")
-    mol = form.getvalue("molecule")
-    resid1 = form.getvalue("residuals1")
-    resid2 = form.getvalue("residuals2")
-    unitcell = form.getvalue("unitcell")
-    adv = (form.getfirst("adv") == "true")
-    records = form.getfirst('cmd')
+    cell_search = d.getvalue("cell_search")
+    text_search = d.getfirst("text_search")
+    more_results = (d.getfirst("more") == "true")
+    sublattice = (d.getfirst("supercell") == "true")
+    str_id = d.getvalue("id")
+    mol = d.getvalue("molecule")
+    resid1 = d.getvalue("residuals1")
+    resid2 = d.getvalue("residuals2")
+    unitcell = d.getvalue("unitcell")
+    adv = (d.getfirst("adv") == "true")
+    records = d.getfirst('cmd')
     structures = database_handler.StructureTable(dbfilename)
     cif_dic = None
     # debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2, unitcell, adv)
     if adv:
-        elincl = form.getvalue("elements_in")
-        elexcl = form.getvalue("elements_out")
-        txt_in = form.getvalue("text_in")
-        txt_ex = form.getvalue("text_out")
-        date1 = form.getvalue("date1")
-        date2 = form.getvalue("date2")
+        elincl = d.getvalue("elements_in")
+        elexcl = d.getvalue("elements_out")
+        txt_in = d.getvalue("text_in")
+        txt_ex = d.getvalue("text_out")
+        date1 = d.getvalue("date1")
+        date2 = d.getvalue("date2")
         # debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2,
         # unitcell, adv, date1, date2)
         ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt=txt_in, txt_ex=txt_ex,
@@ -102,8 +109,44 @@ def application(dbfilename):
         print(get_structures_json(structures, show_all=True))
         return
     else:
-        html_txt = process_data()
-    print(html_txt)
+    '''
+    output = template('views/strf_web_template', my_ip=site_ip)
+    return output
+
+
+@app.route('<filepath>')
+def server_static(filepath):
+    """
+    Static files such as images or CSS files are not served automatically.
+    The static_file() function is a helper to serve files in a safe and convenient way (see Static Files).
+    This example is limited to files directly within the /path/to/your/static/files directory because the
+    <filename> wildcard won’t match a path with a slash in it. To serve files in subdirectories, change
+    the wildcard to use the path filter:
+    """
+    #print(filename)
+    return static_file(filepath, root='cgi_ui\w2ui\w2ui-1.4.css')
+
+'''
+@app.error(404)
+def error404(error):
+    """
+    Redefine 404 message.
+    """
+    return 'Nothing here, sorry'
+'''
+
+
+def is_ajax():
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return True
+    else:
+        return False
+
+@app.route('/test', method='POST')
+def testpage():
+    username = request.forms.get('username')
+    password = request.forms.get('password')
+    return "<p>Your login information was correct.</p>"
 
 
 def debug_output(cell_search, text_search, more_results, sublattice, strid, mol,
@@ -455,4 +498,5 @@ def process_data():
 
 
 if __name__ == "__main__":
-    application(dbfilename)
+    app.run(host='127.0.0.1', port=80, reloader=True)
+
