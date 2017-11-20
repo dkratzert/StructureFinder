@@ -3,14 +3,14 @@
 <head>
     <title>StructureFinder</title>
 
-    <link rel="stylesheet" href="http://{{my_ip}}/w2ui/w2ui-1.4.min.css">
-    <link rel="stylesheet" href="http://{{my_ip}}/bootstrap-3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" href="http://{{my_ip}}/bootstrap-3.3.7/css/bootstrap-theme.min.css">
-    <script src="http://{{my_ip}}/jquery/jquery-3.2.1.min.js"></script>
-    <script src="http://{{my_ip}}/bootstrap-3.3.7/js/bootstrap.min.js"></script>
-    <script src="http://{{my_ip}}/jsmol/JSmol_dk.nojq.lite.js"></script>
-    <script src="http://{{my_ip}}/w2ui/w2ui-1.4.min.js"></script>
-    <script src="http://{{my_ip}}/clipboard/clipboard.min.js"></script>
+    <link rel="stylesheet" href="http://{{my_ip}}/static/w2ui/w2ui-1.4.min.css">
+    <link rel="stylesheet" href="http://{{my_ip}}/static/bootstrap-3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://{{my_ip}}/static/bootstrap-3.3.7/css/bootstrap-theme.min.css">
+    <script src="http://{{my_ip}}/static/jquery/jquery-3.2.1.min.js"></script>
+    <script src="http://{{my_ip}}/static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+    <script src="http://{{my_ip}}/static/jsmol/JSmol_dk.nojq.lite.js"></script>
+    <script src="http://{{my_ip}}/static/w2ui/w2ui-1.4.min.js"></script>
+    <script src="http://{{my_ip}}/static/clipboard/clipboard.min.js"></script>
 
 
 <style type="text/css">

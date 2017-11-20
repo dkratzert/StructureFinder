@@ -7,6 +7,8 @@ import json
 import math
 from string import Template
 
+import os
+
 from cgi_ui import bottle
 from cgi_ui.bottle import Bottle, static_file, route, template
 from cgi_ui.bottle import get, post, request, view
@@ -29,7 +31,6 @@ TODO: Fix Sn S distinction
 site_ip = "127.0.0.1"
 #dbfilename = "./structuredb.sqlite"
 dbfilename = "./structurefinder.sqlite"
-bottle.TEMPLATE_PATH.append("./")
 app = Bottle()
 bottle.debug(True)
 
@@ -114,7 +115,7 @@ def application():
     return output
 
 
-@app.route('<filepath>')
+@app.route('/static/<filepath:path>')
 def server_static(filepath):
     """
     Static files such as images or CSS files are not served automatically.
@@ -123,8 +124,9 @@ def server_static(filepath):
     <filename> wildcard won’t match a path with a slash in it. To serve files in subdirectories, change
     the wildcard to use the path filter:
     """
-    #print(filename)
-    return static_file(filepath, root='cgi_ui\w2ui\w2ui-1.4.css')
+    #print(filepath)
+    return static_file(filepath, root='static/')
+
 
 '''
 @app.error(404)
@@ -141,32 +143,6 @@ def is_ajax():
         return True
     else:
         return False
-
-@app.route('/test', method='POST')
-def testpage():
-    username = request.forms.get('username')
-    password = request.forms.get('password')
-    return "<p>Your login information was correct.</p>"
-
-
-def debug_output(cell_search, text_search, more_results, sublattice, strid, mol,
-                 resid1, resid2, unitcell, adv, date1="", date2=""):
-    p = pathlib.Path('test.log')
-    p.write_text("cell_search: {} \n"
-                 "text_search: {} \n"
-                 "more_results: {} \n"
-                 "sublattice: {} \n"
-                 "strid: {} \n"
-                 "mol: {} \n"
-                 "resid1: {} \n"
-                 "resid2: {} \n"
-                 "unitcell: {} \n"
-                 "date1: {} \n"
-                 "date2: {} \n"
-                 "adv: {} \n\n\n\n\n".format(cell_search, text_search, more_results,
-                                             sublattice, strid, mol, resid1, resid2, unitcell,
-                                             date1, date2, adv
-                                             ))
 
 
 def get_structures_json(structures: StructureTable, ids: list = None, show_all: bool = False) -> dict:
@@ -477,24 +453,6 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
         except TypeError:
             return []
     return list(results)
-
-
-def process_data():
-    """
-    Reads html template and replaces things.
-
-
-    p = "./strf_web_Template.htm"
-    with open(p, 'r') as f:
-        text = f.read()#.decode(encoding='utf-8', errors='ignore')
-    d = dict(my_ip=site_ip)
-    return Template(text).safe_substitute(d)
-
-    """
-    p = pathlib.Path("./strf_web_Template.htm")
-    t = p.read_text(encoding='utf-8', errors='ignore')
-    d = dict(my_ip=site_ip)
-    return Template(t).safe_substitute(d)
 
 
 if __name__ == "__main__":
