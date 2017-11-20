@@ -63,7 +63,7 @@ body {
 
 
 <script>
-var cgifile = 'http://{{my_ip}}/cgi-bin/strf_web.cgi';
+var cgifile = 'http://{{my_ip}}';
 
 // height of cif list to 35% of the screen height:
 $(document).ready(function(){

@@ -34,6 +34,7 @@ dbfilename = "../structuredb.sqlite"
 app = Bottle()
 bottle.debug(True)
 
+structures = database_handler.StructureTable(dbfilename)
 
 @app.route('/')
 def application():
@@ -111,8 +112,44 @@ def application():
         return
     else:
     '''
-    output = template('views/strf_web_template', my_ip=site_ip)
+    if request.query.cmd == 'get-records':
+        return get_structures_json(structures, show_all=True)
+    else:
+        output = template('views/strf_web_template', my_ip=site_ip)
     return output
+
+
+@app.route('/', method='POST')
+def post_request():
+    """
+    Handel POST requests.
+    """
+    cif_dic = None
+    str_id = request.POST.get('id', [''])[0]
+    resid1 = request.headers.get('residuals1', [''])[0]
+    resid2 = request.headers.get('residuals2', [''])[0]
+    mol = request.headers.get('molecule', [''])[0]
+    unitcell = request.headers.get('unitcell', [''])[0]
+    if str_id and (resid1 or resid2):
+        cif_dic = structures.get_row_as_dict(str_id)
+    if str_id and mol:
+        cell_list = structures.get_cell_by_id(str_id)[:6]
+        try:
+            m = mol_file_writer.MolFile(str_id, structures, cell_list)
+            return m.make_mol()
+        except KeyError:
+            return ''
+    elif str_id and unitcell:
+        try:
+            return get_cell_parameters(structures, str_id)
+        except ValueError:
+            return ''
+    elif str_id and resid1:
+        return get_residuals_table1(cif_dic)
+    elif str_id and resid2:
+        return get_residuals_table2(cif_dic)
+    elif str_id:
+        return get_all_cif_val_table(structures, str_id)
 
 
 @app.route('/static/<filepath:path>')
