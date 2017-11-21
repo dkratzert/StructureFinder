@@ -26,6 +26,8 @@ from searcher.misc import get_error_from_value
 
 __metaclass__ = type  # use new-style classes
 
+#db_enoding = 'ISO-8859-15'
+db_enoding = 'utf-8'
 
 class DatabaseRequest():
     def __init__(self, dbfile):
@@ -255,12 +257,12 @@ class DatabaseRequest():
             return 0
 
 
-    def db_fetchone(self, request):
+    def db_fetchone(self, request, *args):
         """
         fetches one db entry
         """
         try:
-            self.cur.execute(request)
+            self.cur.execute(request, *args)
         except OperationalError:
             return False
         row = self.cur.fetchone()
@@ -277,24 +279,17 @@ class DatabaseRequest():
                     '''SELECT Structure.cell FROM Structure'''
         :type request: str
         """
-        #print('-'*30, 'start')
-        #print('request:', request)
-        #print('args:', args)
-        #print('_' * 30, 'end')
-        try:
-            if isinstance(args[0], (list, tuple)):
-                args = args[0]
-        except IndexError:
-            pass
         try:
             if many:
                 #print(args[0])
-                self.cur.executemany(request, args)
+                self.cur.executemany(request, *args)
             else:
-                self.cur.execute(request, args)
+                self.cur.execute(request, *args)
             last_rowid = self.cur.lastrowid
         except OperationalError as e:
             print(e, "\nDB execution error")
+            print('Request:', request)
+            print('Arguments:', args)
             return []
         rows = self.cur.fetchall()
         if not rows:
@@ -394,7 +389,7 @@ class StructureTable():
         else:
             return False
 
-    def get_all_structures_as_dict(self, ids: list=None, all:bool=False) -> dict:
+    def get_all_structures_as_dict(self, ids: (list, tuple)=None, all_ids:bool=False) -> dict:
         """
         Returns the list of structures as dictionary.
 
@@ -408,14 +403,15 @@ class StructureTable():
             ids = tuple(ids)
             if len(ids) > 1:
                 req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
-                                     Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
+                                             Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
             else:
                 # only one id
                 req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
-                                            Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(ids[0])
+                                                    Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(
+                    ids[0])
         elif all:
             req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
-                                             Structure.dataname FROM Structure'''
+                      Structure.dataname FROM Structure'''
         else:
             return {}
         rows = self.database.db_request(req, many=False)
@@ -464,8 +460,8 @@ class StructureTable():
         """
         if not structure_id:
             return False
-        req = '''SELECT a, b, c, alpha, beta, gamma, volume FROM cell WHERE StructureId = {0}'''.format(structure_id)
-        cell = self.database.db_request(req)
+        req = '''SELECT a, b, c, alpha, beta, gamma, volume FROM cell WHERE StructureId = ?'''
+        cell = self.database.db_request(req, (structure_id,))
         if cell and len(cell) > 0:
             return cell[0]
         else:
@@ -507,10 +503,10 @@ class StructureTable():
         req = '''
               INSERT INTO Structure (Id, measurement, filename, path, dataname) VALUES(?, ?, ?, ?, ?)
               '''
-        filename = filename.encode("utf-8", "ignore")#.encode("utf-8", "surrogateescape")
-        path = path.encode("utf-8", "ignore")
-        dataname = dataname.encode("utf-8", "ignore")
-        self.database.db_request(req, structure_id, measurement_id, filename, path, dataname)
+        filename = filename.encode(db_enoding, "ignore")#.encode("utf-8", "surrogateescape")
+        path = path.encode(db_enoding, "ignore")
+        dataname = dataname.encode(db_enoding, "ignore")
+        self.database.db_request(req, (structure_id, measurement_id, filename, path, dataname))
         return structure_id
 
     def fill_measuremnts_table(self, name, structure_id):
@@ -521,8 +517,8 @@ class StructureTable():
         req = '''
               INSERT INTO measurement (Id, name) VALUES(?, ?)
               '''
-        name = name.encode("utf-8", "surrogateescape")
-        self.database.db_request(req, structure_id, name)
+        name = name.encode(db_enoding, "surrogateescape")
+        self.database.db_request(req, (structure_id, name))
         return structure_id
 
     def fill_cell_table(self, structure_id, a, b, c, alpha, beta, gamma, volume):
@@ -549,8 +545,8 @@ class StructureTable():
             gamma = gamma.split('(')[0]
         if isinstance(volume, str):
             vol = volume.split('(')[0]
-        if self.database.db_request(req, structure_id, a, b, c, alpha, beta, gamma,
-                                    aerror, berror, cerror, alphaerror, betaerror, gammaerror, vol):
+        if self.database.db_request(req, (structure_id, a, b, c, alpha, beta, gamma,
+                                    aerror, berror, cerror, alphaerror, betaerror, gammaerror, vol)):
             return True
 
     def fill_atoms_table(self, structure_id, name, element, x, y, z, occ, part):
@@ -560,7 +556,7 @@ class StructureTable():
         """
         req = '''INSERT INTO Atoms (StructureId, name, element, x, y, z, occupancy, part) 
                                     VALUES(?, ?, ?, ?, ?, ?, ?, ?)'''
-        if self.database.db_request(req, structure_id, name, element, x, y, z, occ, part):
+        if self.database.db_request(req, (structure_id, name, element, x, y, z, occ, part)):
             return True
 
     def get_atoms_table(self, structure_id, cell=None, cartesian=False):
@@ -570,7 +566,8 @@ class StructureTable():
         if cell is None:
             cell = []
         req = """SELECT Name, element, x, y, z FROM Atoms WHERE StructureId = ?"""
-        result = self.database.db_request(req, structure_id)
+        result = self.database.db_request(req, (structure_id,))
+        #print(result, structure_id, '##')
         if cartesian:
             cartesian_coords = []
             a = lattice.A(cell).orthogonal_matrix
@@ -670,7 +667,7 @@ class StructureTable():
                     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                     );
                 '''
-        result = self.database.db_request(req,
+        result = self.database.db_request(req, (
                 structure_id,
                 cif.cif_data['_cell_formula_units_Z'],              # Z
                 cif.cif_data['_space_group_name_H-M_alt'],          # Raumgruppe (Herman-Maugin)
@@ -733,6 +730,7 @@ class StructureTable():
                 cif.cif_data['modification_time'],
                 cif.cif_data['file_size']
                 )
+            )
         return result
 
     def clean_name(some_var):
@@ -776,11 +774,11 @@ class StructureTable():
         """
         Returns a database row as dictionary
         """
-        request = """select * from residuals where StructureId = {}""".format(structure_id)
+        request = """select * from residuals where StructureId = ?"""#.format(structure_id)
         # setting row_factory to dict for the cif keys:
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
-        dic = self.database.db_fetchone(request)
+        dic = self.database.db_fetchone(request, (structure_id,))
         self.database.cur.close()
         # setting row_factory back to regular touple base requests:
         self.database.con.row_factory = None
@@ -791,11 +789,11 @@ class StructureTable():
         """
         Returns a database row as dictionary
         """
-        request = """select * from cell where StructureId = {}""".format(structure_id)
+        request = """select * from cell where StructureId = ?"""
         # setting row_factory to dict for the cif keys:
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
-        dic = self.database.db_fetchone(request)
+        dic = self.database.db_fetchone(request, (structure_id,))
         self.database.cur.close()
         # setting row_factory back to regular touple base requests:
         self.database.con.row_factory = None
@@ -811,12 +809,11 @@ class StructureTable():
         :type volume: float
         :return: list
         """
-        upper_limit = volume + volume * threshold
-        lower_limit = volume - volume * threshold
-        req = '''SELECT StructureId FROM cell WHERE cell.volume >= '{0}' AND cell.volume <= '{1}'  
-                            '''.format(lower_limit, upper_limit)
+        upper_limit = float(volume + volume * threshold)
+        lower_limit = float(volume - volume * threshold)
+        req = '''SELECT StructureId FROM cell WHERE cell.volume >= ? AND cell.volume <= ?'''
         try:
-            return searcher.misc.flatten([list(x) for x in self.database.db_request(req)])
+            return [i[0] for i in self.database.db_request(req, (lower_limit, upper_limit))]
         except TypeError:
             return False
 
@@ -836,9 +833,9 @@ class StructureTable():
         SELECT StructureId, filename, dataname, path FROM txtsearch WHERE shelx_res_file MATCH ?
         '''
         try:
-            ids = self.database.db_request(req, text, text, text, text)
+            ids = self.database.db_request(req, (text, text, text, text))
         except (TypeError, sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
-            print('DB request error.', e)
+            print('DB request error in find_by_strings().', e)
             return tuple([])
         return ids
 
@@ -856,7 +853,7 @@ class StructureTable():
         matches = []
         req = '''SELECT StructureId, _chemical_formula_sum from ElementSearch WHERE _chemical_formula_sum MATCH ?'''
         for el in elements:
-            result = self.database.db_request(req, el+'*')
+            result = self.database.db_request(req, (el+'*',))
             #for i in result:
             #    print(i)
             if result:
@@ -935,7 +932,7 @@ class StructureTable():
         if not structure_id:
             return False
         req = '''SELECT _chemical_formula_sum FROM Residuals WHERE StructureId = ?'''
-        cell = self.database.db_request(req, structure_id)
+        cell = self.database.db_request(req, (structure_id,))
         if cell and len(cell) > 0:
             return cell[0]
         else:

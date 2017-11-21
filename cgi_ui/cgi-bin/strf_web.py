@@ -2,11 +2,16 @@
 #!/usr/local/bin/python3.6
 
 
-import cgi
 import pathlib
 import json
 import math
 from string import Template
+
+import os
+
+from cgi_ui import bottle
+from cgi_ui.bottle import Bottle, static_file, route, template
+from cgi_ui.bottle import get, post, request, view, response
 from displaymol import mol_file_writer
 from lattice import lattice
 from pymatgen.core import mat_lattice
@@ -17,120 +22,157 @@ from searcher.database_handler import StructureTable
 from searcher.misc import is_valid_cell
 
 """
-TODO: Fix Sn S distinction
+TODO:
 - Display number of search results in unit cell field.
 - Prevent adding same element in include and exclude field
 """
 
-site_ip = "10.4.13.169"
-#site_ip = "127.0.0.1"
-#dbfilename = "./structuredb.sqlite"
-dbfilename = "./structurefinder.sqlite"
+#site_ip = "10.4.13.169"
+host = "127.0.0.1"
+port = "80"
+site_ip = host+':'+port
+dbfilename = "./structuredb.sqlite"
+#dbfilename = "../structurefinder.sqlite"
+app = Bottle()
+bottle.debug(True)
+
+structures = database_handler.StructureTable(dbfilename)
 
 
-def application(dbfilename):
+@app.route('/all')
+def structures_list_data():
     """
     The main application of the StructureFinder web interface.
     """
-    ids = []
-    print("Content-Type: text/html; charset=utf-8\n")
-    form = cgi.FieldStorage()
-    cell_search = form.getvalue("cell_search")
-    text_search = form.getfirst("text_search")
-    more_results = (form.getfirst("more") == "true")
-    sublattice = (form.getfirst("supercell") == "true")
-    str_id = form.getvalue("id")
-    mol = form.getvalue("molecule")
-    resid1 = form.getvalue("residuals1")
-    resid2 = form.getvalue("residuals2")
-    unitcell = form.getvalue("unitcell")
-    adv = (form.getfirst("adv") == "true")
-    records = form.getfirst('cmd')
-    structures = database_handler.StructureTable(dbfilename)
-    cif_dic = None
-    # debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2, unitcell, adv)
-    if adv:
-        elincl = form.getvalue("elements_in")
-        elexcl = form.getvalue("elements_out")
-        txt_in = form.getvalue("text_in")
-        txt_ex = form.getvalue("text_out")
-        date1 = form.getvalue("date1")
-        date2 = form.getvalue("date2")
-        # debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2,
-        # unitcell, adv, date1, date2)
-        ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt=txt_in, txt_ex=txt_ex,
-                              sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
-                              structures=structures)
-        print(get_structures_json(structures, ids))
-        return
-    if str_id and (resid1 or resid2):
-        cif_dic = structures.get_row_as_dict(str_id)
-    if cell_search:
-        cell = is_valid_cell(cell_search)
-        if cell:
-            ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
-            print(get_structures_json(structures, ids, show_all=False))
-        return
-    elif text_search:
-        ids = search_text(structures, text_search)
-        print(get_structures_json(structures, ids, show_all=False))
-        return
-    elif str_id and mol:
+    if request.query.cmd == 'get-records':
+        return get_structures_json(structures, show_all=True)
+
+
+@app.route('/')
+def main():
+    response.content_type = 'text/html; charset=ISO-8859-15'
+    output = template('./cgi_ui/views/strf_web_template', my_ip=site_ip)
+    return output
+
+
+@app.route("/cellsrch")
+def cellsrch():
+    cell_search = request.GET.get("cell_search", [''])
+    more_results = (request.GET.get("more", ['']) == "true")
+    sublattice = (request.GET.get("supercell", ['']) == "true")
+    cell = is_valid_cell(cell_search)
+    if cell:
+        ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
+        return get_structures_json(structures, ids, show_all=False)
+
+
+@app.route("/txtsrch")
+def cellsrch():
+    text_search = request.GET.get("text_search", [''])
+    ids = search_text(structures, text_search)
+    return get_structures_json(structures, ids, show_all=False)
+
+
+@app.route("/adv_srch")
+def adv():
+    elincl = request.GET.get("elements_in", [''])
+    elexcl = request.GET.get("elements_out", [''])
+    date1 = request.GET.get("date1", [''])
+    date2 = request.GET.get("date2", [''])
+    cell_search = request.GET.get("cell_search", [''])
+    txt_in = request.GET.get("text_in", [''])
+    txt_out = request.GET.get("text_out", [''])
+    more_results = (request.GET.get("more", ['']) == "true")
+    sublattice = (request.GET.get("supercell", ['']) == "true")
+    ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
+                          sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
+                          structures=structures)
+    return get_structures_json(structures, ids)
+
+
+@app.route('/molecule', method='POST')
+def jsmol_request():
+    """
+    A request for atom data from jsmol.
+    """
+    str_id = request.POST.get('id', [''])
+    if str_id:
         cell_list = structures.get_cell_by_id(str_id)[:6]
         try:
             m = mol_file_writer.MolFile(str_id, structures, cell_list)
-            print(m.make_mol())
-        except KeyError:
-            print("")
-        return
-    elif str_id and unitcell:
+            return m.make_mol()
+        except KeyError as e:
+            print('Exception in jsmol_request: ####')
+            print(e)
+            return ''
+
+
+@app.route('/', method='POST')
+def post_request():
+    """
+    Handle POST requests.
+    """
+    cif_dic = {}
+    str_id = request.POST.get('id', [''])
+    resid1 = (request.POST.get('residuals1', ['']) == 'true')
+    resid2 = (request.POST.get('residuals2', ['']) == 'true')
+    all_cif = (request.POST.get('all', ['']) == 'true')
+    unitcell = request.POST.get('unitcell', [''])
+    if str_id:
+        cif_dic = structures.get_row_as_dict(str_id)
+    if str_id and unitcell and not (resid1 or resid2 or all_cif):
         try:
-            print(get_cell_parameters(structures, str_id))
-        except ValueError:
-            return
-        return
-    elif str_id and resid1:
-        print(get_residuals_table1(cif_dic))
-        return
-    elif str_id and resid2:
-        print(get_residuals_table2(cif_dic))
-        return
-    elif str_id:
-        print(get_all_cif_val_table(structures, str_id))
-        return
-    if records == 'get-records':
-        print(get_structures_json(structures, show_all=True))
-        return
+            return get_cell_parameters(structures, str_id)
+        except ValueError as e:
+            print(e)
+            return ''
+    if str_id and resid1:
+        return get_residuals_table1(cif_dic)
+    if str_id and resid2:
+        return get_residuals_table2(cif_dic)
+    if str_id and all_cif:
+        return get_all_cif_val_table(structures, str_id)
+
+
+@app.route('/static/<filepath:path>')
+def server_static(filepath):
+    """
+    Static files such as images or CSS files are not served automatically.
+    The static_file() function is a helper to serve files in a safe and convenient way (see Static Files).
+    This example is limited to files directly within the /path/to/your/static/files directory because the
+    <filename> wildcard won’t match a path with a slash in it. To serve files in subdirectories, change
+    the wildcard to use the path filter:
+    """
+    #print(filepath)
+    return static_file(filepath, root='cgi_ui/static/')
+
+
+@app.error(404)
+def error404(error):
+    """
+    Redefine 404 message.
+    """
+    return '''<div style="text-align: center;">
+                <b>Nothing here, sorry.</b><br>
+                <p>
+                <a href="http://{}{}/">Back to main page</a>
+                </p>
+              </div>
+            '''.format(host, ':'+port)
+
+
+def is_ajax():
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return True
     else:
-        html_txt = process_data()
-    print(html_txt)
-
-
-def debug_output(cell_search, text_search, more_results, sublattice, strid, mol,
-                 resid1, resid2, unitcell, adv, date1="", date2=""):
-    p = pathlib.Path('test.log')
-    p.write_text("cell_search: {} \n"
-                 "text_search: {} \n"
-                 "more_results: {} \n"
-                 "sublattice: {} \n"
-                 "strid: {} \n"
-                 "mol: {} \n"
-                 "resid1: {} \n"
-                 "resid2: {} \n"
-                 "unitcell: {} \n"
-                 "date1: {} \n"
-                 "date2: {} \n"
-                 "adv: {} \n\n\n\n\n".format(cell_search, text_search, more_results,
-                                             sublattice, strid, mol, resid1, resid2, unitcell,
-                                             date1, date2, adv
-                                             ))
+        return False
 
 
 def get_structures_json(structures: StructureTable, ids: list = None, show_all: bool = False) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
-    dic = structures.get_all_structures_as_dict(ids, all=show_all)
+    dic = structures.get_all_structures_as_dict(ids, all_ids=show_all)
     return json.dumps({"total": len(dic), "records": dic, "status": "success"}, indent=2)
 
 
@@ -334,7 +376,7 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
         return idlist2
 
 
-def search_text(structures: StructureTable, search_string: str) -> list:
+def search_text(structures: StructureTable, search_string: str) -> tuple:
     """
     searches db for given text
     """
@@ -346,11 +388,10 @@ def search_text(structures: StructureTable, search_string: str) -> list:
             search_string = "{}{}{}".format('*', search_string, '*')
     try:
         #  bad hack, should make this return ids like cell search
-        idlist = [x[0] for x in structures.find_by_strings(search_string)]
+        idlist = tuple([x[0] for x in structures.find_by_strings(search_string)])
     except AttributeError as e:
-        pass
-        # print("Error 1")
-        # print(e)
+        print("Exception in search_text:")
+        print(e)
     return idlist
 
 
@@ -383,7 +424,7 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
     return result
 
 
-def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
+def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, more_results,
                     date1: str = None, date2: str = None, structures=None) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
@@ -403,20 +444,20 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
         incl.append(search_elements(structures, elincl))
     if date1 != date2:
         date_results = find_dates(structures, date1, date2)
-    if txt:
-        if len(txt) >= 2 and "*" not in txt:
-            txt = '*' + txt + '*'
-        idlist = structures.find_by_strings(txt)
+    if txt_in:
+        if len(txt_in) >= 2 and "*" not in txt_in:
+            txt = '*' + txt_in + '*'
+        idlist = structures.find_by_strings(txt_in)
         try:
             incl.append([i[0] for i in idlist])
         except(IndexError, KeyError):
             incl.append([idlist])  # only one result
     if elexcl:
         excl.append(search_elements(structures, elexcl, anyresult=True))
-    if txt_ex:
-        if len(txt_ex) >= 2 and "*" not in txt_ex:
-            txt_ex = '*' + txt_ex + '*'
-        idlist = structures.find_by_strings(txt_ex)
+    if txt_out:
+        if len(txt_out) >= 2 and "*" not in txt_out:
+            txt_ex = '*' + txt_out + '*'
+        idlist = structures.find_by_strings(txt_out)
         try:
             excl.append([i[0] for i in idlist])
         except(IndexError, KeyError):
@@ -436,23 +477,6 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     return list(results)
 
 
-def process_data():
-    """
-    Reads html template and replaces things.
-
-
-    p = "./strf_web_Template.htm"
-    with open(p, 'r') as f:
-        text = f.read()#.decode(encoding='utf-8', errors='ignore')
-    d = dict(my_ip=site_ip)
-    return Template(text).safe_substitute(d)
-
-    """
-    p = pathlib.Path("./strf_web_Template.htm")
-    t = p.read_text(encoding='utf-8', errors='ignore')
-    d = dict(my_ip=site_ip)
-    return Template(t).safe_substitute(d)
-
-
 if __name__ == "__main__":
-    application(dbfilename)
+    app.run(host=host, port=port, reloader=True)
+
