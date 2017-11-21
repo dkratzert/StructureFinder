@@ -1,12 +1,12 @@
+# -*- coding: utf-8 -*-
 #!C:\tools\Python-3.6.2_64\pythonw.exe
 # !/usr/local/bin/python3.6
-
 
 import json
 import math
 
 from cgi_ui import bottle
-from cgi_ui.bottle import Bottle, static_file, template
+from cgi_ui.bottle import Bottle, static_file, template, redirect
 from cgi_ui.bottle import request, response
 from displaymol import mol_file_writer
 from lattice import lattice
@@ -138,6 +138,11 @@ def server_static(filepath):
     the wildcard to use the path filter:
     """
     return static_file(filepath, root='cgi_ui/static/')
+
+
+@app.route('/cgi-bin/strf_web.cgi')
+def redirect_old_path():
+    redirect('/')
 
 
 @app.error(404)
