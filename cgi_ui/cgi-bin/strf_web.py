@@ -1,24 +1,18 @@
 #!C:\tools\Python-3.6.2_64\pythonw.exe
-#!/usr/local/bin/python3.6
+# !/usr/local/bin/python3.6
 
 
-import pathlib
 import json
 import math
-from string import Template
-
-import os
 
 from cgi_ui import bottle
-from cgi_ui.bottle import Bottle, static_file, route, template
-from cgi_ui.bottle import get, post, request, view, response
+from cgi_ui.bottle import Bottle, static_file, template
+from cgi_ui.bottle import request, response
 from displaymol import mol_file_writer
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher import database_handler, misc
 from searcher.database_handler import StructureTable
-# import cgitb
-# cgitb.enable()
 from searcher.misc import is_valid_cell
 
 """
@@ -27,15 +21,15 @@ TODO:
 - Prevent adding same element in include and exclude field
 """
 
-#site_ip = "10.4.13.169"
 host = "127.0.0.1"
 port = "80"
-site_ip = host+':'+port
-dbfilename = "./structuredb.sqlite"
-#dbfilename = "../structurefinder.sqlite"
+site_ip = host + ':' + port
+
+# dbfilename = "./structuredb.sqlite"
+dbfilename = "../structurefinder.sqlite"
+
 app = Bottle()
 bottle.debug(True)
-
 structures = database_handler.StructureTable(dbfilename)
 
 
@@ -143,7 +137,6 @@ def server_static(filepath):
     <filename> wildcard won’t match a path with a slash in it. To serve files in subdirectories, change
     the wildcard to use the path filter:
     """
-    #print(filepath)
     return static_file(filepath, root='cgi_ui/static/')
 
 
@@ -158,7 +151,7 @@ def error404(error):
                 <a href="http://{}{}/">Back to main page</a>
                 </p>
               </div>
-            '''.format(host, ':'+port)
+            '''.format(host, ':' + port)
 
 
 def is_ajax():
@@ -168,7 +161,7 @@ def is_ajax():
         return False
 
 
-def get_structures_json(structures: StructureTable, ids: list = None, show_all: bool = False) -> dict:
+def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, show_all: bool = False) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
@@ -361,12 +354,12 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
             dic = structures.get_cell_as_dict(i)
             try:
                 lattice2 = mat_lattice.Lattice.from_parameters(
-                        float(dic['a']),
-                        float(dic['b']),
-                        float(dic['c']),
-                        float(dic['alpha']),
-                        float(dic['beta']),
-                        float(dic['gamma']))
+                    float(dic['a']),
+                    float(dic['b']),
+                    float(dic['c']),
+                    float(dic['alpha']),
+                    float(dic['beta']),
+                    float(dic['gamma']))
             except ValueError:
                 continue
             mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
@@ -382,7 +375,7 @@ def search_text(structures: StructureTable, search_string: str) -> tuple:
     """
     idlist = []
     if len(search_string) == 0:
-        return []
+        return ()
     if len(search_string) >= 2:
         if "*" not in search_string:
             search_string = "{}{}{}".format('*', search_string, '*')
@@ -399,7 +392,6 @@ def search_elements(structures: StructureTable, elements: str, anyresult: bool =
     """
     list(set(l).intersection(l2))
     """
-    formula = []
     res = []
     try:
         formula = misc.get_list_of_elements(elements)
@@ -479,4 +471,3 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
 
 if __name__ == "__main__":
     app.run(host=host, port=port, reloader=True)
-
