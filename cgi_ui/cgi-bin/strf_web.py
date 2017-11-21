@@ -36,100 +36,33 @@ bottle.debug(True)
 
 structures = database_handler.StructureTable(dbfilename)
 
-@app.route('/')
-def application():
+
+@app.route('/all')
+def all():
     """
     The main application of the StructureFinder web interface.
     """
-    '''
-    #d = parse.parse_qs(request_body)
-    print("Content-Type: text/html; charset=utf-8\n")
-    cell_search = d.getvalue("cell_search")
-    text_search = d.getfirst("text_search")
-    more_results = (d.getfirst("more") == "true")
-    sublattice = (d.getfirst("supercell") == "true")
-    str_id = d.getvalue("id")
-    mol = d.getvalue("molecule")
-    resid1 = d.getvalue("residuals1")
-    resid2 = d.getvalue("residuals2")
-    unitcell = d.getvalue("unitcell")
-    adv = (d.getfirst("adv") == "true")
-    records = d.getfirst('cmd')
-    structures = database_handler.StructureTable(dbfilename)
-    cif_dic = None
-    # debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2, unitcell, adv)
-    if adv:
-        elincl = d.getvalue("elements_in")
-        elexcl = d.getvalue("elements_out")
-        txt_in = d.getvalue("text_in")
-        txt_ex = d.getvalue("text_out")
-        date1 = d.getvalue("date1")
-        date2 = d.getvalue("date2")
-        # debug_output(cell_search, text_search, more_results, sublattice, str_id, mol, resid1, resid2,
-        # unitcell, adv, date1, date2)
-        ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt=txt_in, txt_ex=txt_ex,
-                              sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
-                              structures=structures)
-        print(get_structures_json(structures, ids))
-        return
-    if str_id and (resid1 or resid2):
-        cif_dic = structures.get_row_as_dict(str_id)
-    if cell_search:
-        cell = is_valid_cell(cell_search)
-        if cell:
-            ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
-            print(get_structures_json(structures, ids, show_all=False))
-        return
-    elif text_search:
-        ids = search_text(structures, text_search)
-        print(get_structures_json(structures, ids, show_all=False))
-        return
-    elif str_id and mol:
-        cell_list = structures.get_cell_by_id(str_id)[:6]
-        try:
-            m = mol_file_writer.MolFile(str_id, structures, cell_list)
-            print(m.make_mol())
-        except KeyError:
-            print("")
-        return
-    elif str_id and unitcell:
-        try:
-            print(get_cell_parameters(structures, str_id))
-        except ValueError:
-            return
-        return
-    elif str_id and resid1:
-        print(get_residuals_table1(cif_dic))
-        return
-    elif str_id and resid2:
-        print(get_residuals_table2(cif_dic))
-        return
-    elif str_id:
-        print(get_all_cif_val_table(structures, str_id))
-        return
-    if records == 'get-records':
-        print(get_structures_json(structures, show_all=True))
-        return
-    else:
-    '''
     if request.query.cmd == 'get-records':
         return get_structures_json(structures, show_all=True)
-    else:
-        output = template('views/strf_web_template', my_ip=site_ip)
+
+
+@app.route('/')
+def main():
+    output = template('views/strf_web_template', my_ip=site_ip)
     return output
 
 
 @app.route('/', method='POST')
 def post_request():
     """
-    Handel POST requests.
+    Handle POST requests.
     """
     cif_dic = None
     str_id = request.POST.get('id', [''])[0]
-    resid1 = request.headers.get('residuals1', [''])[0]
-    resid2 = request.headers.get('residuals2', [''])[0]
-    mol = request.headers.get('molecule', [''])[0]
-    unitcell = request.headers.get('unitcell', [''])[0]
+    resid1 = request.POST.get('residuals1', [''])[0]
+    resid2 = request.POST.get('residuals2', [''])[0]
+    mol = request.POST.get('molecule', [''])[0]
+    unitcell = request.POST.get('unitcell', [''])[0]
     if str_id and (resid1 or resid2):
         cif_dic = structures.get_row_as_dict(str_id)
     if str_id and mol:

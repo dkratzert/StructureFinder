@@ -344,7 +344,7 @@ jQuery(document).ready(function($) {
     $('#mygrid').w2grid({
         name: 'mygrid',
         header: 'StructureFinder',
-        url: cgifile,
+        url: cgifile+"/all",
         method: 'GET',
         show: {
             toolbar: false,

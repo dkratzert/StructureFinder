@@ -255,12 +255,12 @@ class DatabaseRequest():
             return 0
 
 
-    def db_fetchone(self, request):
+    def db_fetchone(self, request, *args):
         """
         fetches one db entry
         """
         try:
-            self.cur.execute(request)
+            self.cur.execute(request, *args)
         except OperationalError:
             return False
         row = self.cur.fetchone()
@@ -776,11 +776,11 @@ class StructureTable():
         """
         Returns a database row as dictionary
         """
-        request = """select * from residuals where StructureId = {}""".format(structure_id)
+        request = """select * from residuals where StructureId = ?"""#.format(structure_id)
         # setting row_factory to dict for the cif keys:
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
-        dic = self.database.db_fetchone(request)
+        dic = self.database.db_fetchone(request, (structure_id,))
         self.database.cur.close()
         # setting row_factory back to regular touple base requests:
         self.database.con.row_factory = None
