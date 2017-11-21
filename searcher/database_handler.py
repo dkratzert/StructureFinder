@@ -281,17 +281,17 @@ class DatabaseRequest():
         #print('request:', request)
         #print('args:', args)
         #print('_' * 30, 'end')
-        try:
-            if isinstance(args[0], (list, tuple)):
-                args = args[0]
-        except IndexError:
-            pass
+        #try:
+        #    if isinstance(args[0], (list, tuple)):
+        #        args = args[0]
+        #except IndexError:
+        #    pass
         try:
             if many:
                 #print(args[0])
-                self.cur.executemany(request, args)
+                self.cur.executemany(request, *args)
             else:
-                self.cur.execute(request, args)
+                self.cur.execute(request, *args)
             last_rowid = self.cur.lastrowid
         except OperationalError as e:
             print(e, "\nDB execution error")
@@ -464,8 +464,8 @@ class StructureTable():
         """
         if not structure_id:
             return False
-        req = '''SELECT a, b, c, alpha, beta, gamma, volume FROM cell WHERE StructureId = {0}'''.format(structure_id)
-        cell = self.database.db_request(req)
+        req = '''SELECT a, b, c, alpha, beta, gamma, volume FROM cell WHERE StructureId = ?'''
+        cell = self.database.db_request(req, (structure_id,))
         if cell and len(cell) > 0:
             return cell[0]
         else:
@@ -570,7 +570,8 @@ class StructureTable():
         if cell is None:
             cell = []
         req = """SELECT Name, element, x, y, z FROM Atoms WHERE StructureId = ?"""
-        result = self.database.db_request(req, structure_id)
+        result = self.database.db_request(req, (structure_id,))
+        #print(result, structure_id, '##')
         if cartesian:
             cartesian_coords = []
             a = lattice.A(cell).orthogonal_matrix
@@ -791,11 +792,11 @@ class StructureTable():
         """
         Returns a database row as dictionary
         """
-        request = """select * from cell where StructureId = {}""".format(structure_id)
+        request = """select * from cell where StructureId = ?"""
         # setting row_factory to dict for the cif keys:
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
-        dic = self.database.db_fetchone(request)
+        dic = self.database.db_fetchone(request, (structure_id,))
         self.database.cur.close()
         # setting row_factory back to regular touple base requests:
         self.database.con.row_factory = None

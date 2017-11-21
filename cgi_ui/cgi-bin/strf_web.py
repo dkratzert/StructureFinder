@@ -22,15 +22,17 @@ from searcher.database_handler import StructureTable
 from searcher.misc import is_valid_cell
 
 """
-TODO: Fix Sn S distinction
+TODO:
 - Display number of search results in unit cell field.
 - Prevent adding same element in include and exclude field
 """
 
 #site_ip = "10.4.13.169"
-site_ip = "127.0.0.1:8080"
-dbfilename = "../structuredb.sqlite"
-#dbfilename = "./structurefinder.sqlite"
+host = "127.0.0.1"
+port = "80"
+site_ip = host+':'+port
+#dbfilename = "./structuredb.sqlite"
+dbfilename = "../structurefinder.sqlite"
 app = Bottle()
 bottle.debug(True)
 
@@ -38,7 +40,7 @@ structures = database_handler.StructureTable(dbfilename)
 
 
 @app.route('/all')
-def all():
+def structures_list_data():
     """
     The main application of the StructureFinder web interface.
     """
@@ -48,40 +50,85 @@ def all():
 
 @app.route('/')
 def main():
-    output = template('views/strf_web_template', my_ip=site_ip)
+    output = template('./cgi_ui/views/strf_web_template', my_ip=site_ip)
     return output
 
+
+@app.route("/cellsrch")
+def cellsrch():
+    cell_search = request.GET.get("cell_search", [''])
+    more_results = (request.GET.get("more", ['']) == "true")
+    sublattice = (request.GET.get("supercell", ['']) == "true")
+    cell = is_valid_cell(cell_search)
+    if cell:
+        ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
+        return get_structures_json(structures, ids, show_all=False)
+
+
+@app.route("/txtsrch")
+def cellsrch():
+    text_search = request.GET.get("text_search", [''])
+    ids = search_text(structures, text_search)
+    return get_structures_json(structures, ids, show_all=False)
+
+
+@app.route("/adv_srch")
+def adv():
+    elincl = request.GET.get("elements_in", [''])
+    elexcl = request.GET.get("elements_out", [''])
+    date1 = request.GET.get("date1", [''])
+    date2 = request.GET.get("date2", [''])
+    cell_search = request.GET.get("cell_search", [''])
+    txt_in = request.GET.get("text_in", [''])
+    txt_out = request.GET.get("text_out", [''])
+    more_results = (request.GET.get("more", ['']) == "true")
+    sublattice = (request.GET.get("supercell", ['']) == "true")
+    ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
+                          sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
+                          structures=structures)
+    return get_structures_json(structures, ids)
+
+
+@app.route('/molecule', method='POST')
+def jsmol_request():
+    """
+    A request for atom data from jsmol.
+    """
+    str_id = request.POST.get('id', [''])
+    if str_id:
+        cell_list = structures.get_cell_by_id(str_id)[:6]
+        try:
+            m = mol_file_writer.MolFile(str_id, structures, cell_list)
+            return m.make_mol()
+        except KeyError as e:
+            print('Exception in jsmol_request: ####')
+            print(e)
+            return ''
 
 @app.route('/', method='POST')
 def post_request():
     """
     Handle POST requests.
     """
-    cif_dic = None
-    str_id = request.POST.get('id', [''])[0]
-    resid1 = request.POST.get('residuals1', [''])[0]
-    resid2 = request.POST.get('residuals2', [''])[0]
-    mol = request.POST.get('molecule', [''])[0]
-    unitcell = request.POST.get('unitcell', [''])[0]
-    if str_id and (resid1 or resid2):
+    cif_dic = {}
+    str_id = request.POST.get('id', [''])
+    resid1 = (request.POST.get('residuals1', ['']) == 'true')
+    resid2 = (request.POST.get('residuals2', ['']) == 'true')
+    all_cif = (request.POST.get('all', ['']) == 'true')
+    unitcell = request.POST.get('unitcell', [''])
+    if str_id:
         cif_dic = structures.get_row_as_dict(str_id)
-    if str_id and mol:
-        cell_list = structures.get_cell_by_id(str_id)[:6]
-        try:
-            m = mol_file_writer.MolFile(str_id, structures, cell_list)
-            return m.make_mol()
-        except KeyError:
-            return ''
-    elif str_id and unitcell:
+    if str_id and unitcell and not (resid1 or resid2):
         try:
             return get_cell_parameters(structures, str_id)
-        except ValueError:
+        except ValueError as e:
+            print(e)
             return ''
-    elif str_id and resid1:
+    if str_id and resid1:
         return get_residuals_table1(cif_dic)
     elif str_id and resid2:
         return get_residuals_table2(cif_dic)
-    elif str_id:
+    if str_id and all:
         return get_all_cif_val_table(structures, str_id)
 
 
@@ -95,17 +142,21 @@ def server_static(filepath):
     the wildcard to use the path filter:
     """
     #print(filepath)
-    return static_file(filepath, root='static/')
+    return static_file(filepath, root='cgi_ui/static/')
 
 
-'''
 @app.error(404)
 def error404(error):
     """
     Redefine 404 message.
     """
-    return 'Nothing here, sorry'
-'''
+    return '''<div style="text-align: center;">
+                <b>Nothing here, sorry.</b><br>
+                <p>
+                <a href="http://{}{}/">Back to main page</a>
+                </p>
+              </div>
+            '''.format(host, ':'+port)
 
 
 def is_ajax():
@@ -192,6 +243,7 @@ def get_residuals_table2(cif_dic: dict) -> str:
     Returns a table with the most important residuals of a structure.
     """
     # cell = structures.get_cell_by_id(structure_id)
+    print(cif_dic, '##cd')
     if not cif_dic:
         return ""
     wavelen = cif_dic['_diffrn_radiation_wavelength']
@@ -276,6 +328,7 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     table_string += """ </tbody>
                         </table>
                         </div>"""
+    print('foobar', table_string)
     return table_string
 
 
@@ -337,9 +390,8 @@ def search_text(structures: StructureTable, search_string: str) -> list:
         #  bad hack, should make this return ids like cell search
         idlist = [x[0] for x in structures.find_by_strings(search_string)]
     except AttributeError as e:
-        pass
-        # print("Error 1")
-        # print(e)
+        print("Exception in search_text:")
+        print(e)
     return idlist
 
 
@@ -372,7 +424,7 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
     return result
 
 
-def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
+def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, more_results,
                     date1: str = None, date2: str = None, structures=None) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
@@ -392,20 +444,20 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
         incl.append(search_elements(structures, elincl))
     if date1 != date2:
         date_results = find_dates(structures, date1, date2)
-    if txt:
-        if len(txt) >= 2 and "*" not in txt:
-            txt = '*' + txt + '*'
-        idlist = structures.find_by_strings(txt)
+    if txt_in:
+        if len(txt_in) >= 2 and "*" not in txt_in:
+            txt = '*' + txt_in + '*'
+        idlist = structures.find_by_strings(txt_in)
         try:
             incl.append([i[0] for i in idlist])
         except(IndexError, KeyError):
             incl.append([idlist])  # only one result
     if elexcl:
         excl.append(search_elements(structures, elexcl, anyresult=True))
-    if txt_ex:
-        if len(txt_ex) >= 2 and "*" not in txt_ex:
-            txt_ex = '*' + txt_ex + '*'
-        idlist = structures.find_by_strings(txt_ex)
+    if txt_out:
+        if len(txt_out) >= 2 and "*" not in txt_out:
+            txt_ex = '*' + txt_out + '*'
+        idlist = structures.find_by_strings(txt_out)
         try:
             excl.append([i[0] for i in idlist])
         except(IndexError, KeyError):
@@ -426,5 +478,5 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
 
 
 if __name__ == "__main__":
-    app.run(host='127.0.0.1', port=8080, reloader=True)
+    app.run(host=host, port=port, reloader=True)
 

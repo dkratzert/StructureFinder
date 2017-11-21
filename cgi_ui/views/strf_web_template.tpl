@@ -383,7 +383,7 @@ jQuery(document).ready(function($) {
 
         // Get molecule data and display the molecule:
         var jsmolcol = $("#jsmolcolumn");
-        $.post(url = cgifile, data = {id: idstr, molecule: true}, function (result) {
+        $.post(url = cgifile+'/molecule', data = {id: idstr}, function (result) {
             Jmol._document = null;
             Jmol.getTMApplet("jmol", Info);
             jsmolcol.html(jmol._code);
@@ -406,7 +406,8 @@ jQuery(document).ready(function($) {
         });
 
         // display the big cif data table:
-        $.post(url = cgifile, data = {id: idstr}, function (result) {
+        var url; var data;
+        $.post(url = cgifile, data = {id: idstr, all: true}, function (result) {
             document.getElementById("residuals").innerHTML = result;
         });
     }
@@ -444,11 +445,12 @@ jQuery(document).ready(function($) {
         if (!isValidCell(cell)) {
             cell = "";
         }
-        var advanced = true;
-        var gridparams = {adv: advanced, cell_search: cell, text_in: text_in, text_out: text_out, elements_in: elements_in,
-                            elements_out: elements_out, more: more_res, supercell: supercell, date1:date1, date2: date2};
+        var gridparams = {cell_search: cell, text_in: text_in, text_out: text_out, elements_in: elements_in,
+                          elements_out: elements_out, more: more_res, supercell: supercell, date1:date1, date2: date2};
         //console.log(gridparams);
-        w2ui['mygrid'].request('get-records', gridparams, w2ui['mygrid'].url,
+        var url;
+        w2ui['mygrid'].request('get-records', gridparams,
+            url = cgifile + "/adv_srch",
             function (result) {
                 console.log(result);
             }
@@ -483,7 +485,7 @@ jQuery(document).ready(function($) {
     function isNumericArray(array) {
         var isal = true;
         for (var i=0; i<array.length; i++) {
-            if (!jQuery.isNumeric(array[i])) {
+            if (!$.isNumeric(array[i])) {
                 isal = false;
             }
         }
@@ -494,24 +496,30 @@ jQuery(document).ready(function($) {
         var more_res = $('#more_results').is(':checked');
         var supercell = $('#supercells').is(':checked');
         cell = cell.replace(/\s+/g, ' ').trim();  // replace multiple spaces with one
+        var params;
+        var url;
         if (isValidCell(cell)) {
-            var advanced = false;
-            w2ui['mygrid'].request('get-records', params = {adv: advanced, cell_search: cell,
-                                                            more: more_res, supercell: supercell},
-                                url = w2ui['mygrid'].url,
-                                            function (result) {
-                                                //console.log(result);
-                                                //console.log(more_res);
-                                            }
+            w2ui['mygrid'].request('get-records',
+                params = {cell_search: cell, more: more_res, supercell: supercell},
+                url = cgifile + "/cellsrch",
+                function (result) {
+                    //console.log(result);
+                    //console.log(more_res);
+                }
             );
         }
     }
 
     function txtsearch(text) {
         var advanced = false;
-        w2ui['mygrid'].request('get-records', params={adv: advanced, text_search: text}, url=w2ui['mygrid'].url,
-            function(result) {
-                //console.log(result);
+        var params;
+        var url;
+        console.log(text);
+        w2ui['mygrid'].request('get-records',
+            params = {text_search: text},
+            url = cgifile + "/txtsrch",
+            function (result) {
+                console.log(result);
             }
         );
     }
