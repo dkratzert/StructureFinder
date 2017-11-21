@@ -400,16 +400,19 @@ jQuery(document).ready(function($) {
             document.getElementById("cellrow").innerHTML = result;
 
             var clipboard = new Clipboard('.btn');
-            clipboard.on('success', function(e) {
-                e.clearSelection();
-            });
+            clipboard.on('success',
+                function(e) {
+                    e.clearSelection();
+                }
+            );
         });
 
         // display the big cif data table:
-        var url; var data;
-        $.post(url = cgifile, data = {id: idstr, all: true}, function (result) {
-            document.getElementById("residuals").innerHTML = result;
-        });
+        $.post(url = cgifile, data = {id: idstr, all: true},
+            function (result) {
+                document.getElementById("residuals").innerHTML = result;
+            }
+        );
     }
 
     // some options for JSmol:

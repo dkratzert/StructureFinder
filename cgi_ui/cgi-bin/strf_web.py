@@ -11,7 +11,7 @@ import os
 
 from cgi_ui import bottle
 from cgi_ui.bottle import Bottle, static_file, route, template
-from cgi_ui.bottle import get, post, request, view
+from cgi_ui.bottle import get, post, request, view, response
 from displaymol import mol_file_writer
 from lattice import lattice
 from pymatgen.core import mat_lattice
@@ -31,8 +31,8 @@ TODO:
 host = "127.0.0.1"
 port = "80"
 site_ip = host+':'+port
-#dbfilename = "./structuredb.sqlite"
-dbfilename = "../structurefinder.sqlite"
+dbfilename = "./structuredb.sqlite"
+#dbfilename = "../structurefinder.sqlite"
 app = Bottle()
 bottle.debug(True)
 
@@ -50,6 +50,7 @@ def structures_list_data():
 
 @app.route('/')
 def main():
+    response.content_type = 'text/html; charset=ISO-8859-15'
     output = template('./cgi_ui/views/strf_web_template', my_ip=site_ip)
     return output
 
@@ -105,6 +106,7 @@ def jsmol_request():
             print(e)
             return ''
 
+
 @app.route('/', method='POST')
 def post_request():
     """
@@ -118,7 +120,7 @@ def post_request():
     unitcell = request.POST.get('unitcell', [''])
     if str_id:
         cif_dic = structures.get_row_as_dict(str_id)
-    if str_id and unitcell and not (resid1 or resid2):
+    if str_id and unitcell and not (resid1 or resid2 or all_cif):
         try:
             return get_cell_parameters(structures, str_id)
         except ValueError as e:
@@ -126,9 +128,9 @@ def post_request():
             return ''
     if str_id and resid1:
         return get_residuals_table1(cif_dic)
-    elif str_id and resid2:
+    if str_id and resid2:
         return get_residuals_table2(cif_dic)
-    if str_id and all:
+    if str_id and all_cif:
         return get_all_cif_val_table(structures, str_id)
 
 
@@ -170,7 +172,7 @@ def get_structures_json(structures: StructureTable, ids: list = None, show_all: 
     """
     Returns the next package of table rows for continuos scrolling.
     """
-    dic = structures.get_all_structures_as_dict(ids, all=show_all)
+    dic = structures.get_all_structures_as_dict(ids, all_ids=show_all)
     return json.dumps({"total": len(dic), "records": dic, "status": "success"}, indent=2)
 
 
@@ -243,7 +245,6 @@ def get_residuals_table2(cif_dic: dict) -> str:
     Returns a table with the most important residuals of a structure.
     """
     # cell = structures.get_cell_by_id(structure_id)
-    print(cif_dic, '##cd')
     if not cif_dic:
         return ""
     wavelen = cif_dic['_diffrn_radiation_wavelength']
@@ -328,7 +329,6 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     table_string += """ </tbody>
                         </table>
                         </div>"""
-    print('foobar', table_string)
     return table_string
 
 
@@ -376,7 +376,7 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
         return idlist2
 
 
-def search_text(structures: StructureTable, search_string: str) -> list:
+def search_text(structures: StructureTable, search_string: str) -> tuple:
     """
     searches db for given text
     """
@@ -388,7 +388,7 @@ def search_text(structures: StructureTable, search_string: str) -> list:
             search_string = "{}{}{}".format('*', search_string, '*')
     try:
         #  bad hack, should make this return ids like cell search
-        idlist = [x[0] for x in structures.find_by_strings(search_string)]
+        idlist = tuple([x[0] for x in structures.find_by_strings(search_string)])
     except AttributeError as e:
         print("Exception in search_text:")
         print(e)
