@@ -29,7 +29,7 @@ site_ip = host + ':' + port
 dbfilename = "../structurefinder.sqlite"
 
 app = Bottle()
-bottle.debug(True)
+bottle.debug(False)  # Do not enable debug in production systems!
 structures = database_handler.StructureTable(dbfilename)
 
 
