@@ -14,8 +14,6 @@ Created on 09.02.2015
 import os
 from pprint import pprint
 
-import pathlib
-
 
 class Cif(object):
     def __init__(self, options=None):
