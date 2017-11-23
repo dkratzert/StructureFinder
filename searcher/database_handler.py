@@ -888,7 +888,7 @@ class StructureTable():
         req = """
               SELECT StructureId FROM Residuals WHERE modification_time between DATE(?) AND DATE(?);
               """
-        return searcher.misc.flatten([list(x) for x in self.database.db_request(req, start, end)])
+        return searcher.misc.flatten([list(x) for x in self.database.db_request(req, (start, end))])
 
     def find_biggest_cell(self):
         """
