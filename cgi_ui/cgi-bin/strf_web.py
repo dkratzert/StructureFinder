@@ -4,6 +4,8 @@
 
 import json
 import math
+import sys
+import os
 
 from cgi_ui import bottle
 from cgi_ui.bottle import Bottle, static_file, template, redirect
@@ -31,6 +33,11 @@ dbfilename = "../structurefinder.sqlite"
 app = Bottle()
 bottle.debug(False)  # Do not enable debug in production systems!
 structures = database_handler.StructureTable(dbfilename)
+
+if not misc.is_a_nonzero_file(dbfilename):
+    print("Unable to start")
+    print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
+    sys.exit()
 
 
 @app.route('/all')

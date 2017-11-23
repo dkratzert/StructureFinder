@@ -77,6 +77,32 @@ def open_file_read(filename: str, asci: bool = True) -> str or list:
             return binary
 
 
+def is_a_nonzero_file(filename):
+    """
+    Check if a file exists and has some content.
+
+    >>> is_a_nonzero_file('misc.py')
+    True
+    >>> is_a_nonzero_file('foo.bar')
+    False
+    >>> is_a_nonzero_file('../test-data/test_zerofile.cif')
+    False
+    >>> is_a_nonzero_file('../strf.spec')
+    True
+    """
+    filesize = False
+    status = False
+    if os.path.isfile(filename):
+        filesize = int(os.stat(str(filename)).st_size)
+    else:
+        return False
+    if isinstance(filesize, int) and filesize > 0:
+        status = True
+    if isinstance(filesize, int) and filesize == 0:
+        status = False
+    return status
+
+
 def get_error_from_value(value: str) -> str:
     """ 
     Returns the error value from a number string.
