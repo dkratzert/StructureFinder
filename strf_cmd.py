@@ -55,7 +55,7 @@ except IndexError:
 else:
     db = None
     structures = None
-    time1 = time.clock()
+    time1 = time.time()
     if args.outfile:
         dbfilename = args.outfile
     else:
@@ -82,7 +82,7 @@ else:
     if db and structures:
         db.init_textsearch()
         structures.populate_fulltext_search_table()
-    time2 = time.clock()
+    time2 = time.time()
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
