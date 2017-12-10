@@ -15,6 +15,21 @@ from searcher.database_handler import StructureTable
 from searcher.fileparser import Cif
 
 
+class SDMItem(object):
+    def __init__(self):
+        self.dist = 0.0
+        self.a1 = None
+        self.a2 = None
+
+    @property
+    def dist(self):
+        return self.dist
+
+    @dist.setter
+    def dist(self, d):
+        self.dist = d
+
+
 class Lattice(object):
     def __init__(self, atoms: list, symmcards: list, cell: list):
         """
@@ -27,13 +42,7 @@ class Lattice(object):
         self.atoms = atoms
         self.symmcards = [x.replace("/", "./") for x in (i for i in symmcards)]
 
-    def calc_sdm(self):
-        """
-        Calculates shortest-distance matrix.
-        :return:
-        """
-
-    def grow_structure(self):
+    def pack_structure(self):
         """
         Grows the atoms according to symmetry.
 
@@ -87,6 +96,8 @@ class Lattice(object):
         # TODO: Use algorithm of george to get complete molecules:
 
 
+
+
 if __name__ == '__main__':
     cif = Cif()
     with open('test-data/p-1_a.cif', 'r') as f:
@@ -99,6 +110,6 @@ if __name__ == '__main__':
     cards = db.get_row_as_dict(263)['_space_group_symop_operation_xyz'].replace("'", "").split("\n")
     print(cards)
     l = Lattice(ats, cards)
-    gr = l.grow_structure()
+    gr = l.pack_structure()
     for i in gr:
         print(i)

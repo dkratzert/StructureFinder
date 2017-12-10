@@ -21,7 +21,7 @@ class MolFile(object):
             atoms = self.db.get_atoms_table(id, cell, cartesian=False)
             cards = db.get_row_as_dict(id)['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")
             l = Lattice(atoms, cards, cell)
-            atoms = l.grow_structure()
+            atoms = l.pack_structure()
             a = lattice.A(cell).orthogonal_matrix
             cartesian_coords = []
             for at in atoms:
