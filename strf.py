@@ -46,10 +46,8 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
-- Grow structure.
-- Make login infrastructure.
-- Figure out how guest and other users are handled with "Open APEX Database" button.
-- disable molecule on windows7 32 bit? 
+- Add option: should contain *only* these elements
+- Grow structure. 
 - Improve text search (in cif file). Figure out which tokenchars configuration works best.
 - refractor put_cifs_in_db()
 - Move indexer to extra thread

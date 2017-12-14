@@ -19,6 +19,8 @@ from searcher.misc import is_valid_cell
 
 """
 TODO:
+- Make login infrastructure.
+- Add option: should contain *only* these elements
 - Display number of search results in unit cell field.
 - Prevent adding same element in include and exclude field
 """
