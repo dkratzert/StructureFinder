@@ -25,7 +25,7 @@ TODO:
 - Prevent adding same element in include and exclude field
 """
 
-host = "127.0.0.1"
+host = "10.6.13.3"
 port = "80"
 site_ip = host + ':' + port
 
