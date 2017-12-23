@@ -851,11 +851,10 @@ class StructureTable():
         import re
         structures = []
         matches = []
-        req = '''SELECT StructureId, _chemical_formula_sum from ElementSearch WHERE _chemical_formula_sum MATCH ?'''
+        # Get all formulas to prevent false negatives with text search in the db:
+        req = '''SELECT StructureId, _chemical_formula_sum from ElementSearch'''
         for el in elements:
-            result = self.database.db_request(req, (el+'*',))
-            #for i in result:
-            #    print(i)
+            result = self.database.db_request(req)
             if result:
                 if isinstance(result, int):
                     continue
