@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#!C:\tools\Python-3.6.2_64\pythonw.exe
+# !C:\tools\Python-3.6.2_64\pythonw.exe
 # !/usr/local/bin/python3.6
 
 import json
@@ -28,6 +28,11 @@ TODO:
 host = "10.6.13.3"
 port = "80"
 site_ip = host + ':' + port
+
+try:  # Adding local path to PATH
+    sys.path.insert(0, os.path.abspath('./'))
+except(KeyError, ValueError):
+    pass
 
 # dbfilename = "./structuredb.sqlite"
 dbfilename = "../structurefinder.sqlite"
