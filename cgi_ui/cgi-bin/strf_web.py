@@ -7,6 +7,11 @@ import math
 import sys
 import os
 
+try:  # Adding local path to PATH
+    sys.path.insert(0, os.path.abspath('./'))
+except(KeyError, ValueError):
+    print('Unable to set PATH properly. strf_web.py might not work.')
+
 from cgi_ui import bottle
 from cgi_ui.bottle import Bottle, static_file, template, redirect
 from cgi_ui.bottle import request, response
@@ -29,10 +34,6 @@ host = "10.6.13.3"
 port = "80"
 site_ip = host + ':' + port
 
-try:  # Adding local path to PATH
-    sys.path.insert(0, os.path.abspath('./'))
-except(KeyError, ValueError):
-    pass
 
 # dbfilename = "./structuredb.sqlite"
 dbfilename = "../structurefinder.sqlite"
@@ -157,6 +158,11 @@ def server_static(filepath):
 @app.route('/cgi-bin/strf_web.cgi')
 def redirect_old_path():
     redirect('/')
+
+
+@app.route('/favicon.ico')
+def redirect_to_favicon():
+    redirect('/static/favicon.ico')
 
 
 @app.error(404)
