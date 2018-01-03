@@ -40,13 +40,13 @@ dbfilename = "../structurefinder.sqlite"
 
 app = Bottle()
 bottle.debug(False)  # Do not enable debug in production systems!
-structures = database_handler.StructureTable(dbfilename)
 
 if not misc.is_a_nonzero_file(dbfilename):
     print("Unable to start")
     print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
     sys.exit()
 
+structures = database_handler.StructureTable(dbfilename)
 
 @app.route('/all')
 def structures_list_data():
