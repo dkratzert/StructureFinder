@@ -421,10 +421,12 @@ def search_elements(structures: StructureTable, elements: str, anyresult: bool =
     try:
         formula = misc.get_list_of_elements(elements)
     except KeyError:
+        print('Element search error!')
         return []
     try:
         res = structures.find_by_elements(formula, anyresult=anyresult)
     except AttributeError:
+        print('Element search error!')
         pass
     return list(res)
 

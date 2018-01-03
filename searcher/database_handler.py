@@ -849,22 +849,19 @@ class StructureTable():
         [11, 3, 6, 15]
         """
         import re
-        structures = []
         matches = []
         # Get all formulas to prevent false negatives with text search in the db:
         req = '''SELECT StructureId, _chemical_formula_sum from Residuals'''
         result = self.database.db_request(req)
         if result:
-            if not isinstance(result, int):
-                structures.extend(result)
-        for el in elements:  # The second search excludes false hits like Ca instead of C
-            regex = re.compile(r'[\s|\d]?'+ el +'[\d|\s]+|$', re.IGNORECASE)
-            res = []
-            for num, form in structures:
-                if regex.search(form):
-                    #print(form)
-                    res.append(num)
-            matches.append(res)
+            for el in elements:  # The second search excludes false hits like Ca instead of C
+                regex = re.compile(r'[\s|\d]?'+ el +'[\d|\s]+|$', re.IGNORECASE)
+                res = []
+                for num, form in result:
+                    if regex.search(form):
+                        #print(form)
+                        res.append(num)
+                matches.append(res)
         if matches:
             if anyresult:
                 return list(set(misc.flatten(matches)))
