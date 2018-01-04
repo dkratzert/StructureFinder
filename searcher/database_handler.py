@@ -941,8 +941,8 @@ if __name__ == '__main__':
     #out = db.find_by_date(start="2017-08-19")
     #out = db.get_cell_by_id(12)
     #out = db.find_by_strings('dk')
-    elinclude = ['C', 'F', 'O', 'Cl', 'N', 'Al']
-    elexclude = ['Tm', 'Au', 'Ag']
+    elinclude = ['C', 'O', 'N', 'Al', 'F']
+    elexclude = ['Tm']
     inc = db.find_by_elements(elinclude, anyresult=False)
     exc = db.find_by_elements(elexclude, anyresult=True)
     print('include: {}'.format(sorted(inc)))

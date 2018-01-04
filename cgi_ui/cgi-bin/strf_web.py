@@ -335,7 +335,7 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
         return ""
     # filling table with data rows:
     for key, value in dic.items():
-        if key == "Id" or key == "StructureId":
+        if key == "Id":
             continue
         if isinstance(value, str):
             value = ''.join([x.replace("\n", "<br>").rstrip('\r\n') for x in value])
