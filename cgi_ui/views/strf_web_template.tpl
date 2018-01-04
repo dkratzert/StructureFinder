@@ -12,7 +12,6 @@
     <script src="http://{{my_ip}}/static/w2ui/w2ui-1.4.min.js"></script>
     <script src="http://{{my_ip}}/static/clipboard/clipboard.min.js"></script>
 
-
 <style type="text/css">
 
 body {
@@ -281,6 +280,14 @@ jQuery(document).ready(function($) {
         var datefield2 = document.getElementById("date2").value;
         advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res, supercell, datefield1, datefield2);
     });
+
+    function validateSumForm() {
+    var x = document.forms["myForm"]["fname"].value;
+        if (x == "") {
+            alert("Name must be filled out");
+            return false;
+        }
+    }
 
     // Toggle search info:
     var more_info_button = $('#more_info_badge');
