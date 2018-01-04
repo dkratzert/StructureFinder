@@ -855,7 +855,7 @@ class StructureTable():
         result = self.database.db_request(req)
         if result:
             for el in elements:  # The second search excludes false hits like Ca instead of C
-                regex = re.compile(r'[\s|\d]?'+ el +'[\d|\s]+|$', re.IGNORECASE)
+                regex = re.compile(r'[\s|\d]?'+ el +'[\d|\s]*|[$]+', re.IGNORECASE)
                 res = []
                 for num, form in result:
                     if regex.search(form):
@@ -941,13 +941,12 @@ if __name__ == '__main__':
     #out = db.find_by_date(start="2017-08-19")
     #out = db.get_cell_by_id(12)
     #out = db.find_by_strings('dk')
-    all = db.find_by_elements(['Al', 'Au', 'Ag'])
-    tst = []
-    for i in all:
-        out = db.get_sumform_by_id(i)
-        if "Ag" in out[0]:
-            tst.append(out)
-        #print(out)
-    print(len(all))
-    print(len(tst))
-
+    elinclude = ['C', 'F', 'O', 'Cl', 'N', 'Al']
+    elexclude = ['Tm', 'Au', 'Ag']
+    inc = db.find_by_elements(elinclude, anyresult=False)
+    exc = db.find_by_elements(elexclude, anyresult=True)
+    print('include: {}'.format(sorted(inc)))
+    print('exclude: {}'.format(sorted(exc)))
+    combi = set(inc) - set(exc)
+    print(combi)
+    print(len(combi))
