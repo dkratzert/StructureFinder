@@ -76,6 +76,15 @@ $(document).ready(function(){
     $('[data-toggle="cell_tooltip"]').tooltip();
 });
 
+elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
+            'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K',  'Ca', 'Sc', 'Ti', 'V', 'Cr',
+            'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr',
+            'Rb', 'Sr', 'Y',  'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd',
+            'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd',
+            'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',
+            'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn',
+            'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
+
 </script>
 
 
@@ -135,9 +144,9 @@ $(document).ready(function(){
         </div>
     </div>
 </div>
+
 <!-- The collapsible for Advanced search options: -->
 <div id="adv-search" class="collapse">
-
     <div class="row">
         <div class="col-xs-12">
         <div class="btn-group btn-group-xs" role="group">
@@ -152,13 +161,15 @@ $(document).ready(function(){
         <div class="column col-xs-6">
             <div class="input-group input-group-sm has-success advsearchfields">
                 <span class="input-group-addon" data-toggle="tooltip" title="should contain">Elements</span>
-                <input type="text" class="form-control form-sm" placeholder="C H O ... (should contain)" id="elements_in">
+                <input type="text" class="form-control form-sm" placeholder="C H O ... (should contain)"
+                       pattern="^[A-z]{1,}$" id="elements_in">
             </div>
         </div>
         <div class="column col-xs-6">
             <div class="input-group input-group-sm has-error advsearchfields">
                 <span class="input-group-addon" data-toggle="tooltip" title="should not contain">Elements</span>
-                <input type="text" class="form-control form-sm" placeholder="C H O ... (should not contain)" id="elements_out">
+                <input type="text" class="form-control form-sm" placeholder="C H O ... (should not contain)"
+                       pattern="^[A-z]{1,}$" id="elements_out">
             </div>
         </div>
     </div>
@@ -217,6 +228,7 @@ $(document).ready(function(){
 
 <br>
 </div>
+
 <!-- End of collapsible for search options. -->
 <div class="row">
     <div class="column col-lg-12">
@@ -278,15 +290,45 @@ jQuery(document).ready(function($) {
         var supercell = $('#supercells').is(':checked');
         var datefield1 = document.getElementById("date1").value;
         var datefield2 = document.getElementById("date2").value;
+        var elinform = $("#elements_in.form-control");
+        if (!validateSumForm(elements_in)) {
+            //console.log("elements in not valid");
+            elinform.css("color", "#f35e59");
+            elinform.css("font-weight", "bold");
+            return;
+        } else {
+            // success case
+            elinform.css("color", "#000000");
+            elinform.css("font-weight", "normal");
+        }
+        var elexform = $("#elements_out.form-control");
+        if (!validateSumForm(elements_out)) {
+            //console.log("elements in not valid");
+            elexform.css("color", "#f35e59");
+            elexform.css("font-weight", "bold");
+            return;
+        } else {
+            // success case
+            elexform.css("color", "#000000");
+            elexform.css("font-weight", "normal");
+        }
         advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res, supercell, datefield1, datefield2);
     });
 
-    function validateSumForm() {
-    var x = document.forms["myForm"]["fname"].value;
-        if (x == "") {
-            alert("Name must be filled out");
-            return false;
+    function validateSumForm(sumform) {
+        var ok = true;
+        var sumlist = sumform.split(" ");
+        if (sumform.length === 0) {
+            return true;
         }
+        for (i = 0; i < sumlist.length; i++) {
+            var el = sumlist[i];
+            //console.log(el);
+            if ($.inArray(el, elements) === -1) {
+                ok = false;
+            }
+        }
+        return ok;
     }
 
     // Toggle search info:
@@ -462,7 +504,7 @@ jQuery(document).ready(function($) {
         w2ui['mygrid'].request('get-records', gridparams,
             url = cgifile + "/adv_srch",
             function (result) {
-                console.log(result);
+                //console.log(result);
             }
         );
     }
