@@ -290,41 +290,76 @@ jQuery(document).ready(function($) {
         var supercell = $('#supercells').is(':checked');
         var datefield1 = document.getElementById("date1").value;
         var datefield2 = document.getElementById("date2").value;
+        advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res, supercell, datefield1, datefield2);
+    });
+
+    // Validators for elemets included search field:
+    $( "#elements_in").keyup(function() {
+        var elements_in = document.getElementById("elements_in").value;
+        var elements_out = document.getElementById("elements_out").value;
         var elinform = $("#elements_in.form-control");
-        if (!validateSumForm(elements_in)) {
+        var ok = true;
+        ok = validateSumForm(elements_in);
+        var sumlist = elements_in.split(" ");
+        for (i = 0; i < sumlist.length; i++) {
+            var el = sumlist[i];
+            if (elements_out.match(el)) {
+                if (el === "") {continue}
+                ok = false;
+            }
+        }
+        if (!ok) {
             //console.log("elements in not valid");
             elinform.css("color", "#f35e59");
             elinform.css("font-weight", "bold");
-            return;
         } else {
             // success case
             elinform.css("color", "#000000");
             elinform.css("font-weight", "normal");
         }
+    });
+    // Validators for elemets excluded search field:
+    $( "#elements_out").keyup(function() {
+        var elements_in = document.getElementById("elements_in").value;
+        var elements_out = document.getElementById("elements_out").value;
         var elexform = $("#elements_out.form-control");
-        if (!validateSumForm(elements_out)) {
+        var ok = true;
+        ok = validateSumForm(elements_out);
+        var sumlist = elements_out.split(" ");
+        for (i = 0; i < sumlist.length; i++) {
+            var el = sumlist[i];
+            if (elements_in.match(el)) {
+                if (el === "") {continue}
+                ok = false;
+            }
+        }
+        if (!ok) {
             //console.log("elements in not valid");
             elexform.css("color", "#f35e59");
             elexform.css("font-weight", "bold");
-            return;
         } else {
             // success case
             elexform.css("color", "#000000");
             elexform.css("font-weight", "normal");
         }
-        advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res, supercell, datefield1, datefield2);
     });
 
     function validateSumForm(sumform) {
+        // Validates if sumform contains only valid chemical elements
+        // Space characters are allowed
         var ok = true;
-        var sumlist = sumform.split(" ");
+        //console.log(sumform);
         if (sumform.length === 0) {
             return true;
         }
+        var sumlist = sumform.split(" ");
+        //console.log(sumlist);
         for (i = 0; i < sumlist.length; i++) {
             var el = sumlist[i];
             //console.log(el);
             if ($.inArray(el, elements) === -1) {
+                // A space character is allowed:
+                if (el.length === 0) {continue}
                 ok = false;
             }
         }
@@ -516,7 +551,6 @@ jQuery(document).ready(function($) {
         var day = date_now.getUTCDate();
         var lastmonth = new Date(date_now.getUTCFullYear(), month-1, day);
         var lastmdate = lastmonth.toISOString().split("T")[0];
-        console.log(lastmdate+ ' '+ date_now.toISOString().split("T")[0]);
         //console.log(lastmdate+ ' '+ date_now.toISOString().split("T")[0]);
         // From last month to now():
         advanced_search("", "", "", "", "", "", "", lastmdate, date_now.toISOString().split("T")[0]);
@@ -566,12 +600,12 @@ jQuery(document).ready(function($) {
         var advanced = false;
         var params;
         var url;
-        console.log(text);
+        //console.log(text);
         w2ui['mygrid'].request('get-records',
             params = {text_search: text},
             url = cgifile + "/txtsrch",
             function (result) {
-                console.log(result);
+                //console.log(result);
             }
         );
     }
