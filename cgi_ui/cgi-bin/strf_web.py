@@ -7,6 +7,7 @@ import math
 import sys
 import os
 
+print("Running on Python version {}".format(sys.version))
 pyver = sys.version_info
 if pyver[0] < 3:
     print("You need Python 3.4 and up in oder to run this proram!")
