@@ -9,10 +9,8 @@ import os
 
 print("Running on Python version {}".format(sys.version))
 pyver = sys.version_info
-if pyver[0] < 3:
-    print("You need Python 3.4 and up in oder to run this proram!")
-    sys.exit()
 if pyver[0] == 3 and pyver[1] < 4:
+    # Python 2 creates a syntax error anyway.
     print("You need Python 3.4 and up in oder to run this proram!")
     sys.exit()
 
