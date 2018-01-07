@@ -36,7 +36,7 @@ from pymatgen.core import mat_lattice
 from searcher import constants, misc, filecrawler, database_handler
 from searcher.constants import py36
 from searcher.fileparser import Cif
-from searcher.misc import is_valid_cell, formula_str_to_dict
+from searcher.misc import is_valid_cell, formula_str_to_dict, elements
 
 if py36:
     """Only import this if Python 3.6 is used."""
@@ -149,11 +149,65 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
-        #self.ui.ad_elementsIncLineEdit.textChanged.connect(self.is_element_doubled_incl)
-        #self.ui.ad_elementsExclLineEdit.textChanged.connect(self.is_element_doubled_excl)
+        self.ui.ad_elementsIncLineEdit.textChanged.connect(self.elements_inc_field_check)
+        self.ui.ad_elementsExclLineEdit.textChanged.connect(self.elements_excl_field_check)
 
     def on_click_item(self, item):
         self.ui.tabWidget.setCurrentIndex(1)
+
+    def element_check(self, intext):
+        """
+        Checks if the elements typed into a text field are valid
+        """
+        ok = True
+        for el in intext.split():
+            if not el in elements:
+                ok = False
+        return ok
+
+    @QtCore.pyqtSlot('QString')
+    def elements_inc_field_check(self):
+        """
+        Checks element names of ad_elementsIncLineEdit and ad_elementsExclLineEdit for validity.
+        """
+        elem = self.ui.ad_elementsIncLineEdit.text()
+        ok = True
+        for el in elem:
+            if el in self.ui.ad_elementsExclLineEdit.text().split():
+                ok = False
+        if not self.element_check(elem):
+            ok = False
+
+        if not ok:
+            # Elements not valid:
+            self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(255, 0, 0);")
+            self.ui.ad_SearchPushButton.setDisabled(True)
+        else:
+            # Elements valid:
+            self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
+            self.ui.ad_SearchPushButton.setEnabled(True)
+
+    @QtCore.pyqtSlot('QString')
+    def elements_excl_field_check(self):
+        """
+        Checks element names of ad_elementsIncLineEdit and ad_elementsExclLineEdit for validity.
+        """
+        elem = self.ui.ad_elementsExclLineEdit.text()
+        ok = True
+        for el in elem:
+            if el in self.ui.ad_elementsIncLineEdit.text().split():
+                ok = False
+        if not self.element_check(elem):
+            ok = False
+
+        if not ok:
+            # Elements not valid:
+            self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(255, 0, 0);")
+            self.ui.ad_SearchPushButton.setDisabled(True)
+        else:
+            # Elements valid:
+            self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
+            self.ui.ad_SearchPushButton.setEnabled(True)
 
     def copyUnitCell(self):
         if self.structureId:
@@ -233,6 +287,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Displays the structures with id in results list
         """
         if not idlist:
+            self.statusBar().showMessage('Found {} structures.'.format(0))
             return
         searchresult = self.structures.get_all_structure_names(idlist)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
@@ -541,36 +596,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         p2 = pathlib.Path("./displaymol/jsmol.htm")
         p2.write_text(data=content, encoding="utf-8", errors='ignore')
         self.view.reload()
-
-    @QtCore.pyqtSlot('QString')
-    def is_element_doubled_incl(self, foo):
-        """
-        Determines if elements in the lists of included
-        and excludes elements are duplicated.
-        """
-        try:
-            incl = formula_str_to_dict(self.ui.ad_elementsIncLineEdit.text())
-            excl = formula_str_to_dict(self.ui.ad_elementsExclLineEdit.text())
-        except KeyError:
-            incl, excl = ('', '')
-        for el in incl:
-            if el in excl:
-                self.ui.ad_elementsIncLineEdit.setText('')
-
-    @QtCore.pyqtSlot('QString')
-    def is_element_doubled_excl(self, foo):
-        """
-        Determines if elements in the lists of included
-        and excludes elements are duplicated.
-        """
-        try:
-            incl = formula_str_to_dict(self.ui.ad_elementsIncLineEdit.text())
-            excl = formula_str_to_dict(self.ui.ad_elementsExclLineEdit.text())
-        except KeyError:
-            incl, excl = ('', '')
-        for el in incl:
-            if el in excl:
-                self.ui.ad_elementsExclLineEdit.setText('')
 
     @QtCore.pyqtSlot('QString')
     def find_dates(self, date1: str, date2: str) -> list:
