@@ -7,6 +7,11 @@ import math
 import sys
 import os
 
+pyver = sys.version_info
+if (pyver[0] < 3) or (pyver[0] == 3 and pyver[1] < 4):
+    print("You need Python 3.4 and up in oder to run this proram!")
+    sys.exit()
+
 try:  # Adding local path to PATH
     sys.path.insert(0, os.path.abspath('./'))
 except(KeyError, ValueError):
