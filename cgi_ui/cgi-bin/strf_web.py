@@ -8,7 +8,10 @@ import sys
 import os
 
 pyver = sys.version_info
-if (pyver[0] < 3) or (pyver[0] == 3 and pyver[1] < 4):
+if pyver[0] < 3:
+    print("You need Python 3.4 and up in oder to run this proram!")
+    sys.exit()
+if pyver[0] == 3 and pyver[1] < 4:
     print("You need Python 3.4 and up in oder to run this proram!")
     sys.exit()
 
