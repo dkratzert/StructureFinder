@@ -46,7 +46,7 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
-- Add option: should contain *only* these elements
+- Add search for space group. Maybe just search for the number in IT.
 - Grow structure. 
 - Improve text search (in cif file). Figure out which tokenchars configuration works best.
 - refractor put_cifs_in_db()
