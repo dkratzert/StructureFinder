@@ -28,7 +28,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui, uic
 
 import misc.update_check
 from apex import apeximporter
-from displaymol import mol_file_writer
+from displaymol import mol_file_writer, write_html
 from lattice import lattice
 from misc import update_check
 from misc.version import VERSION
@@ -332,7 +332,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.view = QWebEngineView()
         # QtWebEngine.initialize()
         self.view.load(QtCore.QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
-        self.view.setMaximumWidth(250)
+        self.view.setMaximumWidth(260)
         self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
         # self.view.show()
@@ -587,18 +587,15 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         Creates a html file from a mol file to display the molecule in jsmol-lite
         """
-        mol = ' '
-        p = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol-template.htm"))
-        templ = p.read_text(encoding='utf-8', errors='ignore')
-        s = string.Template(templ)
         try:
             tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6], grow=False)
             mol = tst.make_mol()
         except (TypeError, KeyError):
             # print("Error in structure", structure_id, "while writing mol file.")
-            s = string.Template(' ')
+            mol = ' '
             pass
-        content = s.safe_substitute(MyMol=mol)
+        #print(self.ui.openglview.width()-30, self.ui.openglview.height()-50)
+        content = write_html.write(mol, self.ui.openglview.width()-30, self.ui.openglview.height()-50)
         p2 = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
         p2.write_text(data=content, encoding="utf-8", errors='ignore')
         self.view.reload()
