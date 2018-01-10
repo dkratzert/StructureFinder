@@ -2,9 +2,8 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "16"
+#define MyAppVersion "15"
 #define MyAppPublisher "Daniel Kratzert"
-
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -15,7 +14,7 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={pf}\StructureFinder
-OutputBaseFilename=StructureFinder-setup-v{#MyAppVersion}
+OutputBaseFilename=StructureFinder-setup-x64-v{#MyAppVersion}
 Compression=lzma2/fast
 SolidCompression=yes
 SetupLogging=True
@@ -47,7 +46,6 @@ AlwaysShowComponentsList=False
 ShowComponentSizes=False
 SetupIconFile="..\icons\strf.ico"
 
-
 [UninstallRun]
 
 
@@ -59,10 +57,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Run]
 
-
 [Icons]
-Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{group}\StructureFinder"; Filename: "{app}\strf.bat"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"
+Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; IconFilename: "{app}\icons\strf.ico"
+Name: "{group}\StructureFinder"; Filename: "{app}\StructureFinder.exe"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"; Check: IsWin64
 
 [UninstallDelete]
 Type: files; Name: "{app}\*.pyc"
