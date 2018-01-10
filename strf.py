@@ -571,16 +571,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
             pass
         for key, value in cif_dic.items():
             if key == "_shelx_res_file":
-                continue
+                self.ui.SHELXplainTextEdit.setPlainText(cif_dic['_shelx_res_file'])
             cif_tree_item = QtWidgets.QTreeWidgetItem()
             self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
             cif_tree_item.setText(0, str(key))
             cif_tree_item.setText(1, str(value))
-        shelx_tree_item = QtWidgets.QTreeWidgetItem()
-        shelx_data_item = QtWidgets.QTreeWidgetItem(shelx_tree_item)
-        self.ui.allCifTreeWidget.addTopLevelItem(shelx_tree_item)
-        shelx_tree_item.setText(0, '_shelx_res_file')
-        shelx_data_item.setText(1, cif_dic['_shelx_res_file'])
+        if not cif_dic['_shelx_res_file']:
+            self.ui.SHELXplainTextEdit.setPlainText("No SHELXL res file in cif found.")
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.allCifTreeWidget.resizeColumnToContents(0)
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
