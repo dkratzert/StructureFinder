@@ -61,6 +61,15 @@ Search for:
   - search algorithms
   http://chemmine.ucr.edu/help/#similarity, https://en.wikipedia.org/wiki/Jaccard_index
 """
+# This is to make sure that strf finds the application path even when it is
+# executed from another path e.g. when opened via "open file" in windows:
+if getattr(sys, 'frozen', False):
+    # If the application is run as a bundle, the pyInstaller bootloader
+    # extends the sys module by a flag frozen=True and sets the app
+    # path into variable _MEIPASS'.
+    application_path = sys._MEIPASS
+else:
+    application_path = os.path.dirname(os.path.abspath(__file__))
 
 
 class StartStructureDB(QtWidgets.QMainWindow):
@@ -92,7 +101,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.dateEdit1.setDate(QtCore.QDate(date.today()))
         self.ui.dateEdit2.setDate(QtCore.QDate(date.today()))
         if py36:
-            molf = pathlib.Path("./displaymol/jsmol.htm")
+            molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
             molf.write_text(data=' ', encoding="utf-8", errors='ignore')
             self.init_webview()
         else:
@@ -101,7 +110,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.ui.txtSearchLabel.hide()
             self.ui.openglview.hide()
         self.ui.tabWidget.setCurrentIndex(0)
-        self.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
+        self.setWindowIcon(QtGui.QIcon(os.path.join(application_path, './icons/strf.png')))
         self.uipass = Ui_PasswdDialog()
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         # Actions for certain gui elements:
@@ -322,7 +331,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         self.view = QWebEngineView()
         # QtWebEngine.initialize()
-        self.view.load(QtCore.QUrl.fromLocalFile(os.path.abspath("./displaymol/jsmol.htm")))
+        self.view.load(QtCore.QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
         self.view.setMaximumWidth(250)
         self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
@@ -381,7 +390,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.txtSearchEdit.clear()
         self.ui.cifList_treeWidget.clear()
         if py36:
-            molf = pathlib.Path("./displaymol/jsmol.htm")
+            molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
             molf.write_text(data=' ', encoding="utf-8", errors='ignore')
             self.view.reload()
         try:
@@ -582,7 +591,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Creates a html file from a mol file to display the molecule in jsmol-lite
         """
         mol = ' '
-        p = pathlib.Path("./displaymol/jsmol-template.htm")
+        p = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol-template.htm"))
         templ = p.read_text(encoding='utf-8', errors='ignore')
         s = string.Template(templ)
         try:
@@ -593,7 +602,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             s = string.Template(' ')
             pass
         content = s.safe_substitute(MyMol=mol)
-        p2 = pathlib.Path("./displaymol/jsmol.htm")
+        p2 = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
         p2.write_text(data=content, encoding="utf-8", errors='ignore')
         self.view.reload()
 
@@ -941,7 +950,7 @@ class RunIndexerThread(QtCore.QThread):
 
 
 if __name__ == "__main__":
-    uic.compileUiDir('./gui')
+    uic.compileUiDir(os.path.join(application_path, './gui'))
     from gui.strf_main import Ui_stdbMainwindow
     from gui.strf_dbpasswd import Ui_PasswdDialog
 

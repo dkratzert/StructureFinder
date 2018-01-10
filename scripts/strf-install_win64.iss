@@ -5,6 +5,8 @@
 #define MyAppVersion "15"
 #define MyAppPublisher "Daniel Kratzert"
 
+; Remember, first run pyInstaller script!
+
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
