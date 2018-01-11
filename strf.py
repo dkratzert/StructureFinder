@@ -18,7 +18,6 @@ import math
 import os
 import pathlib
 import shutil
-import string
 import sys
 import tempfile
 import time
@@ -524,7 +523,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.uniqReflLineEdit.setText("{}".format(cif_dic['_refine_ls_number_reflns']))
         self.ui.refl2sigmaLineEdit.setText("{}".format(cif_dic['_reflns_number_gt']))
         self.ui.goofLineEdit.setText("{}".format(cif_dic['_refine_ls_goodness_of_fit_ref']))
-        self.ui.SpaceGroupLineEdit.setText("{}".format(cif_dic['_space_group_name_H_M_alt']))
+        it_num = cif_dic['_space_group_IT_number']
+        if it_num:
+            it_num = "(Num. {})".format(it_num)
+        self.ui.SpaceGroupLineEdit.setText("{} {}".format(cif_dic['_space_group_name_H_M_alt'], it_num))
         self.ui.temperatureLineEdit.setText("{}".format(cif_dic['_diffrn_ambient_temperature']))
         self.ui.maxShiftLineEdit.setText("{}".format(cif_dic['_refine_ls_shift_su_max']))
         peak = cif_dic['_refine_diff_density_max']
@@ -572,6 +574,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         for key, value in cif_dic.items():
             if key == "_shelx_res_file":
                 self.ui.SHELXplainTextEdit.setPlainText(cif_dic['_shelx_res_file'])
+                continue
             cif_tree_item = QtWidgets.QTreeWidgetItem()
             self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
             cif_tree_item.setText(0, str(key))

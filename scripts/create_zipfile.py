@@ -76,8 +76,7 @@ files = [
     "cgi_ui/views/strf_web_template.tpl",
     "displaymol/__init__.py",
     "displaymol/jquery.min.js",
-    "displaymol/jsmol.htm",
-    "displaymol/jsmol-template.htm",
+    "displaymol/write_html.py",
     "displaymol/JSmol_dk.nojq.lite.js",
     "displaymol/mol2_file_writer.py",
     "displaymol/mol_file_writer.py"
