@@ -197,16 +197,29 @@
            <enum>QLayout::SetNoConstraint</enum>
           </property>
           <item row="2" column="1">
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="2" column="2">
            <widget class="QGroupBox" name="groupBox_2">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
               <horstretch>2</horstretch>
-              <verstretch>1</verstretch>
+              <verstretch>2</verstretch>
              </sizepolicy>
             </property>
             <property name="minimumSize">
              <size>
-              <width>230</width>
+              <width>200</width>
               <height>0</height>
              </size>
             </property>
@@ -276,7 +289,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0">
+               <item row="4" column="0">
                 <widget class="QLabel" name="wR2Label">
                  <property name="font">
                   <font>
@@ -293,14 +306,14 @@
                  </property>
                 </widget>
                </item>
-               <item row="3" column="1">
+               <item row="4" column="1">
                 <widget class="QLineEdit" name="wR2LineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0">
+               <item row="5" column="0">
                 <widget class="QLabel" name="r1Label">
                  <property name="font">
                   <font>
@@ -317,14 +330,14 @@
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
+               <item row="5" column="1">
                 <widget class="QLineEdit" name="r1LineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
+               <item row="6" column="0">
                 <widget class="QLabel" name="goofLabel">
                  <property name="text">
                   <string>Goof</string>
@@ -334,14 +347,14 @@
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="6" column="1">
                 <widget class="QLineEdit" name="goofLineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0">
+               <item row="7" column="0">
                 <widget class="QLabel" name="maxShiftLabel">
                  <property name="text">
                   <string>Max Shift/esd</string>
@@ -351,14 +364,14 @@
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
+               <item row="7" column="1">
                 <widget class="QLineEdit" name="maxShiftLineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0">
+               <item row="8" column="0">
                 <widget class="QLabel" name="peakLabel">
                  <property name="text">
                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Peak/Hole [eÅ&lt;span style=&quot; vertical-align:super;&quot;&gt;-3&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -368,14 +381,14 @@
                  </property>
                 </widget>
                </item>
-               <item row="7" column="1">
+               <item row="8" column="1">
                 <widget class="QLineEdit" name="peakLineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="8" column="0">
+               <item row="9" column="0">
                 <widget class="QLabel" name="rintLabel">
                  <property name="font">
                   <font>
@@ -391,14 +404,14 @@
                  </property>
                 </widget>
                </item>
-               <item row="8" column="1">
+               <item row="9" column="1">
                 <widget class="QLineEdit" name="rintLineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="0">
+               <item row="10" column="0">
                 <widget class="QLabel" name="rsigmaLabel">
                  <property name="font">
                   <font>
@@ -414,7 +427,7 @@
                  </property>
                 </widget>
                </item>
-               <item row="9" column="1">
+               <item row="10" column="1">
                 <widget class="QLineEdit" name="rsigmaLineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
@@ -430,13 +443,13 @@
            <widget class="QGroupBox" name="groupBox_5">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>1</horstretch>
+              <horstretch>2</horstretch>
               <verstretch>2</verstretch>
              </sizepolicy>
             </property>
             <property name="minimumSize">
              <size>
-              <width>247</width>
+              <width>200</width>
               <height>0</height>
              </size>
             </property>
@@ -445,236 +458,410 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_3">
              <item>
-              <layout class="QVBoxLayout" name="verticalLayout_6">
-               <item>
-                <widget class="QGroupBox" name="groupBox_4">
-                 <property name="sizePolicy">
-                  <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                   <horstretch>0</horstretch>
-                   <verstretch>0</verstretch>
-                  </sizepolicy>
+              <widget class="QLabel" name="CellLabel">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Unit Cell:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="cellField">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>75</height>
+                </size>
+               </property>
+               <property name="baseSize">
+                <size>
+                 <width>0</width>
+                 <height>75</height>
+                </size>
+               </property>
+               <property name="contextMenuPolicy">
+                <enum>Qt::ActionsContextMenu</enum>
+               </property>
+               <property name="autoFillBackground">
+                <bool>false</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">border-color: rgb(53, 53, 53);</string>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Plain</enum>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_6">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Preferred</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <layout class="QFormLayout" name="formLayout_2">
+               <item row="1" column="0">
+                <widget class="QLabel" name="reflTotalLabel">
+                 <property name="text">
+                  <string>Measured Refl.</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <widget class="QLineEdit" name="reflTotalLineEdit">
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="uniqReflLabel">
+                 <property name="text">
+                  <string>Independent Refl.</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <widget class="QLineEdit" name="uniqReflLineEdit"/>
+               </item>
+               <item row="3" column="0">
+                <widget class="QLabel" name="refl2sigmaLabel">
+                 <property name="text">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Data with [&lt;span style=&quot; font-style:italic;&quot;&gt;I&lt;/span&gt;&amp;gt;2σ(&lt;span style=&quot; font-style:italic;&quot;&gt;I&lt;/span&gt;)]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="1">
+                <widget class="QLineEdit" name="refl2sigmaLineEdit"/>
+               </item>
+               <item row="4" column="0">
+                <widget class="QLabel" name="wavelengthLabel">
+                 <property name="text">
+                  <string>Wavelength [Å]</string>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                 </property>
+                </widget>
+               </item>
+               <item row="4" column="1">
+                <widget class="QLineEdit" name="wavelengthLineEdit">
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QLabel" name="formLabel">
+                 <property name="enabled">
+                  <bool>true</bool>
                  </property>
                  <property name="minimumSize">
                   <size>
-                   <width>210</width>
-                   <height>0</height>
+                   <width>0</width>
+                   <height>22</height>
                   </size>
                  </property>
-                 <property name="autoFillBackground">
-                  <bool>false</bool>
+                 <property name="font">
+                  <font>
+                   <pointsize>11</pointsize>
+                   <kerning>false</kerning>
+                  </font>
                  </property>
-                 <property name="title">
+                 <property name="styleSheet">
+                  <string notr="true">background-color:  rgba(255, 255, 255, 255);</string>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::StyledPanel</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>1</number>
+                 </property>
+                 <property name="midLineWidth">
+                  <number>0</number>
+                 </property>
+                 <property name="text">
                   <string/>
                  </property>
-                 <property name="flat">
-                  <bool>false</bool>
+                 <property name="textFormat">
+                  <enum>Qt::RichText</enum>
                  </property>
-                 <layout class="QGridLayout" name="gridLayout_5">
-                  <property name="horizontalSpacing">
-                   <number>6</number>
-                  </property>
-                  <property name="margin">
-                   <number>0</number>
-                  </property>
-                  <item row="1" column="1">
-                   <widget class="QLabel" name="cellField">
-                    <property name="minimumSize">
-                     <size>
-                      <width>0</width>
-                      <height>75</height>
-                     </size>
-                    </property>
-                    <property name="baseSize">
-                     <size>
-                      <width>0</width>
-                      <height>75</height>
-                     </size>
-                    </property>
-                    <property name="contextMenuPolicy">
-                     <enum>Qt::ActionsContextMenu</enum>
-                    </property>
-                    <property name="autoFillBackground">
-                     <bool>false</bool>
-                    </property>
-                    <property name="styleSheet">
-                     <string notr="true">border-color: rgb(53, 53, 53);</string>
-                    </property>
-                    <property name="frameShape">
-                     <enum>QFrame::NoFrame</enum>
-                    </property>
-                    <property name="frameShadow">
-                     <enum>QFrame::Plain</enum>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="alignment">
-                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="0" column="1">
-                   <widget class="QLabel" name="CellLabel">
-                    <property name="font">
-                     <font>
-                      <weight>75</weight>
-                      <bold>true</bold>
-                     </font>
-                    </property>
-                    <property name="text">
-                     <string>Unit Cell:</string>
-                    </property>
-                    <property name="alignment">
-                     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
                 </widget>
                </item>
-               <item>
-                <layout class="QFormLayout" name="formLayout_2">
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="reflTotalLabel">
-                   <property name="text">
-                    <string>Measured Refl.</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QLineEdit" name="reflTotalLineEdit">
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="uniqReflLabel">
-                   <property name="text">
-                    <string>Independent Refl.</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QLineEdit" name="uniqReflLineEdit"/>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="refl2sigmaLabel">
-                   <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Data with [&lt;span style=&quot; font-style:italic;&quot;&gt;I&lt;/span&gt;&amp;gt;2σ(&lt;span style=&quot; font-style:italic;&quot;&gt;I&lt;/span&gt;)]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QLineEdit" name="refl2sigmaLineEdit"/>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QLabel" name="wavelengthLabel">
-                   <property name="text">
-                    <string>Wavelength [Å]</string>
-                   </property>
-                   <property name="alignment">
-                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="1">
-                  <widget class="QLineEdit" name="wavelengthLineEdit">
-                   <property name="readOnly">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QLabel" name="formLabel">
-                   <property name="enabled">
-                    <bool>true</bool>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>100</width>
-                     <height>22</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <pointsize>12</pointsize>
-                     <kerning>false</kerning>
-                    </font>
-                   </property>
-                   <property name="autoFillBackground">
-                    <bool>false</bool>
-                   </property>
-                   <property name="styleSheet">
-                    <string notr="true">background-color:  rgba(255, 255, 255, 255);</string>
-                   </property>
-                   <property name="frameShape">
-                    <enum>QFrame::NoFrame</enum>
-                   </property>
-                   <property name="lineWidth">
-                    <number>1</number>
-                   </property>
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="textFormat">
-                    <enum>Qt::RichText</enum>
-                   </property>
-                   <property name="wordWrap">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label">
-                   <property name="font">
-                    <font>
-                     <weight>75</weight>
-                     <bold>true</bold>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Sum Formula:</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <spacer name="verticalSpacer_6">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label">
+                 <property name="font">
+                  <font>
+                   <weight>75</weight>
+                   <bold>true</bold>
+                  </font>
                  </property>
-                 <property name="sizeType">
-                  <enum>QSizePolicy::Expanding</enum>
+                 <property name="text">
+                  <string>Sum Formula:</string>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>5</height>
-                  </size>
-                 </property>
-                </spacer>
+                </widget>
                </item>
               </layout>
+             </item>
+             <item>
+              <spacer name="verticalSpacer_7">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </widget>
           </item>
-          <item row="2" column="2">
-           <widget class="QGroupBox" name="groupBox_3">
+          <item row="1" column="0" colspan="7">
+           <widget class="QTreeWidget" name="cifList_treeWidget">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>3</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="statusTip">
+             <string/>
+            </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(255, 255, 255);</string>
+            </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
+            <property name="sortingEnabled">
+             <bool>false</bool>
+            </property>
+            <attribute name="headerShowSortIndicator" stdset="0">
+             <bool>false</bool>
+            </attribute>
+            <column>
+             <property name="text">
+              <string>Filename</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Data Name</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Directory</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Id</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+          <item row="2" column="6">
+           <widget class="QGroupBox" name="openglview">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
               <horstretch>2</horstretch>
-              <verstretch>1</verstretch>
+              <verstretch>3</verstretch>
              </sizepolicy>
             </property>
             <property name="minimumSize">
              <size>
-              <width>230</width>
+              <width>200</width>
+              <height>200</height>
+             </size>
+            </property>
+            <property name="baseSize">
+             <size>
+              <width>240</width>
+              <height>240</height>
+             </size>
+            </property>
+            <property name="title">
+             <string>Asymmetric unit</string>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+            <property name="checkable">
+             <bool>false</bool>
+            </property>
+            <layout class="QVBoxLayout" name="ogllayout">
+             <property name="spacing">
+              <number>6</number>
+             </property>
+             <property name="leftMargin">
+              <number>1</number>
+             </property>
+             <property name="topMargin">
+              <number>5</number>
+             </property>
+             <property name="rightMargin">
+              <number>1</number>
+             </property>
+             <property name="bottomMargin">
+              <number>1</number>
+             </property>
+            </layout>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="7">
+           <layout class="QHBoxLayout" name="searchLayout" stretch="0,0,0,0,0,0,0">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetDefaultConstraint</enum>
+            </property>
+            <item>
+             <widget class="QLabel" name="searchLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Cell Search:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="searchCellLineEDit">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>3</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Insert unit cell as space separated &lt;br/&gt;numbers: &lt;span style=&quot; font-style:italic;&quot;&gt;a b c α β γ&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="placeholderText">
+               <string>a b c alpha beta gamma</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="moreResultsCheckBox">
+              <property name="text">
+               <string>More results</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="sublattCheckbox">
+              <property name="text">
+               <string>sub- or superlattice</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="Line" name="line">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="txtSearchLabel">
+              <property name="text">
+               <string>Search text:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="txtSearchEdit">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>1</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="placeholderText">
+               <string>text in name, path or .res file</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="5">
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="2" column="4">
+           <widget class="QGroupBox" name="groupBox_3">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>2</horstretch>
+              <verstretch>2</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>200</width>
               <height>0</height>
              </size>
             </property>
@@ -846,181 +1033,18 @@
             </layout>
            </widget>
           </item>
-          <item row="1" column="0" colspan="4">
-           <widget class="QTreeWidget" name="cifList_treeWidget">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>4</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="statusTip">
-             <string/>
-            </property>
-            <property name="autoFillBackground">
-             <bool>false</bool>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">background-color: rgb(255, 255, 255);</string>
-            </property>
-            <property name="verticalScrollBarPolicy">
-             <enum>Qt::ScrollBarAsNeeded</enum>
-            </property>
-            <property name="horizontalScrollBarPolicy">
-             <enum>Qt::ScrollBarAsNeeded</enum>
-            </property>
-            <property name="sortingEnabled">
-             <bool>false</bool>
-            </property>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>false</bool>
-            </attribute>
-            <column>
-             <property name="text">
-              <string>Filename</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Data Name</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Directory</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Id</string>
-             </property>
-            </column>
-           </widget>
-          </item>
-          <item row="0" column="0" colspan="4">
-           <layout class="QHBoxLayout" name="searchLayout" stretch="0,0,0,0,0,0,0">
-            <property name="sizeConstraint">
-             <enum>QLayout::SetDefaultConstraint</enum>
-            </property>
-            <item>
-             <widget class="QLabel" name="searchLabel">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="text">
-               <string>Cell Search:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="searchCellLineEDit">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>3</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Insert unit cell as space separated &lt;br/&gt;numbers: &lt;span style=&quot; font-style:italic;&quot;&gt;a b c α β γ&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="placeholderText">
-               <string>a b c alpha beta gamma</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="moreResultsCheckBox">
-              <property name="text">
-               <string>More results</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="sublattCheckbox">
-              <property name="text">
-               <string>sub- or superlattice</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="Line" name="line">
-              <property name="orientation">
-               <enum>Qt::Vertical</enum>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="txtSearchLabel">
-              <property name="text">
-               <string>Search text:</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="txtSearchEdit">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>1</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="placeholderText">
-               <string>text in name, path or .res file</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
           <item row="2" column="3">
-           <widget class="QGroupBox" name="openglview">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-              <horstretch>2</horstretch>
-              <verstretch>2</verstretch>
-             </sizepolicy>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
             </property>
-            <property name="minimumSize">
+            <property name="sizeHint" stdset="0">
              <size>
-              <width>0</width>
-              <height>0</height>
+              <width>40</width>
+              <height>20</height>
              </size>
             </property>
-            <property name="baseSize">
-             <size>
-              <width>240</width>
-              <height>240</height>
-             </size>
-            </property>
-            <property name="title">
-             <string>Asymmetric unit</string>
-            </property>
-            <property name="flat">
-             <bool>true</bool>
-            </property>
-            <property name="checkable">
-             <bool>false</bool>
-            </property>
-            <layout class="QVBoxLayout" name="ogllayout">
-             <property name="spacing">
-              <number>-1</number>
-             </property>
-             <property name="leftMargin">
-              <number>1</number>
-             </property>
-             <property name="topMargin">
-              <number>5</number>
-             </property>
-             <property name="rightMargin">
-              <number>1</number>
-             </property>
-             <property name="bottomMargin">
-              <number>1</number>
-             </property>
-            </layout>
-           </widget>
+           </spacer>
           </item>
          </layout>
         </item>
@@ -1164,13 +1188,6 @@
               </item>
               <item row="0" column="0">
                <widget class="QDateEdit" name="dateEdit1">
-                <property name="date">
-                 <date>
-                  <year>1900</year>
-                  <month>1</month>
-                  <day>1</day>
-                 </date>
-                </property>
                 <property name="minimumDate">
                  <date>
                   <year>1900</year>
@@ -1184,19 +1201,19 @@
                 <property name="calendarPopup">
                  <bool>true</bool>
                 </property>
+                <property name="date">
+                 <date>
+                  <year>1900</year>
+                  <month>1</month>
+                  <day>1</day>
+                 </date>
+                </property>
                </widget>
               </item>
               <item row="0" column="2">
                <widget class="QDateEdit" name="dateEdit2">
                 <property name="correctionMode">
                  <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
-                </property>
-                <property name="date">
-                 <date>
-                  <year>2099</year>
-                  <month>1</month>
-                  <day>1</day>
-                 </date>
                 </property>
                 <property name="maximumDate">
                  <date>
@@ -1217,6 +1234,13 @@
                 </property>
                 <property name="calendarPopup">
                  <bool>true</bool>
+                </property>
+                <property name="date">
+                 <date>
+                  <year>2099</year>
+                  <month>1</month>
+                  <day>1</day>
+                 </date>
                 </property>
                </widget>
               </item>
