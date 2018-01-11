@@ -75,6 +75,10 @@ Type: filesandordirs; Name: "{app}\*"
 [Files]
 Source: "..\dist\StructureFinder\*"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
 
+[Dirs]
+Name: "{app}\displaymol"; Permissions: everyone-full
+Name: "{app}\gui"; Permissions: everyone-full
+
 [Code]
 
 
