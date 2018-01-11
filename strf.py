@@ -83,7 +83,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.dbfdesc = None
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
-        self.ui.centralwidget.setMinimumSize(1000, 500)
+        #self.ui.centralwidget.setMinimumSize(1000, 500)
         self.abort_import_button = QtWidgets.QPushButton("Abort (takes a while)")
         self.progress = QtWidgets.QProgressBar(self)
         self.progress.setFormat('')
@@ -332,8 +332,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.view = QWebEngineView()
         # QtWebEngine.initialize()
         self.view.load(QtCore.QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
-        self.view.setMaximumWidth(260)
-        self.view.setMaximumHeight(290)
+        #self.view.setMaximumWidth(260)
+        #self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
         # self.view.show()
 
