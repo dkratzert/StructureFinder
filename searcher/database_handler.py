@@ -323,10 +323,8 @@ class DatabaseRequest():
         if comment:
             print(comment)
 
+
 ##################################################################
-
-
-
 
 
 class StructureTable():
@@ -839,6 +837,26 @@ class StructureTable():
             return tuple([])
         return ids
 
+    def find_by_it_number(self, number: int) -> list:
+        """
+        Find structures by space group number in international tables of
+        crystallography.
+        Returns a list of index numbers.
+        >>> db = StructureTable('../structuredb.sqlite')
+        #>>> db.database.initialize_db()
+        >>> db.find_by_it_number(1)
+        """
+        try:
+            value = int(number)
+        except ValueError:
+            return []
+        req = '''SELECT StructureId from Residuals WHERE _space_group_IT_number IS ?'''
+        result = self.database.db_request(req, (value,))
+        if result and len(result) > 0:
+            return [x[0] for x in result]
+        else:
+            return []
+
     def find_by_elements(self, elements: list, anyresult: bool = False) -> list:
         """
         Find structures where certain elements are included in the sum formula.
@@ -941,12 +959,19 @@ if __name__ == '__main__':
     #out = db.find_by_date(start="2017-08-19")
     #out = db.get_cell_by_id(12)
     #out = db.find_by_strings('dk')
-    elinclude = ['C', 'O', 'N', 'Al', 'F']
-    elexclude = ['Tm']
-    inc = db.find_by_elements(elinclude, anyresult=False)
-    exc = db.find_by_elements(elexclude, anyresult=True)
-    print('include: {}'.format(sorted(inc)))
-    print('exclude: {}'.format(sorted(exc)))
-    combi = set(inc) - set(exc)
-    print(combi)
-    print(len(combi))
+    ############################################
+    #elinclude = ['C', 'O', 'N', 'Al', 'F']
+    #elexclude = ['Tm']
+    #inc = db.find_by_elements(elinclude, anyresult=False)
+    #exc = db.find_by_elements(elexclude, anyresult=True)
+    #print('include: {}'.format(sorted(inc)))
+    #print('exclude: {}'.format(sorted(exc)))
+    #combi = set(inc) - set(exc)
+    #print(combi)
+    #print(len(combi))
+    #########################################
+    nums = []
+    for i in range(1, 230):
+        res = db.find_by_it_number(i)
+        nums.append([i, len(res)])
+    print(nums)
