@@ -117,7 +117,7 @@ def jsmol_request():
         try:
             m = mol_file_writer.MolFile(str_id, structures, cell_list)
             return m.make_mol()
-        except KeyError as e:
+        except(KeyError, TypeError) as e:
             print('Exception in jsmol_request: ####')
             print(e)
             return ''
