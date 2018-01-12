@@ -399,6 +399,8 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
                 idlist2.append(i)
     if idlist2:
         return idlist2
+    else:
+        return []
 
 
 def search_text(structures: StructureTable, search_string: str) -> tuple:

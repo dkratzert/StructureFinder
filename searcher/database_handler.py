@@ -389,7 +389,7 @@ class StructureTable():
         else:
             return False
 
-    def get_all_structures_as_dict(self, ids: (list, tuple)=None, all_ids:bool=False) -> dict:
+    def get_all_structures_as_dict(self, ids: (list, tuple)=None, all_ids: bool=False) -> dict:
         """
         Returns the list of structures as dictionary.
 
@@ -814,7 +814,8 @@ class StructureTable():
         req = '''SELECT StructureId FROM cell WHERE cell.volume >= ? AND cell.volume <= ?'''
         try:
             return [i[0] for i in self.database.db_request(req, (lower_limit, upper_limit))]
-        except TypeError:
+        except(TypeError, KeyError):
+            #print("Wrong volume for cell search.")
             return False
 
     def find_by_strings(self, text: str) -> tuple:
