@@ -117,7 +117,7 @@ def jsmol_request():
         try:
             m = mol_file_writer.MolFile(str_id, structures, cell_list)
             return m.make_mol()
-        except KeyError as e:
+        except(KeyError, TypeError) as e:
             print('Exception in jsmol_request: ####')
             print(e)
             return ''
@@ -399,6 +399,8 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
                 idlist2.append(i)
     if idlist2:
         return idlist2
+    else:
+        return []
 
 
 def search_text(structures: StructureTable, search_string: str) -> tuple:

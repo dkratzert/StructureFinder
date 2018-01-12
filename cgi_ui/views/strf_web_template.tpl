@@ -265,7 +265,7 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
 </div>
 
 <address>
-  <strong>StructureFinder by Daniel Kratzert</strong><br>
+    <strong><a href="https://www.xs3.uni-freiburg.de/research/structurefinder">StructureFinder</a> by Daniel Kratzert</strong><br>
   <a href="mailto:daniel.kratzert@ac.uni-freiburg.de">daniel.kratzert@ac.uni-freiburg.de</a>
 </address>
 
