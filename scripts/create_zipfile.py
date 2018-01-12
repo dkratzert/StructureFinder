@@ -6,6 +6,7 @@ from zipfile import ZipFile
 import os
 
 from misc.version import VERSION
+from searcher.misc import copy_file, remove_file
 
 version = VERSION
 
@@ -88,12 +89,14 @@ def make_zip(filelist):
     :type filelist: list
     """
     os.chdir('../')
-    with ZipFile('strf_cmd-v{}.zip'.format(version), mode='w',
-                 allowZip64=False) as myzip:
+    zipfilen = 'strf_cmd-v{}.zip'.format(version)
+    remove_file('StructureFinder/scripts/Output/{}'.format(zipfilen))
+    with ZipFile(zipfilen, mode='w', allowZip64=False) as myzip:
         for f in filelist:
             print("Adding {}".format(f))
             myzip.write("StructureFinder/"+f)
-    print("File written to {}".format(os.path.abspath('./')))
+    copy_file(zipfilen, 'StructureFinder/scripts/Output/', move=True)
+    print("File written to {}".format(os.path.abspath('./StructureFinder/scripts/Output/')))
 
 if __name__ == "__main__":
     make_zip(files)

@@ -12,6 +12,7 @@ Created on 09.02.2015
 """
 import math
 import os
+import shutil
 
 from searcher import constants
 
@@ -296,6 +297,41 @@ def remove_file(filename):
             print('Can not delete {}'.format(filename))
             return False
     return True
+
+
+def copy_file(source, target, move=False):
+    """
+    Copy a file from source to target. Source can be a single file or
+    a directory. Target can be a single file or a directory.
+    :param source: list or string
+    :param target: string
+    """
+    target_path = os.path.dirname(target)
+    source_file = os.path.basename(source)
+    listcopy = False
+    if isinstance(source, (list, tuple)):
+        listcopy = True
+    if not os.path.exists(target_path) and target_path != '':
+        try:
+            os.makedirs(target_path)
+        except(IOError, OSError):
+            print('Unable to create directory {}.'.format(target_path))
+    try:
+        if listcopy:
+            for filen in source:
+                if move:
+                    shutil.move(filen, target)
+                else:
+                    shutil.copyfile(filen, target)
+
+        else:
+            if move:
+                shutil.move(source, target)
+            else:
+                shutil.copyfile(source, target)
+    except IOError as e:
+        print('Unable to copy {}.'.format(source_file))
+        print(e)
 
 
 def is_valid_cell(cell: str = None) -> list:
