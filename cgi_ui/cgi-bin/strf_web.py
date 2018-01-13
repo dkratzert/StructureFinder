@@ -40,7 +40,7 @@ TODO:
 """
 
 host = "10.6.13.3"
-port = "8080"
+port = "80"
 site_ip = host + ':' + port
 
 
