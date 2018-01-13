@@ -98,9 +98,9 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
 <h2>StructureFinder</h2>
 
 
-<a type="button" class="btn btn-default btn-xs" data-toggle="collapse" data-target="#adv-search"
+<a type="button" class="btn btn-primary btn-xs" data-toggle="collapse" data-target="#adv-search"
         id="toggle_advsearch-button">Advanced Search</a>
-
+<a type="button" class="btn btn-warning btn-xs"  href="/" id="all_structures">Show All</a>
 <!-- ------------  The collapsible for simple search options: -----------------  -->
 <div class="form-group row" id="mainsearch">
     <div class="col-sm-6">
@@ -142,6 +142,10 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             <b>Sub- and Supercells</b>
             <br>
             Find also unit cells of 0.25, 0.5, 1, 2, 3, 4 the volume.
+            <br>
+            <b>Space group search</b>
+            <br>
+            Be aware that not every cif file before SHELXL-2013 has a space group number. These will not be found.
         </div>
     </div>
 </div>
@@ -151,11 +155,12 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
     <div class="row">
         <div class="col-xs-12">
         <div class="btn-group btn-group-xs" role="group">
-            <label><input type="checkbox" id="more_results"> More cell search results </label>
             <a href="#"><span class="label label-default" id="more_info_badge">info</span></a> &nbsp;&nbsp;&nbsp;
-            <label><input type="checkbox" id="supercells"> Find sub- and supercells</label>
+            <label><input type="checkbox" id="more_results"> More cell search results </label> &nbsp;&nbsp;&nbsp;
+            <label><input type="checkbox" id="supercells"> Find sub- and supercells</label> &nbsp;&nbsp;&nbsp;
+            <label> Find by space group: </label> &nbsp;{{!space_groups}}
         </div>
-            &nbsp;&nbsp;&nbsp;&nbsp; Find space group: {{!space_groups}}
+
         </div>
     </div>
 
@@ -292,7 +297,9 @@ jQuery(document).ready(function($) {
         var supercell = $('#supercells').is(':checked');
         var datefield1 = document.getElementById("date1").value;
         var datefield2 = document.getElementById("date2").value;
-        advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res, supercell, datefield1, datefield2);
+        var itnum = $("#IT_number").val().split(" ")[0];
+        advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res,
+                        supercell, datefield1, datefield2, itnum);
     });
 
     // Validators for elemets included search field:
@@ -373,6 +380,10 @@ jQuery(document).ready(function($) {
     more_info_button.click(function(){
         var button_text = more_info_button.text();
         $("#more-cell-info").toggle("fast", "swing");
+        setTimeout(function(){
+        // toggle back after 1 second
+        $("#more-cell-info").toggle("fast", "swing");
+        },8000);
     });
 
     // Switch between advanced and simple search:
@@ -529,13 +540,15 @@ jQuery(document).ready(function($) {
         j2sPath: "."
     };
 
-    function advanced_search(text_in, text_out, elements_in, elements_out, cell_adv, more_res, supercell, date1, date2) {
+    function advanced_search(text_in, text_out, elements_in, elements_out, cell_adv, more_res, supercell,
+                             date1, date2, itnum) {
         var cell = cell_adv.replace(/\s+/g, ' ').trim();
         if (!isValidCell(cell)) {
             cell = "";
         }
         var gridparams = {cell_search: cell, text_in: text_in, text_out: text_out, elements_in: elements_in,
-                          elements_out: elements_out, more: more_res, supercell: supercell, date1:date1, date2: date2};
+                          elements_out: elements_out, more: more_res, supercell: supercell, date1: date1, date2: date2
+                          ,it_num: itnum};
         //console.log(gridparams);
         var url;
         w2ui['mygrid'].request('get-records', gridparams,

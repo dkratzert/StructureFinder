@@ -103,9 +103,10 @@ def adv():
     txt_out = request.GET.get("text_out", [''])
     more_results = (request.GET.get("more", ['']) == "true")
     sublattice = (request.GET.get("supercell", ['']) == "true")
+    it_num = request.GET.get("it_num", '')
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
-                          structures=structures)
+                          structures=structures, it_num=it_num)
     return get_structures_json(structures, ids)
 
 
@@ -200,6 +201,8 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     """
     Returns the next package of table rows for continuos scrolling.
     """
+    if not ids and not show_all:
+        return {}
     dic = structures.get_all_structures_as_dict(ids, all_ids=show_all)
     return json.dumps({"total": len(dic), "records": dic, "status": "success"}, indent=2)
 
@@ -456,7 +459,8 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
 
 
 def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, more_results,
-                    date1: str = None, date2: str = None, structures=None) -> list:
+                    date1: str = None, date2: str = None, structures: database_handler.StructureTable = None,
+                    it_num: str = None) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
@@ -465,6 +469,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
     incl = []
     date_results = []
     results = []
+    it_results = []
     cell = []
     if cellstr:
         cell = is_valid_cell(cellstr)
@@ -475,6 +480,11 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
         incl.append(search_elements(structures, elincl))
     if date1 != date2:
         date_results = find_dates(structures, date1, date2)
+    if it_num:
+        try:
+            it_results = structures.find_by_it_number(int(it_num))
+        except ValueError:
+            pass
     if txt_in:
         if len(txt_in) >= 2 and "*" not in txt_in:
             txt = '*' + txt_in + '*'
@@ -497,8 +507,14 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
         results = set(incl[0]).intersection(*incl)
         if date_results:
             results = set(date_results).intersection(results)
-    else:
+        if it_results:
+            results = set(it_results).intersection(results)
+    elif date_results and not it_results:
         results = date_results
+    elif not date_results and it_results:
+            results = it_results
+    elif it_results and date_results:
+        results = set(it_results).intersection(date_results)
     if excl:
         # excl list should not be in the resukts at all
         try:

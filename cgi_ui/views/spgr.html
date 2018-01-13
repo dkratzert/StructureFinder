@@ -7,106 +7,113 @@
 </head>
 <body>
 -->
-<select name="IT_number">
-    <option>1 -> (P1)</option>
-    <option>2 -> (P1&#x0305;)</option>
-    <option>3 -> (P 2)</option>
-    <option>4 -> (P 21)</option>
-    <option>5 -> (C 2)</option>
-    <option>6 -> (P m)</option>
-    <option>7 -> (P c)</option>
-    <option>8 -> (C m)</option>
-    <option>9 -> (C c)</option>
-    <option>10 -> (P 2/m)</option>
-    <option>11 -> (P 21/m)</option>
-    <option>12 -> (C 2/m)</option>
-    <option>13 -> (P 2/c)</option>
-    <option>14 -> (P 21/c)</option>
-    <option>15 -> (C 2/c)</option>
-    <option>16 -> (P 2 2 2)</option>
-    <option>17 -> (P 2 2 21)</option>
-    <option>18 -> (P 21 21 2)</option>
-    <option>19 -> (P 21 21 21)</option>
-    <option>20 -> (C 2 2 21 )</option>
-    <option>21 -> (C 2 2 2)</option>
-    <option>22 -> (F 2 2 2)</option>
-    <option>23 -> (I 2 2 2)</option>
-    <option>24 -> (I 21 21 21)</option>
-    <option>25 -> (P m m 2)</option>
-    <option>26 -> (P m c 21)</option>
-    <option>27 -> (P c c 2)</option>
-    <option>28 -> (P m a 2)</option>
-    <option>29 -> (P c a 21)</option>
-    <option>30 -> (P n c 2)</option>
-    <option>31 -> (P m n 21)</option>
-    <option>32 -> (P b a 2)</option>
-    <option>33 -> (P n a 21)</option>
-    <option>34 -> (P n n 2)</option>
-    <option>35 -> (C m m 2)</option>
-    <option>36 -> (C m c 21)</option>
-    <option>37 -> (C c c 2)</option>
-    <option>38 -> (A m m 2)</option>
-    <option>39 -> (A e m 2)</option>
-    <option>40 -> (A m a 2)</option>
-    <option>41 -> (A e a 2)</option>
-    <option>42 -> (F m m 2)</option>
-    <option>43 -> (F d d 2)</option>
-    <option>44 -> (I m m 2)</option>
-    <option>45 -> (I b a 2)</option>
-    <option>46 -> (I m a 2)</option>
-    <option>47 -> (P m m m)</option>
-    <option>48 -> (P n n n)</option>
-    <option>49 -> (P c c m)</option>
-    <option>50 -> (P b a n)</option>
-    <option>51 -> (P m m a)</option>
-    <option>52 -> (P n n a)</option>
-    <option>53 -> (P m n a)</option>
-    <option>54 -> (P c c a)</option>
-    <option>55 -> (P b a m)</option>
-    <option>56 -> (P c c n)</option>
-    <option>57 -> (P b c m)</option>
-    <option>58 -> (P n n m)</option>
-    <option>59 -> (P m m n)</option>
-    <option>60 -> (P b c n)</option>
-    <option>61 -> (P b c a)</option>
-    <option>62 -> (P n m a)</option>
-    <option>63 -> (C m c m)</option>
-    <option>64 -> (C m c e)</option>
-    <option>65 -> (C m m m)</option>
-    <option>66 -> (C c c m)</option>
-    <option>67 -> (C m m e)</option>
-    <option>68 -> (C c c e)</option>
-    <option>69 -> (F m m m)</option>
-    <option>70 -> (F d d d)</option>
-    <option>71 -> (I m m m)</option>
-    <option>72 -> (I b a m)</option>
-    <option>73 -> (I b c a)</option>
-    <option>74 -> (I m m a)</option>
-    <option>75 -> (P 4)</option>
-    <option>76 -> (P 41)</option>
-    <option>77 -> (P 42)</option>
-    <option>78 -> (P 43)</option>
-    <option>79 -> (I 4)</option>
-    <option>80 -> (I 41)</option>
-    <option>81 -> (P 4&#x0305;)</option>
-    <option>82 -> (I 4&#x0305;)</option>
-    <option>83 -> (P 4/m)</option>
-    <option>84 -> (P 42/m)</option>
-    <option>85 -> (P 4/n)</option>
-    <option>86 -> (P 42/n)</option>
-    <option>87 -> (I 4/m)</option>
-    <option>88 -> (I 41/a)</option>
-    <option>89 -> (P 4 2 2)</option>
-    <option>90 -> (P 4 21 2)</option>
-    <option>91 -> (P 41 2 2)</option>
-    <option>92 -> (P 41 21 2)</option>
-    <option>93 -> (P 42 2 2)</option>
-    <option>94 -> (P 42 21 2)</option>
-    <option>95 -> (P 43 2 2)</option>
-    <option>96 -> (P 43 21 2)</option>
-    <option>97 -> (I 4 2 2)</option>
-    <option>98 -> (I 41 2 2)</option>
-    <option>99 -> (P 4 m m)</option>
+<!--
+&#x0305;  <- bar over character before
+&#x2081;  <- 1 as subscript
+&#x2082;  <- 2 as subscript
+&#x2083;  <- 3 as subscript
+-->
+<select id="IT_number">
+    <option>  None  </option>
+    <option>  1 -> (P1)</option>
+    <option>  2 -> (P1&#x0305;)</option>
+    <option>  3 -> (P 2)</option>
+    <option>  4 -> (P 2&#x2081;)</option>
+    <option>  5 -> (C 2)</option>
+    <option>  6 -> (P m)</option>
+    <option>  7 -> (P c)</option>
+    <option>  8 -> (C m)</option>
+    <option>  9 -> (C c)</option>
+    <option> 10 -> (P 2/m)</option>
+    <option> 11 -> (P 2&#x2081;/m)</option>
+    <option> 12 -> (C 2/m)</option>
+    <option> 13 -> (P 2/c)</option>
+    <option> 14 -> (P 2&#x2081;/c)</option>
+    <option> 15 -> (C 2/c)</option>
+    <option> 16 -> (P 2 2 2)</option>
+    <option> 17 -> (P 2 2 2&#x2081;)</option>
+    <option> 18 -> (P 2&#x2081; 2&#x2081; 2)</option>
+    <option> 19 -> (P 2&#x2081; 2&#x2081; 2&#x2081;)</option>
+    <option> 20 -> (C 2 2 2&#x2081;)</option>
+    <option> 21 -> (C 2 2 2)</option>
+    <option> 22 -> (F 2 2 2)</option>
+    <option> 23 -> (I 2 2 2)</option>
+    <option> 24 -> (I 2&#x2081; 2&#x2081; 2&#x2081;)</option>
+    <option> 25 -> (P m m 2)</option>
+    <option> 26 -> (P m c 2&#x2081;)</option>
+    <option> 27 -> (P c c 2)</option>
+    <option> 28 -> (P m a 2)</option>
+    <option> 29 -> (P c a 2&#x2081;)</option>
+    <option> 30 -> (P n c 2)</option>
+    <option> 31 -> (P m n 2&#x2081;)</option>
+    <option> 32 -> (P b a 2)</option>
+    <option> 33 -> (P n a 2&#x2081;)</option>
+    <option> 34 -> (P n n 2)</option>
+    <option> 35 -> (C m m 2)</option>
+    <option> 36 -> (C m c 2&#x2081;)</option>
+    <option> 37 -> (C c c 2)</option>
+    <option> 38 -> (A m m 2)</option>
+    <option> 39 -> (A e m 2)</option>
+    <option> 40 -> (A m a 2)</option>
+    <option> 41 -> (A e a 2)</option>
+    <option> 42 -> (F m m 2)</option>
+    <option> 43 -> (F d d 2)</option>
+    <option> 44 -> (I m m 2)</option>
+    <option> 45 -> (I b a 2)</option>
+    <option> 46 -> (I m a 2)</option>
+    <option> 47 -> (P m m m)</option>
+    <option> 48 -> (P n n n)</option>
+    <option> 49 -> (P c c m)</option>
+    <option> 50 -> (P b a n)</option>
+    <option> 51 -> (P m m a)</option>
+    <option> 52 -> (P n n a)</option>
+    <option> 53 -> (P m n a)</option>
+    <option> 54 -> (P c c a)</option>
+    <option> 55 -> (P b a m)</option>
+    <option> 56 -> (P c c n)</option>
+    <option> 57 -> (P b c m)</option>
+    <option> 58 -> (P n n m)</option>
+    <option> 59 -> (P m m n)</option>
+    <option> 60 -> (P b c n)</option>
+    <option> 61 -> (P b c a)</option>
+    <option> 62 -> (P n m a)</option>
+    <option> 63 -> (C m c m)</option>
+    <option> 64 -> (C m c e)</option>
+    <option> 65 -> (C m m m)</option>
+    <option> 66 -> (C c c m)</option>
+    <option> 67 -> (C m m e)</option>
+    <option> 68 -> (C c c e)</option>
+    <option> 69 -> (F m m m)</option>
+    <option> 70 -> (F d d d)</option>
+    <option> 71 -> (I m m m)</option>
+    <option> 72 -> (I b a m)</option>
+    <option> 73 -> (I b c a)</option>
+    <option> 74 -> (I m m a)</option>
+    <option> 75 -> (P 4)</option>
+    <option> 76 -> (P 4&#x2081;)</option>
+    <option> 77 -> (P 4&#x2082;)</option>
+    <option> 78 -> (P 4&#x2083;)</option>
+    <option> 79 -> (I 4)</option>
+    <option> 80 -> (I 41)</option>
+    <option> 81 -> (P 4&#x0305;)</option>
+    <option> 82 -> (I 4&#x0305;)</option>
+    <option> 83 -> (P 4/m)</option>
+    <option> 84 -> (P 4&#x2082;/m)</option>
+    <option> 85 -> (P 4/n)</option>
+    <option> 86 -> (P 4&#x2082;/n)</option>
+    <option> 87 -> (I 4/m)</option>
+    <option> 88 -> (I 4&#x2081;/a)</option>
+    <option> 89 -> (P 4 2 2)</option>
+    <option> 90 -> (P 4 2&#x2081; 2)</option>
+    <option> 91 -> (P 4&#x2081; 2 2)</option>
+    <option> 92 -> (P 4&#x2081; 2&#x2081; 2)</option>
+    <option> 93 -> (P 4&#x2081; 2 2)</option>
+    <option> 94 -> (P 4&#x2082; 2&#x2081; 2)</option>
+    <option> 95 -> (P 4&#x2083; 2 2)</option>
+    <option> 96 -> (P 43 21 2)</option>
+    <option> 97 -> (I 4 2 2)</option>
+    <option> 98 -> (I 41 2 2)</option>
+    <option> 99 -> (P 4 m m)</option>
     <option>100 -> (P 4 b m)</option>
     <option>101 -> (P 42 c m)</option>
     <option>102 -> (P 42 n m)</option>
