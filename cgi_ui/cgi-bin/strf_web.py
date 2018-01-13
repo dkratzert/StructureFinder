@@ -69,7 +69,7 @@ def structures_list_data():
 @app.route('/')
 def main():
     response.content_type = 'text/html; charset=UTF-8'
-    space_groups = pathlib.Path('./cgi_ui/views/spgr.html').read_text(encoding='UTF-8', errors='ignore')
+    space_groups = pathlib.Path('./cgi_ui/views/spgr.html').open().read().encode(encoding='UTF-8', errors='ignore')
     output = template('./cgi_ui/views/strf_web_template', {"my_ip": site_ip, "space_groups": space_groups})
     return output
 
