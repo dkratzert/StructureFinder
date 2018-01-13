@@ -155,6 +155,7 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             <a href="#"><span class="label label-default" id="more_info_badge">info</span></a> &nbsp;&nbsp;&nbsp;
             <label><input type="checkbox" id="supercells"> Find sub- and supercells</label>
         </div>
+            &nbsp;&nbsp;&nbsp;&nbsp; Find space group: {{!space_groups}}
         </div>
     </div>
 

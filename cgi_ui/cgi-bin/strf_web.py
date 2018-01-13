@@ -7,6 +7,8 @@ import math
 import sys
 import os
 
+import pathlib
+
 print("Running on Python version {}".format(sys.version))
 pyver = sys.version_info
 if pyver[0] == 3 and pyver[1] < 4:
@@ -37,8 +39,8 @@ TODO:
 - Prevent adding same element in include and exclude field
 """
 
-host = "10.6.13.3"
-port = "80"
+host = "127.0.0.1"
+port = "8080"
 site_ip = host + ':' + port
 
 
@@ -66,8 +68,9 @@ def structures_list_data():
 
 @app.route('/')
 def main():
-    response.content_type = 'text/html; charset=ISO-8859-15'
-    output = template('./cgi_ui/views/strf_web_template', my_ip=site_ip)
+    response.content_type = 'text/html; charset=UTF-8'
+    space_groups = pathlib.Path('./cgi_ui/views/spgr.html').read_text(encoding='UTF-8', errors='ignore')
+    output = template('./cgi_ui/views/strf_web_template', {"my_ip": site_ip, "space_groups": space_groups})
     return output
 
 
