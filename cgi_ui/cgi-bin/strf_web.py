@@ -80,6 +80,7 @@ def cellsrch():
     more_results = (request.GET.get("more", ['']) == "true")
     sublattice = (request.GET.get("supercell", ['']) == "true")
     cell = is_valid_cell(cell_search)
+    print("Cell search:", cell)
     if cell:
         ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
         return get_structures_json(structures, ids, show_all=False)
@@ -88,6 +89,7 @@ def cellsrch():
 @app.route("/txtsrch")
 def cellsrch():
     text_search = request.GET.get("text_search", [''])
+    print("Text search:", text_search)
     ids = search_text(structures, text_search)
     return get_structures_json(structures, ids, show_all=False)
 
@@ -104,6 +106,7 @@ def adv():
     more_results = (request.GET.get("more", ['']) == "true")
     sublattice = (request.GET.get("supercell", ['']) == "true")
     it_num = request.GET.get("it_num", '')
+    print("Advanced search:", elincl, elexcl, date1, date2, cell_search, txt_in, txt_out, more_results, sublattice, it_num)
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
                           structures=structures, it_num=it_num)
@@ -116,14 +119,14 @@ def jsmol_request():
     A request for atom data from jsmol.
     """
     str_id = request.POST.get('id', [''])
+    print("Molecule id:", str_id)
     if str_id:
         cell_list = structures.get_cell_by_id(str_id)[:6]
         try:
             m = mol_file_writer.MolFile(str_id, structures, cell_list)
             return m.make_mol()
         except(KeyError, TypeError) as e:
-            print('Exception in jsmol_request: ####')
-            print(e)
+            print('Exception in jsmol_request: {}'.format(e))
             return ''
 
 
@@ -138,6 +141,7 @@ def post_request():
     resid2 = (request.POST.get('residuals2', ['']) == 'true')
     all_cif = (request.POST.get('all', ['']) == 'true')
     unitcell = request.POST.get('unitcell', [''])
+    print("Structure id:", str_id)
     if str_id:
         cif_dic = structures.get_row_as_dict(str_id)
     if str_id and unitcell and not (resid1 or resid2 or all_cif):
