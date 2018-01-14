@@ -502,7 +502,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
         self.clear_fields()
-        self.ui.allCifTreeWidget.clear()
         cell = self.structures.get_cell_by_id(structure_id)
         if not cell:
             return False
@@ -579,6 +578,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.completeLineEdit.setText("{:<5.1f}".format(compl))
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
         #####  Maybe put this into a new method and only let it run when all values tab opens:
+        self.ui.allCifTreeWidget.clear()
         atoms_item = QtWidgets.QTreeWidgetItem()
         self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
         atoms_item.setText(0, 'Atoms')
