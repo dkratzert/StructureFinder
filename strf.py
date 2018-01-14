@@ -241,6 +241,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         excl = []
         incl = []
         date_results = []
+        results = []
+        it_results = []
         cell = is_valid_cell(self.ui.ad_unitCellLineEdit.text())
         date1 = self.ui.dateEdit1.text()
         date2 = self.ui.dateEdit2.text()
@@ -248,6 +250,16 @@ class StartStructureDB(QtWidgets.QMainWindow):
         elexcl = self.ui.ad_elementsExclLineEdit.text().strip(' ')
         txt = self.ui.ad_textsearch.text().strip(' ')
         txt_ex = self.ui.ad_textsearch_excl.text().strip(' ')
+        spgr = self.ui.SpGrcomboBox.currentText()
+        try:
+            spgr = int(spgr.split()[0])
+        except:
+            spgr = 0
+        if spgr:
+            try:
+                it_results = self.structures.find_by_it_number(spgr)
+            except ValueError:
+                pass
         if date1 != date2:
             date_results = self.find_dates(date1, date2)
         if cell:
@@ -277,8 +289,14 @@ class StartStructureDB(QtWidgets.QMainWindow):
             results = set(incl[0]).intersection(*incl)
             if date_results:
                 results = set(date_results).intersection(results)
-        else:
+            if it_results:
+                results = set(it_results).intersection(results)
+        elif date_results and not it_results:
             results = date_results
+        elif not date_results and it_results:
+            results = it_results
+        elif it_results and date_results:
+            results = set(it_results).intersection(date_results)
         if not results:
             self.statusBar().showMessage('Found 0 structures.')
             return
@@ -525,7 +543,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.goofLineEdit.setText("{}".format(cif_dic['_refine_ls_goodness_of_fit_ref']))
         it_num = cif_dic['_space_group_IT_number']
         if it_num:
-            it_num = "(Num. {})".format(it_num)
+            it_num = "({})".format(it_num)
         self.ui.SpaceGroupLineEdit.setText("{} {}".format(cif_dic['_space_group_name_H_M_alt'], it_num))
         self.ui.temperatureLineEdit.setText("{}".format(cif_dic['_diffrn_ambient_temperature']))
         self.ui.maxShiftLineEdit.setText("{}".format(cif_dic['_refine_ls_shift_su_max']))
@@ -560,6 +578,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             compl = 0.0
         self.ui.completeLineEdit.setText("{:<5.1f}".format(compl))
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
+        #####  Maybe put this into a new method and only let it run when all values tab opens:
         atoms_item = QtWidgets.QTreeWidgetItem()
         self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
         atoms_item.setText(0, 'Atoms')
