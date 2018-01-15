@@ -1320,7 +1320,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="ad_ShowAllButton">
+             <widget class="QPushButton" name="ad_ClearSearchButton">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>

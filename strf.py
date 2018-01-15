@@ -139,7 +139,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
         self.ui.ad_SearchPushButton.clicked.connect(self.advanced_search)
-        self.ui.ad_ShowAllButton.clicked.connect(self.show_full_list)
+        self.ui.ad_ClearSearchButton.clicked.connect(self.show_full_list)
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
@@ -918,6 +918,17 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
         self.ui.tabWidget.setCurrentIndex(0)
+        self.ui.SpGrcomboBox.setCurrentIndex(0)
+        self.ui.ad_elementsIncLineEdit.clear()
+        self.ui.ad_elementsExclLineEdit.clear()
+        self.ui.ad_moreResultscheckBox.setChecked(False)
+        self.ui.ad_superlatticeCheckBox.setChecked(False)
+        self.ui.ad_textsearch.clear()
+        self.ui.ad_textsearch_excl.clear()
+        self.ui.ad_unitCellLineEdit.clear()
+        self.ui.dateEdit1.setDate(QtCore.QDate(date.today()))
+        self.ui.dateEdit2.setDate(QtCore.QDate(date.today()))
+
 
     def clear_fields(self) -> None:
         """
@@ -946,6 +957,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cCDCNumberLineEdit.clear()
         self.ui.refl2sigmaLineEdit.clear()
         self.ui.uniqReflLineEdit.clear()
+
 
 
 class RunIndexerThread(QtCore.QThread):
