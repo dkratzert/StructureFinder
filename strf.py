@@ -183,7 +183,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 ok = False
         if not self.element_check(elem):
             ok = False
-
         if not ok:
             # Elements not valid:
             self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(255, 0, 0);")
@@ -577,17 +576,19 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
         #####  Maybe put this into a new method and only let it run when all values tab opens:
         self.ui.allCifTreeWidget.clear()
-        atoms_item = QtWidgets.QTreeWidgetItem()
-        self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
-        atoms_item.setText(0, 'Atoms')
-        # self.ui.allCifTreeWidget.installEventFilter(self)
-        try:
-            for at in self.structures.get_atoms_table(structure_id, cartesian=False):
-                data_cif_tree_item = QtWidgets.QTreeWidgetItem(atoms_item)
-                self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
-                data_cif_tree_item.setText(1, '{:<8.8s}\t {:<4s}\t {:>8.5f}\t {:>8.5f}\t {:>8.5f}'.format(*at))
-        except TypeError:
-            pass
+        # This makes selection slow and is not really needed:
+        #atoms_item = QtWidgets.QTreeWidgetItem()
+        #self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
+        #atoms_item.setText(0, 'Atoms')
+        #try:
+        #    atoms = self.structures.get_atoms_table(structure_id, cartesian=False)
+        #    for at in atoms:
+        #        data_cif_tree_item = QtWidgets.QTreeWidgetItem(atoms_item)
+        #        self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
+        #        data_cif_tree_item.setText(1, '{:<8.8s}\t {:<4s}\t {:>8.5f}\t {:>8.5f}\t {:>8.5f}'.format(*at))
+        #except TypeError:
+        #    pass
+        #######################################
         for key, value in cif_dic.items():
             if key == "_shelx_res_file":
                 self.ui.SHELXplainTextEdit.setPlainText(cif_dic['_shelx_res_file'])
