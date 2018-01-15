@@ -432,7 +432,7 @@ class StructureTable():
             else:  # only one id
                 req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
                             Structure.dataname FROM Structure WHERE Structure.Id == ?'''
-                rows = [list(i) for i in self.database.db_request(req, ids[0])]
+                rows = self.database.db_request(req, ids)
                 return rows
         else:  # just all
             req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 

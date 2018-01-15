@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/daniel/GitHub/StructureFinder/./gui/strf_main.ui'
+# Form implementation generated from reading ui file 'D:\GitHub\StructureFinder\./gui\strf_main.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_stdbMainwindow(object):
     def setupUi(self, stdbMainwindow):
         stdbMainwindow.setObjectName("stdbMainwindow")
-        stdbMainwindow.resize(1280, 714)
+        stdbMainwindow.resize(1435, 841)
         self.centralwidget = QtWidgets.QWidget(stdbMainwindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -547,6 +547,7 @@ class Ui_stdbMainwindow(object):
         font.setWeight(75)
         self.containsLabel.setFont(font)
         self.containsLabel.setStyleSheet("background-color: rgb(173, 255, 167);")
+        self.containsLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.containsLabel.setObjectName("containsLabel")
         self.gridLayout_6.addWidget(self.containsLabel, 0, 0, 1, 1)
         self.gridLayout_7 = QtWidgets.QGridLayout()
@@ -581,6 +582,7 @@ class Ui_stdbMainwindow(object):
         self.NotContainsLabel.setAutoFillBackground(False)
         self.NotContainsLabel.setStyleSheet("background-color: rgb(254, 201, 205);")
         self.NotContainsLabel.setTextFormat(QtCore.Qt.AutoText)
+        self.NotContainsLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.NotContainsLabel.setObjectName("NotContainsLabel")
         self.gridLayout_6.addWidget(self.NotContainsLabel, 0, 2, 1, 1)
         self.line_3 = QtWidgets.QFrame(self.searchtab)
@@ -869,17 +871,17 @@ class Ui_stdbMainwindow(object):
         spacerItem13 = QtWidgets.QSpacerItem(1, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_8.addItem(spacerItem13, 0, 5, 1, 1)
         self.dateEdit1 = QtWidgets.QDateEdit(self.searchtab)
-        self.dateEdit1.setDate(QtCore.QDate(1900, 1, 1))
         self.dateEdit1.setMinimumDate(QtCore.QDate(1900, 1, 1))
         self.dateEdit1.setCalendarPopup(True)
+        self.dateEdit1.setDate(QtCore.QDate(1900, 1, 1))
         self.dateEdit1.setObjectName("dateEdit1")
         self.gridLayout_8.addWidget(self.dateEdit1, 0, 2, 1, 1)
         self.dateEdit2 = QtWidgets.QDateEdit(self.searchtab)
         self.dateEdit2.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectToNearestValue)
-        self.dateEdit2.setDate(QtCore.QDate(2099, 1, 1))
         self.dateEdit2.setMaximumDate(QtCore.QDate(7999, 12, 31))
         self.dateEdit2.setMinimumDate(QtCore.QDate(1752, 9, 14))
         self.dateEdit2.setCalendarPopup(True)
+        self.dateEdit2.setDate(QtCore.QDate(2099, 1, 1))
         self.dateEdit2.setObjectName("dateEdit2")
         self.gridLayout_8.addWidget(self.dateEdit2, 0, 4, 1, 1)
         self.wR2Label_5 = QtWidgets.QLabel(self.searchtab)
