@@ -45,13 +45,11 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
-- Add search for space group. Maybe just search for the number in IT.
 - Grow structure. 
 - Improve text search (in cif file). Figure out which tokenchars configuration works best.
 - refractor put_cifs_in_db()
 - Move indexer to extra thread
 - sort results by G6 distance
-- get sum formula from atom type and occupancy  _atom_site_occupancy, _atom_site_type_symbol
 
   
 Search for:
@@ -966,7 +964,10 @@ class RunIndexerThread(QtCore.QThread):
 
 
 if __name__ == "__main__":
-    uic.compileUiDir(os.path.join(application_path, './gui'))
+    try:
+        uic.compileUiDir(os.path.join(application_path, './gui'))
+    except:
+        print("Unable to compile UI!")
     from gui.strf_main import Ui_stdbMainwindow
     from gui.strf_dbpasswd import Ui_PasswdDialog
 
