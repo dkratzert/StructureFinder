@@ -2,6 +2,16 @@
 # !C:\tools\Python-3.6.2_64\pythonw.exe
 # !/usr/local/bin/python3.6
 
+###########################################################
+###  Configure the web server here:   #####################
+host = "127.0.0.1"
+#host = "10.6.13.3"
+port = "8080"
+site_ip = host + ':' + port
+
+dbfilename = "../structurefinder.sqlite"
+###########################################################
+
 import json
 import math
 import sys
@@ -39,14 +49,6 @@ TODO:
 - Prevent adding same element in include and exclude field
 """
 
-host = "10.6.13.3"
-port = "80"
-site_ip = host + ':' + port
-
-
-# dbfilename = "./structuredb.sqlite"
-dbfilename = "../structurefinder.sqlite"
-
 app = Bottle()
 bottle.debug(False)  # Do not enable debug in production systems!
 
@@ -54,6 +56,7 @@ if not misc.is_a_nonzero_file(dbfilename):
     print("Unable to start")
     print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
     sys.exit()
+print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
 
 structures = database_handler.StructureTable(dbfilename)
 
