@@ -4,9 +4,8 @@
 
 ###########################################################
 ###  Configure the web server here:   #####################
-host = "127.0.0.1"
-#host = "10.6.13.3"
-port = "8080"
+host = "10.6.13.3"
+port = "80"
 site_ip = host + ':' + port
 
 dbfilename = "../structurefinder.sqlite"
