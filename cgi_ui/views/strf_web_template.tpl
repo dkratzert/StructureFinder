@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <title>StructureFinder</title>
 
-    <link rel="stylesheet" href="http://{{my_ip}}/static/w2ui/w2ui-1.4.min.css">
+    <link rel="stylesheet" href="http://{{my_ip}}/static/w2ui/w2ui-1.5.rc1.min.css">
     <link rel="stylesheet" href="http://{{my_ip}}/static/bootstrap-3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="http://{{my_ip}}/static/bootstrap-3.3.7/css/bootstrap-theme.min.css">
     <script src="http://{{my_ip}}/static/jquery/jquery-3.2.1.min.js"></script>
     <script src="http://{{my_ip}}/static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
     <script src="http://{{my_ip}}/static/jsmol/JSmol_dk.nojq.lite.js"></script>
-    <script src="http://{{my_ip}}/static/w2ui/w2ui-1.4.min.js"></script>
+    <script src="http://{{my_ip}}/static/w2ui/w2ui-1.5.rc1.min.js"></script>
     <script src="http://{{my_ip}}/static/clipboard/clipboard.min.js"></script>
 
 <style type="text/css">
@@ -205,9 +205,9 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             <div class="input-group input-group-sm w2ui-field advsearchfields">
                 <span class="input-group-addon" data-toggle="tooltip"
                       title="Search for structures that were modified between two dates">Date from</span>
-                <input class="input-sm" type="text" id="date1">
+                <input class="input-sm" type="text" id="date1" style="width: 95%">
                 <span class="input-group-addon">to</span>
-                <input class="input-sm" type="text" id="date2">
+                <input class="input-sm" type="text" id="date2" style="width: 95%">
                 <a type="button" class="btn btn-sm btn-standard input-group-addon"
                    data-toggle="tooltip" title="Search for structures modified during the last month."
                    id="lastmsearchlink"> From Last Month</a>

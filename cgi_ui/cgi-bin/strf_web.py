@@ -64,8 +64,8 @@ def structures_list_data():
     """
     The main application of the StructureFinder web interface.
     """
-    if request.query.cmd == 'get-records':
-        return get_structures_json(structures, show_all=True)
+    #if request.query.cmd == 'get-records':
+    return get_structures_json(structures, show_all=True)
 
 
 @app.route('/')
