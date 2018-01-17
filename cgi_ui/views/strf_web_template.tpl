@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <title>StructureFinder</title>
 
-    <link rel="stylesheet" href="http://{{my_ip}}/static/w2ui/w2ui-1.5.rc1.min.css">
+    <link rel="stylesheet" href="http://{{my_ip}}/static/w2ui/w2ui-1.4.min.css">
     <link rel="stylesheet" href="http://{{my_ip}}/static/bootstrap-3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="http://{{my_ip}}/static/bootstrap-3.3.7/css/bootstrap-theme.min.css">
     <script src="http://{{my_ip}}/static/jquery/jquery-3.2.1.min.js"></script>
     <script src="http://{{my_ip}}/static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
     <script src="http://{{my_ip}}/static/jsmol/JSmol_dk.nojq.lite.js"></script>
-    <script src="http://{{my_ip}}/static/w2ui/w2ui-1.5.rc1.min.js"></script>
+    <script src="http://{{my_ip}}/static/w2ui/w2ui-1.4.min.js"></script>
     <script src="http://{{my_ip}}/static/clipboard/clipboard.min.js"></script>
 
 <style type="text/css">
@@ -285,6 +285,35 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
 <script>
 
 jQuery(document).ready(function($) {
+
+    // The main structures table:
+    $('#mygrid').w2grid({
+        name: 'mygrid',
+        header: 'StructureFinder',
+        url: cgifile+"/all",
+        method: 'GET',
+        show: {
+            toolbar: false,
+            footer: true
+        },
+        columns: [
+            {field: 'recid',    caption: 'ID',        size: '45px', sortable: false, attr: 'align=center'},
+            {field: 'filename', caption: 'filename',  size: '20%',  sortable: false, resizable: true},
+            {field: 'dataname', caption: 'dataname',  size: '15%',  sortable: false, resizable: true},
+            {field: 'path',     caption: 'directory', size: '65%',  sortable: false, resizable: true}
+        ],
+        searches: [
+            {field: 'filename', caption: 'filename', type: 'text'},
+            {field: 'dataname', caption: 'dataname', type: 'text'},
+            {field: 'path', caption: 'directory', type: 'text'}
+        ],
+        //sortData: [{field: 'dataname', direction: 'ASC'}],
+        onSelect:function(event) {
+            showprop(event.recid);
+            //console.log(event);
+        }
+    });
+
     // Do advanced search:
     var advanced_search_button = $("#advsearch-button");
     advanced_search_button.click(function(event) {
@@ -434,34 +463,6 @@ jQuery(document).ready(function($) {
         if (e.which === 13) {  // enter key
             advanced_search_button.click();
             //console.log(cell);
-        }
-    });
-
-    // The main structures table:
-    $('#mygrid').w2grid({
-        name: 'mygrid',
-        header: 'StructureFinder',
-        url: cgifile+"/all",
-        method: 'GET',
-        show: {
-            toolbar: false,
-            footer: true
-        },
-        columns: [
-            {field: 'recid',    caption: 'ID',        size: '45px', sortable: false, attr: 'align=center'},
-            {field: 'filename', caption: 'filename',  size: '20%',  sortable: false, resizable: true},
-            {field: 'dataname', caption: 'dataname',  size: '15%',  sortable: false, resizable: true},
-            {field: 'path',     caption: 'directory', size: '65%',  sortable: false, resizable: true}
-        ],
-        searches: [
-            {field: 'filename', caption: 'filename', type: 'text'},
-            {field: 'dataname', caption: 'dataname', type: 'text'},
-            {field: 'path', caption: 'directory', type: 'text'}
-        ],
-        //sortData: [{field: 'dataname', direction: 'ASC'}],
-        onSelect:function(event) {
-            showprop(event.recid);
-            //console.log(event);
         }
     });
 
