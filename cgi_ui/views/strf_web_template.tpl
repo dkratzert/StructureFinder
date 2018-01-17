@@ -461,7 +461,7 @@ jQuery(document).ready(function($) {
         //sortData: [{field: 'dataname', direction: 'ASC'}],
         onSelect:function(event) {
             showprop(event.recid);
-            //console.log(record);
+            //console.log(event);
         }
     });
 
