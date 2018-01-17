@@ -291,7 +291,7 @@ jQuery(document).ready(function($) {
         name: 'mygrid',
         header: 'StructureFinder',
         url: cgifile+"/all",
-        method: 'GET',
+        method: 'POST',
         show: {
             toolbar: false,
             footer: true

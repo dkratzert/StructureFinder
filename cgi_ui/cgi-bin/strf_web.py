@@ -4,7 +4,7 @@
 
 ###########################################################
 ###  Configure the web server here:   #####################
-host = "10.6.13.3"
+host = "10.6.13.1"
 port = "80"
 site_ip = host + ':' + port
 
@@ -59,7 +59,7 @@ print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
 
 structures = database_handler.StructureTable(dbfilename)
 
-@app.route('/all')
+@app.post('/all')
 def structures_list_data():
     """
     The main application of the StructureFinder web interface.
@@ -71,7 +71,9 @@ def structures_list_data():
 @app.route('/')
 def main():
     response.content_type = 'text/html; charset=UTF-8'
-    space_groups = pathlib.Path('./cgi_ui/views/spgr.html').open().read().encode(encoding='UTF-8', errors='ignore')
+    p = pathlib.Path('./cgi_ui/views/spgr.html').open()
+    space_groups = p.read().encode(encoding='UTF-8', errors='ignore')
+    p.close()
     output = template('./cgi_ui/views/strf_web_template', {"my_ip": site_ip, "space_groups": space_groups})
     return output
 
