@@ -158,7 +158,7 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             <a href="#"><span class="label label-default" id="more_info_badge">info</span></a> &nbsp;&nbsp;&nbsp;
             <label><input type="checkbox" id="more_results"> More cell search results </label> &nbsp;&nbsp;&nbsp;
             <label><input type="checkbox" id="supercells"> Find sub- and supercells</label> &nbsp;&nbsp;&nbsp;
-            <label> Find by space group: </label> &nbsp;{{!space_groups}}
+            <label> Find by space group:</label> {{!space_groups}}
         </div>
 
         </div>
