@@ -59,17 +59,19 @@ print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
 
 structures = database_handler.StructureTable(dbfilename)
 
-@app.post('/all')
+@app.route('/all', method="POST")
 def structures_list_data():
     """
-    The main application of the StructureFinder web interface.
+    The content of the structures list.
     """
-    #if request.query.cmd == 'get-records':
     return get_structures_json(structures, show_all=True)
 
 
 @app.route('/')
 def main():
+    """
+    The main web site with html template and space group listing.
+    """
     response.content_type = 'text/html; charset=UTF-8'
     p = pathlib.Path('./cgi_ui/views/spgr.html').open()
     space_groups = p.read().encode(encoding='UTF-8', errors='ignore')
@@ -152,6 +154,7 @@ def post_request():
         try:
             return get_cell_parameters(structures, str_id)
         except ValueError as e:
+            print("Exception raised:")
             print(e)
             return ''
     if str_id and resid1:

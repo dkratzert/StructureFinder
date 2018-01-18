@@ -331,7 +331,7 @@ jQuery(document).ready(function($) {
                         supercell, datefield1, datefield2, itnum);
     });
 
-    // Validators for elemets included search field:
+    // Validators for chemical elemets included search field:
     $( "#elements_in").keyup(function() {
         var elements_in = document.getElementById("elements_in").value;
         var elements_out = document.getElementById("elements_out").value;
@@ -356,7 +356,8 @@ jQuery(document).ready(function($) {
             elinform.css("font-weight", "normal");
         }
     });
-    // Validators for elemets excluded search field:
+
+    // Validators for chemical elemets excluded search field:
     $( "#elements_out").keyup(function() {
         var elements_in = document.getElementById("elements_in").value;
         var elements_out = document.getElementById("elements_out").value;
@@ -410,9 +411,9 @@ jQuery(document).ready(function($) {
         var button_text = more_info_button.text();
         $("#more-cell-info").toggle("fast", "swing");
         setTimeout(function(){
-        // toggle back after 1 second
-        $("#more-cell-info").toggle("fast", "swing");
-        },8000);
+            // toggle back after 8 seconds
+            $("#more-cell-info").toggle("fast", "swing");
+        }, 8000);
     });
 
     // Switch between advanced and simple search:
@@ -468,7 +469,10 @@ jQuery(document).ready(function($) {
 
 
     function showprop(idstr) {
-        /* This function uses AJAX POST calls to get the data of a structure and displays the below the main table. */
+        /*
+        This function uses AJAX POST calls to get the data of a structure and displays
+        them below the main table.
+        */
         // Get residuals table 1:
         $.post(url = cgifile, data = {id: idstr, residuals1: true}, function (result) {
             document.getElementById("residualstable1").innerHTML = result;
