@@ -59,7 +59,7 @@ print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
 
 structures = database_handler.StructureTable(dbfilename)
 
-@app.route('/all', method="POST")
+@app.route('/all')
 def structures_list_data():
     """
     The content of the structures list.
@@ -212,9 +212,17 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     """
     Returns the next package of table rows for continuos scrolling.
     """
+    failure = {
+        "status" : "error",
+        "message": "Nothing found."
+    }
     if not ids and not show_all:
+        #return json.dumps(failure)
         return {}
     dic = structures.get_all_structures_as_dict(ids, all_ids=show_all)
+    if len(dic) == 0:
+        #return json.dumps(failure)
+        return {}
     return json.dumps({"total": len(dic), "records": dic, "status": "success"}, indent=2)
 
 
