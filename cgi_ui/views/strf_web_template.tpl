@@ -548,6 +548,7 @@ jQuery(document).ready(function($) {
     function advanced_search(text_in, text_out, elements_in, elements_out, cell_adv, more_res, supercell,
                              date1, date2, itnum) {
         var cell = cell_adv.replace(/\s+/g, ' ').trim();
+        cell = cell.replace(/,/g, '.');  // replace comma with point
         if (!isValidCell(cell)) {
             cell = "";
         }
@@ -602,6 +603,8 @@ jQuery(document).ready(function($) {
         var more_res = $('#more_results').is(':checked');
         var supercell = $('#supercells').is(':checked');
         cell = cell.replace(/\s+/g, ' ').trim();  // replace multiple spaces with one
+        cell = cell.replace(/,/g, '.');  // replace comma with point
+        //console.log(cell);
         var params;
         var url;
         if (isValidCell(cell)) {
