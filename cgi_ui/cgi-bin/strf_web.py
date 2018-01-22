@@ -46,6 +46,7 @@ TODO:
 - Add option: should contain *only* these elements
 - Display number of search results in unit cell field.
 - Prevent adding same element in include and exclude field
+- Maybe http://www.daterangepicker.com
 """
 
 app = Bottle()
