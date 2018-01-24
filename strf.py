@@ -39,7 +39,11 @@ from searcher.misc import is_valid_cell, formula_str_to_dict, elements
 
 if py36:
     """Only import this if Python 3.6 is used."""
-    from PyQt5.QtWebEngineWidgets import QWebEngineView
+    try:
+        from PyQt5.QtWebEngineWidgets import QWebEngineView
+    except Exception as e:
+        print(e)
+
 
 __metaclass__ = type  # use new-style classes
 
@@ -98,9 +102,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.dateEdit1.setDate(QtCore.QDate(date.today()))
         self.ui.dateEdit2.setDate(QtCore.QDate(date.today()))
         if py36:
-            molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-            molf.write_text(data=' ', encoding="utf-8", errors='ignore')
-            self.init_webview()
+            try:
+                molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
+                molf.write_text(data=' ', encoding="utf-8", errors='ignore')
+                self.init_webview()
+            except Exception as e:
+                # Graphics driver not compatible
+                print(e)
         else:
             self.ui.tabWidget.removeTab(2)
             self.ui.txtSearchEdit.hide()
@@ -502,7 +510,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         cell = self.structures.get_cell_by_id(structure_id)
         if not cell:
             return False
-        self.display_molecule(cell, structure_id)
+        try:
+            self.display_molecule(cell, structure_id)
+        except Exception as e:
+            print(e, "unable to display molecule")
         self.ui.cifList_treeWidget.setFocus()
         if not cif_dic:
             return False
