@@ -1,2 +1,2 @@
 cd ..
-c:\tools\Python-3.6.2_64\Scripts\pyinstaller.exe --clean --add-data="gui;gui" --add-data="displaymol;displaymol" --add-data="icons;icons" -n StructureFinder -w -y -i "icons/strf.ico" strf.py
+c:\tools\Python-3.6.2_64\Scripts\pyinstaller.exe --clean --add-binary="C:\tools\Python-3.6.2_64\opengl32sw.dll;opengl32sw.dll" --add-data="gui;gui" --add-data="displaymol;displaymol" --add-data="icons;icons" -n StructureFinder -w -y -i "icons/strf.ico" strf.py
