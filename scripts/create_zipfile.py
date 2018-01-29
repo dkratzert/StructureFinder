@@ -90,13 +90,14 @@ def make_zip(filelist):
     """
     os.chdir('../')
     zipfilen = 'strf_cmd-v{}.zip'.format(version)
-    remove_file('StructureFinder/scripts/Output/{}'.format(zipfilen))
+    full_zip_path = os.path.abspath('StructureFinder/scripts/Output/{}'.format(zipfilen))
+    remove_file(full_zip_path)
     with ZipFile(zipfilen, mode='w', allowZip64=False) as myzip:
         for f in filelist:
             print("Adding {}".format(f))
             myzip.write("StructureFinder/"+f)
     copy_file(zipfilen, 'StructureFinder/scripts/Output/', move=True)
-    print("File written to {}".format(os.path.abspath('./StructureFinder/scripts/Output/')))
+    print("File written to {}".format(full_zip_path))
 
 if __name__ == "__main__":
     make_zip(files)
