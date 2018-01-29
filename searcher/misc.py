@@ -71,6 +71,41 @@ def find_binary_string(file, string, seek, size, return_ascii=False):
                 return result
 
 
+def walkdir(rootdir, include="", exclude=""):
+    """
+    Returns a list of files in all subdirectories with full path.
+    :param rootdir: base path from which walk should start
+    :param filter: list of file endings to include only e.g. ['.py', '.res']
+    :return: list of files
+
+    >>> walkdir("../docs") #doctest: +REPORT_NDIFF +NORMALIZE_WHITESPACE +ELLIPSIS
+    ['../docs/test.txt']
+    >>> walkdir("../setup/modpath.iss")
+    ['../setup/modpath.iss']
+    >>> walkdir("../setup/modpath.iss", exclude=['.iss'])
+    []
+    >>> walkdir("../docs", exclude=['.txt']) #doctest: +REPORT_NDIFF +NORMALIZE_WHITESPACE +ELLIPSIS
+    []
+    """
+    results = []
+    if not os.path.isdir(rootdir):
+        if os.path.splitext(rootdir)[1] in exclude:
+            return []
+        return [rootdir]
+    for root, subFolders, files in os.walk(rootdir):
+        for file in files:
+            fullfilepath = os.path.join(root, file)
+            if exclude:
+                if os.path.splitext(fullfilepath)[1] in exclude:
+                    continue
+            if include:
+                if os.path.splitext(fullfilepath)[1] in include:
+                    results.append(os.path.normpath(fullfilepath).replace('\\', '/'))
+            else:
+                results.append(os.path.normpath(fullfilepath).replace('\\', '/'))
+    return results
+
+
 def open_file_read(filename: str, asci: bool = True) -> str or list:
     if asci:
         state = 'r'
@@ -322,13 +357,13 @@ def copy_file(source, target, move=False):
                 if move:
                     shutil.move(filen, target)
                 else:
-                    shutil.copyfile(filen, target)
+                    shutil.copy(filen, target)
 
         else:
             if move:
                 shutil.move(source, target)
             else:
-                shutil.copyfile(source, target)
+                shutil.copy(source, target)
     except IOError as e:
         print('Unable to copy {}.'.format(source_file))
         print(e)
