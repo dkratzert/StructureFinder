@@ -33,7 +33,7 @@ files = [
     "cgi_ui/static/jquery/jquery-3.2.1.min.js",
     "cgi_ui/static/jsmol/JSmol_dk.nojq.lite.js",
     "cgi_ui/static/w2ui",
-    "cgi_ui/views/strf_web_template.tpl",
+    "cgi_ui/views",
     "displaymol",
     "icons"
     ]
