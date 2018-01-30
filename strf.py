@@ -163,65 +163,60 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
-        self.ui.ad_elementsIncLineEdit.textChanged.connect(self.elements_inc_field_check)
-        self.ui.ad_elementsExclLineEdit.textChanged.connect(self.elements_excl_field_check)
+        self.ui.ad_elementsIncLineEdit.textChanged.connect(self.elements_fields_check)
+        self.ui.ad_elementsExclLineEdit.textChanged.connect(self.elements_fields_check)
 
     def on_click_item(self, item):
         self.ui.tabWidget.setCurrentIndex(1)
 
-    def element_check(self, intext):
+    def validate_sumform(self, inelem: list):
         """
         Checks if the elements typed into a text field are valid
         """
         ok = True
-        for el in intext.split():
+        for el in inelem:
             if not el in elements:
                 ok = False
         return ok
 
     @QtCore.pyqtSlot('QString')
-    def elements_inc_field_check(self):
+    def elements_fields_check(self):
         """
-        Checks element names of ad_elementsIncLineEdit and ad_elementsExclLineEdit for validity.
         """
-        elem = self.ui.ad_elementsIncLineEdit.text()
-        ok = True
-        for el in elem:
-            if el in self.ui.ad_elementsExclLineEdit.text().split():
-                ok = False
-        if not self.element_check(elem):
-            ok = False
-        if not ok:
-            # Elements not valid:
-            self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(255, 0, 0);")
-            self.ui.ad_SearchPushButton.setDisabled(True)
+        elem1 = self.ui.ad_elementsIncLineEdit.text().split()
+        elem2 = self.ui.ad_elementsExclLineEdit.text().split()
+        if (self.elements_doubled_check(elem1, elem2)) or (self.elements_doubled_check(elem2, elem1)):
+            self.elements_invalid()
         else:
-            # Elements valid:
-            self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
-            self.ui.ad_SearchPushButton.setEnabled(True)
+            self.elements_regular()
 
-    @QtCore.pyqtSlot('QString')
-    def elements_excl_field_check(self):
+    def elements_doubled_check(self, elem1, elem2):
         """
-        Checks element names of ad_elementsIncLineEdit and ad_elementsExclLineEdit for validity.
+        Validates if elements of elem1 are not in elem2 and elem1 has purely valid sum formula. 
         """
-        elem = self.ui.ad_elementsExclLineEdit.text()
         ok = True
-        for el in elem:
-            if el in self.ui.ad_elementsIncLineEdit.text().split():
+        for el in elem1:
+            if el in elem2:
                 ok = False
-        if not self.element_check(elem):
+        if not self.validate_sumform(elem1):
             ok = False
 
-        if not ok:
-            # Elements not valid:
-            self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(255, 0, 0);")
-            self.ui.ad_SearchPushButton.setDisabled(True)
-        else:
-            # Elements valid:
-            self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
-            self.ui.ad_SearchPushButton.setEnabled(True)
-
+    def elements_invalid(self):
+        # Elements not valid:
+        self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(255, 0, 0);")
+        self.ui.ad_SearchPushButton.setDisabled(True)
+        # Elements not valid:
+        self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(255, 0, 0);")
+        self.ui.ad_SearchPushButton.setDisabled(True)
+    
+    def elements_regular(self):
+        # Elements valid:
+        self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
+        self.ui.ad_SearchPushButton.setEnabled(True)
+        # Elements valid:
+        self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
+        self.ui.ad_SearchPushButton.setEnabled(True)
+        
     def copyUnitCell(self):
         if self.structureId:
             try:
