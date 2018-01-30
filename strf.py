@@ -169,23 +169,24 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def on_click_item(self, item):
         self.ui.tabWidget.setCurrentIndex(1)
 
-    def validate_sumform(self, inelem: list):
+    @staticmethod
+    def validate_sumform(inelem: list):
         """
-        Checks if the elements typed into a text field are valid
+        Checks if the elements in inelem are valid Chemical elements
         """
         ok = True
         for el in inelem:
-            if not el in elements:
+            if el not in elements:
                 ok = False
         return ok
 
-    @QtCore.pyqtSlot('QString')
+    @QtCore.pyqtSlot('QString', name="elements_fields_check")
     def elements_fields_check(self):
         """
         """
         elem1 = self.ui.ad_elementsIncLineEdit.text().split()
         elem2 = self.ui.ad_elementsExclLineEdit.text().split()
-        if (self.elements_doubled_check(elem1, elem2)) or (self.elements_doubled_check(elem2, elem1)):
+        if (not self.elements_doubled_check(elem1, elem2)) or (not self.elements_doubled_check(elem2, elem1)):
             self.elements_invalid()
         else:
             self.elements_regular()
@@ -200,20 +201,19 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 ok = False
         if not self.validate_sumform(elem1):
             ok = False
+        return ok
 
     def elements_invalid(self):
         # Elements not valid:
-        self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(255, 0, 0);")
+        self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(255, 0, 0); font: bold 12px;")
         self.ui.ad_SearchPushButton.setDisabled(True)
-        # Elements not valid:
-        self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(255, 0, 0);")
+        self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(255, 0, 0); font: bold 12px;")
         self.ui.ad_SearchPushButton.setDisabled(True)
     
     def elements_regular(self):
         # Elements valid:
         self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
         self.ui.ad_SearchPushButton.setEnabled(True)
-        # Elements valid:
         self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
         self.ui.ad_SearchPushButton.setEnabled(True)
         
