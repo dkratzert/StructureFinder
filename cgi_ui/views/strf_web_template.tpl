@@ -166,36 +166,6 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
 
     <div class="row">
         <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-success advsearchfields">
-                <span class="input-group-addon" data-toggle="tooltip" title="should contain">Elements</span>
-                <input type="text" class="form-control form-sm" placeholder="C H O ... (should contain)"
-                       pattern="^[A-z]{1,}$" id="elements_in">
-            </div>
-        </div>
-        <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-error advsearchfields">
-                <span class="input-group-addon" data-toggle="tooltip" title="should not contain">Elements</span>
-                <input type="text" class="form-control form-sm" placeholder="C H O ... (should not contain)"
-                       pattern="^[A-z]{1,}$" id="elements_out">
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-success advsearchfields">
-                <span class="input-group-addon" data-toggle="tooltip" title="should contain">Text</span>
-                <input type="text" class="form-control form-sm" placeholder="should contain" id="text_in">
-            </div>
-        </div>
-        <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-error advsearchfields">
-                <span class="input-group-addon" data-toggle="tooltip" title="should not contain">Text</span>
-                <input type="text" class="form-control form-sm" placeholder="should not contain" id="text_out">
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="column col-xs-6">
             <div class="input-group input-group-sm advsearchfields">
                 <span class="input-group-addon">Uni Cell</span>
                 <input type="text" class="form-control form-sm" style="font-style: italic" placeholder="a b c &alpha; &beta; &gamma;" id="cell_adv">
@@ -225,6 +195,38 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
                 start: d1
             });
         </script>
+    </div>
+
+    <div class="row">
+        <div class="column col-xs-6">
+            <div class="input-group input-group-sm has-success advsearchfields">
+                <span class="input-group-addon" data-toggle="tooltip" title="should contain">Elements</span>
+                <input type="text" class="form-control form-sm" placeholder="C H O ... (should contain)"
+                       pattern="^[A-z]{1,}$" id="elements_in">
+            </div>
+        </div>
+        <div class="column col-xs-6">
+            <div class="input-group input-group-sm has-error advsearchfields">
+                <span class="input-group-addon" data-toggle="tooltip" title="should not contain">Elements</span>
+                <input type="text" class="form-control form-sm" placeholder="C H O ... (should not contain)"
+                       pattern="^[A-z]{1,}$" id="elements_out">
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="column col-xs-6">
+            <div class="input-group input-group-sm has-success advsearchfields">
+                <span class="input-group-addon" data-toggle="tooltip" title="should contain">Text</span>
+                <input type="text" class="form-control form-sm" placeholder="should contain" id="text_in">
+            </div>
+        </div>
+        <div class="column col-xs-6">
+            <div class="input-group input-group-sm has-error advsearchfields">
+                <span class="input-group-addon" data-toggle="tooltip" title="should not contain">Text</span>
+                <input type="text" class="form-control form-sm" placeholder="should not contain" id="text_out">
+            </div>
+        </div>
     </div>
 
     <div class="row">
@@ -331,56 +333,72 @@ jQuery(document).ready(function($) {
                         supercell, datefield1, datefield2, itnum);
     });
 
-    // Validators for chemical elemets included search field:
-    $( "#elements_in").keyup(function() {
-        var elements_in = document.getElementById("elements_in").value;
-        var elements_out = document.getElementById("elements_out").value;
-        var elinform = $("#elements_in.form-control");
+    function is_elem_doubled(elements_in, elements_out) {
+        var sumlist = elements_in.split(" ");
+        var outlist = elements_out.split(" ");
         var ok = true;
         ok = validateSumForm(elements_in);
-        var sumlist = elements_in.split(" ");
         for (i = 0; i < sumlist.length; i++) {
             var el = sumlist[i];
-            if (elements_out.match(el)) {
-                if (el === "") {continue}
+            //console.log(el);
+            if ($.inArray(el, outlist) >= 1) {
+                // A space character is allowed:
+                if (el === "") {
+                    continue
+                }
                 ok = false;
             }
         }
-        if (!ok) {
-            //console.log("elements in not valid");
-            elinform.css("color", "#f35e59");
-            elinform.css("font-weight", "bold");
+        return ok;
+    }
+
+    function check_elin() {
+        var elements_in = document.getElementById("elements_in").value;
+        var elements_out = document.getElementById("elements_out").value;
+        return is_elem_doubled(elements_in, elements_out);
+    }
+
+    function check_elex() {
+        var elements_in = document.getElementById("elements_in").value;
+        var elements_out = document.getElementById("elements_out").value;
+        return is_elem_doubled(elements_out, elements_in)
+    }
+
+    function elements_red() {
+        var elinform = $("#elements_in.form-control");
+        var elexform = $("#elements_out.form-control");
+        elinform.css("color", "#f35e59");
+        elinform.css("font-weight", "bold");
+        elexform.css("color", "#f35e59");
+        elexform.css("font-weight", "bold");
+    }
+
+    function elements_regular() {
+        var elinform = $("#elements_in.form-control");
+        var elexform = $("#elements_out.form-control");
+        elinform.css("color", "#000000");
+        elinform.css("font-weight", "normal");
+        elexform.css("color", "#000000");
+        elexform.css("font-weight", "normal");
+    }
+
+    function validate_element_input() {
+        if (!check_elin() || !check_elex()){
+            elements_red();
         } else {
-            // success case
-            elinform.css("color", "#000000");
-            elinform.css("font-weight", "normal");
+            elements_regular();
         }
+
+    }
+
+    // Validators for chemical elemets included search field:
+    $("#elements_in").keyup(function() {
+        validate_element_input();
     });
 
     // Validators for chemical elemets excluded search field:
-    $( "#elements_out").keyup(function() {
-        var elements_in = document.getElementById("elements_in").value;
-        var elements_out = document.getElementById("elements_out").value;
-        var elexform = $("#elements_out.form-control");
-        var ok = true;
-        ok = validateSumForm(elements_out);
-        var sumlist = elements_out.split(" ");
-        for (i = 0; i < sumlist.length; i++) {
-            var el = sumlist[i];
-            if (elements_in.match(el)) {
-                if (el === "") {continue}
-                ok = false;
-            }
-        }
-        if (!ok) {
-            //console.log("elements in not valid");
-            elexform.css("color", "#f35e59");
-            elexform.css("font-weight", "bold");
-        } else {
-            // success case
-            elexform.css("color", "#000000");
-            elexform.css("font-weight", "normal");
-        }
+    $("#elements_out").keyup(function() {
+        validate_element_input();
     });
 
     function validateSumForm(sumform) {
