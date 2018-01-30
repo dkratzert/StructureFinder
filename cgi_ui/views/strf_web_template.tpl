@@ -340,8 +340,7 @@ jQuery(document).ready(function($) {
         ok = validateSumForm(elements_in);
         for (i = 0; i < sumlist.length; i++) {
             var el = sumlist[i];
-            //console.log(el);
-            if ($.inArray(el, outlist) >= 1) {
+            if ($.inArray(el, outlist) >= 0) {
                 // A space character is allowed:
                 if (el === "") {
                     continue
