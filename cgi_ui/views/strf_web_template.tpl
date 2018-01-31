@@ -25,6 +25,10 @@ body {
     border-right: 1px solid #bcbcbc;
 }
 
+.collapsing {
+    transition: 1ms;
+}
+
 #resitable1 tr td {
     line-height: 13px;
     height: 13px;
@@ -48,7 +52,7 @@ body {
 }
 
 .input-group-addon {
-    min-width:55px;
+    min-width:75px;
     text-align:left;
 }
 
@@ -70,6 +74,9 @@ $(document).ready(function(){
     //gets the window's height
     var b = $(window).height();
     var h = b * 0.35;
+    if (h < 200) {
+        h = 220;
+    }
     $("#mygrid").css("height", h);
 });
 
@@ -100,7 +107,7 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
 
 <a type="button" class="btn btn-primary btn-xs" data-toggle="collapse" data-target="#adv-search"
         id="toggle_advsearch-button">Advanced Search</a>
-<a type="button" class="btn btn-warning btn-xs"  href="/" id="all_structures">Show All</a>
+<a type="button" class="btn btn-warning btn-xs" id="all_structures">Show All</a>
 <!-- ------------  The collapsible for simple search options: -----------------  -->
 <div class="form-group row" id="mainsearch">
     <div class="col-sm-6">
@@ -122,45 +129,46 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
                 <div class="input-group-sm input-group-btn">
                     <button class="btn btn-default" type="submit" id="smpl_textsrchbutton">
                         <i class="glyphicon glyphicon-search"></i>
-                </button>
+                    </button>
                 </div>
             </input>
         </div>
     </div>
 </div>
 <!-- ---------------------    End of simple search     ----------------------    -->
-<div id="more-cell-info" class="collapse">
-    <div class="row">
-        <div class="col-sm-6">
-            <b>regular</b><br>
-            volume: &plusmn;3%, length: 0.001&nbsp;&angst;, angle: 1&deg;<br>
-            <br>
-            <b>more results option</b><br>
-            volume: &plusmn;8&percnt;, length: 0.09&nbsp;&angst;, angle: 1.8&deg;<br>
-        </div>
-        <div class="col-sm-6">
-            <b>Sub- and Supercells</b>
-            <br>
-            Find also unit cells of 0.25, 0.5, 1, 2, 3, 4 the volume.
-            <br>
-            <b>Space group search</b>
-            <br>
-            Be aware that not every cif file before SHELXL-2013 has a space group number. These will not be found.
-        </div>
-    </div>
-</div>
+
 
 <!-- The collapsible for Advanced search options: -->
 <div id="adv-search" class="collapse">
     <div class="row">
         <div class="col-xs-12">
-        <div class="btn-group btn-group-xs" role="group">
-            <a href="#"><span class="label label-default" id="more_info_badge">info</span></a> &nbsp;&nbsp;&nbsp;
-            <label><input type="checkbox" id="more_results"> More cell search results </label> &nbsp;&nbsp;&nbsp;
-            <label><input type="checkbox" id="supercells"> Find sub- and supercells</label> &nbsp;&nbsp;&nbsp;
-            <label> Find by space group:</label> {{!space_groups}}
+            <div class="btn-group btn-group-xs" role="group">
+                <a href="#"><span class="label label-default" id="more_info_badge">info</span></a> &nbsp;&nbsp;&nbsp;
+                <label><input type="checkbox" id="more_results"> More cell search results </label> &nbsp;&nbsp;&nbsp;
+                <label><input type="checkbox" id="supercells"> Find sub- and supercells</label> &nbsp;&nbsp;&nbsp;
+                <label> Find by space group:</label> {{!space_groups}}
+            </div>
         </div>
+    </div>
 
+    <div id="more-cell-info" class="collapse">
+        <div class="row">
+            <div class="col-sm-6">
+                <b>regular</b><br>
+                volume: &plusmn;3%, length: 0.001&nbsp;&angst;, angle: 1&deg;<br>
+                <br>
+                <b>more results option</b><br>
+                volume: &plusmn;8&percnt;, length: 0.09&nbsp;&angst;, angle: 1.8&deg;<br>
+            </div>
+            <div class="col-sm-6">
+                <b>Sub- and Supercells</b>
+                <br>
+                Find also unit cells of 0.25, 0.5, 1, 2, 3, 4 the volume.
+                <br>
+                <b>Space group search</b>
+                <br>
+                Be aware that not every cif file before SHELXL-2013 has a space group number. These will not be found.
+            </div>
         </div>
     </div>
 
@@ -426,18 +434,18 @@ jQuery(document).ready(function($) {
     var more_info_button = $('#more_info_badge');
     more_info_button.click(function(){
         var button_text = more_info_button.text();
-        $("#more-cell-info").toggle("fast", "swing");
-        setTimeout(function(){
-            // toggle back after 8 seconds
-            $("#more-cell-info").toggle("fast", "swing");
-        }, 8000);
+        $("#more-cell-info").toggle(1);
+    });
+
+    $('#all_structures').click(function () {
+        w2ui['mygrid'].reload();
     });
 
     // Switch between advanced and simple search:
     var advbutton = $('#toggle_advsearch-button');
     advbutton.click(function(){
         var button_text = advbutton.text();
-        $("#mainsearch").toggle("fast", "swing");
+        $("#mainsearch").toggle(1);
         if (button_text.split(" ")[0] === "Advanced") {
             advbutton.html("Simple Search");
         } else {
