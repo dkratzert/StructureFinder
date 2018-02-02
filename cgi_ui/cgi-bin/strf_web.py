@@ -221,10 +221,12 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
         #return json.dumps(failure)
         return {}
     dic = structures.get_all_structures_as_dict(ids, all_ids=show_all)
+    number = len(dic)
+    print("--> Got {} structures from actual search.".format(number))
     if len(dic) == 0:
         #return json.dumps(failure)
         return {}
-    return json.dumps({"total": len(dic), "records": dic, "status": "success"}, indent=2)
+    return json.dumps({"total": number, "records": dic, "status": "success"}, indent=2)
 
 
 def get_cell_parameters(structures: StructureTable, strid: str) -> str:
