@@ -90,6 +90,7 @@ def cellsrch():
     print("Cell search:", cell)
     if cell:
         ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
+        print("--> Got {} structures from cell search.".format(len(ids)))
         return get_structures_json(structures, ids, show_all=False)
 
 
@@ -117,6 +118,7 @@ def adv():
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
                           structures=structures, it_num=it_num)
+    print("--> Got {} structures from Advanced search.".format(len(ids)))
     return get_structures_json(structures, ids)
 
 
