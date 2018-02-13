@@ -448,8 +448,10 @@ jQuery(document).ready(function($) {
         $("#mainsearch").toggle(1);
         if (button_text.split(" ")[0] === "Advanced") {
             advbutton.html("Simple Search");
+            document.getElementById("cell_adv").value = document.getElementById("smpl_cellsrch").value;
         } else {
             advbutton.html("Advanced Search");
+            document.getElementById("smpl_cellsrch").value = document.getElementById("cell_adv").value;
         }
     });
 
