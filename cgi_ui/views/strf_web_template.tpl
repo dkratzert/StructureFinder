@@ -141,12 +141,12 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
 <!-- The collapsible for Advanced search options: -->
 <div id="adv-search" class="collapse">
     <div class="row">
-        <div class="col-xs-12">
-            <div class="btn-group btn-group-xs" role="group">
-                <a href="#"><span class="label label-default" id="more_info_badge">info</span></a> &nbsp;&nbsp;&nbsp;
-                <label><input type="checkbox" id="more_results"> More cell search results </label> &nbsp;&nbsp;&nbsp;
-                <label><input type="checkbox" id="supercells"> Find sub- and supercells</label> &nbsp;&nbsp;&nbsp;
-                <label> Find by space group:</label> {{!space_groups}}
+        <div class="col-sm-12">
+            <div class="btn-group btn-group-sm" role="group">
+                <a href="#" class="badge" id="more_info_badge">info</a> &nbsp;&nbsp;&nbsp;
+                <input type="checkbox" value="" id="more_results">More cell search results &nbsp;&nbsp;&nbsp;
+                <input type="checkbox" value="" id="supercells">Find sub- and supercells &nbsp;&nbsp;&nbsp;
+                {{!space_groups}} Find by space group
             </div>
         </div>
     </div>
