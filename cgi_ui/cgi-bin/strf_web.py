@@ -95,7 +95,7 @@ def cellsrch():
 
 
 @app.route("/txtsrch")
-def cellsrch():
+def txtsrch():
     text_search = request.GET.get("text_search", [''])
     print("Text search:", text_search)
     ids = search_text(structures, text_search)
