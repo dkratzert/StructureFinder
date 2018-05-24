@@ -13,10 +13,9 @@ dbfilename = "../structurefinder.sqlite"
 
 import json
 import math
-import sys
 import os
-
 import pathlib
+import sys
 
 print("Running on Python version {}".format(sys.version))
 pyver = sys.version_info
@@ -30,9 +29,7 @@ try:  # Adding local path to PATH
 except(KeyError, ValueError):
     print('Unable to set PATH properly. strf_web.py might not work.')
 
-from cgi_ui import bottle
-from cgi_ui.bottle import Bottle, static_file, template, redirect
-from cgi_ui.bottle import request, response
+from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response
 from displaymol import mol_file_writer
 from lattice import lattice
 from pymatgen.core import mat_lattice
@@ -49,9 +46,6 @@ TODO:
 - Maybe http://www.daterangepicker.com
 """
 
-app = Bottle()
-bottle.debug(False)  # Do not enable debug in production systems!
-
 if not misc.is_a_nonzero_file(dbfilename):
     print("Unable to start")
     print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
@@ -59,6 +53,9 @@ if not misc.is_a_nonzero_file(dbfilename):
 print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
 
 structures = database_handler.StructureTable(dbfilename)
+
+app = Bottle()
+# bottle.debug(True)  # Do not enable debug in production systems!
 
 @app.route('/all')
 def structures_list_data():
@@ -114,7 +111,8 @@ def adv():
     more_results = (request.GET.get("more", ['']) == "true")
     sublattice = (request.GET.get("supercell", ['']) == "true")
     it_num = request.GET.get("it_num", '')
-    print("Advanced search:", elincl, elexcl, date1, date2, cell_search, txt_in, txt_out, more_results, sublattice, it_num)
+    print("Advanced search:", elincl, elexcl, date1, date2, cell_search, txt_in, txt_out, more_results, sublattice,
+          it_num)
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
                           structures=structures, it_num=it_num)
@@ -220,13 +218,13 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
         "message": "Nothing found."
     }
     if not ids and not show_all:
-        #return json.dumps(failure)
+        # return json.dumps(failure)
         return {}
     dic = structures.get_all_structures_as_dict(ids, all_ids=show_all)
     number = len(dic)
     print("--> Got {} structures from actual search.".format(number))
     if number == 0:
-        #return json.dumps(failure)
+        # return json.dumps(failure)
         return {}
     return json.dumps({"total": number, "records": dic, "status": "success"}, indent=2)
 
@@ -416,12 +414,12 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
             dic = structures.get_cell_as_dict(i)
             try:
                 lattice2 = mat_lattice.Lattice.from_parameters(
-                    float(dic['a']),
-                    float(dic['b']),
-                    float(dic['c']),
-                    float(dic['alpha']),
-                    float(dic['beta']),
-                    float(dic['gamma']))
+                        float(dic['a']),
+                        float(dic['b']),
+                        float(dic['c']),
+                        float(dic['alpha']),
+                        float(dic['beta']),
+                        float(dic['gamma']))
             except ValueError:
                 continue
             mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
@@ -536,7 +534,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
     elif date_results and not it_results:
         results = date_results
     elif not date_results and it_results:
-            results = it_results
+        results = it_results
     elif it_results and date_results:
         results = set(it_results).intersection(date_results)
     if excl:
