@@ -2012,10 +2012,11 @@ class ShelXlFile():
                 # A second RESI 0
                 continue
             if line.startswith(('END', 'HKLF', 'RESI')) and resi:
-                self._reslist.insert(line_num + 1, "RESI 0")
+                self._reslist.insert(line_num, "RESI 0")
                 if DEBUG:
                     print('RESI in line {} was not closed'.format(line_num + 1))
                 resi = False
+                continue
             if line.startswith('RESI') and not resinull.match(line):
                 resi = True
                 residict = self.get_resi_definition_dict(spline[1:])
@@ -2031,10 +2032,11 @@ class ShelXlFile():
                 # A second PART 0
                 continue
             if line.startswith(('END', 'HKLF', 'PART')) and part:
-                self._reslist.insert(line_num + 1, "PART 0")
+                self._reslist.insert(line_num, "PART 0")
                 if DEBUG:
                     print('PART in line {} was not closed'.format(line_num + 1))
                 part = False
+                continue
             if line.startswith('PART') and not partnull.match(line):
                 part = True
                 partnum, sof = self.get_partnumber(line)
@@ -2049,10 +2051,11 @@ class ShelXlFile():
                 # A second AFIX 0
                 continue
             if line.startswith(('END', 'HKLF', 'AFIX')) and afix:
-                self._reslist.insert(line_num + 1, "AFIX 0")
+                self._reslist.insert(line_num, "AFIX 0")
                 if DEBUG:
                     print('AFIX in line {} was not closed'.format(line_num + 1))
                 afix = False
+                continue
             elif line.startswith('AFIX') and not afixnull.match(line):
                 # TODO: if afixnum > 17x: compare atoms count in frag and afix
                 afix = True
