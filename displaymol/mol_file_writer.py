@@ -6,7 +6,8 @@ import os
 import numpy as np
 
 from lattice import lattice
-from searcher import misc, elements
+from searcher import misc, atoms
+from searcher.atoms import get_radius_from_element
 from searcher.database_handler import StructureTable
 from searcher.unitcell import Lattice
 
@@ -82,12 +83,12 @@ class MolFile(object):
         #t1 = time.clock()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
+            rad1 = get_radius_from_element(at1[1])
             for num2, at2 in enumerate(self.atoms, 1):
                 if at1[0] == at2[0]: # name1 = name2
                     continue
+                rad2 = get_radius_from_element(at2[1])
                 d = misc.distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
-                rad1 = elements.ELEMENTS[at1[1]].covrad  # at1[1] -> Atomtyp
-                rad2 = elements.ELEMENTS[at2[1]].covrad
                 if (rad1 + rad2) + extra_param >= d > (rad1 or rad2):
                     conlist.append([num1, num2])
                     #print(num1, num2, d)

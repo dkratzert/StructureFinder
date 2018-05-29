@@ -1611,7 +1611,10 @@ class Atom(Atoms):
                 return Atom.anisatomstr.format(self.name, self.sfac_num, self.x, self.y, self.z, self.sof, *self.uvals)
             else:
                 # isotropic atom
-                return Atom.isoatomstr.format(self.name, self.sfac_num, self.x, self.y, self.z, self.sof, *self.uvals)
+                try:
+                    return Atom.isoatomstr.format(self.name, self.sfac_num, self.x, self.y, self.z, self.sof, *self.uvals)
+                except(IndexError):
+                    return 'REM Error in U values.'
 
     @property
     def line_numbers(self) -> list:

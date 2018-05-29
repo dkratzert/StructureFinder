@@ -38,7 +38,8 @@
 """
 import os
 
-from searcher import misc, elements
+from searcher import misc
+from searcher.atoms import get_radius_from_element
 from searcher.database_handler import StructureTable
 
 
@@ -107,14 +108,13 @@ class MolFile():
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
             name1 = at1[0]
-            typ1 = at1[1]
-            ele1 = elements.ELEMENTS[typ1.capitalize()]
+            radius1 = get_radius_from_element(at1[1])
             x1 = at1[2]
             y1 = at1[3]
             z1 = at1[4]
             for num2, at2 in enumerate(self.atoms, 1):
                 name2 = at2[0]
-                typ2 = at2[1]
+                radius2 = get_radius_from_element(at2[1])
                 x2 = at2[2]
                 y2 = at2[3]
                 z2 = at2[4]
@@ -123,8 +123,7 @@ class MolFile():
                 d = misc.distance(x1, y1, z1, x2, y2, z2)
                 # a bond is defined with less than the sum of the covalence
                 # radii plus the extra_param:
-                ele2 = elements.ELEMENTS[typ2.capitalize()]
-                if d <= (ele1.covrad + ele2.covrad) + extra_param and d > (ele1.covrad or ele2.covrad):
+                if d <= (radius1 + radius2) + extra_param and d > (radius1 or radius2):
                     conlist.append([num1, num2])
                     #print(num1, num2, d)
                     if len(conlist) == 99:

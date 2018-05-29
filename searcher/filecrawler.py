@@ -239,8 +239,8 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 print('res file not added.')
                 continue
             if res:
-                tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=n, 
-                                        structures=structures, options=options)
+                tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=n,
+                                            structures=structures, options=options)
             if not tst:
                 print('res file not added')
                 continue
@@ -380,7 +380,10 @@ def fill_db_with_res_data(res: ShelXlFile, filename: str, path: str, structure_i
     cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([str(x) for x in res.symmcards])
     cif.cif_data["_chemical_formula_sum"] = " ".join(str(res.sfac_table).split()[1:])
     cif.cif_data["_diffrn_radiation_wavelength"] = res.wavelen
-    cif.cif_data["_shelx_res_file"] = "\n".join([str(x) for x in res._reslist])
+    try:
+        cif.cif_data["_shelx_res_file"] = "\n".join([str(x) for x in res._reslist])
+    except(IndexError):
+        pass
     structures.fill_residuals_table(structure_id, cif)
     return True
 

@@ -13,7 +13,7 @@ Created on 09.02.2015
 @author: Daniel Kratzert
 """
 from __future__ import print_function
-
+DEBUG = False
 import math
 import os
 import pathlib
@@ -35,7 +35,7 @@ from pymatgen.core import mat_lattice
 from searcher import constants, misc, filecrawler, database_handler
 from searcher.constants import py36
 from searcher.fileparser import Cif
-from searcher.misc import is_valid_cell, formula_str_to_dict, elements
+from searcher.misc import is_valid_cell, elements
 
 if py36:
     """Only import this if Python 3.6 is used."""
@@ -209,14 +209,14 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.ad_SearchPushButton.setDisabled(True)
         self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(255, 0, 0); font: bold 12px;")
         self.ui.ad_SearchPushButton.setDisabled(True)
-    
+
     def elements_regular(self):
         # Elements valid:
         self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
         self.ui.ad_SearchPushButton.setEnabled(True)
         self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
         self.ui.ad_SearchPushButton.setEnabled(True)
-        
+
     def copyUnitCell(self):
         if self.structureId:
             try:
@@ -509,6 +509,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.display_molecule(cell, structure_id)
         except Exception as e:
             print(e, "unable to display molecule")
+            if DEBUG:
+                raise 
         self.ui.cifList_treeWidget.setFocus()
         if not cif_dic:
             return False
@@ -618,9 +620,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
             tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6], grow=False)
             mol = tst.make_mol()
         except (TypeError, KeyError):
-            # print("Error in structure", structure_id, "while writing mol file.")
+            print("Error in structure", structure_id, "while writing mol file.")
             mol = ' '
-            pass
+            if DEBUG:
+                raise
         #print(self.ui.openglview.width()-30, self.ui.openglview.height()-50)
         content = write_html.write(mol, self.ui.openglview.width()-30, self.ui.openglview.height()-50)
         p2 = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
