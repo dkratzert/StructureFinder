@@ -25,7 +25,7 @@ from typing import List
 from shelxfile.dsrmath import atomic_distance, Matrix, frac_to_cart, subtract_vect, determinante, my_isnumeric
 
 PROFILE = False
-DEBUG = False
+DEBUG = True
 
 """
 TODO:
@@ -2012,7 +2012,7 @@ class ShelXlFile():
                 # A second RESI 0
                 continue
             if line.startswith(('END', 'HKLF', 'RESI')) and resi:
-                self._reslist[line_num-1] += "\nRESI 0"
+                self._reslist.insert(line_num + 1, "RESI 0")
                 if DEBUG:
                     print('RESI in line {} was not closed'.format(line_num + 1))
                 resi = False
@@ -2031,7 +2031,7 @@ class ShelXlFile():
                 # A second PART 0
                 continue
             if line.startswith(('END', 'HKLF', 'PART')) and part:
-                self._reslist[line_num-1] += "\nPART 0"
+                self._reslist.insert(line_num + 1, "PART 0")
                 if DEBUG:
                     print('PART in line {} was not closed'.format(line_num + 1))
                 part = False
@@ -2049,7 +2049,7 @@ class ShelXlFile():
                 # A second AFIX 0
                 continue
             if line.startswith(('END', 'HKLF', 'AFIX')) and afix:
-                self._reslist[line_num-1] += "\nAFIX 0"
+                self._reslist.insert(line_num + 1, "AFIX 0")
                 if DEBUG:
                     print('AFIX in line {} was not closed'.format(line_num + 1))
                 afix = False
