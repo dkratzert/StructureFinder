@@ -134,9 +134,11 @@ def filewalker_walk(startdir: str, patterns: list):
     return filelist
 
 
-def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, lastid: int = 1, structures=None) -> int:
+def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, lastid: int = 1, 
+                   structures=None, fillres=True) -> int:
     """
     Imports cif files from a certain directory
+    :param fillres: Should it index res files or not.
     """
     if excludes:
         excluded_names.extend(excludes)
@@ -221,7 +223,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                         print('{} files ...'.format(n))
                         structures.database.commit_db()
                     prognum += 1
-        if name.endswith('.res'):
+        if name.endswith('.res') and fillres:
             try:
                 res = shelx.ShelXlFile(fullpath)
             except Exception as e:
@@ -336,16 +338,15 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
 def fill_db_with_res_data(res: ShelXlFile, filename: str, path: str, structure_id: str, 
                           structures: database_handler.StructureTable):
     measurement_id = structures.fill_measuremnts_table(filename, structure_id)
-    title = res.titl
-    structures.fill_structures_table(path, filename, structure_id, measurement_id, title)
+    structures.fill_structures_table(path, filename, structure_id, measurement_id, res.titl)
     structures.fill_cell_table(structure_id, res.a, res.b, res.c, res.alpha, res.beta, res.gamma, res.V)
     for at in res.atoms:
         structures.fill_atoms_table(structure_id, at.name,
-                                at.type,
+                                at.element,
                                 at.x,
                                 at.y,
                                 at.z,
-                                at.occ,
+                                at.sof,
                                 at.part)
     return True
 

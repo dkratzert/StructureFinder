@@ -1840,7 +1840,7 @@ class ShelXlFile():
         self.hklf = []
         self.grid = []
         self.free = []
-        self.titl = "No Title"
+        self.titl = ""
         self.exti = 0
         self.eqiv = []
         self.disp = []
