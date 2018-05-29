@@ -20,7 +20,6 @@ import re
 import sys
 import time
 from math import radians, cos, sin, sqrt
-from typing import List
 
 from shelxfile.dsrmath import atomic_distance, Matrix, frac_to_cart, subtract_vect, determinante, my_isnumeric
 
@@ -1389,7 +1388,7 @@ class Atoms():
             atdict[at.name.upper() + '_' + str(at.resinum)] = at.frac_coords
         return atdict
 
-    def get_frag_fend_atoms(self) -> List[list]:
+    def get_frag_fend_atoms(self) -> list:
         """
         Returns a list of atoms with cartesian coordinates. Atom names and sfac are ignored. They come from AFIX 17x.
         [[0.5316439256202359, 7.037351406500001, 10.112963255220803],
