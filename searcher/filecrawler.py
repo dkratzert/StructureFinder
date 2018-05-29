@@ -23,6 +23,8 @@ import zipfile
 
 from searcher import atoms, database_handler, fileparser
 from lattice.lattice import vol_unitcell
+from shelxfile import shelx
+from shelxfile.shelx import ShelXlFile
 
 excluded_names = ['ROOT',
                   '.OLEX',
@@ -100,7 +102,7 @@ def create_file_list(searchpath='None', ending='cif'):
     return paths
 
 
-def filewalker_walk(startdir):
+def filewalker_walk(startdir: str, patterns: list):
     """
     walks through the filesystem starting from startdir and searches
     for files with ending endings.
@@ -108,7 +110,6 @@ def filewalker_walk(startdir):
     Since os.walk() uses scandir, it is as fast as pathlib.
     """
     filelist = []
-    patterns = ('*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz')
     print('collecting files below ' + startdir)
     for root, _, files in os.walk(startdir):
         for filen in files:
@@ -151,7 +152,8 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
     num = 1
     zipcifs = 0
     time1 = time.clock()
-    filelist = filewalker_walk(str(searchpath))
+    patterns = ['*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '*.res']
+    filelist = filewalker_walk(str(searchpath), patterns)
     options = {}
     for filepth, name in filelist:
         fullpath = os.path.join(filepth, name)
@@ -185,7 +187,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                         print('{} files ...'.format(n))
                         structures.database.commit_db()
                     prognum += 1
-        else:  # a zip file:
+        if name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2') or name.endswith('.tgz'):
             if fullpath.endswith('.zip'):
                 z = MyZipReader(fullpath)
             else:
@@ -219,6 +221,21 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                         print('{} files ...'.format(n))
                         structures.database.commit_db()
                     prognum += 1
+        if name.endswith('.res'):
+            try:
+                res = shelx.ShelXlFile(fullpath)
+            except Exception as e:
+                print(e)
+                continue
+            tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=n, structures=structures)
+            if not tst:
+                continue
+            n += 1
+            num += 1
+            if n % 1000 == 0:
+                print('{} files ...'.format(n))
+                structures.database.commit_db()
+            prognum += 1
         if self:
             if not self.decide_import:
                 # This means, import was aborted.
@@ -313,6 +330,23 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
             #print(x, filename)
             pass
     structures.fill_residuals_table(structure_id, cif)
+    return True
+
+
+def fill_db_with_res_data(res: ShelXlFile, filename: str, path: str, structure_id: str, 
+                          structures: database_handler.StructureTable):
+    measurement_id = structures.fill_measuremnts_table(filename, structure_id)
+    title = res.titl
+    structures.fill_structures_table(path, filename, structure_id, measurement_id, title)
+    structures.fill_cell_table(structure_id, res.a, res.b, res.c, res.alpha, res.beta, res.gamma, res.V)
+    for at in res.atoms:
+        structures.fill_atoms_table(structure_id, at.name,
+                                at.type,
+                                at.x,
+                                at.y,
+                                at.z,
+                                at.occ,
+                                at.part)
     return True
 
 

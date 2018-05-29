@@ -1273,7 +1273,7 @@ class Atoms():
     """
     def __init__(self, shx: 'ShelXlFile'):
         self.shx = shx
-        self.atoms = []
+        self.atoms = []  #:Atom
         self.atomsdict = {}
         self.nameslist = []
 
@@ -1799,6 +1799,7 @@ class ShelXlFile():
         """
         self.shelx_max_line_length = 79  # maximum character lenth per line in SHELXL
         self.nohkl = False
+        self.a, self.b, self.c, self.alpha, self.beta, self.gamma, self.V = None, None, None, None, None, None, None
         self.ansc = None
         self.abin = None
         self.acta = None
@@ -1839,7 +1840,7 @@ class ShelXlFile():
         self.hklf = []
         self.grid = []
         self.free = []
-        self.titl = ""
+        self.titl = "No Title"
         self.exti = 0
         self.eqiv = []
         self.disp = []

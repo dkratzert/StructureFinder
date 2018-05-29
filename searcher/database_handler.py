@@ -493,7 +493,7 @@ class StructureTable():
         else:
             return False
 
-    def fill_structures_table(self, path, filename, structure_id, measurement_id, dataname):
+    def fill_structures_table(self, path: str, filename: str, structure_id: str, measurement_id: int, dataname: str):
         """
         Fills a structure into the database.
         
