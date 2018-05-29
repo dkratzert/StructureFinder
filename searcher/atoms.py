@@ -403,10 +403,10 @@ def get_atomlabel(input_atom: str) -> str:
         elif atom[0].upper() in atoms:
             return atom[0]  # then for all one-letter atoms
         else:
-            print('*** {} is not a valid atom!! ***'.format(atom))
+            #print('*** {} is not a valid atom!! ***'.format(atom))
             raise KeyError
     except(IndexError):
-        print('*** {} is not a valid atom! ***'.format(atom))
+        #print('*** {} is not a valid atom! ***'.format(atom))
         raise KeyError
 
 
