@@ -246,29 +246,33 @@ def split_fvar_and_parameter(parameter: float) -> tuple:
 
 class ParseOrderError(Exception):
     def __init__(self, arg=None):
-        if arg:
-            print(arg)
-        else:
-            print("*** WRONG ODER of INSTRUCTIONS ***")
+        if DEBUG:
+            if arg:
+                print(arg)
+            else:
+                print("*** WRONG ODER of INSTRUCTIONS ***")
 
 
 class ParseNumError(Exception):
     def __init__(self, arg=None):
-        if arg:
-            print(arg)
-        print("*** WRONG NUMBER OF NUMERICAL PARAMETERS ***")
+        if DEBUG:
+            if arg:
+                print(arg)
+            print("*** WRONG NUMBER OF NUMERICAL PARAMETERS ***")
 
 
 class ParseParamError(Exception):
     def __init__(self, arg=None):
-        if arg:
-            print(arg)
-        print("*** WRONG NUMBER OF PARAMETERS ***")
+        if DEBUG:
+            if arg:
+                print(arg)
+            print("*** WRONG NUMBER OF PARAMETERS ***")
 
 
 class ParseUnknownParam(Exception):
     def __init__(self):
-        print("*** UNKNOWN PARAMETER ***")
+        if DEBUG:
+            print("*** UNKNOWN PARAMETER ***")
 
 
 def range_resolver(atoms_range: list, atom_names: list) -> list:
@@ -1889,14 +1893,16 @@ class ShelXlFile():
         try:
             self._reslist = self.read_file_to_list(self.resfile)
         except UnicodeDecodeError:
-            print('*** Unable to read file', self.resfile, '***')
+            if DEBUG:
+                print('*** Unable to read file', self.resfile, '***')
             return
         try:
             self.parse_shx_file()
             pass
         except Exception as e:
-            print(e)
-            print("*** Syntax error found in file {}, line {} ***".format(self.resfile, self.error_line_num + 1))
+            if DEBUG:
+                print(e)
+                print("*** Syntax error found in file {}, line {} ***".format(self.resfile, self.error_line_num + 1))
             if DEBUG:
                 raise
             else:
@@ -1926,7 +1932,8 @@ class ShelXlFile():
             if self.twin:
                 basfs = flatten(self.basf)
                 if int(self.twin.allowed_N) != len(basfs):
-                    print('*** Invalid TWIN instruction! BASF with wrong number of parameters. ***')
+                    if DEBUG:
+                        print('*** Invalid TWIN instruction! BASF with wrong number of parameters. ***')
 
     def restore_acta_card(self, acta: str):
         """
@@ -2134,7 +2141,8 @@ class ShelXlFile():
             elif line[:4] == 'CELL':
                 # CELL λ a b c α β γ
                 if not lastcard == 'TITL':
-                    print('TITL is missing.')
+                    if DEBUG:
+                        print('TITL is missing.')
                     # raise ParseOrderError
                 if len(spline) >= 8:
                     self.cell = [float(x) for x in spline[2:8]]
@@ -2147,7 +2155,8 @@ class ShelXlFile():
             elif line[:4] == "ZERR":
                 # ZERR Z esd(a) esd(b) esd(c) esd(α) esd(β) esd(γ)
                 if not lastcard == 'CELL':
-                    print('*** Invalid SHELX file!')
+                    if DEBUG:
+                        print('*** Invalid SHELX file!')
                     raise ParseOrderError
                 if not self.cell:
                     raise ParseOrderError('*** Cell parameters missing! ***')
@@ -2192,7 +2201,8 @@ class ShelXlFile():
                     try:
                         self.unit = self.assign_card(UNIT(spline, list_of_lines), line_num)
                     except ValueError:
-                        print('*** Non-numeric value in SFAC instruction! ***')
+                        if DEBUG:
+                            print('*** Non-numeric value in SFAC instruction! ***')
                         raise
                 else:
                     raise ParseOrderError
@@ -2206,7 +2216,8 @@ class ShelXlFile():
                 # negative is non-centrosymmetric
                 self.latt = spline[1]
                 if not lastcard == 'ZERR':
-                    print('*** ZERR instruction is missing! ***')
+                    if DEBUG:
+                        print('*** ZERR instruction is missing! ***')
                     # raise ParseOrderError
                 continue
             elif line[:4] in ['L.S.', 'CGLS']:
@@ -2485,8 +2496,9 @@ class ShelXlFile():
             elif line[:1] == '+':
                 pass
             else:
-                print(line)
-                raise ParseUnknownParam
+                if DEBUG:
+                    print(line)
+                    raise ParseUnknownParam
 
     def __repr__(self):
         """
@@ -2549,8 +2561,9 @@ class ShelXlFile():
             with open(os.path.abspath(resfile), 'r') as f:
                 reslist = f.read().splitlines(keepends=False)
         except (IOError) as e:
-            print(e)
-            print('*** CANNOT OPEN NESTED INPUT FILE {} ***'.format(resfile))
+            if DEBUG:
+                print(e)
+                print('*** CANNOT OPEN NESTED INPUT FILE {} ***'.format(resfile))
             return reslist
         return reslist
 
@@ -2564,7 +2577,8 @@ class ShelXlFile():
             #self.write_shelx_file(resfile)
             self.__init__(self.resfile)
         else:
-            print('*** Can not read empty file data! ***')
+            if DEBUG:
+                print('*** Can not read empty file data! ***')
 
     def write_shelx_file(self, filename=None, verbose=False):
         if not filename:
@@ -2651,7 +2665,8 @@ class ShelXlFile():
         try:
             partnum = int(part[1])
         except(ValueError, IndexError):
-            print('*** Wrong PART definition found! Check your PART instructions ***')
+            if DEBUG:
+                print('*** Wrong PART definition found! Check your PART instructions ***')
             partnum = 0
         if len(part) > 2:
             sof = float(part[2])
@@ -2680,7 +2695,8 @@ class ShelXlFile():
         try:
             afixnum = int(spline[1])
         except(ValueError, IndexError):
-            print('*** Wrong AFIX definition in line {}. Check your AFIX instructions ***'.format(line_num))
+            if DEBUG:
+                print('*** Wrong AFIX definition in line {}. Check your AFIX instructions ***'.format(line_num))
             afixnum = 0
         if len(spline) > 2:
             d = float(spline[2])
