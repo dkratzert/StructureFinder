@@ -374,7 +374,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if not fname:
             self.progress.hide()
             self.abort_import_button.hide()
-        filecrawler.put_cifs_in_db(self, searchpath=fname)
+        filecrawler.put_cifs_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked())
         self.progress.hide()
         self.structures.database.init_textsearch()
         self.structures.populate_fulltext_search_table()
@@ -980,7 +980,7 @@ class RunIndexerThread(QtCore.QThread):
         """
         Runs the indexer thread
         """
-        filecrawler.put_cifs_in_db(self.strf)
+        filecrawler.put_cifs_in_db(self.strf, fillres=self.ui.add_res.isChecked())
 
 
 if __name__ == "__main__":
