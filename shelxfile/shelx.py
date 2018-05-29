@@ -22,7 +22,7 @@ import time
 from math import radians, cos, sin, sqrt
 from typing import List
 
-from shelx.dsrmath import atomic_distance
+from shelxfile.dsrmath import atomic_distance, Matrix, frac_to_cart, subtract_vect, determinante, my_isnumeric
 
 PROFILE = False
 DEBUG = False
@@ -2801,7 +2801,7 @@ if __name__ == "__main__":
     #get_commands()
     #sys.exit()
 
-    file = r'p21c.res'
+    file = r'test-data/p21c.res'
     try:
         shx = ShelXlFile(file)
     except Exception:
