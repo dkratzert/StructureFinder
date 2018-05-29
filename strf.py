@@ -936,7 +936,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.dateEdit1.setDate(QtCore.QDate(date.today()))
         self.ui.dateEdit2.setDate(QtCore.QDate(date.today()))
 
-
     def clear_fields(self) -> None:
         """
         Clears all residuals fields.
@@ -964,7 +963,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cCDCNumberLineEdit.clear()
         self.ui.refl2sigmaLineEdit.clear()
         self.ui.uniqReflLineEdit.clear()
-
 
 
 class RunIndexerThread(QtCore.QThread):

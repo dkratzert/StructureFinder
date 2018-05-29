@@ -284,6 +284,7 @@ class DatabaseRequest():
                 #print(args[0])
                 self.cur.executemany(request, *args)
             else:
+                #print(request, args)
                 self.cur.execute(request, *args)
             last_rowid = self.cur.lastrowid
         except OperationalError as e:
@@ -533,7 +534,7 @@ class StructureTable():
         alphaerror = get_error_from_value(alpha)
         betaerror = get_error_from_value(beta)
         gammaerror = get_error_from_value(gamma)
-        vol = ''
+        vol = volume
         if isinstance(a, str):
             a = a.split('(')[0]
             b = b.split('(')[0]

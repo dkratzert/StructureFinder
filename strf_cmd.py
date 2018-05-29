@@ -33,7 +33,11 @@ parser.add_argument("-o",
                     metavar='"file name"',
                     type=str,
                     help='Name of the output database file. Default: "structuredb.sqlite"')
-
+parser.add_argument("-r",
+                    dest="fillres",
+                    default=False,
+                    action='store_true',
+                    help='Also adds SHELX .res files to the database.')
 
 args = parser.parse_args()
 
@@ -72,7 +76,7 @@ else:
         structures = database_handler.StructureTable(dbfilename)
         try:
             ncifs = filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex,
-                                                       structures=structures, lastid=lastid)
+                                               structures=structures, lastid=lastid, fillres=args.fillres)
         except OSError as e:
             print("Unable to collect files:")
             print(e)

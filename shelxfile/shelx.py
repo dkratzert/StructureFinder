@@ -25,7 +25,7 @@ from typing import List
 from shelxfile.dsrmath import atomic_distance, Matrix, frac_to_cart, subtract_vect, determinante, my_isnumeric
 
 PROFILE = False
-DEBUG = True
+DEBUG = False
 
 """
 TODO:
@@ -858,6 +858,9 @@ class SYMM(Command):
 
     def __repr__(self):
         return "\n".join(["SYMM  " + "  ".join(x) for x in self.symmcards])
+    
+    def __str__(self):
+        return "\n".join(["SYMM  " + "  ".join(x) for x in self.symmcards])
 
 
 class FVAR():
@@ -1427,7 +1430,10 @@ class Atoms():
         """
         a1 = self.get_atom_by_name(atom1)
         a2 = self.get_atom_by_name(atom2)
-        return atomic_distance([a1.xc, a1.yc, a1.zc], [a2.xc, a2.yc, a2.zc])
+        try:
+            return atomic_distance([a1.xc, a1.yc, a1.zc], [a2.xc, a2.yc, a2.zc])
+        except AttributeError:
+            return 0.0
 
     def atoms_in_class(self, name: str) -> list:
         """
@@ -1562,7 +1568,11 @@ class Atom(Atoms):
         self.name = line[0][:4]
         self.fullname = self.name+'_{}'.format(self.resinum)
         uvals = [float(x) for x in line[6:12]]
-        x, y, z = [float(x) for x in line[2:5]]
+        try:
+            x, y, z = [float(x) for x in line[2:5]]
+        except ValueError as e:
+            print(e, 'Line:', self.line_numbers[-1])
+            raise ParseUnknownParam
         if abs(x) > 4:
             fvar, x = split_fvar_and_parameter(x)
             self.shx.fvars.set_fvar_usage(fvar)
@@ -1789,6 +1799,7 @@ class ShelXlFile():
     _reslist = None
     restraints = None
     dsrlines = None
+    symmcards = None
 
     def __init__(self: 'ShelXlFile', resfile: str):
         """
@@ -2806,6 +2817,7 @@ if __name__ == "__main__":
     #sys.exit()
 
     file = r'test-data/p21c.res'
+    file = r"D:\frames\guest\Breit_BW_M88\work\Breit_BW_M88_0m_b.res"
     try:
         shx = ShelXlFile(file)
     except Exception:

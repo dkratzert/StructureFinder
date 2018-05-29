@@ -23,6 +23,7 @@ import zipfile
 
 from searcher import atoms, database_handler, fileparser
 from lattice.lattice import vol_unitcell
+from searcher.fileparser import Cif
 from shelxfile import shelx
 from shelxfile.shelx import ShelXlFile
 
@@ -31,7 +32,11 @@ excluded_names = ['ROOT',
                   'TMP',
                   'TEMP',
                   'Papierkorb',
-                  'Recycle.Bin']
+                  'Recycle.Bin',
+                  'dsrsaves',
+                  'BrukerShelXlesaves',
+                  'shelXlesaves'
+                  ]
 
 
 class MyZipBase(object):
@@ -189,6 +194,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                         print('{} files ...'.format(n))
                         structures.database.commit_db()
                     prognum += 1
+            continue
         if name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2') or name.endswith('.tgz'):
             if fullpath.endswith('.zip'):
                 z = MyZipReader(fullpath)
@@ -223,21 +229,31 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                         print('{} files ...'.format(n))
                         structures.database.commit_db()
                     prognum += 1
+            continue
         if name.endswith('.res') and fillres:
+            tst = None
             try:
                 res = shelx.ShelXlFile(fullpath)
             except Exception as e:
                 print(e)
+                print('res file not added.')
                 continue
-            tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=n, structures=structures)
+            if res:
+                tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=n, 
+                                        structures=structures, options=options)
             if not tst:
+                print('res file not added')
                 continue
+            if self:
+                self.add_table_row(name=name, path=fullpath,
+                               data=name, structure_id=str(n))
             n += 1
             num += 1
             if n % 1000 == 0:
                 print('{} files ...'.format(n))
                 structures.database.commit_db()
             prognum += 1
+            continue
         if self:
             if not self.decide_import:
                 # This means, import was aborted.
@@ -335,12 +351,16 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
     return True
 
 
-def fill_db_with_res_data(res: ShelXlFile, filename: str, path: str, structure_id: str, 
-                          structures: database_handler.StructureTable):
+def fill_db_with_res_data(res: ShelXlFile, filename: str, path: str, structure_id: str,
+                          structures: database_handler.StructureTable, options: dict):
+    if not all([res.a, res.b, res.c, res.alpha, res.beta, res.gamma, res.V]):
+        return False
     measurement_id = structures.fill_measuremnts_table(filename, structure_id)
     structures.fill_structures_table(path, filename, structure_id, measurement_id, res.titl)
     structures.fill_cell_table(structure_id, res.a, res.b, res.c, res.alpha, res.beta, res.gamma, res.V)
     for at in res.atoms:
+        if at.qpeak:
+            continue
         structures.fill_atoms_table(structure_id, at.name,
                                 at.element,
                                 at.x,
@@ -348,6 +368,20 @@ def fill_db_with_res_data(res: ShelXlFile, filename: str, path: str, structure_i
                                 at.z,
                                 at.sof,
                                 at.part)
+    cif = Cif(options=options)
+    cif.cif_data['_cell_length_a'] = res.a
+    cif.cif_data['_cell_length_b'] = res.b
+    cif.cif_data['_cell_length_b'] = res.c
+    cif.cif_data['_cell_length_b'] = res.alpha
+    cif.cif_data['_cell_length_b'] = res.beta
+    cif.cif_data['_cell_length_b'] = res.gamma
+    cif.cif_data["_cell_volume"] = res.V
+    cif.cif_data["_cell_formula_units_Z"] = res.Z
+    cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([str(x) for x in res.symmcards])
+    cif.cif_data["_chemical_formula_sum"] = " ".join(str(res.sfac_table).split()[1:])
+    cif.cif_data["_diffrn_radiation_wavelength"] = res.wavelen
+    cif.cif_data["_shelx_res_file"] = "\n".join([str(x) for x in res._reslist])
+    structures.fill_residuals_table(structure_id, cif)
     return True
 
 
