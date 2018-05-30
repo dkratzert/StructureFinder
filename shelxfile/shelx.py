@@ -18,6 +18,7 @@ from __future__ import print_function
 import os
 import re
 import sys
+import textwrap
 import time
 from math import radians, cos, sin, sqrt
 
@@ -705,7 +706,7 @@ class Command():
         self.line_numbers = line_nums
         self.residue_class = ''
         self.residue_number = 0
-        self.textline = ' '.join(spline).upper()
+        self.textline = ' '.join(spline)
         self.name = None
         self.atoms = []
 
@@ -1459,8 +1460,8 @@ class Atom(Atoms):
     kartesian coordinates and element type.
     """
     #                name    sfac     x         y        z       occ      u11      u12 ...
-    anisatomstr = '{:<4.4s}{:>3}{:>12.6f}{:>12.6f}{:>12.6f}{:>12.5f}{:>11.5f}{:>11.5f} =\n    ' \
-                  '{:>12.5f}{:>11.5f}{:>11.5f}{:>11.5f}'
+    anisatomstr = '{:<4.4s}{:>3}{:>12.6f}{:>12.6f}{:>12.6f}{:>12.5f}{:>11.5f}{:>11.5f}' \
+                  ' {:>12.5f}{:>11.5f}{:>11.5f}{:>11.5f}'
     #               name    sfac     x         y         z         occ      u11
     isoatomstr = '{:<5.5s} {:<3}{:>10.6f}  {:>10.6f}  {:>9.6f}  {:>9.5f}  {:>9.5f}'
     fragatomstr = '{:<5.5s} {:>10.6f}  {:>10.6f}  {:>9.6f}'
@@ -1910,72 +1911,6 @@ class ShelXlFile():
         else:
             self.run_after_parse()
 
-    @time_this_method
-    def run_after_parse(self):
-        if self.sump:
-            for x in self.sump:
-                for y in x:
-                    self.fvars.set_fvar_usage(int(y[1]))
-        for r in self.restraints:
-            if r.name == "DFIX" or r.name == "DANG":
-                if abs(r.d) > 4:
-                    fvar, value = split_fvar_and_parameter(r.d)
-                    self.fvars.set_fvar_usage(fvar)
-        if self.abin:
-            if len(self.abin) > 1:
-                self.fvars.set_fvar_usage(self.abin[0])
-                self.fvars.set_fvar_usage(self.abin[1])
-            else:
-                self.fvars.set_fvar_usage(self.abin[0])
-        # Check if basf parameters are consistent:
-        if self.basf:
-            if self.twin:
-                basfs = flatten(self.basf)
-                if int(self.twin.allowed_N) != len(basfs):
-                    if DEBUG:
-                        print('*** Invalid TWIN instruction! BASF with wrong number of parameters. ***')
-
-    def restore_acta_card(self, acta: str):
-        """
-        Place ACTA after UNIT
-        """
-        self.add_line(self.unit.line_numbers[-1] + 1, acta)
-
-    def orthogonal_matrix(self):
-        """
-        Converts von fractional to cartesian by .
-        Invert the matrix to do the opposite.
-
-        Old tests:
-        #>>> import mpmath as mpm
-        #>>> cell = (10.5086, 20.9035, 20.5072, 90, 94.13, 90)
-        #>>> coord = (-0.186843,   0.282708,   0.526803)
-        #>>> print(mpm.nstr(A*mpm.matrix(coord)))
-        [-2.74151]
-        [ 5.90959]
-        [ 10.7752]
-        #>>> cartcoord = mpm.matrix([['-2.74150542399906'], ['5.909586678'], ['10.7752007008937']])
-        #>>> print(mpm.nstr(A**-1*cartcoord))
-        [-0.186843]
-        [ 0.282708]
-        [ 0.526803]
-        """
-        return Matrix([[self.a, self.b * cos(self.gamma), self.c * cos(self.beta)],
-                       [0, self.b * sin(self.gamma),
-                        (self.c * (cos(self.alpha) - cos(self.beta) * cos(self.gamma)) / sin(self.gamma))],
-                       [0, 0, self.V / (self.a * self.b * sin(self.gamma))]])
-
-    @staticmethod
-    def vol_unitcell(a, b, c, al, be, ga) -> float:
-        """
-        calculates the volume of a unit cell
-        >>> v = ShelXlFile.vol_unitcell(2, 2, 2, 90, 90, 90)
-        >>> print(v)
-        8.0
-        """
-        ca, cb, cg = cos(radians(al)), cos(radians(be)), cos(radians(ga))
-        v = a * b * c * sqrt(1 + 2 * ca * cb * cg - ca ** 2 - cb ** 2 - cg ** 2)
-        return v
 
     @time_this_method
     def parse_shx_file(self):
@@ -2500,11 +2435,98 @@ class ShelXlFile():
                     print(line)
                     raise ParseUnknownParam
 
+    @time_this_method
+    def run_after_parse(self):
+        if self.sump:
+            for x in self.sump:
+                for y in x:
+                    self.fvars.set_fvar_usage(int(y[1]))
+        for r in self.restraints:
+            if r.name == "DFIX" or r.name == "DANG":
+                if abs(r.d) > 4:
+                    fvar, value = split_fvar_and_parameter(r.d)
+                    self.fvars.set_fvar_usage(fvar)
+        if self.abin:
+            if len(self.abin) > 1:
+                self.fvars.set_fvar_usage(self.abin[0])
+                self.fvars.set_fvar_usage(self.abin[1])
+            else:
+                self.fvars.set_fvar_usage(self.abin[0])
+        # Check if basf parameters are consistent:
+        if self.basf:
+            if self.twin:
+                basfs = flatten(self.basf)
+                if int(self.twin.allowed_N) != len(basfs):
+                    if DEBUG:
+                        print('*** Invalid TWIN instruction! BASF with wrong number of parameters. ***')
+
+    def restore_acta_card(self, acta: str):
+        """
+        Place ACTA after UNIT
+        """
+        self.add_line(self.unit.line_numbers[-1] + 1, acta)
+
+    def orthogonal_matrix(self):
+        """
+        Converts von fractional to cartesian by .
+        Invert the matrix to do the opposite.
+
+        Old tests:
+        #>>> import mpmath as mpm
+        #>>> cell = (10.5086, 20.9035, 20.5072, 90, 94.13, 90)
+        #>>> coord = (-0.186843,   0.282708,   0.526803)
+        #>>> print(mpm.nstr(A*mpm.matrix(coord)))
+        [-2.74151]
+        [ 5.90959]
+        [ 10.7752]
+        #>>> cartcoord = mpm.matrix([['-2.74150542399906'], ['5.909586678'], ['10.7752007008937']])
+        #>>> print(mpm.nstr(A**-1*cartcoord))
+        [-0.186843]
+        [ 0.282708]
+        [ 0.526803]
+        """
+        return Matrix([[self.a, self.b * cos(self.gamma), self.c * cos(self.beta)],
+                       [0, self.b * sin(self.gamma),
+                        (self.c * (cos(self.alpha) - cos(self.beta) * cos(self.gamma)) / sin(self.gamma))],
+                       [0, 0, self.V / (self.a * self.b * sin(self.gamma))]])
+
+    @staticmethod
+    def vol_unitcell(a, b, c, al, be, ga) -> float:
+        """
+        calculates the volume of a unit cell
+        >>> v = ShelXlFile.vol_unitcell(2, 2, 2, 90, 90, 90)
+        >>> print(v)
+        8.0
+        """
+        ca, cb, cg = cos(radians(al)), cos(radians(be)), cos(radians(ga))
+        v = a * b * c * sqrt(1 + 2 * ca * cb * cg - ca ** 2 - cb ** 2 - cg ** 2)
+        return v
+
     def __repr__(self):
         """
         Represents the shelxl object.
         """
-        return ""
+        resl = []
+        for num, line in enumerate(self._reslist):
+            if num in self.delete_on_write:
+                if DEBUG:
+                    pass
+                    # print('Deleted line {}'.format(num + 1))
+                continue
+            if line == '' and self._reslist[num + 1] == '':
+                continue
+            line = textwrap.wrap(str(line), 78, subsequent_indent='  ', drop_whitespace=False)
+            if len(line) > 1:
+                newline = []
+                for n, l in enumerate(line):
+                    if n < len(line) - 1:
+                        l += ' =\n'
+                    newline.append(l)
+                line = ' '.join(newline)
+            else:
+                line = ''.join(line)
+            resl.append(str(line))
+        return "\n".join(resl)
 
     # @time_this_method
     def read_file_to_list(self, resfile: str) -> list:
@@ -2835,7 +2857,6 @@ if __name__ == "__main__":
     #sys.exit()
 
     file = r'test-data/p21c.res'
-    file = r"D:\frames\guest\Breit_BW_M88\work\Breit_BW_M88_0m_b.res"
     try:
         shx = ShelXlFile(file)
     except Exception:
@@ -2853,6 +2874,7 @@ if __name__ == "__main__":
     print(shx.fvars.line_number)
     shx.cycles.set_refine_cycles(33)
     shx.write_shelx_file(r'./test.ins')
+    print(str(shx))
     print('######################')
     sys.exit()
     # for x in shx.atoms:

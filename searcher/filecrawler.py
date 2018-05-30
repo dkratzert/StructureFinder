@@ -381,7 +381,7 @@ def fill_db_with_res_data(res: ShelXlFile, filename: str, path: str, structure_i
     cif.cif_data["_chemical_formula_sum"] = " ".join(str(res.sfac_table).split()[1:])
     cif.cif_data["_diffrn_radiation_wavelength"] = res.wavelen
     try:
-        cif.cif_data["_shelx_res_file"] = "\n".join([str(x) for x in res._reslist])
+        cif.cif_data["_shelx_res_file"] = str(res)
     except(IndexError):
         pass
     structures.fill_residuals_table(structure_id, cif)
