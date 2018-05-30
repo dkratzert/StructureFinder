@@ -1280,7 +1280,7 @@ class Atoms():
     """
     def __init__(self, shx: 'ShelXlFile'):
         self.shx = shx
-        self.atoms = []  #:Atom
+        self.atoms = []
         self.atomsdict = {}
         self.nameslist = []
 
@@ -1575,7 +1575,8 @@ class Atom(Atoms):
         try:
             x, y, z = [float(x) for x in line[2:5]]
         except ValueError as e:
-            print(e, 'Line:', self.line_numbers[-1])
+            if DEBUG:
+                print(e, 'Line:', self.line_numbers[-1])
             raise ParseUnknownParam
         if abs(x) > 4:
             fvar, x = split_fvar_and_parameter(x)
@@ -1612,13 +1613,16 @@ class Atom(Atoms):
         else:
             if len(self.uvals) > 2:
                 # anisotropic atom
-                return Atom.anisatomstr.format(self.name, self.sfac_num, self.x, self.y, self.z, self.sof, *self.uvals)
+                try:
+                    return Atom.anisatomstr.format(self.name, self.sfac_num, self.x, self.y, self.z, self.sof, *self.uvals)
+                except(IndexError):
+                    return 'REM Error in U values.'
             else:
                 # isotropic atom
                 try:
                     return Atom.isoatomstr.format(self.name, self.sfac_num, self.x, self.y, self.z, self.sof, *self.uvals)
                 except(IndexError):
-                    return 'REM Error in U values.'
+                    return Atom.isoatomstr.format(self.name, self.sfac_num, self.x, self.y, self.z, self.sof, 0.04)
 
     @property
     def line_numbers(self) -> list:
@@ -2515,6 +2519,7 @@ class ShelXlFile():
                 continue
             if line == '' and self._reslist[num + 1] == '':
                 continue
+            # Generally, all Shelx opbjects have no line wrap. I do this now:
             line = textwrap.wrap(str(line), 78, subsequent_indent='  ', drop_whitespace=False)
             if len(line) > 1:
                 newline = []
