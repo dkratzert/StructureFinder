@@ -2519,19 +2519,23 @@ class ShelXlFile():
                 continue
             if line == '' and self._reslist[num + 1] == '':
                 continue
-            # Generally, all Shelx opbjects have no line wrap. I do this now:
-            line = textwrap.wrap(str(line), 78, subsequent_indent='  ', drop_whitespace=False)
-            if len(line) > 1:
-                newline = []
-                for n, l in enumerate(line):
-                    if n < len(line) - 1:
-                        l += ' =\n'
-                    newline.append(l)
-                line = ' '.join(newline)
-            else:
-                line = ''.join(line)
-            resl.append(str(line))
+            line = self.wrap_line(line)
+            resl.append(line)
         return "\n".join(resl)
+
+    def wrap_line(self, line: str) -> str:
+        # Generally, all Shelx opbjects have no line wrap. I do this now:
+        line = textwrap.wrap(str(line), 78, subsequent_indent='  ', drop_whitespace=False, replace_whitespace=False)
+        if len(line) > 1:
+            newline = []
+            for n, l in enumerate(line):
+                if n < len(line) - 1:
+                    l += ' =\n'
+                newline.append(l)
+            line = ' '.join(newline)
+        else:
+            line = ''.join(line)
+        return line
 
     # @time_this_method
     def read_file_to_list(self, resfile: str) -> list:
@@ -2619,7 +2623,8 @@ class ShelXlFile():
                     continue
                 if line == '' and self._reslist[num + 1] == '':
                     continue
-                f.write(str(line) + '\n')
+                line = self.wrap_line(line)
+                f.write(line + '\n')
         if verbose or DEBUG:
             print('File successfully written to {}'.format(os.path.abspath(filename)))
             return True
@@ -2879,7 +2884,8 @@ if __name__ == "__main__":
     print(shx.fvars.line_number)
     shx.cycles.set_refine_cycles(33)
     shx.write_shelx_file(r'./test.ins')
-    print(str(shx))
+    print('\n\n')
+    print(shx)
     print('######################')
     sys.exit()
     # for x in shx.atoms:
