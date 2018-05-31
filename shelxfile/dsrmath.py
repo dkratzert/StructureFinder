@@ -14,25 +14,23 @@ import random
 import string
 from math import sqrt, radians, cos, sin
 
-"""
-MIT License
-
-Copyright (c) 2018 Jens Luebben
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-"""
-#### Content by Jens Lübben: (Modified by Daniel Kratzert) ####
 
 class Array(object):
     """
+    MIT License
+
+    Copyright (c) 2018 Jens Luebben
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
     >>> a = Array([1, 2, 3, 4.1])
     >>> a+a
     Array([2, 4, 6, 8.2])
@@ -110,7 +108,21 @@ class Array(object):
 
 class Matrix(object):
     """
-    Missing: inverse, eigenvalues
+    MIT License
+
+    Copyright (c) 2018 Jens Luebben
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+
+    DK: Missing: inverse, eigenvalues
 
     >>> m = Matrix([[1, 2, 3], [4.1, 4.2, 4.3], [5, 6, 7]])
 
