@@ -37,7 +37,7 @@ parser.add_argument("-r",
                     dest="fillres",
                     default=False,
                     action='store_true',
-                    help='Also adds SHELX .res files to the database.')
+                    help='Also add SHELX .res files to the database.')
 
 args = parser.parse_args()
 
