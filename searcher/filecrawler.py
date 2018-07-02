@@ -352,6 +352,8 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
 
 def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: str,
                           structures: database_handler.StructureTable, options: dict):
+    if not res.cell:
+        return False
     if not all(res.cell.cell_list):
         return False
     if not res.cell.volume:
@@ -369,18 +371,19 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
                                     at.y,
                                     at.z,
                                     at.sof,
-                                    at.part)
+                                    at.part.n)
     cif = Cif(options=options)
     cif.cif_data['_cell_length_a'] = res.cell.a
     cif.cif_data['_cell_length_b'] = res.cell.b
     cif.cif_data['_cell_length_b'] = res.cell.c
-    cif.cif_data['_cell_length_b'] = res.cell.alpha
-    cif.cif_data['_cell_length_b'] = res.cell.beta
-    cif.cif_data['_cell_length_b'] = res.cell.gamma
+    cif.cif_data['_cell_length_b'] = res.cell.al
+    cif.cif_data['_cell_length_b'] = res.cell.be
+    cif.cif_data['_cell_length_b'] = res.cell.ga
     cif.cif_data["_cell_volume"] = res.cell.volume
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([str(x) for x in res.symmcards])
-    cif.cif_data["_chemical_formula_sum"] = " ".join(str(res.sfac_table).split()[1:])
+    # Just a bad hack. Need to implement real sum formula:
+    cif.cif_data["_chemical_formula_sum"] = "1 ".join(res.sfac_table.elements_list)
     cif.cif_data["_diffrn_radiation_wavelength"] = res.wavelen
     if res.R1:
         cif.cif_data["_refine_ls_R_factor_gt"] = res.R1
@@ -392,6 +395,12 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         cif.cif_data['_refine_ls_number_reflns'] = res.data
     if res.num_restraints:
         cif.cif_data['_refine_ls_number_restraints'] = res.num_restraints
+    if res.temp_in_Kelvin:
+        cif.cif_data['_diffrn_ambient_temperature'] = round(res.temp_in_Kelvin, 5)
+    if res.dhole:
+        cif.cif_data['_refine_diff_density_min'] = res.dhole
+    if res.hpeak:
+        cif.cif_data['_refine_diff_density_max'] = res.hpeak
     try:
         cif.cif_data["_shelx_res_file"] = str(res)
     except IndexError:

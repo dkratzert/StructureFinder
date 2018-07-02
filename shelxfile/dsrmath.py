@@ -220,9 +220,9 @@ class SymmetryElement(object):
 
     def __str__(self):
         string = r'''
-        |{aa:2} {ab:2} {ac:2}|   |{v:>4.2}|
+        |{aa:2} {ab:2} {ac:2}|    |{v:>4.2}|
         |{ba:2} {bb:2} {bc:2}| + |{vv:>4.2}|
-        |{ca:2} {cb:2} {cc:2}|   |{vvv:>4.2}|'''.format(aa=self.matrix[0, 0],
+        |{ca:2} {cb:2} {cc:2}|    |{vvv:>4.2}|'''.format(aa=self.matrix[0, 0],
                                                         ab=self.matrix[0, 1],
                                                         ac=self.matrix[0, 2],
                                                         ba=self.matrix[1, 0],

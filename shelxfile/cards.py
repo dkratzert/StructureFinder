@@ -1,8 +1,8 @@
 import re
 from typing import List
 
-from .dsrmath import my_isnumeric, SymmetryElement
-from .misc import chunks, ParseParamError, ParseNumError, \
+from shelxfile.dsrmath import my_isnumeric, SymmetryElement
+from shelxfile.misc import chunks, ParseParamError, ParseNumError, \
     ParseOrderError, DEBUG, ParseSyntaxError
 
 """
@@ -259,9 +259,12 @@ class ANIS(Command):
         """
         super(ANIS, self).__init__(shx, spline)
         p, atoms = self._parse_line(spline)
+        self.all_atoms = True
         if len(p) > 0:
+            self.all_atoms = False
             self.n = p[0]
         if len(atoms) > 0:
+            self.all_atoms = False
             self.atoms = atoms
 
     def __bool__(self):
@@ -299,6 +302,7 @@ class CELL(Command):
         """
         super(CELL, self).__init__(shx, spline)
         p, _ = self._parse_line(spline)
+        self.cell_list = []
         if len(p) > 0:
             self.wavelen = p[0]
         if len(p) > 6:
@@ -1351,9 +1355,9 @@ class LATT(Command):
                 4: [SymmetryElement(['0.0', '0.5', '0.5']),  # F-centered
                     SymmetryElement(['0.5', '0.0', '0.5']),
                     SymmetryElement(['0.5', '0.5', '0.0'])],
-                5: SymmetryElement(['0.0', '0.5', '0.5']),   # A-centered
-                6: SymmetryElement(['0.5', '0.0', '0.5']),   # B-centered
-                7: SymmetryElement(['0.5', '0.5', '0.0'])}   # C-centered
+                5: [SymmetryElement(['0.0', '0.5', '0.5'])],   # A-centered
+                6: [SymmetryElement(['0.5', '0.0', '0.5'])],   # B-centered
+                7: [SymmetryElement(['0.5', '0.5', '0.0'])]}   # C-centered
 
     def __init__(self, shx, spline: list):
         """
@@ -1654,10 +1658,9 @@ class BASF(Command):
     BASF can occour in multiple lines.
     """
 
-    def __init__(self, spline: list, line_numbers: list):
-        super(BASF, self).__init__(spline, line_numbers)
+    def __init__(self, shx, spline):
+        super(BASF, self).__init__(shx, spline)
         self.scale_factors, _ = self._parse_line(spline)
-        del self.atoms
 
     def __iter__(self):
         yield self.scale_factors

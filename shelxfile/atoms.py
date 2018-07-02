@@ -1,7 +1,7 @@
 from typing import List, Any
 
-from .dsrmath import atomic_distance, frac_to_cart
-from .misc import DEBUG, split_fvar_and_parameter, ParseUnknownParam
+from shelxfile.dsrmath import atomic_distance, frac_to_cart
+from shelxfile.misc import DEBUG, split_fvar_and_parameter, ParseUnknownParam
 from shelxfile.cards import AFIX, PART, RESI
 
 
@@ -210,6 +210,7 @@ class Atom():
     _isoatomstr = '{:<5.5s} {:<3}{:>10.6f}  {:>10.6f}  {:>9.6f}  {:>9.5f}  {:>9.5f}'
     _qpeakstr = '{:<5.5s} {:<3}{:>8.4f}  {:>8.4f}  {:>8.4f}  {:>9.5f}  {:<9.2f} {:<9.2f}'
     _fragatomstr = '{:<5.5s} {:>10.6f}  {:>10.6f}  {:>9.6f}'
+    atid = 0
 
     def __init__(self, shelx, spline: list, line_nums: list, line_number: int, part: PART = None,
                  afix: AFIX = None, resi: RESI = None, sof: float = 0) -> None:
@@ -221,7 +222,8 @@ class Atom():
         self.fullname = None  # Name including residue nimber like "C1_2"
         # Site occupation factor including free variable like 31.0
         self.sof = None
-        self.atomid = line_number
+        self.atomid = Atom.atid
+        Atom.atid += 1
         self.shx = shelx
         self.element = None
         # fractional coordinates:
@@ -262,8 +264,8 @@ class Atom():
         self.peak_height = 0.0
         self.cell = shelx.cell
         self.parse_line(spline)
-        if self.shx.anis:
-            self.parse_anis()
+        #if self.shx.anis:
+        #    self.parse_anis()
         for n, u in enumerate(self.uvals):
             if abs(u) > 4.0:
                 fvar, uval = split_fvar_and_parameter(u)
@@ -283,10 +285,10 @@ class Atom():
                     self.uvals = [0.04, 0.0, 0.0, 0.0, 0.0, 0.0]
         except (TypeError, KeyError, ValueError, IndexError):
             # ANIS with a list of atoms
-            if len(self.shx.anis) > 1:
+            if not self.shx.anis.all_atoms and self.shx.anis.atoms:
                 # if '_' in self.shx.anis[0]:
                 #    resinum = self.shx.anis[0].upper().split('_')[1]
-                for x in self.shx.anis[1:]:
+                for x in self.shx.anis.atoms:
                     if '_' in x:
                         name, resinum = x.upper().split('_')
                     else:
@@ -294,19 +296,11 @@ class Atom():
                         resinum = 0
                     if self.name == name and (int(self.resinum) == int(resinum) or resinum == '*'):
                         self.uvals = [0.04, 0.0, 0.0, 0.0, 0.0, 0.0]
-                        self.shx.anis.pop()
-                        if self.shx.anis == ['ANIS']:
-                            # ANIS finished, deactivating again:
-                            self.shx.anis = None
                     if x.startswith('$'):
                         if name[1:].upper() == self.element \
                                 and (int(self.resinum) == int(resinum) or resinum == '*'):
                             self.uvals = [0.04, 0.0, 0.0, 0.0, 0.0, 0.0]
-                            self.shx.anis.pop()
                             # TODO: This is a mess. Test and fix all sorts of ANIS possibilities.
-                            if self.shx.anis == ['ANIS']:
-                                # ANIS finished, deactivating again:
-                                self.shx.anis = None
             # ANIS for all atoms
             else:
                 if len(self.uvals) < 6:
