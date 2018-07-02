@@ -24,8 +24,7 @@ import zipfile
 from searcher import atoms, database_handler, fileparser
 from lattice.lattice import vol_unitcell
 from searcher.fileparser import Cif
-from shelxfile import shelx
-from shelxfile.shelx import ShelXlFile
+from shelxfile.shelx import ShelXFile
 
 excluded_names = ['ROOT',
                   '.OLEX',
@@ -233,7 +232,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
         if name.endswith('.res') and fillres:
             tst = None
             try:
-                res = shelx.ShelXlFile(fullpath)
+                res = ShelXFile(fullpath)
             except Exception as e:
                 print(e)
                 print('res file not added.')
@@ -351,38 +350,51 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
     return True
 
 
-def fill_db_with_res_data(res: ShelXlFile, filename: str, path: str, structure_id: str,
+def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: str,
                           structures: database_handler.StructureTable, options: dict):
-    if not all([res.a, res.b, res.c, res.alpha, res.beta, res.gamma, res.V]):
+    if not all(res.cell.cell_list):
+        return False
+    if not res.cell.volume:
         return False
     measurement_id = structures.fill_measuremnts_table(filename, structure_id)
     structures.fill_structures_table(path, filename, structure_id, measurement_id, res.titl)
-    structures.fill_cell_table(structure_id, res.a, res.b, res.c, res.alpha, res.beta, res.gamma, res.V)
+    structures.fill_cell_table(structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.al,
+                               res.cell.be, res.cell.ga, res.cell.volume)
     for at in res.atoms:
         if at.qpeak:
             continue
         structures.fill_atoms_table(structure_id, at.name,
-                                at.element,
-                                at.x,
-                                at.y,
-                                at.z,
-                                at.sof,
-                                at.part)
+                                    at.element,
+                                    at.x,
+                                    at.y,
+                                    at.z,
+                                    at.sof,
+                                    at.part)
     cif = Cif(options=options)
-    cif.cif_data['_cell_length_a'] = res.a
-    cif.cif_data['_cell_length_b'] = res.b
-    cif.cif_data['_cell_length_b'] = res.c
-    cif.cif_data['_cell_length_b'] = res.alpha
-    cif.cif_data['_cell_length_b'] = res.beta
-    cif.cif_data['_cell_length_b'] = res.gamma
-    cif.cif_data["_cell_volume"] = res.V
+    cif.cif_data['_cell_length_a'] = res.cell.a
+    cif.cif_data['_cell_length_b'] = res.cell.b
+    cif.cif_data['_cell_length_b'] = res.cell.c
+    cif.cif_data['_cell_length_b'] = res.cell.alpha
+    cif.cif_data['_cell_length_b'] = res.cell.beta
+    cif.cif_data['_cell_length_b'] = res.cell.gamma
+    cif.cif_data["_cell_volume"] = res.cell.volume
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([str(x) for x in res.symmcards])
     cif.cif_data["_chemical_formula_sum"] = " ".join(str(res.sfac_table).split()[1:])
     cif.cif_data["_diffrn_radiation_wavelength"] = res.wavelen
+    if res.R1:
+        cif.cif_data["_refine_ls_R_factor_gt"] = res.R1
+    if res.wR2:
+        cif.cif_data["_refine_ls_wR_factor_ref"] = res.wR2
+    if res.parameters:
+        cif.cif_data['_refine_ls_number_parameters'] = res.parameters
+    if res.data:
+        cif.cif_data['_refine_ls_number_reflns'] = res.data
+    if res.num_restraints:
+        cif.cif_data['_refine_ls_number_restraints'] = res.num_restraints
     try:
         cif.cif_data["_shelx_res_file"] = str(res)
-    except(IndexError):
+    except IndexError:
         pass
     structures.fill_residuals_table(structure_id, cif)
     return True
