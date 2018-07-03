@@ -17,21 +17,27 @@ import os
 import re
 import sys
 
-from shelxfile.cards import ACTA, FVAR, FVARs, REM, BOND, Restraints, DEFS, NCSY, ISOR, FLAT, \
+from .cards import ACTA, FVAR, FVARs, REM, BOND, Restraints, DEFS, NCSY, ISOR, FLAT, \
     BUMP, DFIX, DANG, SADI, SAME, RIGU, SIMU, DELU, CHIV, EADP, EXYZ, DAMP, HFIX, HKLF, SUMP, SYMM, LSCycles, \
     SFACTable, UNIT, BASF, TWIN, WGHT, BLOC, SymmCards, CONN, CONF, BIND, DISP, GRID, HTAB, MERG, FRAG, FREE, FMAP, \
     MOVE, PLAN, PRIG, RTAB, SHEL, SIZE, SPEC, STIR, TWST, WIGL, WPDB, XNPD, ZERR, CELL, LATT, MORE, MPLA, AFIX, PART, \
     RESI, ABIN, ANIS
-from shelxfile.atoms import Atoms, Atom
+from .atoms import Atoms, Atom
 from .misc import DEBUG, ParseOrderError, ParseNumError, ParseUnknownParam, \
     split_fvar_and_parameter, flatten, time_this_method, multiline_test, dsr_regex, wrap_line
 
 from math import radians, cos, sin, sqrt
 
-from shelxfile.dsrmath import Matrix
+from .dsrmath import Matrix
 
 """
 TODO:
+
+- shx.update_weight
+- shx.weight_difference
+- shx.atoms.angle(at1, at2, at3)
+- shx.atoms.tors(at1, at2, at3, at4)
+- shx.atom.change_type('xx')
 
 - Atoms.add_atom(position=None) method. default for position is after FVAR table
 - fit fragment without shelxl
@@ -42,11 +48,6 @@ TODO:
 - add remove_hydrogen_atoms(atom) method.
 - shx.remove_all_H([list of atoms], or all)
 - bond list
-- shx.update_weight
-- shx.weight_difference
-- shx.atoms.angle(at1, at2, at3)
-- shx.atoms.tors(at1, at2, at3, at4)
-- shx.atom.change_type('xx')
 - implement an add_afix(afixm, afixn, atoms, frag_fend=False, position=None, afix_options=None)
   default position is directly behind FVAR or FRAG/FEND if enabled
 - will read in lst file after refinement to fill shx.lst_file properties.
@@ -146,9 +147,10 @@ class ShelXFile():
         self.titl = ""
         self.exti = 0
         self.eqiv = []
+        self.bonds = []
         self.disp = []
         self.conn = None
-        self.conv = None
+        self.conf = None
         self.bind = []
         self.ansr = 0.001
         self.bloc = []
@@ -489,8 +491,7 @@ class ShelXFile():
                 continue
             elif word == 'BOND':
                 # BOND atomnames
-                self.bond =BOND(self, spline) 
-                self.assign_card(self.bond, line_num)
+                self.append_card(self.bonds, BOND(self, spline), line_num)
                 continue
             elif word == 'BUMP':
                 # BUMP s [0.02]
@@ -508,7 +509,7 @@ class ShelXFile():
             elif word == 'CONN':
                 # CONN bmax[12] r[#] atomnames or CONN bmax[12]
                 # bonded are d < (r1 + r2 + 0.5) Å
-                self.conn = CONN(self, spline) 
+                self.conn = CONN(self, spline)
                 self.assign_card(self.conn, line_num)
                 continue
             elif word == 'DEFS':
@@ -743,7 +744,7 @@ class ShelXFile():
                 if int(self.twin.allowed_N) != len(basfs):
                     if DEBUG:
                         print('*** Invalid TWIN instruction! BASF with wrong number of parameters. ***')
-        #for a in self.atoms:
+        # for a in self.atoms:
         #    a.resolve_restraints()
 
     def restore_acta_card(self, acta: str):
@@ -818,7 +819,7 @@ class ShelXFile():
                 if num in self.delete_on_write:
                     if DEBUG:
                         pass
-                        #print('Deleted line {}'.format(num + 1))
+                        # print('Deleted line {}'.format(num + 1))
                     continue
                 if line == '' and self._reslist[num + 1] == '':
                     continue
@@ -830,7 +831,6 @@ class ShelXFile():
             return True
         return True
 
-    # @time_this_method
     def read_file_to_list(self, resfile: str) -> list:
         """
         Read in shelx file and returns a list without line endings. +include files are inserted
@@ -838,13 +838,10 @@ class ShelXFile():
         :param resfile: The path to a SHLEL .res or .ins file.
         """
         reslist = []
-        #resnodes = ResList()
         includefiles = []
         try:
             with open(resfile, 'r') as f:
                 reslist = f.read().splitlines(keepends=False)
-                #for ll in reslist:
-                    #resnodes.append(ll)
                 for n, line in enumerate(reslist):
                     if line.startswith('+'):
                         try:
@@ -884,7 +881,7 @@ class ShelXFile():
         try:
             with open(os.path.abspath(resfile), 'r') as f:
                 reslist = f.read().splitlines(keepends=False)
-        except (IOError) as e:
+        except IOError as e:
             if DEBUG:
                 print(e)
                 print('*** CANNOT OPEN NESTED INPUT FILE {} ***'.format(resfile))
@@ -1042,14 +1039,14 @@ class ShelXFile():
             except(IndexError, ValueError):
                 if DEBUG:
                     pass
-                    #raise
+                    # raise
                 pass
             try:
                 self.data = int(spline[-2])
             except IndexError:
                 if DEBUG:
                     pass
-                    #raise
+                    # raise
                 pass
         if ShelXFile._wr2_regex.match(line):
             try:
@@ -1057,7 +1054,7 @@ class ShelXFile():
             except(IndexError, ValueError):
                 if DEBUG:
                     pass
-                    #raise
+                    # raise
                 pass
         if ShelXFile._parameters_regex.match(line):
             try:
@@ -1067,7 +1064,7 @@ class ShelXFile():
             except IndexError:
                 if DEBUG:
                     pass
-                    #raise
+                    # raise
                 pass
             try:
                 self.num_restraints = int(spline[-2])
@@ -1131,3 +1128,33 @@ if __name__ == "__main__":
     print('\n\n')
     print(shx.hklf)
     print('######################')
+    sys.exit()
+    # for x in shx.atoms:
+    #    print(x)
+    # shx.reload()
+    # for x in shx.restraints:
+    #    print(x)
+    # for x in shx.rem:
+    #    print(x)
+    # print(shx.size)
+    # for x in shx.sump:
+    #    print(x)
+    # print(float(shx.temp)+273.15)
+    # print(shx.atoms.atoms_in_class('CCF3'))
+    #sys.exit()
+    from misc import walkdir
+    files = walkdir(r'd:\frames\guest', '.res')
+    print('finished')
+    for f in files:
+        if "dsrsaves" in str(f) or ".olex" in str(f) or 'ED' in str(f) or \
+                'shelXlesaves' in str(f) or "SAVEHIST" in str(f):
+            continue
+        #path = f.parent
+        #file = f.name
+        #print(path.joinpath(file))
+        #id = id_generator(size=4)
+        #copy(str(f), Path(r"d:/Github/testresfiles/").joinpath(id+file))
+        #print('copied', str(f.name))
+        print(f)
+        shx = ShelXFile(f)
+        # print(len(shx.atoms), f)

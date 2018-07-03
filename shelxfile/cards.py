@@ -483,6 +483,7 @@ class SIZE(Command):
         """
         super(SIZE, self).__init__(shx, spline)
         p, _ = self._parse_line(spline)
+        self.dx, self.dy, self.dz = None, None, None
         if len(p) > 0:
             self.dx = p[0]
         if len(p) > 1:
