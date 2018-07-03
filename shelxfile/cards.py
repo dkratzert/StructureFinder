@@ -1,5 +1,4 @@
 import re
-from typing import List
 
 from shelxfile.dsrmath import my_isnumeric, SymmetryElement
 from shelxfile.misc import chunks, ParseParamError, ParseNumError, \
