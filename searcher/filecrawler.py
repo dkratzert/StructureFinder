@@ -234,14 +234,14 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
             try:
                 res = ShelXFile(fullpath)
             except Exception as e:
-                print(e)
-                print('res file not added.')
+                #print(e)
+                #print('res file not added.')
                 continue
             if res:
                 tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=n,
                                             structures=structures, options=options)
             if not tst:
-                print('res file not added')
+                #print('res file not added')
                 continue
             if self:
                 self.add_table_row(name=name, path=fullpath,
@@ -365,8 +365,9 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
     for at in res.atoms:
         if at.qpeak:
             continue
-        structures.fill_atoms_table(structure_id, at.name,
-                                    at.element,
+        structures.fill_atoms_table(structure_id, 
+                                    at.name,
+                                    at.element.capitalize(),
                                     at.x,
                                     at.y,
                                     at.z,

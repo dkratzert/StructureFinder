@@ -17,12 +17,12 @@ import os
 import re
 import sys
 
-from .cards import ACTA, FVAR, FVARs, REM, BOND, Restraints, DEFS, NCSY, ISOR, FLAT, \
+from shelxfile.cards import ACTA, FVAR, FVARs, REM, BOND, Restraints, DEFS, NCSY, ISOR, FLAT, \
     BUMP, DFIX, DANG, SADI, SAME, RIGU, SIMU, DELU, CHIV, EADP, EXYZ, DAMP, HFIX, HKLF, SUMP, SYMM, LSCycles, \
     SFACTable, UNIT, BASF, TWIN, WGHT, BLOC, SymmCards, CONN, CONF, BIND, DISP, GRID, HTAB, MERG, FRAG, FREE, FMAP, \
     MOVE, PLAN, PRIG, RTAB, SHEL, SIZE, SPEC, STIR, TWST, WIGL, WPDB, XNPD, ZERR, CELL, LATT, MORE, MPLA, AFIX, PART, \
     RESI, ABIN, ANIS
-from .atoms import Atoms, Atom
+from shelxfile.atoms import Atoms, Atom
 from .misc import DEBUG, ParseOrderError, ParseNumError, ParseUnknownParam, \
     split_fvar_and_parameter, flatten, time_this_method, multiline_test, dsr_regex, wrap_line
 
@@ -32,7 +32,7 @@ from .dsrmath import Matrix
 
 """
 TODO:
-
+- get sum formula from Z, SFAC and UNIT
 - shx.update_weight
 - shx.weight_difference
 - shx.atoms.angle(at1, at2, at3)
@@ -200,7 +200,7 @@ class ShelXFile():
             if DEBUG:
                 raise
             else:
-                print('*** Parser Error ***')
+                # print('*** Parser Error ***')
                 return
         else:
             try:

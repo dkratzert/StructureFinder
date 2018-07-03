@@ -1,7 +1,7 @@
 import re
 
-from shelxfile.dsrmath import my_isnumeric, SymmetryElement
-from shelxfile.misc import chunks, ParseParamError, ParseNumError, \
+from .dsrmath import my_isnumeric, SymmetryElement
+from .misc import chunks, ParseParamError, ParseNumError, \
     ParseOrderError, DEBUG, ParseSyntaxError
 
 """
@@ -161,9 +161,10 @@ class Restraint():
         if not self.atoms:
             return
         if len(self.atoms[-1]) != 2:
-            print('*** Wrong number of numerical parameters ***')
-            print('Instruction: {}'.format(self.textline))
-            # raise ParseNumError
+            if DEBUG:
+                print('*** Wrong number of numerical parameters ***')
+                print('Instruction: {}'.format(self.textline))
+                raise ParseNumError
 
     def __iter__(self):
         for x in self.textline.split():
@@ -481,8 +482,8 @@ class SIZE(Command):
         SIZE dx dy dz
         """
         super(SIZE, self).__init__(shx, spline)
-        p, _ = self._parse_line(spline)
         self.dx, self.dy, self.dz = None, None, None
+        p, _ = self._parse_line(spline)
         if len(p) > 0:
             self.dx = p[0]
         if len(p) > 1:
@@ -887,7 +888,8 @@ class FVARs():
         if len(self.fvars) >= abs(fvarnum):
             self.fvars[fvarnum - 1].usage += times
         elif fvarnum > 1:
-            print('*** Free variable {} is not defined but used! ***'.format(fvarnum))
+            if DEBUG:
+                print('*** Free variable {} is not defined but used! ***'.format(fvarnum))
             # raise Exception
 
     def get_fvar_usage(self, fvarnum):
@@ -1120,9 +1122,10 @@ class DFIX(Restraint):
         self._paircheck()
         if not self.d:
             raise ParseNumError
-        if 0.0001 < self.d <= self.s:  # Raise exception if d is smaller than s
-            print('*** WRONG ODER of INSTRUCTIONS. d is smaller than s ***')
-            print("{}".format(self.textline))
+        if DEBUG:
+            if 0.0001 < self.d <= self.s:  # Raise exception if d is smaller than s
+                print('*** WRONG ODER of INSTRUCTIONS. d is smaller than s ***')
+                print("{}".format(self.textline))
 
 
 class DANG(Restraint):

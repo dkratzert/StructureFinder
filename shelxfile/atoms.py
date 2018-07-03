@@ -1,6 +1,7 @@
+from typing import List, Any
 
-from shelxfile.dsrmath import atomic_distance, frac_to_cart
-from shelxfile.misc import DEBUG, split_fvar_and_parameter, ParseUnknownParam
+from .dsrmath import atomic_distance, frac_to_cart
+from .misc import DEBUG, split_fvar_and_parameter, ParseUnknownParam
 from shelxfile.cards import AFIX, PART, RESI
 
 
@@ -199,6 +200,8 @@ class Atom():
     """
     An Opbect holding all Properties of a shelxl atom plus some extra information like
     kartesian coordinates and element type.
+
+    :type restraints: List[Restraint]
     """
     #                name    sfac     x         y        z       occ      u11      u12 ...
     _anisatomstr = '{:<4.4s}{:>3}{:>12.6f}{:>12.6f}{:>12.6f}{:>12.5f}{:>11.5f}{:>11.5f}' \
@@ -331,7 +334,7 @@ class Atom():
         if self.shx.end:  # After 'END' can only be Q-peaks!
             self.qpeak = True
         self.sfac_num = int(line[1])
-        self.element = self.shx.sfac2elem(self.sfac_num).upper()
+        self.element = self.shx.sfac2elem(self.sfac_num).capitalize()
         self.xc, self.yc, self.zc = frac_to_cart([self.x, self.y, self.z], self.cell.cell_list)
 
     def __iter__(self):
