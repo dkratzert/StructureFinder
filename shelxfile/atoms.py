@@ -1,4 +1,3 @@
-from typing import List, Any
 
 from shelxfile.dsrmath import atomic_distance, frac_to_cart
 from shelxfile.misc import DEBUG, split_fvar_and_parameter, ParseUnknownParam
@@ -200,8 +199,6 @@ class Atom():
     """
     An Opbect holding all Properties of a shelxl atom plus some extra information like
     kartesian coordinates and element type.
-
-    :type restraints: List[Restraint]
     """
     #                name    sfac     x         y        z       occ      u11      u12 ...
     _anisatomstr = '{:<4.4s}{:>3}{:>12.6f}{:>12.6f}{:>12.6f}{:>12.5f}{:>11.5f}{:>11.5f}' \
