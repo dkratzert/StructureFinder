@@ -303,6 +303,8 @@ class CELL(Command):
         super(CELL, self).__init__(shx, spline)
         p, _ = self._parse_line(spline)
         self.cell_list = []
+        # TODO: calculate volume here after parse
+        self.volume = None
         if len(p) > 0:
             self.wavelen = p[0]
         if len(p) > 6:
