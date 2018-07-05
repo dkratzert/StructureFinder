@@ -384,7 +384,10 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([str(x) for x in res.symmcards])
     # Just a bad hack. Need to implement real sum formula:
-    cif.cif_data["_chemical_formula_sum"] = res.sum_formula
+    try:
+        cif.cif_data["_chemical_formula_sum"] = res.sum_formula
+    except ZeroDivisionError:
+        pass
     cif.cif_data["_diffrn_radiation_wavelength"] = res.wavelen
     if res.R1:
         cif.cif_data["_refine_ls_R_factor_gt"] = res.R1
