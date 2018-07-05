@@ -1055,7 +1055,10 @@ class ShelXFile():
             return ''
         if len(val) == len(eli):
             for el, num in zip(self.sfac_table.elements_list, self.unit.values):
-                formstring += "{}{:,g} ".format(el, num/self.Z)
+                try:
+                    formstring += "{}{:,g} ".format(el, num/self.Z)
+                except ZeroDivisionError:
+                    return ''
         return formstring.strip()
 
     @property
