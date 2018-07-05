@@ -371,6 +371,10 @@ class ShelXFile():
                 if len(spline) >= 8:
                     self.zerr = ZERR(self, spline)
                     self.Z = self.zerr.Z
+                    if self.Z < 1:
+                        self.Z = 1
+                        if DEBUG:
+                            print('Z value is zero.')
                     self.assign_card(self.zerr, line_num)
                 lastcard = 'ZERR'
                 continue
