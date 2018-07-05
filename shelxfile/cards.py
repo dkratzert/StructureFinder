@@ -198,14 +198,14 @@ class Command():
         :return: numerical parameters and words
         """
         if '_' in spline[0]:
-            self.name, suffix = spline[0].upper().split('_')
+            self.card_name, suffix = spline[0].upper().split('_')
             if any([x.isalpha() for x in suffix]):
                 self.residue_class = suffix
             else:
                 # TODO: implement _+, _- and _*
                 self.residue_number = int(suffix)
         else:
-            self.name = spline[0].upper()
+            self.card_name = spline[0].upper()
         numparams = []
         words = []
         for x in spline[1:]:  # all values after SHELX card
@@ -279,7 +279,8 @@ class MPLA(Command):
         """
         super(MPLA, self).__init__(shx, spline)
         p, self.atoms = self._parse_line(spline, intnums=True)
-        self.na = p[0]
+        if len(p) > 0:
+            self.na = p[0]
 
 
 class MORE(Command):
@@ -362,6 +363,31 @@ class AFIX(Command):
             return True
         else:
             return False
+
+
+class Residues():
+
+    def __init__(self):
+        self.all_residues = []
+        self.classes = {}
+        self.numbers = {}
+
+    def append(self, resi: 'RESI') -> None:
+        """
+        Adds a new residues to the list of residues.
+        """
+        self.all_residues.append(resi)
+        # Collect dict with class: numbers
+        if resi.residue_class in self.classes:
+            self.classes[resi.residue_class].append(resi.residue_number)
+        else:
+            self.classes[resi.residue_class] = [resi.residue_number]
+        # Collect dict with number: classes
+        if resi.residue_number in self.numbers:
+            if DEBUG:
+                print('*** Duplicate residue number {} found! ***'.format(resi.residue_number))
+        else:
+            self.numbers[resi.residue_number] = resi.residue_class
 
 
 class RESI(Command):
@@ -451,8 +477,9 @@ class PART(Command):
             self.n = int(p[0])
         except(ValueError, IndexError):
             if DEBUG:
-                print('*** Wrong PART definition found! Check your PART instructions ***')
-                raise 
+                print('*** Wrong PART definition in line {} found! '
+                      'Check your PART instructions ***'.format(shx.error_line_num))
+                raise
             self.n = 0
         if len(p) > 1:
             self.sof = float(p[1])
@@ -840,9 +867,7 @@ class FVARs():
 
     def __getitem__(self, item: int) -> str:
         # SHELXL counts fvars from 1 to x:
-        item = item - 1
-        if item < 0:
-            raise IndexError("*** Illegal free variable number ***")
+        item = abs(item) - 1
         return self.fvars[item].fvar_value
 
     def __setitem__(self, key, fvar_value):
@@ -1002,6 +1027,15 @@ class Restraints():
             return "\n".join([str(x) for x in self._restraints])
         else:
             return 'No Restraints in file.'
+
+    @staticmethod
+    def _resolve_atoms(shx, atoms):
+        for atnum, ap in enumerate(atoms):
+            for num, atname in enumerate(ap):
+                try:
+                    atoms[atnum][num] = shx.atoms.get_atom_by_name(atname)
+                except TypeError:
+                    continue
 
 
 class DEFS(Restraint):
