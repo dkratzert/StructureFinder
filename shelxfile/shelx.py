@@ -12,6 +12,10 @@
 """
 This is a full implementation of the SHELXL file syntax. Additionally it is able to edit SHELX properties with Python.
 The implementation is Python3-only and supports SHELXL after 2017 (You should not use old versions anyway).
+
+The parser is quiet about the most errors unless you enable DEBUG in misc.py. The parser will try to read the 
+SHELX file even if it has syntax errors, but if for example, the SFAC and UNIT instruction is not consistent 
+it will fail.
 """
 import os
 import re
@@ -21,10 +25,10 @@ from shelxfile.cards import ACTA, FVAR, FVARs, REM, BOND, Restraints, DEFS, NCSY
     BUMP, DFIX, DANG, SADI, SAME, RIGU, SIMU, DELU, CHIV, EADP, EXYZ, DAMP, HFIX, HKLF, SUMP, SYMM, LSCycles, \
     SFACTable, UNIT, BASF, TWIN, WGHT, BLOC, SymmCards, CONN, CONF, BIND, DISP, GRID, HTAB, MERG, FRAG, FREE, FMAP, \
     MOVE, PLAN, PRIG, RTAB, SHEL, SIZE, SPEC, STIR, TWST, WIGL, WPDB, XNPD, ZERR, CELL, LATT, MORE, MPLA, AFIX, PART, \
-    RESI, ABIN, ANIS
+    RESI, ABIN, ANIS, Residues
 from shelxfile.atoms import Atoms, Atom
 from .misc import DEBUG, ParseOrderError, ParseNumError, ParseUnknownParam, \
-    split_fvar_and_parameter, flatten, time_this_method, multiline_test, dsr_regex, wrap_line
+    split_fvar_and_parameter, flatten, time_this_method, multiline_test, dsr_regex, wrap_line, ParseSyntaxError
 
 from math import radians, cos, sin, sqrt
 
@@ -157,6 +161,7 @@ class ShelXFile():
         self.afix = None  # AFIX(self, [''])
         self.part = PART(self, ['PART',  '0'])
         self.resi = RESI(self, ['RESI',  '0'])
+        self.residues = Residues()
         self.dsrlines = []
         self.dsrline_nums = []
         self.symmcards = SymmCards(self)
@@ -182,6 +187,10 @@ class ShelXFile():
             print('Resfile is:', self.resfile)
         try:
             self._reslist = self.read_file_to_list(self.resfile)
+            if len(self._reslist) < 20:
+                if DEBUG:
+                    print('*** Not a SHELXL file: {} ***'.format(self.resfile))
+                    sys.exit()
         except UnicodeDecodeError:
             if DEBUG:
                 print('*** Unable to read file', self.resfile, '***')
@@ -190,6 +199,7 @@ class ShelXFile():
             self.parse_shx_file()
             pass
         except Exception as e:
+            #print('File not parsed:', self.resfile)
             if DEBUG:
                 try:
                     print(self.resfile[self.error_line_num])
@@ -206,6 +216,7 @@ class ShelXFile():
             try:
                 self.run_after_parse()
             except Exception as e:
+                #print('File not parsed!:', self.resfile)
                 if DEBUG:
                     print(e)
                     raise
@@ -240,7 +251,8 @@ class ShelXFile():
                 wrapindex += 1
                 line = line.rpartition('=')[0] + self._reslist[line_num + wrapindex]
                 self.delete_on_write.update([line_num + wrapindex])
-                self._reslist[line_num + wrapindex] = ''
+                # Do not activate this, otherwise, the unwrapping stops after two lines.
+                # self._reslist[line_num + wrapindex] = ''
                 list_of_lines.append(line_num + wrapindex)  # list containing the lines of a multiline command
             # The current line splitted:
             spline = line.split('!')[0].split()  # Ignore comments with "!", see how this performes
@@ -256,6 +268,8 @@ class ShelXFile():
             if line.startswith('RESI'):
                 self.resi = RESI(self, spline)
                 self.assign_card(self.resi, line_num)
+                if self.resi.residue_number > 0:
+                    self.residues.append(self.resi)
                 continue
             # Now collect the PART:
             if line.startswith(('END', 'HKLF')) and self.part:
@@ -309,7 +323,7 @@ class ShelXFile():
                 continue
             elif word == 'BASF':
                 # BASF scale factors
-                self.append_card(self.restraints, BASF(self, spline), line_num)
+                self.assign_card(BASF(self, spline), line_num)
                 continue
             elif word == 'HFIX':
                 # HFIX mn U[#] d[#] atomnames
@@ -357,6 +371,10 @@ class ShelXFile():
                 if len(spline) >= 8:
                     self.zerr = ZERR(self, spline)
                     self.Z = self.zerr.Z
+                    if self.Z < 1:
+                        self.Z = 1
+                        if DEBUG:
+                            print('Z value is zero.')
                     self.assign_card(self.zerr, line_num)
                 lastcard = 'ZERR'
                 continue
@@ -368,6 +386,9 @@ class ShelXFile():
                 # if not self.zerr:
                 #    raise ParseOrderError
                 s = SYMM(self, spline)
+                if not self.latt:
+                    print("*** LATT instruction is missing! ***")
+                    raise ParseSyntaxError
                 if self.latt.centric:
                     self.symmcards.set_centric(True)
                 self.symmcards.append(s.symmcard)
@@ -411,6 +432,7 @@ class ShelXFile():
                 else:
                     raise ParseOrderError
                 if len(self.unit.values) != len(self.sfac_table.elements_list):
+                    print('*** Number of UNIT and SFAC values differ! ***')
                     raise ParseNumError
                 lastcard = 'UNIT'
                 continue
@@ -672,7 +694,7 @@ class ShelXFile():
                 continue
             elif word == 'TEMP':
                 # TEMP T[20]  -> in Celsius
-                self.temp = float(spline[1])
+                self.temp = float(spline[1].split('(')[0])
                 self.temp_in_Kelvin = self.temp + 273.15
                 continue
             elif word == 'TWIN':
@@ -731,6 +753,10 @@ class ShelXFile():
                 for y in x.fvars:
                     self.fvars.set_fvar_usage(y[1])
         for r in self.restraints:
+            if r.atoms:
+                pass
+                #print(r)
+                #Restraints._resolve_atoms(self, r.atoms)
             if r.name == "DFIX" or r.name == "DANG":
                 if abs(r.d) > 4:
                     fvar, value = split_fvar_and_parameter(r.d)
@@ -1016,6 +1042,44 @@ class ShelXFile():
     def index_of(self, obj):
         return self._reslist.index(obj)
 
+    @property
+    def sum_formula(self) -> str:
+        """
+        The sum formula of the structure with regards of the UNIT instruction.
+        """
+        formstring = ''
+        try:
+            val = self.unit.values
+            eli = self.sfac_table.elements_list
+        except AttributeError:
+            return ''
+        if len(val) == len(eli):
+            for el, num in zip(self.sfac_table.elements_list, self.unit.values):
+                try:
+                    formstring += "{}{:,g} ".format(el, num/self.Z)
+                except ZeroDivisionError:
+                    return ''
+        return formstring.strip()
+
+    @property
+    def sum_formula_exact(self) -> str:
+        """
+        The sum formula of the structure with all atom occupancies summed together.
+        """
+        formstring = ''
+        sumdict = {}
+        for el in self.sfac_table.elements_list:
+            for atom in self.atoms:
+                if atom.element.upper() == el.upper() and not atom.qpeak:
+                    if el in sumdict:
+                        sumdict[el] += atom.occupancy
+                    else:
+                        sumdict[el] = atom.occupancy
+            if el not in sumdict:
+                sumdict[el] = 0.0
+            formstring += "{}{:,g} ".format(el, sumdict[el])
+        return formstring.strip()
+
     def insert_frag_fend_entry(self, dbatoms: list, cell: list):
         """
         Inserts the FRAG ... FEND entry in the res file.
@@ -1043,7 +1107,7 @@ class ShelXFile():
                 pass
             try:
                 self.data = int(spline[-2])
-            except IndexError:
+            except(IndexError, ValueError):
                 if DEBUG:
                     pass
                     # raise
@@ -1084,15 +1148,45 @@ class ShelXFile():
 
 
 if __name__ == "__main__":
-    def runall():
-        """
-        >>> file = r'p21c.res'
-        >>> try:
-        >>>     shx = ShelXFile(file)
-        >>> except Exception:
-        >>>    raise
-        """
-        pass
+    #get_commands()
+    #sys.exit()
+    file = r'tests/014EP-4_a_shelxl.res'
+    try:
+        shx = ShelXFile(file)
+    except Exception:
+        raise
+    print(shx.sum_formula_exact)
+
+    #sys.exit()
+    from misc import walkdir
+    files = walkdir(r'D:\GitHub\testresfiles', '.res')
+    print('Indexing...')
+    num = 0
+    ex = ['dsrsaves', '.olex', 'ED', 'shelXlesaves', 'SAVEHIST']
+    ex2 = ['01S8sad', '12UFibca_c', '88Q9ibca_e', 'A506p', 'CW7Spna21_a', 'DWMDp21c', 'p21c_cmdline', 'VH75ibca_d',
+           'YVXZp', 'ZIXCpbcn_a']
+    #ex += ex2
+    for f in files:
+        cont = False
+        for e in ex:
+            if e in str(f):
+                cont = True
+        if cont:
+            continue
+        #path = f.parent
+        #file = f.name
+        #print(path.joinpath(file))
+        #id = id_generator(size=4)
+        #copy(str(f), Path(r"d:/Github/testresfiles/").joinpath(id+file))
+        #print('copied', str(f.name))
+        
+        #print(f)
+        shx = ShelXFile(f)
+        num += 1
+        #print(f)
+        #print(shx.sum_formula_exact)
+    print(num, 'Files')
+
 
     """
     def get_commands():
@@ -1105,56 +1199,3 @@ if __name__ == "__main__":
             if l:
                 print(str(l).split(">")[1].split("<")[0])
     """
-    #get_commands()
-    #sys.exit()
-
-    file = r'd:\frames\guest\PK_JS_CW_2035_2\work\p-1_a.res'
-    try:
-        shx = ShelXFile(file)
-    except Exception:
-        raise
-
-    print(shx.atoms.distance('Ga1', 'Al1'))
-    print(shx.hklf)
-    print(shx.sfac_table.is_exp(shx.sfac_table[1]))
-    print(shx.sfac_table)
-    shx.sfac_table.add_element('Zn')
-    print(shx.unit)
-    #print(shx.sfac_table.remove_element('In'))
-    print(shx.sfac_table)
-    print(shx.unit)
-    shx.cycles.set_refine_cycles(33)
-    shx.write_shelx_file(r'./test.ins')
-    print('\n\n')
-    print(shx.hklf)
-    print('######################')
-    sys.exit()
-    # for x in shx.atoms:
-    #    print(x)
-    # shx.reload()
-    # for x in shx.restraints:
-    #    print(x)
-    # for x in shx.rem:
-    #    print(x)
-    # print(shx.size)
-    # for x in shx.sump:
-    #    print(x)
-    # print(float(shx.temp)+273.15)
-    # print(shx.atoms.atoms_in_class('CCF3'))
-    #sys.exit()
-    from misc import walkdir
-    files = walkdir(r'd:\frames\guest', '.res')
-    print('finished')
-    for f in files:
-        if "dsrsaves" in str(f) or ".olex" in str(f) or 'ED' in str(f) or \
-                'shelXlesaves' in str(f) or "SAVEHIST" in str(f):
-            continue
-        #path = f.parent
-        #file = f.name
-        #print(path.joinpath(file))
-        #id = id_generator(size=4)
-        #copy(str(f), Path(r"d:/Github/testresfiles/").joinpath(id+file))
-        #print('copied', str(f.name))
-        print(f)
-        shx = ShelXFile(f)
-        # print(len(shx.atoms), f)
