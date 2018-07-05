@@ -243,7 +243,7 @@ def get_cell_parameters(structures: StructureTable, strid: str) -> str:
                       <i>&gamma;</i> = {5:>8.3f}&deg;,&nbsp;
                       <i>V</i> = {6}&nbsp;&angst;<sup>3</sup>&nbsp;&nbsp;&nbsp;&nbsp; 
             <div style="font-size:0pt" id='hidden-cell'>{0}  {1}  {2}  {3}  {4}  {5}</div>
-            """.format(*c)
+            """.format(c[0], c[1], c[2], c[3], c[4], c[5], round(c[6], 2))
     return cstr
 
 
