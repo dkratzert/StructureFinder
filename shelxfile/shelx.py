@@ -1077,7 +1077,7 @@ class ShelXFile():
                         sumdict[el] = atom.occupancy
             if el not in sumdict:
                 sumdict[el] = 0.0
-            formstring += "{}{:,g} ".format(el, sumdict[el])
+            formstring += "{}{:,g} ".format(el, round(sumdict[el], 2))
         return formstring.strip()
 
     def insert_frag_fend_entry(self, dbatoms: list, cell: list):

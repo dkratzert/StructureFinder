@@ -33,18 +33,25 @@ parser.add_argument("-o",
                     metavar='"file name"',
                     type=str,
                     help='Name of the output database file. Default: "structuredb.sqlite"')
+parser.add_argument("-c",
+                    dest="fillcif",
+                    default=False,
+                    action='store_true',
+                    help='Add .cif files (crystallographic information file) to the database.')
 parser.add_argument("-r",
                     dest="fillres",
                     default=False,
                     action='store_true',
-                    help='Also add SHELX .res files to the database.')
+                    help='Add SHELX .res files to the database.')
 
 args = parser.parse_args()
+
 
 def check_update():
     if update_check.is_update_needed(VERSION=VERSION):
         print('A new Version of StructureFinder is available at '
               'https://www.xs3.uni-freiburg.de/research/structurefinder')
+
 
 ncifs = 0
 try:
@@ -57,6 +64,9 @@ except IndexError:
     print("Please run this as 'stdb_rmd [directory]'\n")
     print("stdb_cmd will search for .cif files in [directory] recoursively.")
 else:
+    if not any([args.fillres, args.fillcif]):
+        print("Error: You need to give either option -c, -r or both.")
+        sys.exit()
     db = None
     structures = None
     time1 = time.time()
@@ -76,7 +86,8 @@ else:
         structures = database_handler.StructureTable(dbfilename)
         try:
             ncifs = filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex,
-                                               structures=structures, lastid=lastid, fillres=args.fillres)
+                                               structures=structures, lastid=lastid, 
+                                               fillres=args.fillres, fillcif=args.fillcif)
         except OSError as e:
             print("Unable to collect files:")
             print(e)
@@ -90,7 +101,7 @@ else:
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
-    tmessage = "\nTotal {3} cif files in '{4}'. Duration: {0:>2d} h, {1:>2d} m, {2:>3.2f} s"
+    tmessage = "\nTotal {3} cif/res files in '{4}'. Duration: {0:>2d} h, {1:>2d} m, {2:>3.2f} s"
     print(tmessage.format(int(h), int(m), s, ncifs, dbfilename))
     check_update()
 

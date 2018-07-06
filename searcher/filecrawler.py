@@ -139,10 +139,11 @@ def filewalker_walk(startdir: str, patterns: list):
 
 
 def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, lastid: int = 1, 
-                   structures=None, fillres=True) -> int:
+                   structures=None, fillcif=True, fillres=True) -> int:
     """
     Imports cif files from a certain directory
     :param fillres: Should it index res files or not.
+    :param fillcif: Should it index cif files or not.
     """
     if excludes:
         excluded_names.extend(excludes)
@@ -171,12 +172,12 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 prognum = 0
             self.progressbar(prognum, 0, 20)
         # This is really ugly copy&pase code. TODO: refractor this:
-        if name.endswith('.cif'):
+        if name.endswith('.cif') and fillcif:
             with open(fullpath, mode='r', encoding='ascii', errors="ignore") as f:
                 try:
                     cifok = cif.parsefile(f.readlines())
                     if not cifok:
-                        #print("Could not parse: {}.".format(fullpath.encode('ascii', 'ignore')))
+                        # print("Could not parse: {}.".format(fullpath.encode('ascii', 'ignore')))
                         continue
                 except IndexError:
                     continue
@@ -194,8 +195,10 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                         structures.database.commit_db()
                     prognum += 1
             continue
-        if name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2') or name.endswith('.tgz'):
+        if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2') 
+                or name.endswith('.tgz')) and fillcif:
             if fullpath.endswith('.zip'):
+                # MyZipReader defines .cif ending:
                 z = MyZipReader(fullpath)
             else:
                 z = MyTarReader(fullpath)
@@ -209,7 +212,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 try:
                     cifok = cif.parsefile(zippedfile)
                     if not cifok:
-                        #print("Could not parse: {}.".format(fullpath.encode('ascii', 'ignore')))
+                        # print("Could not parse: {}.".format(fullpath.encode('ascii', 'ignore')))
                         continue
                 except IndexError:
                     continue
@@ -264,7 +267,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
-    tmessage = 'Added {0} cif files ({4} in compressed files) to database in: {1:>2d} h, {2:>2d} m, {3:>3.2f} s'
+    tmessage = 'Added {0} cif/res files ({4} in compressed files) to database in: {1:>2d} h, {2:>2d} m, {3:>3.2f} s'
     print(tmessage.format(num - 1, int(h), int(m), s, zipcifs))
     if self:
         self.ui.statusbar.showMessage(tmessage.format(num - 1, int(h), int(m), s, zipcifs))
@@ -384,7 +387,7 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([repr(x) for x in res.symmcards])
     try:
-        cif.cif_data["_chemical_formula_sum"] = res.sum_formula
+        cif.cif_data["_chemical_formula_sum"] = res.sum_formula_exact
     except ZeroDivisionError:
         pass
     cif.cif_data["_diffrn_radiation_wavelength"] = res.wavelen

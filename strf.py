@@ -165,6 +165,16 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
         self.ui.ad_elementsIncLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.ad_elementsExclLineEdit.textChanged.connect(self.elements_fields_check)
+        self.ui.add_res.clicked.connect(self.res_checkbox_clicked)
+        self.ui.add_cif.clicked.connect(self.cif_checkbox_clicked)
+
+    def res_checkbox_clicked(self, click):
+        if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
+            self.ui.add_cif.setChecked(True)
+
+    def cif_checkbox_clicked(self, click):
+        if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
+            self.ui.add_cif.setChecked(True)
 
     def on_click_item(self, item):
         self.ui.tabWidget.setCurrentIndex(1)
@@ -374,7 +384,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if not fname:
             self.progress.hide()
             self.abort_import_button.hide()
-        filecrawler.put_cifs_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked())
+        filecrawler.put_cifs_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked(), 
+                                   fillcif=self.ui.add_cif.isChecked())
         self.progress.hide()
         self.structures.database.init_textsearch()
         self.structures.populate_fulltext_search_table()
@@ -966,21 +977,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cCDCNumberLineEdit.clear()
         self.ui.refl2sigmaLineEdit.clear()
         self.ui.uniqReflLineEdit.clear()
-
-
-class RunIndexerThread(QtCore.QThread):
-    def __init__(self, strf):
-        """
-        Make a new thread instance
-        """
-        QtCore.QThread.__init__(self)
-        self.strf = strf
-
-    def run(self):
-        """
-        Runs the indexer thread
-        """
-        filecrawler.put_cifs_in_db(self.strf, fillres=self.ui.add_res.isChecked())
 
 
 if __name__ == "__main__":
