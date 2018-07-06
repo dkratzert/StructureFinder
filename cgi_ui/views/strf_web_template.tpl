@@ -56,6 +56,10 @@ body {
     text-align:left;
 }
 
+#resfile {
+    font-family: "Bitstream Vera Sans Mono", Monaco, "Courier New", Courier, monospace;
+}
+
 #jsmolcolumn {
     margin-right: 15px;
     margin-left: 15px;

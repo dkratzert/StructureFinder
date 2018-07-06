@@ -374,7 +374,14 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
             continue
         if isinstance(value, str):
             value = ''.join([x.replace("\n", "<br>").rstrip('\r\n') for x in value])
-        table_string += '''<tr> 
+        if key == '_shelx_res_file':
+            # Adding an ID to make font monospace in the view:
+            table_string += '''<tr>
+                                 <td class="residual-{}"> {} </a></td> 
+                                 <td id=resfile > {} </a></td> 
+                               </tr> \n'''.format(structure_id, key, value)
+        else:
+            table_string += '''<tr>
                                 <td class="residual-{}"> {} </a></td> 
                                 <td> {} </a></td> 
                            </tr> \n'''.format(structure_id, key, value)

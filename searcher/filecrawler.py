@@ -382,8 +382,7 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
     cif.cif_data['_cell_length_b'] = res.cell.ga
     cif.cif_data["_cell_volume"] = res.cell.volume
     cif.cif_data["_cell_formula_units_Z"] = res.Z
-    cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([str(x) for x in res.symmcards])
-    # Just a bad hack. Need to implement real sum formula:
+    cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([repr(x) for x in res.symmcards])
     try:
         cif.cif_data["_chemical_formula_sum"] = res.sum_formula
     except ZeroDivisionError:
