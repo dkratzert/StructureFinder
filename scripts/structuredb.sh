@@ -11,7 +11,8 @@ echo " " >> ${LOGFILE}
 echo "Start DB creation at: "$(date) "------------------------------------" >> ${LOGFILE}
 
 # Be aware that we are in the directory selected above!
-python3 ${GITPATH}/strf_cmd.py \
+# option -r activates indexing of .res files in addition to .cif files (-c).
+python3 ${GITPATH}/strf_cmd.py -c -r \
 -d home/akbutschke \
 -d home/akboettcher \
 -d home/wissang/ \
