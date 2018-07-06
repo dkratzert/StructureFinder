@@ -10,10 +10,10 @@ from searcher import filecrawler, database_handler
 #from searcher.spinner import Spinner
 from misc.version import VERSION
 
-parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect cif files to a '
+parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect .cif/.res files to a '
                                              'database.\n'
                                              'StructureFinder will search for cif files in the given directory(s) '
-                                             'recursively.')
+                                             'recursively.  (Either -c, -r or both options must be active!)')
 parser.add_argument("-d",
                     dest="dir",
                     metavar='"directory"',
