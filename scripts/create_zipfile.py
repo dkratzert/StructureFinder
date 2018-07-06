@@ -18,6 +18,7 @@ files = [
     "apex/__init__.py",
     "apex/apeximporter.py",
     "searcher",
+    "shelxfile",
     "pymatgen",
     "lattice",
     "pg8000",
