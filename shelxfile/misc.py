@@ -58,7 +58,8 @@ class ParseUnknownParam(Exception):
 
 class ParseSyntaxError(Exception):
     def __init__(self):
-        print("*** Syntax Error ***")
+        pass
+        # print("*** Syntax Error ***")
 
 
 try:

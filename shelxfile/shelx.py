@@ -387,7 +387,7 @@ class ShelXFile():
                 #    raise ParseOrderError
                 s = SYMM(self, spline)
                 if not self.latt:
-                    print("*** LATT instruction is missing! ***")
+                    #print("*** LATT instruction is missing! ***")
                     raise ParseSyntaxError
                 if self.latt.centric:
                     self.symmcards.set_centric(True)
