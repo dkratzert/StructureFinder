@@ -5,10 +5,10 @@ from __future__ import print_function
 
 from pathlib import Path
 
-from strf import VERSION
+from misc.version import VERSION
 
 """
-This file is for updating the various version number definitions for each DSR release
+This file is for updating the various version number definitions for each STRF release
 """
 isspath = ["./strf-install_win32.iss", "./strf-install_win64.iss"]
 pypath = ["../shelxfile/shelx.py", "../strf.py"]
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     for i in isspath:
         process_iss(i)
     
-    for i in pypath:
-        disable_debug(i)
+    #for i in pypath:
+    #    disable_debug(i)
     
     print("Version numbers updated.")
