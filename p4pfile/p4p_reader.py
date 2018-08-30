@@ -13,20 +13,76 @@
 """
 This file reads Bruker p4p files into a data structure.
 """
+import re
+import numpy as np
 
 
-def read_file_to_list(self, resfile: str) -> list:
+def read_file_to_list(p4pfile: str) -> list:
     """
     Read in shelx file and returns a list without line endings. +include files are inserted
     also.
-    :param resfile: The path to a SHLEL .res or .ins file.
     """
-    reslist = []
-    includefiles = []
+    p4plist = []
     try:
-        with open(resfile, 'r') as f:
-            reslist = f.read().splitlines(keepends=False)
-    except (IOError) as e:
+        with open(p4pfile, 'r') as f:
+            p4plist = f.read().splitlines(keepends=False)
+    except IOError as e:
         print(e)
-        print('*** CANNOT READ FILE {} ***'.format(resfile))
-    return reslist
+        print('*** CANNOT READ FILE {} ***'.format(p4pfile))
+    return p4plist
+
+
+class P4PFile():
+
+    def __init__(self, p4pfile):
+        self.p4plist = read_file_to_list(p4pfile)
+        self.fileid = None
+        self.siteid = None
+        self.chem = None
+        self.cell = None
+        self.cellsd = None
+        self.ort1 = None
+        self.ort2 = None
+        self.ort3 = None
+        self.zeros = None
+        self.source = None
+        self.volume = None
+        self.ortmatrix = None 
+        try:
+            self.parse_p4p()
+        except Exception:
+            print('*** p4p not readable ***')
+
+    def parse_p4p(self):
+        for line in self.p4plist:
+            spline = line.split()
+            card = spline[0]
+            if card == "CELL" and len(spline) > 5:
+                self.cell = [float(x) for x in spline[1:7]]
+                if len(spline) > 6:
+                    self.volume = float(spline[7])
+            if card == "FILEID":
+                self.fileid = spline[1:]
+            if card == 'CELLSD':
+                self.cellsd = self.to_float_list(spline[1:])
+            if card == "ORT1":
+                self.ort1 = self.to_float_list(spline[1:])
+            if card == "ORT2":
+                self.ort2 = self.to_float_list(spline[1:])
+            if card == "ORT3":
+                self.ort3 = self.to_float_list(spline[1:])
+            if all([self.ort1, self.ort2, self.ort3]):
+                self.ortmatrix = np.matrix([self.ort1, self.ort2, self.ort3])
+            if card == "CHEM":
+                self.chem = spline[1]
+
+    def to_float_list(self, items):
+        return [float(x) for x in items]
+
+if __name__ == '__main__':
+    p4p = P4PFile('./test-data/test1.p4p')
+    print(p4p.cell)
+    print(p4p.cellsd)
+    print(p4p.volume)
+    print(p4p.ortmatrix)
+    print(p4p.chem)

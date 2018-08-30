@@ -13,6 +13,9 @@ Created on 09.02.2015
 @author: Daniel Kratzert
 """
 from __future__ import print_function
+
+from p4pfile.p4p_reader import P4PFile
+
 DEBUG = False
 import math
 import os
@@ -161,6 +164,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         else:
             self.ui.txtSearchEdit.setText("For full test search, use a modern Operating system.")
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
+        self.ui.p4pCellButton.clicked.connect(self.get_cell_from_p4p)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
         self.ui.ad_elementsIncLineEdit.textChanged.connect(self.elements_fields_check)
@@ -691,12 +695,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         if self.ui.moreResultsCheckBox.isChecked() or \
                 self.ui.ad_moreResultscheckBox.isChecked():
-            threshold = 0.08
+            vol_threshold = 0.06
             ltol = 0.09
             atol = 1.8
         else:
-            threshold = 0.03
-            ltol = 0.001
+            vol_threshold = 0.015
+            ltol = 0.006
             atol = 1
         idlist = []
         try:
@@ -705,9 +709,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 # sub- and superlattices:
                 for v in [volume * x for x in (0.25, 0.5, 1, 2, 3, 4)]:
                     # First a list of structures where the volume is similar:
-                    idlist.extend(self.structures.find_by_volume(v, threshold))
+                    idlist.extend(self.structures.find_by_volume(v, vol_threshold))
             else:
-                idlist = self.structures.find_by_volume(volume, threshold)
+                idlist = self.structures.find_by_volume(volume, vol_threshold)
         except (ValueError, AttributeError):
             if not self.full_list:
                 self.ui.cifList_treeWidget.clear()
@@ -839,6 +843,27 @@ class StartStructureDB(QtWidgets.QMainWindow):
         except Exception:
             self.passwd_handler()
         return connok
+
+    def get_cell_from_p4p(self):
+        fname, _ = QtWidgets.QFileDialog.getOpenFileName(self, caption='Open p4p File', directory='./', filter="*.p4p")
+        p4p = None
+        if fname:
+            p4p = P4PFile(fname)
+        if p4p:
+            if p4p.cell:
+                try:
+                    self.ui.searchCellLineEDit.setText('{:<10.4f}{:<10.4f}{:<10.4f}{:<10.4f}{:<10.4f}{:<10.4f}'.format(*p4p.cell))
+                except TypeError:
+                    pass
+            else:
+                self.moving_message('Could not read P4P file!')
+        else:
+            self.moving_message('Could not read P4P file!')
+
+    def moving_message(self, message="", times=20):
+        for s in range(times):
+            time.sleep(0.05)
+            self.statusBar().showMessage("{}{}".format(' ' * s, message))
 
     def import_apex_db(self, user: str = '', password: str = '', host: str = '') -> None:
         """

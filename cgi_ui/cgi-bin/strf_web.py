@@ -397,12 +397,12 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     Finds unit cells in db. Rsturns hits a a list of ids.
     """
     if more_results:
-        threshold = 0.08
+        vol_threshold = 0.06
         ltol = 0.09
         atol = 1.8
     else:
-        threshold = 0.03
-        ltol = 0.001
+        vol_threshold = 0.015
+        ltol = 0.006
         atol = 1
     volume = lattice.vol_unitcell(*cell)
     idlist = []
@@ -410,9 +410,9 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
         # sub- and superlattices:
         for v in [volume * x for x in (0.25, 0.5, 1, 2, 3, 4)]:
             # First a list of structures where the volume is similar:
-            idlist.extend(structures.find_by_volume(v, threshold))
+            idlist.extend(structures.find_by_volume(v, vol_threshold))
     else:
-        idlist = structures.find_by_volume(volume, threshold)
+        idlist = structures.find_by_volume(volume, vol_threshold)
     idlist2 = []
     # Real lattice comparing in G6:
     if idlist:
