@@ -67,6 +67,7 @@ Source: "..\misc\*"; DestDir: "{app}\misc"; Flags: ignoreversion createallsubdir
 Source: "..\pg8000\*"; DestDir: "{app}\pg8000"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\pymatgen\*"; DestDir: "{app}\pymatgen"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\searcher\*"; DestDir: "{app}\searcher"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\p4pfile\*"; DestDir: "{app}\p4pfile"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\strf.py"; DestDir: "{app}"; 
 Source: "..\six.py"; DestDir: "{app}";
 Source: "..\strf_cmd.py"; DestDir: "{app}"; 

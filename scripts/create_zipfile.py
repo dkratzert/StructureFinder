@@ -22,6 +22,7 @@ files = [
     "pymatgen",
     "lattice",
     "pg8000",
+    "p4pfile",
     "misc/__init__.py",
     "misc/update_check.py",
     "misc/version.py",
