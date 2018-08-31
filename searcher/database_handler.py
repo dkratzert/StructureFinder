@@ -773,7 +773,7 @@ class StructureTable():
         """
         Returns a database row as dictionary
         """
-        request = """select * from residuals where StructureId = ?"""#.format(structure_id)
+        request = """select * from residuals where StructureId = ?"""
         # setting row_factory to dict for the cif keys:
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
@@ -803,8 +803,12 @@ class StructureTable():
         """
         Returns a list of unit cells from the input ids.
         """
-        self.database.cur.execute('select * from cell where StructureId IN ' + str(tuple(structure_ids)))
-        rows = self.database.cur.fetchall()
+        if len(structure_ids) == 1:
+            req = 'select * from cell where StructureId = ?'
+            rows = self.database.db_request(req, (structure_ids[0],))
+        else:
+            self.database.cur.execute('select * from cell where StructureId IN ' + str(tuple(structure_ids)))
+            rows = self.database.cur.fetchall()
         return rows
 
     def find_by_volume(self, volume, threshold=0.03):
