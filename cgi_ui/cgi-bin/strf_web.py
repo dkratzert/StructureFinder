@@ -431,7 +431,7 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
                 continue
             mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
             if mapping:
-                idlist2.append(i)
+                idlist2.append(cell_id)
     if idlist2:
         return idlist2
     else:
