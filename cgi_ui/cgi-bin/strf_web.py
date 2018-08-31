@@ -398,11 +398,11 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     """
     if more_results:
         vol_threshold = 0.09
-        ltol = 0.1
-        atol = 1.9
+        ltol = 0.2
+        atol = 2
     else:
         vol_threshold = 0.03
-        ltol = 0.01
+        ltol = 0.06
         atol = 1
     volume = lattice.vol_unitcell(*cell)
     idlist = []
