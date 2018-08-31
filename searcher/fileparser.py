@@ -14,7 +14,6 @@ Created on 09.02.2015
 import os
 from pprint import pprint
 
-
 class Cif(object):
     def __init__(self, options=None):
         """
@@ -307,6 +306,30 @@ class Cif(object):
                 continue
             out += item+':  \t'+"'"+str(self.cif_data[item])+"'"+'\n'
         return out
+
+    @property
+    def cell(self):
+        a = self.cif_data['_cell_length_a']
+        b = self.cif_data['_cell_length_b']
+        c = self.cif_data['_cell_length_c']
+        alpha = self.cif_data['_cell_angle_alpha']
+        beta = self.cif_data['_cell_angle_beta']
+        gamma = self.cif_data['_cell_angle_gamma']
+        if not all((a, b, c, alpha, beta, gamma)):
+            return False
+        if isinstance(a, str):
+            a = float(a.split('(')[0])
+        if isinstance(b, str):
+            b = float(b.split('(')[0])
+        if isinstance(c, str):
+            c = float(c.split('(')[0])
+        if isinstance(alpha, str):
+            alpha = float(alpha.split('(')[0])
+        if isinstance(beta, str):
+            beta = float(beta.split('(')[0])
+        if isinstance(gamma, str):
+            gamma = float(gamma.split('(')[0])
+        return [a, b, c, alpha, beta, gamma]
 
 
 def delimit_line(line: str) -> list:

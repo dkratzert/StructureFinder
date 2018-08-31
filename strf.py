@@ -15,6 +15,7 @@ Created on 09.02.2015
 from __future__ import print_function
 
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
+from shelxfile.shelx import ShelXFile
 
 DEBUG = False
 import math
@@ -191,10 +192,20 @@ class StartStructureDB(QtWidgets.QMainWindow):
             e.ignore()
 
     def dropEvent(self, e):
+        """
+        Handles drop events. 
+        """
         from urllib.parse import urlparse
         p = urlparse(e.mimeData().text())
-        finalPath = p.path[1:]
-        self.search_for_p4pcell(finalPath)
+        final_path = p.path[1:]  # remove strange / at start
+        _, ending = os.path.splitext(final_path)
+        # print(final_path, ending)
+        if ending == '.p4p':
+            self.search_for_p4pcell(final_path)
+        if ending == '.res':
+            self.search_for_res_cell(final_path)
+        if ending == '.cif':
+            self.search_for_cif_cell(final_path)
 
     @staticmethod
     def validate_sumform(inelem: list):
@@ -882,6 +893,39 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 self.moving_message('Could not read P4P file!')
         else:
             self.moving_message('Could not read P4P file!')
+
+    def search_for_res_cell(self, fname):
+        if fname:
+            shx = ShelXFile(fname)
+        else:
+            return
+        if shx:
+            if shx.cell:
+                try:
+                    self.ui.searchCellLineEDit.setText('{:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f}'.format(*shx.cell.cell_list))
+                except TypeError:
+                    pass
+            else:
+                self.moving_message('Could not read res file!')
+        else:
+            self.moving_message('Could not read res file!')
+
+    def search_for_cif_cell(self, fname):
+        if fname:
+            cif = Cif()
+            cif.parsefile(pathlib.Path(fname).read_text(encoding='utf-8', errors='ignore').splitlines(keepends=True))
+        else:
+            return
+        if cif:
+            if cif.cell:
+                try:
+                    self.ui.searchCellLineEDit.setText('{:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f}'.format(*cif.cell[:6]))
+                except TypeError:
+                    pass
+            else:
+                self.moving_message('Could not read cif file!')
+        else:
+            self.moving_message('Could not read cif file!')
 
     def moving_message(self, message="", times=20):
         for s in range(times):
