@@ -864,7 +864,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Reads a p4p file to get the included unit cell for a cell search.
         """
         fname, _ = QtWidgets.QFileDialog.getOpenFileName(self, caption='Open p4p File', directory='./', filter="*.p4p")
-        self.search_cell(fname)
+        self.search_for_p4pcell(fname)
 
     def search_for_p4pcell(self, fname):
         if fname:
