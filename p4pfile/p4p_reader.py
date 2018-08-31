@@ -13,14 +13,13 @@
 """
 This file reads Bruker p4p files into a data structure.
 """
-import re
+
 import numpy as np
 
 
 def read_file_to_list(p4pfile: str) -> list:
     """
-    Read in shelx file and returns a list without line endings. +include files are inserted
-    also.
+    Reads a file and returns a list without line endings.
     """
     p4plist = []
     try:
@@ -76,8 +75,10 @@ class P4PFile():
             if card == "CHEM":
                 self.chem = spline[1]
 
-    def to_float_list(self, items):
+    @staticmethod
+    def to_float_list(items):
         return [float(x) for x in items]
+
 
 if __name__ == '__main__':
     p4p = P4PFile('./test-data/test1.p4p')

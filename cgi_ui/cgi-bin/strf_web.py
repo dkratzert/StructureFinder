@@ -417,16 +417,16 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     # Real lattice comparing in G6:
     if idlist:
         lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
-        for num, i in enumerate(idlist):
-            dic = structures.get_cell_as_dict(i)
+        cells = structures.get_cells_as_list(idlist)
+        for num, cell_id in enumerate(idlist):
             try:
                 lattice2 = mat_lattice.Lattice.from_parameters(
-                        float(dic['a']),
-                        float(dic['b']),
-                        float(dic['c']),
-                        float(dic['alpha']),
-                        float(dic['beta']),
-                        float(dic['gamma']))
+                        float(cells[num][2]),
+                        float(cells[num][3]),
+                        float(cells[num][4]),
+                        float(cells[num][5]),
+                        float(cells[num][6]),
+                        float(cells[num][7]))
             except ValueError:
                 continue
             mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)

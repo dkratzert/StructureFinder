@@ -281,7 +281,7 @@ class DatabaseRequest():
         """
         try:
             if many:
-                #print(args[0])
+                #print(args)
                 self.cur.executemany(request, *args)
             else:
                 #print(request, args)
@@ -798,6 +798,14 @@ class StructureTable():
         self.database.con.row_factory = None
         self.database.cur = self.database.con.cursor()
         return dic
+
+    def get_cells_as_list(self, structure_ids):
+        """
+        Returns a list of unit cells from the input ids.
+        """
+        self.database.cur.execute('select * from cell where StructureId IN ' + str(tuple(structure_ids)))
+        rows = self.database.cur.fetchall()
+        return rows
 
     def find_by_volume(self, volume, threshold=0.03):
         """

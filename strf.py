@@ -722,23 +722,23 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if idlist:
             lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
             self.statusBar().clearMessage()
-            for num, i in enumerate(idlist):
+            cells = self.structures.get_cells_as_list(idlist)
+            for num, cell_id in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist) - 1)
-                dic = self.structures.get_cell_as_dict(i)
                 try:
                     lattice2 = mat_lattice.Lattice.from_parameters(
-                            float(dic['a']),
-                            float(dic['b']),
-                            float(dic['c']),
-                            float(dic['alpha']),
-                            float(dic['beta']),
-                            float(dic['gamma']))
+                            float(cells[num][2]),
+                            float(cells[num][3]),
+                            float(cells[num][4]),
+                            float(cells[num][5]),
+                            float(cells[num][6]),
+                            float(cells[num][7]))
                 except ValueError:
                     continue
                 mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
                 if mapping:
                     # pprint.pprint(map[3])
-                    idlist2.append(i)
+                    idlist2.append(cell_id)
         return idlist2
 
     @QtCore.pyqtSlot('QString')
@@ -845,14 +845,18 @@ class StartStructureDB(QtWidgets.QMainWindow):
         return connok
 
     def get_cell_from_p4p(self):
+        """
+        Reads a p4p file to get the included unit cell for a cell search.
+        """
         fname, _ = QtWidgets.QFileDialog.getOpenFileName(self, caption='Open p4p File', directory='./', filter="*.p4p")
-        p4p = None
         if fname:
             p4p = P4PFile(fname)
+        else:
+            return
         if p4p:
             if p4p.cell:
                 try:
-                    self.ui.searchCellLineEDit.setText('{:<10.4f}{:<10.4f}{:<10.4f}{:<10.4f}{:<10.4f}{:<10.4f}'.format(*p4p.cell))
+                    self.ui.searchCellLineEDit.setText('{:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f}'.format(*p4p.cell))
                 except TypeError:
                     pass
             else:
