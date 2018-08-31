@@ -695,12 +695,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         if self.ui.moreResultsCheckBox.isChecked() or \
                 self.ui.ad_moreResultscheckBox.isChecked():
-            vol_threshold = 0.06
-            ltol = 0.09
-            atol = 1.8
+            vol_threshold = 0.09
+            ltol = 0.1
+            atol = 1.9
         else:
-            vol_threshold = 0.015
-            ltol = 0.006
+            vol_threshold = 0.03
+            ltol = 0.01
             atol = 1
         idlist = []
         try:
@@ -720,6 +720,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # Real lattice comparing in G6:
         idlist2 = []
         if idlist:
+            #print("Before match: ", len(idlist))
             lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
             self.statusBar().clearMessage()
             cells = self.structures.get_cells_as_list(idlist)
@@ -739,9 +740,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 if mapping:
                     # pprint.pprint(map[3])
                     idlist2.append(cell_id)
+        #print("After match: ", len(idlist2))
         return idlist2
 
-    @QtCore.pyqtSlot('QString')
+    @QtCore.pyqtSlot('QString', name='search_cell')
     def search_cell(self, search_string: str) -> bool:
         """
         searches db for given cell via the cell volume

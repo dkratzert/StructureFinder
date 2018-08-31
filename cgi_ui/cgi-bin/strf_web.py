@@ -397,12 +397,12 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     Finds unit cells in db. Rsturns hits a a list of ids.
     """
     if more_results:
-        vol_threshold = 0.06
-        ltol = 0.09
-        atol = 1.8
+        vol_threshold = 0.09
+        ltol = 0.1
+        atol = 1.9
     else:
-        vol_threshold = 0.015
-        ltol = 0.006
+        vol_threshold = 0.03
+        ltol = 0.01
         atol = 1
     volume = lattice.vol_unitcell(*cell)
     idlist = []
