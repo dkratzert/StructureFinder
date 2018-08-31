@@ -197,7 +197,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         from urllib.parse import urlparse
         p = urlparse(e.mimeData().text())
-        final_path = p.path[1:]  # remove strange / at start
+        if sys.platform.startswith('win'):
+            final_path = p.path[1:]  # remove strange / at start
+        else:
+            final_path = p.path
         _, ending = os.path.splitext(final_path)
         # print(final_path, ending)
         if ending == '.p4p':
@@ -886,7 +889,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if p4p:
             if p4p.cell:
                 try:
-                    self.ui.searchCellLineEDit.setText('{:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f}'.format(*p4p.cell))
+                    self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
+                                                       '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*p4p.cell))
                 except TypeError:
                     pass
             else:
@@ -902,7 +906,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if shx:
             if shx.cell:
                 try:
-                    self.ui.searchCellLineEDit.setText('{:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f}'.format(*shx.cell.cell_list))
+                    self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
+                                                       '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*shx.cell.cell_list))
                 except TypeError:
                     pass
             else:
@@ -913,13 +918,18 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def search_for_cif_cell(self, fname):
         if fname:
             cif = Cif()
-            cif.parsefile(pathlib.Path(fname).read_text(encoding='utf-8', errors='ignore').splitlines(keepends=True))
+            try:
+                cif.parsefile(pathlib.Path(fname).read_text(encoding='utf-8',
+                                                            errors='ignore').splitlines(keepends=True))
+            except FileNotFoundError:
+                self.moving_message('File not found.')
         else:
             return
         if cif:
             if cif.cell:
                 try:
-                    self.ui.searchCellLineEDit.setText('{:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f} {:<8.4f}'.format(*cif.cell[:6]))
+                    self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
+                                                       '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*cif.cell[:6]))
                 except TypeError:
                     pass
             else:
