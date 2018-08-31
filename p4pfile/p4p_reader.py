@@ -33,8 +33,8 @@ def read_file_to_list(p4pfile: str) -> list:
 
 class P4PFile():
 
-    def __init__(self, p4pfile):
-        self.p4plist = read_file_to_list(p4pfile)
+    def __init__(self, p4plist):
+        self.p4plist = p4plist
         self.fileid = None
         self.siteid = None
         self.chem = None

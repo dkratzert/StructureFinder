@@ -14,7 +14,7 @@ Created on 09.02.2015
 """
 from __future__ import print_function
 
-from p4pfile.p4p_reader import P4PFile
+from p4pfile.p4p_reader import P4PFile, read_file_to_list
 
 DEBUG = False
 import math
@@ -98,6 +98,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.structureId = ''
         self.passwd = ''
         self.show()
+        self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
         self.connect_signals_and_slots()
@@ -164,7 +165,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         else:
             self.ui.txtSearchEdit.setText("For full test search, use a modern Operating system.")
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
-        self.ui.p4pCellButton.clicked.connect(self.get_cell_from_p4p)
+        self.ui.p4pCellButton.clicked.connect(self.get_name_from_p4p)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
         self.ui.ad_elementsIncLineEdit.textChanged.connect(self.elements_fields_check)
@@ -182,6 +183,18 @@ class StartStructureDB(QtWidgets.QMainWindow):
 
     def on_click_item(self, item):
         self.ui.tabWidget.setCurrentIndex(1)
+
+    def dragEnterEvent(self, e):
+        if e.mimeData().hasText():
+            e.accept()
+        else:
+            e.ignore()
+
+    def dropEvent(self, e):
+        from urllib.parse import urlparse
+        p = urlparse(e.mimeData().text())
+        finalPath = p.path[1:]
+        self.search_for_p4pcell(finalPath)
 
     @staticmethod
     def validate_sumform(inelem: list):
@@ -846,13 +859,17 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.passwd_handler()
         return connok
 
-    def get_cell_from_p4p(self):
+    def get_name_from_p4p(self):
         """
         Reads a p4p file to get the included unit cell for a cell search.
         """
         fname, _ = QtWidgets.QFileDialog.getOpenFileName(self, caption='Open p4p File', directory='./', filter="*.p4p")
+        self.search_cell(fname)
+
+    def search_for_p4pcell(self, fname):
         if fname:
-            p4p = P4PFile(fname)
+            p4plist = read_file_to_list(fname)
+            p4p = P4PFile(p4plist)
         else:
             return
         if p4p:
