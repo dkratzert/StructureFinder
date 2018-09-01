@@ -571,9 +571,7 @@ class StructureTable():
             cartesian_coords = []
             a = lattice.A(cell).orthogonal_matrix
             for at in result:
-                coord = np.matrix([at[2], at[3], at[4]])
-                coords = misc.flatten((a * coord.reshape(3, 1)).tolist())
-                cartesian_coords.append(list(at[:2])+coords)
+                cartesian_coords.append(list(at[:2]) + (np.array([at[2], at[3], at[4]]) * a).tolist()[0])
             return cartesian_coords
         if result:
             return result
