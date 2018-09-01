@@ -14,6 +14,9 @@ Created on 09.02.2015
 """
 from __future__ import print_function
 
+from os.path import isfile
+from sqlite3 import DatabaseError
+
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
 
@@ -89,7 +92,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         #self.ui.centralwidget.setMinimumSize(1000, 500)
-        self.abort_import_button = QtWidgets.QPushButton("Abort")
+        self.abort_import_button = QtWidgets.QPushButton("Abort", parent=self.ui.statusbar)
         self.progress = QtWidgets.QProgressBar(self)
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
@@ -127,15 +130,19 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         self.ui.cifList_treeWidget.addAction(self.ui.actionGo_to_All_CIF_Tab)
         if len(sys.argv) > 1:
-            try:
-                self.dbfilename = sys.argv[1]
-                self.structures = database_handler.StructureTable(self.dbfilename)
-                self.show_full_list()
-            except IndexError:
-                pass
+            self.dbfilename = sys.argv[1]
+            if isfile(self.dbfilename):
+                try:
+                    self.structures = database_handler.StructureTable(self.dbfilename)
+                    self.show_full_list()
+                except (IndexError, DatabaseError) as e:
+                    print(e)
         if update_check.is_update_needed(VERSION=VERSION):
             self.statusBar().showMessage('A new Version of StructureFinder is available at '
                                          'https://www.xs3.uni-freiburg.de/research/structurefinder')
+        # select the first item in the list
+        item = self.ui.cifList_treeWidget.topLevelItem(0)
+        self.ui.cifList_treeWidget.setCurrentItem(item)
 
     def connect_signals_and_slots(self):
         """
@@ -428,7 +435,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.abort_import_button.hide()
 
-    def progressbar(self, curr: float, min: float, max: float) -> None:
+    def progressbar(self, curr: int, min: int, max: int) -> None:
         """
         Displays a progress bar in the status bar.
         """
