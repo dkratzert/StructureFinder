@@ -960,7 +960,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.abort_import_button.show()
         n = 1
         num = 0
-        time1 = time.clock()
+        time1 = time.perf_counter()
         conn = self.open_apex_db(user, password, host)
         if not conn:
             self.abort_import_button.hide()
@@ -1004,7 +1004,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                     self.abort_import_button.hide()
                     self.decide_import = True
                     break
-        time2 = time.clock()
+        time2 = time.perf_counter()
         diff = time2 - time1
         self.progress.hide()
         m, s = divmod(diff, 60)

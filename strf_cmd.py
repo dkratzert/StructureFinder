@@ -69,7 +69,7 @@ else:
         sys.exit()
     db = None
     structures = None
-    time1 = time.time()
+    time1 = time.perf_counter()
     if args.outfile:
         dbfilename = args.outfile
     else:
@@ -97,7 +97,7 @@ else:
     if db and structures:
         db.init_textsearch()
         structures.populate_fulltext_search_table()
-    time2 = time.time()
+    time2 = time.perf_counter()
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
