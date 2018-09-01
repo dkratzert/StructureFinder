@@ -498,6 +498,13 @@ jQuery(document).ready(function($) {
         }
     });
 
+    function displayresultnum(result) {
+        numresult = result.total;
+        if (typeof numresult === 'undefined') numresult = 0;
+        $("#cellrow").removeClass('invisible');
+        $("#cell_copy_btn").addClass('invisible');
+        document.getElementById("cellrow").innerHTML = "Found " + numresult + " structures";
+    }
 
     function showprop(idstr) {
         /*
@@ -591,6 +598,7 @@ jQuery(document).ready(function($) {
         w2ui['mygrid'].request('get-records', gridparams,
             url = cgifile + "/adv_srch",
             function (result) {
+                displayresultnum(result);
                 //console.log(result);
             }
         );
@@ -643,7 +651,8 @@ jQuery(document).ready(function($) {
                 params = {cell_search: cell, more: more_res, supercell: supercell},
                 url = cgifile + "/cellsrch",
                 function (result) {
-                    //console.log(result);
+                    displayresultnum(result);
+                    //console.log(result.total);
                     //console.log(more_res);
                 }
             );
@@ -659,6 +668,7 @@ jQuery(document).ready(function($) {
             params = {text_search: text},
             url = cgifile + "/txtsrch",
             function (result) {
+                displayresultnum(result);
                 //console.log(result);
             }
         );
