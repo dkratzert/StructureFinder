@@ -433,7 +433,7 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     if idlist:
         lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
         cells = []
-        # SQLite can only handle 999 parameters at once:
+        # SQLite can only handle 999 variables at once:
         for cids in chunks(idlist, 500):
             cells.extend(structures.get_cells_as_list(cids))
         for num, cell_id in enumerate(idlist):

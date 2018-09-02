@@ -759,7 +759,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
             self.statusBar().clearMessage()
             cells = []
-            # SQLite can only handle 999 parameters at once:
+            # SQLite can only handle 999 variables at once:
             for cids in chunks(idlist, 500):
                 cells.extend(self.structures.get_cells_as_list(cids))
             for num, cell_id in enumerate(idlist):
