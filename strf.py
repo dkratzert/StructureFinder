@@ -737,7 +737,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
             vol_threshold = 0.03
             ltol = 0.06
             atol = 1
-        idlist = []
         try:
             volume = lattice.vol_unitcell(*cell)
             idlist = self.structures.find_by_volume(volume, vol_threshold)

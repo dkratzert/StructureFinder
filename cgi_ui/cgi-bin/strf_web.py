@@ -407,14 +407,14 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
         ltol = 0.06
         atol = 1
     volume = lattice.vol_unitcell(*cell)
-    idlist = []
+    idlist = structures.find_by_volume(volume, vol_threshold)
     if sublattice:
         # sub- and superlattices:
-        for v in [volume * x for x in (0.25, 0.5, 1, 2, 3, 4)]:
+        for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
             # First a list of structures where the volume is similar:
             idlist.extend(structures.find_by_volume(v, vol_threshold))
-    else:
-        idlist = structures.find_by_volume(volume, vol_threshold)
+        idlist = list(set(idlist))
+        idlist.sort()
     idlist2 = []
     # Real lattice comparing in G6:
     if idlist:
