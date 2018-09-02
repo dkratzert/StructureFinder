@@ -599,7 +599,7 @@ class StructureTable():
         :param param:
         :return:
         """
-        req = '''INSERT INTO Residuals 
+        residuals = """
                     (
                     StructureId,
                     _cell_formula_units_Z,                  
@@ -658,12 +658,9 @@ class StructureTable():
                     modification_time,
                     file_size
                     ) 
-                VALUES
-                    (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-                    );
-                '''
+                    """
+        req = '''INSERT INTO Residuals {} VALUES ({});'''.format(residuals, self.joined_arglist(residuals.split(',')))
+
         result = self.database.db_request(req, (
                 structure_id,
                 cif.cif_data['_cell_formula_units_Z'],              # Z
@@ -797,17 +794,15 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return dic
 
+    def joined_arglist(self, items):
+        return ','.join(['?'] * len(items))
+
     def get_cells_as_list(self, structure_ids):
         """
         Returns a list of unit cells from the input ids.
         """
-        if len(structure_ids) == 1:
-            req = 'select * from cell where StructureId = ?'
-            rows = self.database.db_request(req, (structure_ids[0],))
-        else:
-            self.database.cur.execute('select * from cell where StructureId IN ' + str(tuple(structure_ids)))
-            rows = self.database.cur.fetchall()
-        return rows
+        req = 'select * from cell where StructureId IN ({seq})'.format(seq=self.joined_arglist(structure_ids))
+        return self.database.db_request(req, structure_ids)
 
     def find_by_volume(self, volume, threshold=0.03):
         """

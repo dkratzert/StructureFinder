@@ -149,7 +149,7 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             <div class="btn-group btn-group-sm" role="group">
                 <a href="#" class="badge" id="more_info_badge">info</a> &nbsp;&nbsp;&nbsp;
                 <input type="checkbox" value="" id="more_results">More cell search results &nbsp;&nbsp;&nbsp;
-                <input type="checkbox" value="" id="supercells">Find sub- and supercells &nbsp;&nbsp;&nbsp;
+                <input type="checkbox" value="" id="supercells">Find supercells &nbsp;&nbsp;&nbsp;
                 {{!space_groups}} Find by space group
             </div>
         </div>
@@ -159,15 +159,15 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
         <div class="row">
             <div class="col-sm-6">
                 <b>regular</b><br>
-                volume: &plusmn;1.5%, length: 0.006&nbsp;&angst;, angle: 1&deg;<br>
+                volume: &plusmn;3.0%, length: 0.06&nbsp;&angst;, angle: 1.0&deg;<br>
                 <br>
                 <b>more results option</b><br>
-                volume: &plusmn;6&percnt;, length: 0.09&nbsp;&angst;, angle: 1.8&deg;<br>
+                volume: &plusmn;9&percnt;, length: 0.2&nbsp;&angst;, angle: 2.0&deg;<br>
             </div>
             <div class="col-sm-6">
-                <b>Sub- and Supercells</b>
+                <b>Supercells</b>
                 <br>
-                Find also unit cells of 0.25, 0.5, 1, 2, 3, 4 the volume.
+                Find also unit cells of 1, 2, 3, 4, 6, 8, 10 times the volume.
                 <br>
                 <b>Space group search</b>
                 <br>

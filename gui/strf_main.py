@@ -1024,8 +1024,15 @@ class Ui_stdbMainwindow(object):
         self.searchLabel.setText(_translate("stdbMainwindow", "Cell Search:"))
         self.searchCellLineEDit.setToolTip(_translate("stdbMainwindow", "<html><head/><body><p>Insert unit cell as space separated <br/>numbers: <span style=\" font-style:italic;\">a b c α β γ</span></p></body></html>"))
         self.searchCellLineEDit.setPlaceholderText(_translate("stdbMainwindow", "a b c alpha beta gamma"))
-        self.moreResultsCheckBox.setText(_translate("stdbMainwindow", "More results"))
-        self.sublattCheckbox.setText(_translate("stdbMainwindow", "sub- or superlattice"))
+        self.moreResultsCheckBox.setToolTip(_translate("stdbMainwindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'.SF NS Text\'; font-size:13pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;\"><span style=\" font-family:\'Menlo\'; font-weight:600; color:#000000;\">regular</span><span style=\" font-family:\'Menlo\'; color:#000000;\"><br />volume: ±3.0%, length: 0.06 Å, <br />angle: 1.0°<br /><br /></span><span style=\" font-family:\'Menlo\'; font-weight:600; color:#000000;\">more results option</span><span style=\" font-family:\'Menlo\'; color:#000000;\"><br />volume: ±9.0%, length: 0.2 Å, <br />angle: 2.0°</span></p>\n"
+"<p style=\"-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p></body></html>"))
+        self.moreResultsCheckBox.setText(_translate("stdbMainwindow", "More Results"))
+        self.sublattCheckbox.setToolTip(_translate("stdbMainwindow", "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;\"><span style=\" font-family:\'Menlo\'; color:#000000; background-color:#ffffff;\">Find also unit cells of 1, 2, 3, 4, 6, 8, 10 times the volume.</span></pre></body></html>"))
+        self.sublattCheckbox.setText(_translate("stdbMainwindow", "Find Superlattices"))
         self.txtSearchLabel.setText(_translate("stdbMainwindow", "Search text:"))
         self.txtSearchEdit.setPlaceholderText(_translate("stdbMainwindow", "text in name, path or .res file"))
         self.numParametersLabel.setText(_translate("stdbMainwindow", "Parameters"))
@@ -1057,6 +1064,7 @@ class Ui_stdbMainwindow(object):
         self.ad_SearchPushButton.setText(_translate("stdbMainwindow", "Search"))
         self.ad_ClearSearchButton.setText(_translate("stdbMainwindow", "Clear Search"))
         self.wR2Label_6.setText(_translate("stdbMainwindow", "Space group"))
+        self.SpGrcomboBox.setToolTip(_translate("stdbMainwindow", "<html><head/><body><pre style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;\"><span style=\" font-family:\'Menlo\'; color:#000000; background-color:#ffffff;\">Be aware that not every cif file before SHELXL-2013 has a space group number. These will not be found.</span></pre></body></html>"))
         self.SpGrcomboBox.setItemText(0, _translate("stdbMainwindow", "None"))
         self.SpGrcomboBox.setItemText(1, _translate("stdbMainwindow", "1 (P1)"))
         self.SpGrcomboBox.setItemText(2, _translate("stdbMainwindow", "2 (P-1)"))

@@ -845,15 +845,26 @@
             </item>
             <item>
              <widget class="QCheckBox" name="moreResultsCheckBox">
+              <property name="toolTip">
+               <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.SF NS Text'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Menlo'; font-weight:600; color:#000000;&quot;&gt;regular&lt;/span&gt;&lt;span style=&quot; font-family:'Menlo'; color:#000000;&quot;&gt;&lt;br /&gt;volume: ±3.0%, length: 0.06 Å, &lt;br /&gt;angle: 1.0°&lt;br /&gt;&lt;br /&gt;&lt;/span&gt;&lt;span style=&quot; font-family:'Menlo'; font-weight:600; color:#000000;&quot;&gt;more results option&lt;/span&gt;&lt;span style=&quot; font-family:'Menlo'; color:#000000;&quot;&gt;&lt;br /&gt;volume: ±9.0%, length: 0.2 Å, &lt;br /&gt;angle: 2.0°&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
-               <string>More results</string>
+               <string>More Results</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QCheckBox" name="sublattCheckbox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Menlo'; color:#000000; background-color:#ffffff;&quot;&gt;Find also unit cells of 1, 2, 3, 4, 6, 8, 10 times the volume.&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
-               <string>sub- or superlattice</string>
+               <string>Find Superlattices</string>
               </property>
              </widget>
             </item>
@@ -1435,6 +1446,9 @@
             </item>
             <item row="2" column="1">
              <widget class="QComboBox" name="SpGrcomboBox">
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Menlo'; color:#000000; background-color:#ffffff;&quot;&gt;Be aware that not every cif file before SHELXL-2013 has a space group number. These will not be found.&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <item>
                <property name="text">
                 <string>None</string>

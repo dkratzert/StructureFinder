@@ -727,25 +727,27 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Searches for a unit cell and resturns a list of found database ids.
         This method does not validate the cell. This has to be done before!
         """
-        if self.ui.moreResultsCheckBox.isChecked() or \
-                self.ui.ad_moreResultscheckBox.isChecked():
+        if self.ui.moreResultsCheckBox.isChecked() or self.ui.ad_moreResultscheckBox.isChecked():
+            # more results:
             vol_threshold = 0.09
             ltol = 0.2
             atol = 2
         else:
+            # regular:
             vol_threshold = 0.03
             ltol = 0.06
             atol = 1
         idlist = []
         try:
             volume = lattice.vol_unitcell(*cell)
+            idlist = self.structures.find_by_volume(volume, vol_threshold)
             if self.ui.sublattCheckbox.isChecked() or self.ui.ad_superlatticeCheckBox.isChecked():
                 # sub- and superlattices:
-                for v in [volume * x for x in (0.25, 0.5, 1, 2, 3, 4)]:
+                for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
                     # First a list of structures where the volume is similar:
                     idlist.extend(self.structures.find_by_volume(v, vol_threshold))
-            else:
-                idlist = self.structures.find_by_volume(volume, vol_threshold)
+                idlist = list(set(idlist))
+                idlist.sort()
         except (ValueError, AttributeError):
             if not self.full_list:
                 self.ui.cifList_treeWidget.clear()
