@@ -18,6 +18,7 @@ from os.path import isfile
 from sqlite3 import DatabaseError
 
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
+from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
 
 DEBUG = False
@@ -744,8 +745,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 # sub- and superlattices:
                 for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
                     # First a list of structures where the volume is similar:
-                    if len(idlist) > 950:
-                        break
                     idlist.extend(self.structures.find_by_volume(v, vol_threshold))
                 idlist = list(set(idlist))
                 idlist.sort()
@@ -757,12 +756,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # Real lattice comparing in G6:
         idlist2 = []
         if idlist:
-            if len(idlist) > 950:
-                # sqite has a maximum for SQL variables:
-                idlist = idlist[:950]
             lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
             self.statusBar().clearMessage()
-            cells = self.structures.get_cells_as_list(idlist)
+            cells = []
+            # SQLite can only handle 999 parameters at once:
+            for cids in chunks(idlist, 500):
+                cells.extend(self.structures.get_cells_as_list(cids))
             for num, cell_id in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist) - 1)
                 try:
