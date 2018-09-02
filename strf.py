@@ -744,6 +744,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 # sub- and superlattices:
                 for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
                     # First a list of structures where the volume is similar:
+                    if len(idlist) > 950:
+                        break
                     idlist.extend(self.structures.find_by_volume(v, vol_threshold))
                 idlist = list(set(idlist))
                 idlist.sort()
@@ -755,7 +757,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # Real lattice comparing in G6:
         idlist2 = []
         if idlist:
-            #print("Before match: ", len(idlist))
+            if len(idlist) > 950:
+                # sqite has a maximum for SQL variables:
+                idlist = idlist[:950]
             lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
             self.statusBar().clearMessage()
             cells = self.structures.get_cells_as_list(idlist)
