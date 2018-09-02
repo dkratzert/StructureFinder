@@ -159,10 +159,10 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
         <div class="row">
             <div class="col-sm-6">
                 <b>regular</b><br>
-                volume: &plusmn;3.0%, length: 0.06&nbsp;&angst;, angle: 1.0&deg;<br>
+                volume: &plusmn;3 %, length: 0.06&nbsp;&angst;, angle: 1.0&deg;<br>
                 <br>
                 <b>more results option</b><br>
-                volume: &plusmn;9&percnt;, length: 0.2&nbsp;&angst;, angle: 2.0&deg;<br>
+                volume: &plusmn;9 &percnt;, length: 0.2&nbsp;&angst;, angle: 2.0&deg;<br>
             </div>
             <div class="col-sm-6">
                 <b>Supercells</b>
