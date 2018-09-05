@@ -16,13 +16,11 @@ import sqlite3
 import sys
 from sqlite3 import OperationalError
 
-import numpy as np
-
 import searcher
 from lattice import lattice
 from searcher import misc
-from searcher.constants import py36
 from searcher.misc import get_error_from_value
+from shelxfile.dsrmath import Array
 
 __metaclass__ = type  # use new-style classes
 
@@ -571,7 +569,7 @@ class StructureTable():
             cartesian_coords = []
             a = lattice.A(cell).orthogonal_matrix
             for at in result:
-                cartesian_coords.append(list(at[:2]) + (np.array([at[2], at[3], at[4]]) * a).tolist()[0])
+                cartesian_coords.append(list(at[:2]) + (Array([at[2], at[3], at[4]]) * a).values)
             return cartesian_coords
         if result:
             return result

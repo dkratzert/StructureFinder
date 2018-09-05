@@ -14,7 +14,7 @@
 This file reads Bruker p4p files into a data structure.
 """
 
-import numpy as np
+from shelxfile.dsrmath import Matrix
 
 
 def read_file_to_list(p4pfile: str) -> list:
@@ -71,7 +71,7 @@ class P4PFile():
             if card == "ORT3":
                 self.ort3 = self.to_float_list(spline[1:])
             if all([self.ort1, self.ort2, self.ort3]):
-                self.ortmatrix = np.matrix([self.ort1, self.ort2, self.ort3])
+                self.ortmatrix = Matrix([self.ort1, self.ort2, self.ort3])
             if card == "CHEM":
                 self.chem = spline[1]
 

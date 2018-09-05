@@ -6,7 +6,7 @@ import os
 import numpy as np
 
 from lattice import lattice
-from searcher import misc, atoms
+from searcher import misc
 from searcher.atoms import get_radius_from_element
 from searcher.database_handler import StructureTable
 from searcher.unitcell import Lattice

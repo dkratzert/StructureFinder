@@ -14,6 +14,8 @@ Created on 03.06.2017
 from math import cos, radians, sqrt, sin
 import numpy as np
 
+from shelxfile.dsrmath import Matrix, Array
+
 
 def vol_unitcell(a, b, c, al, be, ga):
     """
@@ -42,17 +44,15 @@ class A(object):
     e.g. converts fractional coordinates to cartesian coodinates
 
     >>> cell = (10.5086, 20.9035, 20.5072, 90, 94.13, 90)
-    # fractional to cartesian:
-    >>> coord = np.matrix((-0.186843,   0.282708,   0.526803))
+    >>> # fractional to cartesian:
+    >>> coord = Array((-0.186843,   0.282708,   0.526803))
     >>> A = A(cell).orthogonal_matrix
-    >>> A*coord.reshape(3, 1)
-    matrix([[ -2.74150542],
-            [  5.90958668],
-            [ 10.7752007 ]])
-    # cartesian to fractional:
+    >>> A*coord
+    Array([-2.741505423999065, 5.909586678000002, 10.775200700893732])
+    >>> # cartesian to fractional:
     >>> coord = [[-2.74150542399906], [5.909586678], [10.7752007008937]]
-    >>> cartcoord = np.matrix(coord)
-    >>> A**-1*cartcoord
+    >>> cartcoord = Array(coord)
+    >>> A.inverse()*cartcoord
     matrix([[-0.186843],
             [ 0.282708],
             [ 0.526803]])
@@ -71,9 +71,7 @@ class A(object):
         Converts von fractional to cartesian.
         Invert the matrix to do the opposite.
         """
-        Am = np.matrix([[self.a, self.b * cos(self.gamma), self.c * cos(self.beta)],
+        return Matrix([[self.a, self.b * cos(self.gamma), self.c * cos(self.beta)],
                         [0, self.b * sin(self.gamma),
                          (self.c * (cos(self.alpha) - cos(self.beta) * cos(self.gamma)) / sin(self.gamma))],
                         [0, 0, self.V / (self.a * self.b * sin(self.gamma))]])
-        return Am
-

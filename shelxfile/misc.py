@@ -15,7 +15,7 @@ import textwrap
 import time
 from shutil import get_terminal_size
 
-from .dsrmath import frac_to_cart, subtract_vect, determinante
+from shelxfile.dsrmath import frac_to_cart, subtract_vect, determinante
 
 DEBUG = False
 PROFILE = False

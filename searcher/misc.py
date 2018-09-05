@@ -10,7 +10,7 @@ Created on 09.02.2015
 
 @author: daniel
 """
-import math
+from math import sqrt
 import os
 import shutil
 
@@ -204,7 +204,7 @@ def distance(x1: float, y1: float, z1: float,
     >>> distance(1, 0, 0, 2, 0, 0)
     1.0
     """
-    d = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
+    d = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
     return d
 
 
