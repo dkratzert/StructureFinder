@@ -74,31 +74,93 @@ $(document).ready(function($){
                         supercell, datefield1, datefield2, itnum);
     });
 
-    function parse_p4p(p4pdata) {
-        var cell;
-        console.log('insidep4p');
-        var lines = p4pdata.split("\n");
-        for (i = 0; i < lines.length; i++) {
-            var line = lines[i];
-            //console.log(line);
-            var spline = line.split(' ');
-            console.log(spline);
+    function get_cell_from_p4p(p4pdata) {
+        var cell = '';
+        //console.log('insidep4p');
+        var allLines = p4pdata.split(/\r\n|\n|\r/);
+        // Reading line by line
+        //console.log(allLines);
+        for (var i = 0; i < allLines.length; i++) {
+            var spline = allLines[i].split(/\s+/);
+            //console.log(spline);
             if (spline[0] === 'CELL') {
-                cell.append(spline[1]);
-                cell.append(spline[2]);
-                cell.append(spline[3]);
+                cell += spline[1] + '  ';
+                cell += spline[2] + '  ';
+                cell += spline[3] + '  ';
+                cell += spline[4] + '  ';
+                cell += spline[5] + '  ';
+                cell += spline[6];
             }
-        console.log(cell);
+        //console.log(cell);
+        document.getElementById('smpl_cellsrch').value = cell;
+        document.getElementById('cell_adv').value = cell;
         }
     }
-    
+
+    function get_cell_from_res(resdata) {
+        var cell = '';
+        //console.log('insidep4p');
+        var allLines = resdata.split(/\r\n|\n|\r/);
+        for (var i = 0; i < allLines.length; i++) {
+            var spline = allLines[i].split(/\s+/);
+            if (spline[0] === 'CELL') {
+                cell += spline[2] + '  ';
+                cell += spline[3] + '  ';
+                cell += spline[4] + '  ';
+                cell += spline[5] + '  ';
+                cell += spline[6] + '  ';
+                cell += spline[7];
+            }
+        //console.log(cell);
+        document.getElementById('smpl_cellsrch').value = cell;
+        document.getElementById('cell_adv').value = cell;
+        }
+    }
+
+
+    function get_cell_from_cif(cifdata) {
+        var cell = '';
+        //_cell_length_a                   11.776(2)
+        //_cell_length_b                   5.7561(12)
+        //_cell_length_c                   17.462(4)
+        //_cell_angle_alpha                90.00
+        //_cell_angle_beta                 95.02(3)
+        //_cell_angle_gamma                90.00
+        var allLines = cifdata.split(/\r\n|\n|\r/);
+        for (var i = 0; i < allLines.length; i++) {
+            var spline = allLines[i].split(/\s+/);
+            if (spline[0] === '_cell_length_a') {
+                cell += spline[1].split('(')[0] + '  ';
+            }
+            if (spline[0] === '_cell_length_b') {
+                cell += spline[1].split('(')[0] + '  ';
+            }
+            if (spline[0] === '_cell_length_c') {
+                cell += spline[1].split('(')[0] + '  ';
+            }
+            if (spline[0] === '_cell_angle_alpha') {
+                cell += spline[1].split('(')[0] + '  ';
+            }
+            if (spline[0] === '_cell_angle_beta') {
+                cell += spline[1].split('(')[0] + '  ';
+            }
+            if (spline[0] === '_cell_angle_gamma') {
+                cell += spline[1].split('(')[0] + '  ';
+            }
+        //console.log(cell);
+        document.getElementById('smpl_cellsrch').value = cell;
+        document.getElementById('cell_adv').value = cell;
+        }
+    }
+
+
+
     var dropZone = document.getElementById('dropZone');
 
-    // Optional.   Show the copy icon when dragging over.  Seems to only work for chrome.
     dropZone.addEventListener('dragover', function(e) {
         e.stopPropagation();
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
+        //e.dataTransfer.dropEffect = 'copy';
     });
     
     // Get file data on drop
@@ -106,18 +168,25 @@ $(document).ready(function($){
         e.stopPropagation();
         e.preventDefault();
         var files = e.dataTransfer.files; // Array of all files
-        console.log('dropped');
+        //console.log('dropped');
         if (files[0].type.match(/.*/)) {
             var reader = new FileReader();
-            
+
             reader.onload = function(e2) {
                 // finished reading file data.
-                var txt = document.createElement('txt');
-                txt.src = e2.target.result;
-                parse_p4p(txt.src);
+                var txt = e2.target.result;
+                if (files[0].name.split('.').pop() === 'p4p') {
+                    get_cell_from_p4p(txt);
+                }
+                if (files[0].name.split('.').pop() === 'res') {
+                    get_cell_from_res(txt);
+                }
+                if (files[0].name.split('.').pop() === 'cif') {
+                    get_cell_from_cif(txt);
+                }
             };
 
-            reader.readAsDataURL(files[0]); // start reading the file data.
+            reader.readAsText(files[0], "ASCII"); // start reading the file data.
         }
     });
     

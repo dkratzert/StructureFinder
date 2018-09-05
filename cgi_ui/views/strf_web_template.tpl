@@ -91,7 +91,7 @@ body {
     <div class="col-sm-6">
         <div class="input-group input-group-sm">
             <span class="input-group-addon" data-toggle="tooltip" title="Search for a Unit Cell">Unit Cell</span>
-            <input type="text" class="form-control" placeholder="a b c &alpha; &beta; &gamma;" style="font-style: italic" id="smpl_cellsrch" name="cell">
+            <input type="text" class="form-control" placeholder="a  b  c  &alpha;  &beta;  &gamma;    (or drag&drop .p4p, .res, cif file)" style="font-style: italic" id="smpl_cellsrch" name="cell">
                 <div class="input-group-sm input-group-btn">
                 <button class="btn btn-default" type="submit" id="smpl_cellsrchbutton">
                     <i class="glyphicon glyphicon-search"></i>

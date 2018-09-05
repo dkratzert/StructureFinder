@@ -12,8 +12,8 @@ dbfilename = "../structurefinder.sqlite"
 ###########################################################
 
 import socket
-names = ['PC9']
-# run on local ip on my PC: 
+names = ['PC9', 'DDT-2.local']
+# run on local ip on my PC:
 if socket.gethostname() in names:
     host = '127.0.0.1'
     port = "8080"
@@ -325,6 +325,8 @@ def get_residuals_table2(cif_dic: dict) -> str:
         compl = cif_dic['_diffrn_measured_fraction_theta_max'] * 100
         if not compl:
             compl = 0.0
+        if isinstance(compl, str):
+            compl = 0.0
     except TypeError:
         compl = 0.0
     try:
@@ -336,7 +338,7 @@ def get_residuals_table2(cif_dic: dict) -> str:
         <tbody>
         <tr><td style='width: 40%'><b>Measured Refl.</b></td>       <td>{0}</td></tr>
         <tr><td><b>Independent Refl.</b></td>                       <td>{9}</td></tr>
-        <tr><td><b>Data with [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>                       <td>{10}</td></tr>
+        <tr><td><b>Data with [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>    <td>{10}</td></tr>
         <tr><td><b>Parameters</b></td>                              <td>{1}</td></tr>
         <tr><td><b>data/param</b></td>                              <td>{2:<5.1f}</td></tr>
         <tr><td><b>Restraints</b></td>                              <td>{3}</td></tr>
