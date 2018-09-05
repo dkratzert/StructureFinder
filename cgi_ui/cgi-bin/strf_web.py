@@ -7,16 +7,17 @@
 
 host = "10.6.13.3"
 port = "80"
-site_ip = host + ':' + port
-
 dbfilename = "../structurefinder.sqlite"
+
 ###########################################################
 
 import socket
 names = ['PC9']
-if socket.gethostname() == names:
+# run on local ip on my PC: 
+if socket.gethostname() in names:
     host = '127.0.0.1'
     port = "8080"
+site_ip = host + ':' + port
 
 import json
 import math

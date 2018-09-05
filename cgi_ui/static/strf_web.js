@@ -74,6 +74,54 @@ $(document).ready(function($){
                         supercell, datefield1, datefield2, itnum);
     });
 
+    function parse_p4p(p4pdata) {
+        var cell;
+        console.log('insidep4p');
+        var lines = p4pdata.split("\n");
+        for (i = 0; i < lines.length; i++) {
+            var line = lines[i];
+            //console.log(line);
+            var spline = line.split(' ');
+            console.log(spline);
+            if (spline[0] === 'CELL') {
+                cell.append(spline[1]);
+                cell.append(spline[2]);
+                cell.append(spline[3]);
+            }
+        console.log(cell);
+        }
+    }
+    
+    var dropZone = document.getElementById('dropZone');
+
+    // Optional.   Show the copy icon when dragging over.  Seems to only work for chrome.
+    dropZone.addEventListener('dragover', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+    });
+    
+    // Get file data on drop
+    dropZone.addEventListener('drop', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        var files = e.dataTransfer.files; // Array of all files
+        console.log('dropped');
+        if (files[0].type.match(/.*/)) {
+            var reader = new FileReader();
+            
+            reader.onload = function(e2) {
+                // finished reading file data.
+                var txt = document.createElement('txt');
+                txt.src = e2.target.result;
+                parse_p4p(txt.src);
+            };
+
+            reader.readAsDataURL(files[0]); // start reading the file data.
+        }
+    });
+    
+
     // Check if element names are occouring more than one time:
     function is_elem_doubled(elements_in, elements_out) {
         var sumlist = elements_in.split(" ");

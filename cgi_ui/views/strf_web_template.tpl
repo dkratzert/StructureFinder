@@ -78,8 +78,8 @@ body {
 
 <body>
 
-
-<div class="container">
+<!-- "dropZone" adds drag&drop support for the web site -->
+<div class="container" id="dropZone">
 <h2>StructureFinder</h2>
 
 
@@ -240,6 +240,7 @@ body {
         </div>
     </div>
 </div>
+
 
 <div class="row">
     <div class="column col-md-4 panel panel-default invisible" id="jsmolcolumn"
