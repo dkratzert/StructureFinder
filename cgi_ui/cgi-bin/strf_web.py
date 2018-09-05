@@ -12,6 +12,12 @@ site_ip = host + ':' + port
 dbfilename = "../structurefinder.sqlite"
 ###########################################################
 
+import socket
+names = ['PC9']
+if socket.gethostname() == names:
+    host = '127.0.0.1'
+    port = "8080"
+
 import json
 import math
 import os
@@ -177,6 +183,12 @@ def server_static(filepath):
     the wildcard to use the path filter:
     """
     return static_file(filepath, root='cgi_ui/static/')
+
+
+@app.route('/version')
+def version():
+    from misc.version import VERSION
+    return 'version ' + str(VERSION)
 
 
 @app.route('/cgi-bin/strf_web.cgi')
