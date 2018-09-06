@@ -152,9 +152,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
     if self:
         structures = self.structures
     if lastid <= 1:
-        n = 1
-    else:
-        n = lastid
+        lastid = 1
     prognum = 0
     num = 1
     zipcifs = 0
@@ -182,16 +180,16 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 except IndexError:
                     continue
                 if cif:  # means cif object has data inside (cif could be parsed)
-                    tst = fill_db_tables(cif, filename=name, path=filepth, structure_id=n,
+                    tst = fill_db_tables(cif, filename=name, path=filepth, structure_id=lastid,
                                          structures=structures)
                     if not tst:
                         continue
                     if self:
-                        self.add_table_row(name, filepth, cif.cif_data['data'], str(n))
-                    n += 1
+                        self.add_table_row(name, filepth, cif.cif_data['data'], str(lastid))
+                    lastid += 1
                     num += 1
-                    if n % 1000 == 0:
-                        print('{} files ...'.format(n))
+                    if lastid % 1000 == 0:
+                        print('{} files ...'.format(num))
                         structures.database.commit_db()
                     prognum += 1
             continue
@@ -218,17 +216,17 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                     continue
                 if cif:
                     tst = fill_db_tables(cif, filename=z.cifname, path=fullpath,
-                                         structure_id=str(n), structures=structures)
+                                         structure_id=str(lastid), structures=structures)
                     zipcifs += 1
                     if not tst:
                         continue
                     if self:
                         self.add_table_row(name=z.cifname, path=fullpath,
-                                           data=cif.cif_data['data'], structure_id=str(n))
-                    n += 1
+                                           data=cif.cif_data['data'], structure_id=str(lastid))
+                    lastid += 1
                     num += 1
-                    if n % 1000 == 0:
-                        print('{} files ...'.format(n))
+                    if lastid % 1000 == 0:
+                        print('{} files ...'.format(num))
                         structures.database.commit_db()
                     prognum += 1
             continue
@@ -241,18 +239,18 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 #print('res file not added.')
                 continue
             if res:
-                tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=n,
+                tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=lastid,
                                             structures=structures, options=options)
             if not tst:
                 #print('res file not added')
                 continue
             if self:
                 self.add_table_row(name=name, path=fullpath,
-                               data=name, structure_id=str(n))
-            n += 1
+                               data=name, structure_id=str(lastid))
+            lastid += 1
             num += 1
-            if n % 1000 == 0:
-                print('{} files ...'.format(n))
+            if lastid % 1000 == 0:
+                print('{} files ...'.format(num))
                 structures.database.commit_db()
             prognum += 1
             continue
@@ -271,7 +269,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
     print(tmessage.format(num - 1, int(h), int(m), s, zipcifs))
     if self:
         self.ui.statusbar.showMessage(tmessage.format(num - 1, int(h), int(m), s, zipcifs))
-    return n-1
+    return lastid-1
 
 
 def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: str,

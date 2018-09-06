@@ -213,7 +213,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # print(final_path, ending)
         if ending == '.p4p':
             self.search_for_p4pcell(final_path)
-        if ending == '.res':
+        if ending == '.res' or ending == '.ins':
             self.search_for_res_cell(final_path)
         if ending == '.cif':
             self.search_for_cif_cell(final_path)

@@ -432,7 +432,8 @@ class ShelXFile():
                 else:
                     raise ParseOrderError
                 if len(self.unit.values) != len(self.sfac_table.elements_list):
-                    print('*** Number of UNIT and SFAC values differ! ***')
+                    if DEBUG:
+                        print('*** Number of UNIT and SFAC values differ! ***')
                     raise ParseNumError
                 lastcard = 'UNIT'
                 continue

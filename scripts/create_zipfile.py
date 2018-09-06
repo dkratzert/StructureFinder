@@ -29,13 +29,9 @@ files = [
     "cgi_ui/bottle.py",
     "cgi_ui/__init__.py",
     "cgi_ui/cgi-bin/",
-    "cgi_ui/static/bootstrap-3.3.7",
-    "cgi_ui/static/clipboard",
-    "cgi_ui/static/favicon.ico",
-    "cgi_ui/static/jquery/jquery-3.2.1.min.js",
-    "cgi_ui/static/jsmol/JSmol_dk.nojq.lite.js",
+    "cgi_ui/static/",
     "cgi_ui/static/w2ui",
-    "cgi_ui/views",
+    "cgi_ui/views/",
     "displaymol",
     "icons"
     ]
