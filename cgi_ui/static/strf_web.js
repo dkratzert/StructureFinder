@@ -178,7 +178,7 @@ $(document).ready(function($){
                 if (files[0].name.split('.').pop() === 'p4p') {
                     get_cell_from_p4p(txt);
                 }
-                if (files[0].name.split('.').pop() === 'res|ins') {
+                if (files[0].name.split('.').pop().match('res|ins')) {
                     get_cell_from_res(txt);
                 }
                 if (files[0].name.split('.').pop() === 'cif') {
