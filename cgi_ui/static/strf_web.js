@@ -289,7 +289,11 @@ $(document).ready(function($){
     });
 
     $('#all_structures').click(function () {
-        w2ui['mygrid'].reload();
+        w2ui['mygrid'].reload(
+            function (result) {
+                displayresultnum(result);
+                //console.log(result);
+            });
     });
 
     // Switch between advanced and simple search:
