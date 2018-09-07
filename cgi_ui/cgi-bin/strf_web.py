@@ -19,7 +19,6 @@ if socket.gethostname() in names:
     port = "8080"
 site_ip = host + ':' + port
 
-import json
 import math
 import os
 import pathlib
@@ -240,7 +239,7 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     if number == 0:
         # return json.dumps(failure)
         return {}
-    return json.dumps({"total": number, "records": dic, "status": "success"}, indent=2)
+    return {"total": number, "records": dic, "status": "success"}
 
 
 def get_cell_parameters(structures: StructureTable, strid: str) -> str:
