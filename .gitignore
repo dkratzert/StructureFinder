@@ -66,3 +66,4 @@ structuredb.sqlite
 displaymol/jsmol.htm
 scripts/Output/*
 test.ins
+venv/
