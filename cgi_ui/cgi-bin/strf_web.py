@@ -24,7 +24,7 @@ import os
 import pathlib
 import sys
 
-print("Running on Python version {}".format(sys.version))
+
 pyver = sys.version_info
 if pyver[0] == 3 and pyver[1] < 4:
     # Python 2 creates a syntax error anyway.
@@ -51,11 +51,6 @@ TODO:
 - Maybe http://www.daterangepicker.com
 """
 
-if not misc.is_a_nonzero_file(dbfilename):
-    print("Unable to start")
-    print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
-    sys.exit()
-print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
 
 structures = database_handler.StructureTable(dbfilename)
 
@@ -587,4 +582,10 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
 
 
 if __name__ == "__main__":
+    print("Running on Python version {}".format(sys.version))
+    if not misc.is_a_nonzero_file(dbfilename):
+        print("Unable to start!")
+        print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
+        sys.exit()
+    print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
     app.run(host=host, port=port, reloader=True)
