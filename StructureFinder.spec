@@ -5,7 +5,7 @@ block_cipher = None
 
 a = Analysis(['strf.py'],
              pathex=['D:\\GitHub\\StructureFinder'],
-             binaries=[('C:\\tools\\opengl64', 'opengl32sw.dll')],
+             binaries=[('C:\\tools\\opengl64\\opengl32sw.dll', 'opengl32sw.dll')],
              datas=[('gui', 'gui'), ('displaymol', 'displaymol'), ('icons', 'icons')],
              hiddenimports=[],
              hookspath=[],
