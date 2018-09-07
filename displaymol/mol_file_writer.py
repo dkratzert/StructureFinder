@@ -3,13 +3,12 @@ MOl V3000 format
 """
 import os
 
-import numpy as np
-
 from lattice import lattice
 from searcher import misc
 from searcher.atoms import get_radius_from_element
 from searcher.database_handler import StructureTable
 from searcher.unitcell import Lattice
+from shelxfile.dsrmath import Array
 
 
 class MolFile(object):
@@ -26,8 +25,8 @@ class MolFile(object):
             a = lattice.A(cell).orthogonal_matrix
             cartesian_coords = []
             for at in atoms:
-                coord = np.matrix([at[2], at[3], at[4]])
-                coords = misc.flatten((a * coord.reshape(3, 1)).tolist())
+                coord = Array([at[2], at[3], at[4]])
+                coords = list(coord * a)
                 cartesian_coords.append(list(at[:2]) + coords)
             self.atoms = cartesian_coords
         else:

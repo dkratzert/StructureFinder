@@ -13,44 +13,6 @@ Created on 03.10.2017
 """
 from searcher.database_handler import StructureTable
 from searcher.fileparser import Cif
-import numpy as np
-
-
-class SDMItem(object):
-    def __init__(self):
-        self.dist = 0.0
-        self.atom1 = 0
-        self.atom2 = 0
-        self.symmetry_number = 0
-        self.floor_dist = None
-        self.covalent = True
-
-    @property
-    def dist(self):
-        return self.dist
-
-    @dist.setter
-    def dist(self, d):
-        self.dist = d
-
-    def __lt__(self, a2):
-        d1 = a1.d  # a1.a2 * 99999 + a1.d;
-        d2 = a2.d  # a2.a2 * 99999 + a2.d;
-        return True if d1 < d2 else False
-
-
-class SDM():
-    def __init__(self):
-        self.dk, dddd = 0.0, 0.0
-        self.prime = np.array(3, 0)
-        self.dp = np.array(3, 0)
-        self.D = np.array(3, 0)
-        self.floorD = np.array(3, 0)
-        # contact.clear()  # sdmitem list for hydrogen contacts (not needed)?
-        self.sdm = []  # list of sdmitems
-
-    def calc_sdm(self):
-        pass
 
 
 class Lattice(object):

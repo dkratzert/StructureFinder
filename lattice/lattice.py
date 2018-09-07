@@ -12,7 +12,6 @@ Created on 03.06.2017
 @author: Daniel Kratzert
 """
 from math import cos, radians, sqrt, sin
-import numpy as np
 
 from shelxfile.dsrmath import Matrix, Array
 
