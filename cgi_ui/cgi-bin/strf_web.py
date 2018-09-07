@@ -48,8 +48,6 @@ from searcher.misc import is_valid_cell
 TODO:
 - Make login infrastructure.
 - Add option: should contain *only* these elements
-- Display number of search results in unit cell field.
-- Prevent adding same element in include and exclude field
 - Maybe http://www.daterangepicker.com
 """
 
@@ -64,6 +62,7 @@ structures = database_handler.StructureTable(dbfilename)
 app = Bottle()
 # bottle.debug(True)  # Do not enable debug in production systems!
 
+
 @app.route('/all')
 def structures_list_data():
     """
@@ -72,7 +71,7 @@ def structures_list_data():
     return get_structures_json(structures, show_all=True)
 
 
-@app.route('/')
+@app.route('/', method=['POST', 'GET'])
 def main():
     """
     The main web site with html template and space group listing.
@@ -87,9 +86,9 @@ def main():
 
 @app.route("/cellsrch")
 def cellsrch():
-    cell_search = request.GET.get("cell_search", [''])
-    more_results = (request.GET.get("more", ['']) == "true")
-    sublattice = (request.GET.get("supercell", ['']) == "true")
+    cell_search = request.GET.cell_search
+    more_results = (request.GET.more == "true")
+    sublattice = (request.GET.supercell == "true")
     cell = is_valid_cell(cell_search)
     print("Cell search:", cell)
     if cell:
@@ -100,7 +99,7 @@ def cellsrch():
 
 @app.route("/txtsrch")
 def txtsrch():
-    text_search = request.GET.get("text_search", [''])
+    text_search = request.GET.text_search
     print("Text search:", text_search)
     ids = search_text(structures, text_search)
     return get_structures_json(structures, ids, show_all=False)
@@ -108,16 +107,16 @@ def txtsrch():
 
 @app.route("/adv_srch")
 def adv():
-    elincl = request.GET.get("elements_in", [''])
-    elexcl = request.GET.get("elements_out", [''])
-    date1 = request.GET.get("date1", [''])
-    date2 = request.GET.get("date2", [''])
-    cell_search = request.GET.get("cell_search", [''])
-    txt_in = request.GET.get("text_in", [''])
-    txt_out = request.GET.get("text_out", [''])
-    more_results = (request.GET.get("more", ['']) == "true")
-    sublattice = (request.GET.get("supercell", ['']) == "true")
-    it_num = request.GET.get("it_num", '')
+    elincl = request.GET.elements_in
+    elexcl = request.GET.elements_out
+    date1 = request.GET.date1
+    date2 = request.GET.date2
+    cell_search = request.GET.cell_search
+    txt_in = request.GET.text_in
+    txt_out = request.GET.text_out
+    more_results = (request.GET.more == "true")
+    sublattice = (request.GET.supercell == "true")
+    it_num = request.GET.it_num
     print("Advanced search:", elincl, elexcl, date1, date2, cell_search, txt_in, txt_out, more_results, sublattice,
           it_num)
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
@@ -132,7 +131,7 @@ def jsmol_request():
     """
     A request for atom data from jsmol.
     """
-    str_id = request.POST.get('id', [''])
+    str_id = request.POST.id
     print("Molecule id:", str_id)
     if str_id:
         cell_list = structures.get_cell_by_id(str_id)[:6]
@@ -150,11 +149,11 @@ def post_request():
     Handle POST requests.
     """
     cif_dic = {}
-    str_id = request.POST.get('id', [''])
-    resid1 = (request.POST.get('residuals1', ['']) == 'true')
-    resid2 = (request.POST.get('residuals2', ['']) == 'true')
-    all_cif = (request.POST.get('all', ['']) == 'true')
-    unitcell = request.POST.get('unitcell', [''])
+    str_id = request.POST.id
+    resid1 = request.POST.residuals1 == 'true'
+    resid2 = request.POST.residuals2 == 'true'
+    all_cif = (request.POST.all == 'true')
+    unitcell = request.POST.unitcell
     print("Structure id:", str_id)
     if str_id:
         cif_dic = structures.get_row_as_dict(str_id)
