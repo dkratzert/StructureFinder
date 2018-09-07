@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['strf.py'],
-             pathex=['D:\\GitHub\\StructureFinder'],
+             pathex=['D:\\Programme\\Windows Kits\\10\\Redist\\ucrt\\DLLs\\x64', 'D:\\GitHub\\StructureFinder'],
              binaries=[('C:\\tools\\opengl64\\opengl32sw.dll', 'opengl32sw.dll')],
              datas=[('gui', 'gui'), ('displaymol', 'displaymol'), ('icons', 'icons')],
              hiddenimports=['PyQt5.sip'],
