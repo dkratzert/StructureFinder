@@ -181,7 +181,7 @@ def server_static(filepath):
     <filename> wildcard won’t match a path with a slash in it. To serve files in subdirectories, change
     the wildcard to use the path filter:
     """
-    return static_file(filepath, root='cgi_ui/static/')
+    return static_file(filepath, root='./cgi_ui/static/')
 
 
 @app.route('/version')
@@ -405,6 +405,7 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
                         </div>"""
     return table_string
 
+
 def chunks(l: list, n: int) -> list:
     """
     returns successive n-sized chunks from l.
@@ -417,6 +418,7 @@ def chunks(l: list, n: int) -> list:
     [[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'a', 'b', 'c', 'd', 'e', 'f']]
     """
     return [l[i:i + n] for i in range(0, len(l), n)]
+
 
 def find_cell(structures: StructureTable, cell: list, sublattice=False, more_results=False) -> list:
     """
