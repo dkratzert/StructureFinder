@@ -16,11 +16,11 @@ from __future__ import print_function
 
 from os.path import isfile
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
-from searcher.database_handler import Structure, Residuals, Cell, Base
+from searcher.database_handler import Structure, Residuals, Cell, Base, orm_to_dict
 from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
 
@@ -140,6 +140,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             if isfile(self.dbfilename):
                 #self.structures = database_handler.StructureTable(self.dbfilename)
                 engine = create_engine('sqlite:///' + self.dbfilename)
+                #engine.echo = True
                 self.structures = sessionmaker(bind=engine)
                 self.show_full_list()
         if update_check.is_update_needed(VERSION=VERSION):
@@ -518,8 +519,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
             return False
         structure_id = item.sibling(item.row(), 3).data()
         session = self.structures()
-        dic = session.query(Residuals).all()
-        print(dic)
+        row = session.query(Residuals).filter(Residuals.StructureId == structure_id)
+        print('##', orm_to_dict(row))
+        #dic = session.query(Residuals).whereclause(Id = structure_id)
+        #print(dic, '###')
+        return
         #self.display_properties(structure_id, dic)
         self.structureId = structure_id
         print('in get_properties')

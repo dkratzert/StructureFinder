@@ -11,7 +11,7 @@ Created on 09.02.2015
 
 @author: daniel
 """
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, Date
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, Date, inspect
 from sqlalchemy.ext.declarative import declarative_base
 
 import sqlite3
@@ -28,6 +28,7 @@ from shelxfile.dsrmath import Array
 db_enoding = 'utf-8'
 
 Base = declarative_base()
+
 
 class DBFormat(Base):
      __tablename__ = 'database_format'
@@ -237,6 +238,7 @@ class Residuals(Base):
     _shelx_res_file = Column(String)
     modification_time = Column(Date)
     file_size = Column(Integer)
+
 
 class Cell(Base):
     '''
