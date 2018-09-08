@@ -3,10 +3,12 @@ MOl V3000 format
 """
 import os
 
+from sqlalchemy.orm import Session
+
 from lattice import lattice
 from searcher import misc
 from searcher.atoms import get_radius_from_element
-from searcher.database_handler import StructureTable
+from searcher.database_handler import StructureTable, Atoms
 from searcher.unitcell import Lattice
 from shelxfile.dsrmath import Array
 
@@ -15,12 +17,14 @@ class MolFile(object):
     """
     This mol file writer is only to use the file with JSmol, not to implement the standard exactly!
     """
-    def __init__(self, id: str, db: StructureTable, cell: list, grow=False):
-        self.db = db
+    def __init__(self, id: str, session: Session, cell: list, grow=False):
+        self.session = session
         if grow:
-            atoms = self.db.get_atoms_table(id, cell, cartesian=False)
-            cards = db.get_row_as_dict(id)['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")
-            l = Lattice(atoms, cards, cell)
+            #atoms = self.db.get_atoms_table(id, cell, cartesian=False)
+            atoms = [(at.name, at.x, at.y) for at in session.query(Atoms).filter(Atoms.Id == id).all()]
+            print(atoms)
+            #cards = db.get_row_as_dict(id)['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")
+            #l = Lattice(atoms, cards, cell)
             atoms = l.pack_structure()
             a = lattice.A(cell).orthogonal_matrix
             cartesian_coords = []

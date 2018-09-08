@@ -17,7 +17,11 @@ from __future__ import print_function
 from os.path import isfile
 from sqlite3 import DatabaseError
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, session, query
+
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
+from searcher.database_handler import Structure, Residuals, Cell
 from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
 
@@ -134,7 +138,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.dbfilename = sys.argv[1]
             if isfile(self.dbfilename):
                 try:
-                    self.structures = database_handler.StructureTable(self.dbfilename)
+                    #self.structures = database_handler.StructureTable(self.dbfilename)
+                    engine = create_engine('sqlite:///' + self.dbfilename)
+                    self.structures = sessionmaker(bind=engine)
                     self.show_full_list()
                 except (IndexError, DatabaseError) as e:
                     print(e)
@@ -426,9 +432,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         filecrawler.put_cifs_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked(), 
                                    fillcif=self.ui.add_cif.isChecked())
         self.progress.hide()
-        self.structures.database.init_textsearch()
-        self.structures.populate_fulltext_search_table()
-        self.structures.database.commit_db()
+        session = self.structures
+        #self.structures.database.init_textsearch()
+        #self.structures.populate_fulltext_search_table()
+        #session.commit()
         self.ui.cifList_treeWidget.show()
         self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
@@ -460,6 +467,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
             molf.write_text(data=' ', encoding="utf-8", errors='ignore')
             self.view.reload()
+        """
         try:
             self.structures.database.cur.close()
         except Exception:
@@ -473,6 +481,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.dbfdesc = None
         except:
             pass
+        """
         if copy_on_close:
             if shutil._samefile(self.dbfilename, copy_on_close):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
@@ -507,12 +516,14 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         This slot shows the properties of a cif file in the properties widget
         """
-        if not self.structures.database.cur:
+        if not self.structures:
             return False
         structure_id = item.sibling(item.row(), 3).data()
-        dic = self.structures.get_row_as_dict(structure_id)
+        session = self.structures()
+        dic = session.query(Residuals).all()
         self.display_properties(structure_id, dic)
         self.structureId = structure_id
+        print('in get_properties')
         return True
 
     def save_database(self) -> bool:
@@ -552,7 +563,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
         self.clear_fields()
-        cell = self.structures.get_cell_by_id(structure_id)
+        #cell = self.structures.get_cell_by_id(structure_id)
+        session = self.structures()
+        cell = session.query(Cell).filter(Structure.Id == structure_id).all()
+        print(cell)
         if not cell:
             return False
         try:
@@ -666,8 +680,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         Creates a html file from a mol file to display the molecule in jsmol-lite
         """
+        session = self.structures()
         try:
-            tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6], grow=False)
+            tst = mol_file_writer.MolFile(structure_id, session, cell[:6], grow=False)
             mol = tst.make_mol()
         except (TypeError, KeyError):
             print("Error in structure", structure_id, "while writing mol file.")
@@ -866,7 +881,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
             return False
         print("Opened {}.".format(fname[0]))
         self.dbfilename = fname[0]
-        self.structures = database_handler.StructureTable(self.dbfilename)
+        #self.structures = database_handler.StructureTable(self.dbfilename)
+        engine = create_engine('sqlite://' + self.dbfilename)
+        self.structures = sessionmaker(bind=engine)
         self.show_full_list()
         if not self.structures:
             return False
@@ -1049,9 +1066,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         structure_id = 0
         if not self.structures:
             return
-        for i in self.structures.get_all_structure_names():
-            structure_id = i[0]
-            self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
+        session = self.structures()
+        for row in session.query(Structure).all():
+            self.add_table_row(name=row.filename, path=row.path, structure_id=row.Id, data=row.dataname)
         mess = "Loaded {} entries.".format(structure_id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.set_columnsize()
