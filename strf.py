@@ -15,15 +15,16 @@ Created on 09.02.2015
 from __future__ import print_function
 
 from os.path import isfile
-from sqlite3 import DatabaseError
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, session, query
+from sqlalchemy.orm import sessionmaker
 
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
-from searcher.database_handler import Structure, Residuals, Cell
+from searcher.database_handler import Structure, Residuals, Cell, Base
 from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
+
+# from sqlite3 import DatabaseError
 
 DEBUG = False
 import math
@@ -44,7 +45,7 @@ from lattice import lattice
 from misc import update_check
 from misc.version import VERSION
 from pymatgen.core import mat_lattice
-from searcher import constants, misc, filecrawler, database_handler
+from searcher import constants, misc, filecrawler#, database_handler
 from searcher.constants import py36
 from searcher.fileparser import Cif
 from searcher.misc import is_valid_cell, elements
@@ -137,13 +138,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if len(sys.argv) > 1:
             self.dbfilename = sys.argv[1]
             if isfile(self.dbfilename):
-                try:
-                    #self.structures = database_handler.StructureTable(self.dbfilename)
-                    engine = create_engine('sqlite:///' + self.dbfilename)
-                    self.structures = sessionmaker(bind=engine)
-                    self.show_full_list()
-                except (IndexError, DatabaseError) as e:
-                    print(e)
+                #self.structures = database_handler.StructureTable(self.dbfilename)
+                engine = create_engine('sqlite:///' + self.dbfilename)
+                self.structures = sessionmaker(bind=engine)
+                self.show_full_list()
         if update_check.is_update_needed(VERSION=VERSION):
             self.statusBar().showMessage('A new Version of StructureFinder is available at '
                                          'https://www.xs3.uni-freiburg.de/research/structurefinder')
@@ -508,8 +506,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Initializes the database.
         """
         self.dbfdesc, self.dbfilename = tempfile.mkstemp()
-        self.structures = database_handler.StructureTable(self.dbfilename)
-        self.structures.database.initialize_db()
+        #self.structures = database_handler.StructureTable(self.dbfilename)
+        #self.structures.database.initialize_db()
 
     @QtCore.pyqtSlot('QModelIndex', name="get_properties")
     def get_properties(self, item):
@@ -521,7 +519,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         structure_id = item.sibling(item.row(), 3).data()
         session = self.structures()
         dic = session.query(Residuals).all()
-        self.display_properties(structure_id, dic)
+        print(dic)
+        #self.display_properties(structure_id, dic)
         self.structureId = structure_id
         print('in get_properties')
         return True
