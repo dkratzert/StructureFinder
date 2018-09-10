@@ -30,6 +30,20 @@ db_enoding = 'utf-8'
 Base = declarative_base()
 
 
+from sqlalchemy import inspect
+
+def object_as_dict(obj):
+    return {c.key: getattr(obj, c.key)
+            for c in inspect(obj).mapper.column_attrs}
+
+
+def as_dict(row) -> dict:
+    """
+    Returns the content of a specific table row as dictionary.
+    """
+    return dict((col, getattr(row, col)) for col in row.__table__.columns.keys())
+
+
 class DBFormat(Base):
      __tablename__ = 'database_format'
 

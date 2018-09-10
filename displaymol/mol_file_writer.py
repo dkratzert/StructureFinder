@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from lattice import lattice
 from searcher import misc
 from searcher.atoms import get_radius_from_element
-from searcher.database_handler import StructureTable, Atoms
+from searcher.database_handler import StructureTable, Atoms, Structure
 from searcher.unitcell import Lattice
 from shelxfile.dsrmath import Array
 
@@ -19,22 +19,15 @@ class MolFile(object):
     """
     def __init__(self, id: str, session: Session, cell: list, grow=False):
         self.session = session
+        self.atoms = []
         if grow:
-            #atoms = self.db.get_atoms_table(id, cell, cartesian=False)
-            atoms = [(at.name, at.x, at.y) for at in session.query(Atoms).filter(Atoms.Id == id).all()]
-            print(atoms)
-            #cards = db.get_row_as_dict(id)['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")
-            #l = Lattice(atoms, cards, cell)
-            atoms = l.pack_structure()
-            a = lattice.A(cell).orthogonal_matrix
-            cartesian_coords = []
-            for at in atoms:
-                coord = Array([at[2], at[3], at[4]])
-                coords = list(coord * a)
-                cartesian_coords.append(list(at[:2]) + coords)
-            self.atoms = cartesian_coords
+            pass
         else:
-            self.atoms = self.db.get_atoms_table(id, cell, cartesian=True)
+            atoms = [(at.Name, at.element, at.x, at.y, at.z) for at in
+                     session.query(Atoms).filter(Atoms.StructureId == id).all() if at.Name]
+            a = lattice.A(cell).orthogonal_matrix
+            for at in atoms:
+                self.atoms.append(at[:2] + tuple((Array([at[2], at[3], at[4]]) * a).values))
         self.bonds = self.get_conntable_from_atoms()
         self.bondscount = len(self.bonds)
         self.atomscount = len(self.atoms)

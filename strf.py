@@ -20,13 +20,13 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
-from searcher.database_handler import Structure, Residuals, Cell, Base, orm_to_dict
+from searcher.database_handler import Structure, Residuals, Cell, Base, Measurement, object_as_dict, as_dict
 from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
 
 # from sqlite3 import DatabaseError
 
-DEBUG = False
+DEBUG = True
 import math
 import os
 import pathlib
@@ -519,14 +519,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
             return False
         structure_id = item.sibling(item.row(), 3).data()
         session = self.structures()
-        row = session.query(Residuals).filter(Residuals.StructureId == structure_id)
-        print('##', orm_to_dict(row))
-        #dic = session.query(Residuals).whereclause(Id = structure_id)
-        #print(dic, '###')
-        return
-        #self.display_properties(structure_id, dic)
+        row = session.query(Residuals).filter(Residuals.StructureId == structure_id).first()
+        dic = as_dict(row)
+        #print('##', dic)
+        self.display_properties(structure_id, dic)
         self.structureId = structure_id
-        print('in get_properties')
         return True
 
     def save_database(self) -> bool:
@@ -568,25 +565,26 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.clear_fields()
         #cell = self.structures.get_cell_by_id(structure_id)
         session = self.structures()
-        cell = session.query(Cell).filter(Structure.Id == structure_id).all()
-        print(cell)
-        if not cell:
+        cell_row = session.query(Cell).filter(Cell.StructureId == structure_id).first()
+        if not cell_row:
             return False
-        try:
-            self.display_molecule(cell, structure_id)
-        except Exception as e:
-            print(e, "unable to display molecule")
-            if DEBUG:
-                raise 
         self.ui.cifList_treeWidget.setFocus()
         if not cif_dic:
             return False
         a, b, c, alpha, beta, gamma, volume = 0, 0, 0, 0, 0, 0, 0
-        if cell:
-            a, b, c, alpha, beta, gamma, volume = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6]
+        if cell_row:
+            a, b, c, alpha, beta, gamma, volume = cell_row.a, cell_row.b, cell_row.c, cell_row.alpha, \
+                                                  cell_row.beta, cell_row.gamma, cell_row.volume
         if not all((a, b, c, alpha, beta, gamma, volume)):
             self.ui.cellField.setText('            ')
             return False
+        try:
+            cell = [a, b, c, alpha, beta, gamma, volume]
+            self.display_molecule(cell, structure_id)
+        except Exception as e:
+            print(e, "unable to display molecule")
+            if DEBUG:
+                raise
         # self.ui.cellField.setMinimumWidth(180)
         self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, ''))
         self.ui.cellField.installEventFilter(self)
@@ -687,8 +685,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         try:
             tst = mol_file_writer.MolFile(structure_id, session, cell[:6], grow=False)
             mol = tst.make_mol()
-        except (TypeError, KeyError):
-            print("Error in structure", structure_id, "while writing mol file.")
+        except (TypeError, KeyError) as e:
+            print("Error in structure", structure_id, "while writing mol file.\n", e)
             mol = ' '
             if DEBUG:
                 raise

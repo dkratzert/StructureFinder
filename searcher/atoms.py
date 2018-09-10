@@ -230,6 +230,7 @@ element2num = {
     'Cm': 96,
     'Bk': 97,
     'Cf': 98,
+    'D': 1,
 }
 
 atoms = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
@@ -239,7 +240,7 @@ atoms = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
          'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb',
          'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt',
          'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa',
-         'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf']
+         'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'D']
 
 num2covradius = {
     0: 0.74,
@@ -340,7 +341,8 @@ num2covradius = {
     95: 1.20,
     96: 1.20,
     97: 1.20,
-    98: 1.20
+    98: 1.20,
+    99: 1
 }
 
 
