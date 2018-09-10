@@ -230,6 +230,7 @@ element2num = {
     'Cm': 96,
     'Bk': 97,
     'Cf': 98,
+    'D': 1,
 }
 
 atoms = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
@@ -239,7 +240,7 @@ atoms = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
          'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb',
          'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt',
          'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa',
-         'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf']
+         'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'D']
 
 num2covradius = {
     0: 0.74,
@@ -340,9 +341,113 @@ num2covradius = {
     95: 1.20,
     96: 1.20,
     97: 1.20,
-    98: 1.20
+    98: 1.20,
+    99: 0.5
 }
 
+
+element2cov = {
+    'n': 0.74,
+    'H': 0.50,
+    'He': 1.23,
+    'Li': 0.9,
+    'Be': 0.82,
+    'B': 0.77,
+    'C': 0.75,
+    'N': 0.73,
+    'O': 0.72,
+    'F': 0.71,
+    'Ne': 1.54,
+    'Na': 1.36,
+    'Mg': 1.18,
+    'Al': 1.11,
+    'Si': 1.06,
+    'P':  1.02,
+    'S':  0.99,
+    'Cl': 0.98,
+    'Ar': 2.03,
+    'K':  1.74,
+    'Ca': 1.44,
+    'Sc': 1.32,
+    'Ti': 1.22,
+    'V':  1.18,
+    'Cr': 1.17,
+    'Mn': 1.17,
+    'Fe': 1.16,
+    'Co': 1.15,
+    'Ni': 1.17,
+    'Cu': 1.25,
+    'Zn': 1.26,
+    'Ga': 1.22,
+    'Ge': 1.2,
+    'As': 1.16,
+    'Se': 1.14,
+    'Br': 1.12,
+    'Kr': 2.16,
+    'Rb': 1.91,
+    'Sr': 1.62,
+    'Y':  1.45,
+    'Zr': 1.34,
+    'Nb': 1.3,
+    'Mo': 1.27,
+    'Tc': 1.25,
+    'Ru': 1.25,
+    'Rh': 1.28,
+    'Pd': 1.34,
+    'Ag': 1.48,
+    'Cd': 1.44,
+    'In': 1.41,
+    'Sn': 1.4,
+    'Sb': 1.36,
+    'Te': 1.33,
+    'I':  1.31,
+    'Xe': 2.35,
+    'Cs': 1.98,
+    'Ba': 1.69,
+    'La': 1.65,
+    'Ce': 1.65,
+    'Pr': 1.64,
+    'Nd': 1.63,
+    'Pm': 1.62,
+    'Sm': 1.85,
+    'Eu': 1.61,
+    'Gd': 1.59,
+    'Tb': 1.59,
+    'Dy': 1.58,
+    'Ho': 1.57,
+    'Er': 1.56,
+    'Tm': 1.74,
+    'Yb': 1.56,
+    'Lu': 1.44,
+    'Hf': 1.34,
+    'Ta': 1.3,
+    'W':  1.28,
+    'Re': 1.26,
+    'Os': 1.27,
+    'Ir': 1.3,
+    'Pt': 1.34,
+    'Au': 1.49,
+    'Hg': 1.48,
+    'Tl': 1.47,
+    'Pb': 1.46,
+    'Bi': 1.46,
+    'Po': 1.45,
+    'At': 1.0,
+    'Rn': 1.0,
+    'Fr': 1.0,
+    'Ra': 1.88,
+    'Ac': 1.65,
+    'Th': 1.61,
+    'Pa': 1.42,
+    'U':  1.30,
+    'Np': 1.51,
+    'Pu': 1.82,
+    'Am': 1.20,
+    'Cm': 1.20,
+    'Bk': 1.20,
+    'Cf': 1.20,
+    'D':  0.5
+}
 
 def get_radius(atomic_number: int) -> float:
     """
@@ -361,7 +466,7 @@ def get_radius_from_element(element: str) -> float:
     >>> get_radius_from_element('F')
     0.71
     """
-    return get_radius(element2num[element.capitalize()])
+    return element2cov[element.capitalize()]
 
 
 def get_atomic_number(element: str) -> int:
