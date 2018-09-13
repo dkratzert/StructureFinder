@@ -544,7 +544,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
             pass
     if txt_in:
         if len(txt_in) >= 2 and "*" not in txt_in:
-            txt = '*' + txt_in + '*'
+            txt_in = '*' + txt_in + '*'
         idlist = structures.find_by_strings(txt_in)
         try:
             incl.append([i[0] for i in idlist])
@@ -554,7 +554,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
         excl.append(search_elements(structures, elexcl, anyresult=True))
     if txt_out:
         if len(txt_out) >= 2 and "*" not in txt_out:
-            txt_ex = '*' + txt_out + '*'
+            txt_out = '*' + txt_out + '*'
         idlist = structures.find_by_strings(txt_out)
         try:
             excl.append([i[0] for i in idlist])
