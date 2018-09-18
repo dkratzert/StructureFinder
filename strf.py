@@ -665,6 +665,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def display_molecule(self, cell: list, structure_id: str) -> None:
         """
         Creates a html file from a mol file to display the molecule in jsmol-lite
+        # TODO: Make a clas for Atoms(), fill it with db atoms, apply symmetry, feed Atoms() into MolFile
+        # TODO: In order to apply symmetry, adapt grow from ShelXFile and Symmcards from ShelxFile.
         """
         try:
             tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6], grow=False)
