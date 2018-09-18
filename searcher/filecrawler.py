@@ -355,7 +355,7 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
                           structures: database_handler.StructureTable, options: dict):
     if not res.cell:
         return False
-    if not all(res.cell):
+    if not all([res.cell.a, res.cell.b, res.cell.al, res.cell.be, res.cell.ga]):
         return False
     if not res.cell.volume:
         return False
