@@ -1,7 +1,14 @@
+from math import acos, sqrt, degrees
 
-from .dsrmath import atomic_distance, frac_to_cart
-from .misc import DEBUG, split_fvar_and_parameter, ParseUnknownParam, ParseSyntaxError
+from shelxfile import elements
 from shelxfile.cards import AFIX, PART, RESI
+from shelxfile.dsrmath import atomic_distance, frac_to_cart, Array
+from shelxfile.misc import DEBUG, split_fvar_and_parameter, ParseUnknownParam, ParseSyntaxError
+
+"""
+TODO:
+
+"""
 
 
 class Atoms():
@@ -12,17 +19,16 @@ class Atoms():
     def __init__(self, shx):
         self.shx = shx
         self.all_atoms = []
-        self.atomsdict = {}
-        self.nameslist = []
 
     def append(self, atom: 'Atom') -> None:
         """
         Adds a new atom to the list of atoms. Using append is essential.
         """
         self.all_atoms.append(atom)
-        name = atom.name + '_{}'.format(atom.resinum)
-        self.atomsdict[name] = atom
-        self.nameslist.append(name.upper())
+
+    @property
+    def nameslist(self):
+        return [at.fullname.upper() for at in self.all_atoms]
 
     def __repr__(self):
         if self.all_atoms:
@@ -31,8 +37,7 @@ class Atoms():
             return 'No Atoms in file.'
 
     def __iter__(self):
-        for x in self.all_atoms:
-            yield x
+        return iter(x for x in self.all_atoms)
 
     def __getitem__(self, item: int) -> 'Atom':
         return self.get_atom_by_id(item)
@@ -48,12 +53,15 @@ class Atoms():
         for n, at in enumerate(self.all_atoms):
             if key == at.atomid:
                 if DEBUG:
-                    print("deleting atom", at.name)
+                    print("deleting atom", at.fullname)
                 del self.all_atoms[n]
-                del self.atomsdict[at.name + '_{}'.format(at.resinum)]
-                del self.nameslist[self.nameslist.index(at.fullname.upper())]
-                for x in at._line_numbers:
-                    del self.shx._reslist[x]
+                del self.shx._reslist[self.shx._reslist.index(at)]
+        # if DEBUG:
+        #    print('Could not delete atom {}'.format(self.get_atom_by_id(key.atomid).fullname))
+
+    @property
+    def atomsdict(self):
+        return dict((atom.fullname, atom) for atom in self.all_atoms)
 
     @property
     def number(self) -> int:
@@ -104,6 +112,8 @@ class Atoms():
         Atom ID: 73
         """
         if '_' not in atom_name:
+            if atom_name == ">" or atom_name == "<":
+                return None
             atom_name += '_0'
         try:
             at = self.atomsdict[atom_name.upper()]
@@ -111,6 +121,25 @@ class Atoms():
             print("Atom {} not found in atom list.".format(atom_name))
             return None
         return at
+
+    def get_multi_atnames(self, atom_name, residue_class):
+        atoms = []
+        if residue_class:
+            for num in self.shx.residues.residue_classes[residue_class]:
+                if '_' not in atom_name:
+                    atom_name += '_0'
+                else:
+                    atom_name += '_{}'.format(num)
+                try:
+                    atoms.append(self.atomsdict[atom_name.upper()])
+                except KeyError:
+                    pass
+        else:
+            try:
+                atoms.append(self.atomsdict[atom_name.upper()])
+            except KeyError:
+                return None
+        return atoms
 
     def get_all_atomcoordinates(self) -> dict:
         """
@@ -149,7 +178,7 @@ class Atoms():
         >>> shx.atoms.residues
         [0, 1, 2, 3, 4]
         """
-        return list({x.resinum for x in self.all_atoms})
+        return list(set([x.resinum for x in self.all_atoms]))
 
     @property
     def q_peaks(self) -> list:
@@ -179,6 +208,67 @@ class Atoms():
         except AttributeError:
             return 0.0
 
+    def angle(self, at1: 'Atom', at2: 'Atom', at3: 'Atom') -> float:
+        """
+        Calculates the angle between three atoms.
+
+        >>> from shelxfile.shelx import ShelXFile
+        >>> shx = ShelXFile('./tests/p21c.res')
+        >>> at1 = shx.atoms.get_atom_by_name('O1_4')
+        >>> at2 = shx.atoms.get_atom_by_name('C1_4')
+        >>> at3 = shx.atoms.get_atom_by_name('C2_4')
+        >>> round(shx.atoms.angle(at1, at2, at3), 6)
+        109.688123
+        """
+        ac1 = Array(at1.cart_coords)
+        ac2 = Array(at2.cart_coords)
+        ac3 = Array(at3.cart_coords)
+        vec1 = ac2 - ac1
+        vec2 = ac2 - ac3
+        return vec1.angle(vec2)
+
+    def torsion_angle(self, at1: 'Atom', at2: 'Atom', at3: 'Atom', at4: 'Atom') -> float:
+        """
+        Calculates the torsion angle (dieder angle) between four atoms.
+
+        From the book of Camelo Giacovazzo:
+        For a sequence of four atoms A, B, C, D, the torsion angle w(ABCD) is
+        defined as the angle between the normals to the planes ABC and BCD. 
+        By convention w is positive if the sense of rotation from BA to
+        CD, viewed down BC, is clockwise, otherwise it is negative.
+
+        >>> from shelxfile.shelx import ShelXFile
+        >>> shx = ShelXFile('./tests/p21c.res')
+        >>> at1 = shx.atoms.get_atom_by_name('O1')
+        >>> at2 = shx.atoms.get_atom_by_name('C1')
+        >>> at3 = shx.atoms.get_atom_by_name('C2')
+        >>> at4 = shx.atoms.get_atom_by_name('F1')
+        >>> round(shx.atoms.torsion_angle(at1, at2, at3, at4), 6)
+        74.095731
+        >>> at4 = shx.atoms.get_atom_by_name('F2')
+        >>> round(shx.atoms.torsion_angle(at1, at2, at3, at4), 6)
+        -44.467358
+        """
+        ac1 = Array(at1.cart_coords)
+        ac2 = Array(at2.cart_coords)
+        ac3 = Array(at3.cart_coords)
+        ac4 = Array(at4.cart_coords)
+        # Three vectors between four atoms:
+        v1 = ac2 - ac1
+        v2 = ac3 - ac2
+        v3 = ac4 - ac3
+        # cross product:
+        a = v1.cross(v2)
+        b = v2.cross(v3)
+        # If direction > 0, angle is positive, else negative:
+        direction = v1[0] * v2[1] * v3[2] - v1[2] * v1[1] * v3[0] + v1[2] * v2[0] * v3[1] - v1[0] \
+                    * v2[2] * v3[1] + v1[1] * v2[2] * v3[0] - v1[1] * v2[0] * v3[2]
+        # angle between plane normals:
+        ang = acos((a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) /
+                   (sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]) *
+                    sqrt(b[0] * b[0] + b[1] * b[1] + b[2] * b[2])))
+        return degrees(ang) if direction > 0 else degrees(-ang)
+
     def atoms_in_class(self, name: str) -> list:
         """
         Returns a list of atoms in residue class 'name'
@@ -197,7 +287,7 @@ class Atoms():
 
 class Atom():
     """
-    An Opbect holding all Properties of a shelxl atom plus some extra information like
+    An object holding all Properties of a shelxl atom plus some extra information like
     kartesian coordinates and element type.
     """
     #                name    sfac     x         y        z       occ      u11      u12 ...
@@ -207,22 +297,17 @@ class Atom():
     _isoatomstr = '{:<5.5s} {:<3}{:>10.6f}  {:>10.6f}  {:>9.6f}  {:>9.5f}  {:>9.5f}'
     _qpeakstr = '{:<5.5s} {:<3}{:>8.4f}  {:>8.4f}  {:>8.4f}  {:>9.5f}  {:<9.2f} {:<9.2f}'
     _fragatomstr = '{:<5.5s} {:>10.6f}  {:>10.6f}  {:>9.6f}'
-    atid = 0
 
-    def __init__(self, shelx, spline: list, line_nums: list, line_number: int, part: PART = None,
-                 afix: AFIX = None, resi: RESI = None, sof: float = 0) -> None:
-        # super(Atom, self).__init__(shelx)
-        self._line_number = line_number
-        self._lines = line_nums
+    def __init__(self, shx) -> None:
+        self.shx = shx
+        self.cell = shx.cell
         self.sfac_num = None
-        self.name = None  # Name without residue number like "C1"
-        self.fullname = None  # Name including residue nimber like "C1_2"
+        self.resi = None
+        self.part = None
+        self.afix = None
+        self.name = 'name'  # Name without residue number like "C1"
         # Site occupation factor including free variable like 31.0
-        self.sof = None
-        self.atomid = Atom.atid
-        Atom.atid += 1
-        self.shx = shelx
-        self.element = None
+        self.sof = 11.0
         # fractional coordinates:
         self.x = None
         self.y = None
@@ -231,99 +316,140 @@ class Atom():
         self.xc = None
         self.yc = None
         self.zc = None
+        self.qpeak = False
+        self.peak_height = 0.0
+        self.uvals = [0.04]  # [U] or [u11 u12 u13 u21 u22 u23]
+        self.uvals_orig = [0.04]
         self.frag_atom = False
         self.restraints = []
-        self.previous_non_h = self.shx.non_h
-        if self.element not in ['H', 'D']:
-            self.shx.non_h = line_number
-        else:
-            self.shx.non_h = None
-        if sof:
-            # sof defined from outside e.g. by PART 1 31
-            self.sof = float(sof)
-        elif len(spline) > 5:
-            self.sof = float(spline[5])
-        else:
-            self.sof = 11.0
-        # Only the occupancy of the atom *without* the free variable like 0.5
-        self.fvar = 1
-        self.occupancy = 1
+        self.previous_non_h = None  # Find in self.shx.atoms durinf initialization
+        self._line_numbers = None
+        self._occupancy = 1.0
+        self.molindex = 0
+        # Indicates if this atom is generated by symmetry:
+        self.symmgen = False
+
+    @property
+    def atomid(self) -> int:
+        if self.symmgen:
+            return 0
+        try:
+            return self.shx._reslist.index(self)
+        except ValueError:
+            return 0
+
+    @property
+    def fullname(self) -> str:
+        return self.name + '_' + str(self.resinum)  # Name including residue nimber like "C1_2"
+
+    @property
+    def resiclass(self) -> str:
+        return self.resi.residue_class
+
+    @property
+    def resinum(self) -> int:
+        return self.resi.residue_number
+
+    @property
+    def chain_id(self) -> str:
+        return self.resi.chainID
+
+    @property
+    def fvar(self) -> int:
         # Be aware: fvar can be negative!
-        self.fvar, occ = split_fvar_and_parameter(self.sof)
+        fvar, _ = split_fvar_and_parameter(self.sof)
+        return fvar
+
+    @property
+    def occupancy(self) -> float:
+        # Only the occupancy of the atom like 0.5 (without the free variable)
+        _, occ = split_fvar_and_parameter(self.sof)
         # Fractional occupancy:
-        # Normalized to FVAR number one:
         if abs(self.fvar) == 1:
-            self.occupancy = occ
+            return occ
         else:
             if occ > 0:
                 try:
-                    self.occupancy = self.shx.fvars[self.fvar] * occ
+                    occ = self.shx.fvars[self.fvar] * occ
                 except IndexError:
-                    raise ParseSyntaxError
+                    if DEBUG:
+                        raise ParseSyntaxError
             else:
-                self.occupancy = 1 + (self.shx.fvars[self.fvar] * occ)
-        self.shx.fvars.set_fvar_usage(self.fvar)
-        self.uvals = [0.04]  # [u11 u12 u13 u21 u22 u23]
-        self.resiclass = resi.residue_class
-        if not resi.residue_number:
-            self.resinum = 0  # all other atoms are residue 0
+                occ = 1 + (self.shx.fvars[self.fvar] * occ)
+        return occ
+
+    @occupancy.setter
+    def occupancy(self, occ: float):
+        self._occupancy = occ
+
+    @property
+    def ishydrogen(self) -> bool:
+        """
+        Returns True if the current atom is a hydrogen isotope.
+        """
+        if self.element in ['H', 'D', 'T']:
+            return True
         else:
-            self.resinum = resi.residue_number
-        self.chain_id = resi.ID
+            return False
+
+    def set_atom_parameters(self, name: str = 'C', sfac_num: int = 1, coords: list = None, part: PART = None,
+                            afix: AFIX = None, resi: RESI = None, site_occupation: float = 11.0, uvals: list = None,
+                            symmgen: bool = True):
+        """
+        Sets atom properties manually if not parsed from a SHELXL file.
+        """
+        self.name = name
+        self.sfac_num = sfac_num
+        self.frac_coords = coords
+        self.x, self.y, self.z = coords[0], coords[1], coords[2]
+        self.xc, self.yc, self.zc = frac_to_cart(self.frac_coords, self.cell)
         self.part = part
         self.afix = afix
-        self.qpeak = False
-        self.peak_height = 0.0
-        self.cell = shelx.cell
-        self.parse_line(spline)
-        #if self.shx.anis:
-        #    self.parse_anis()
-        for n, u in enumerate(self.uvals):
+        self.resi = resi
+        self.sof = site_occupation
+        self.uvals = uvals
+        self.symmgen = symmgen
+
+    def set_uvals(self, uvals: list):
+        """
+        Sets u values and checks if a free variable was used.
+        """
+        self.uvals = uvals
+        for n, u in enumerate(uvals):
             if abs(u) > 4.0:
-                self.fvar, uval = split_fvar_and_parameter(u)
+                fvar, uval = split_fvar_and_parameter(u)
                 self.uvals[n] = uval
-                self.shx.fvars.set_fvar_usage(self.fvar)
+                self.shx.fvars.set_fvar_usage(fvar)
 
-    def parse_anis(self):
+    def parse_line(self, atline: list, list_of_lines: list, part: PART, afix: AFIX, resi: RESI):
         """
-        Parses the ANIS card. It can be either ANIS, ANIS name(s) or ANIS number.
-        # TODO: Test if ANIS $CL works and if ANIS_* $C works
+        Parsers the text line of an atom from SHELXL to initialize the atom parameters.
         """
-        try:
-            # ANIS with a number as parameter
-            if int(self.shx.anis[1]) > 0:
-                self.shx.anis[1] -= 1
-                if len(self.uvals) < 6:
-                    self.uvals = [0.04, 0.0, 0.0, 0.0, 0.0, 0.0]
-        except (TypeError, KeyError, ValueError, IndexError):
-            # ANIS with a list of atoms
-            if not self.shx.anis.all_atoms and self.shx.anis.atoms:
-                # if '_' in self.shx.anis[0]:
-                #    resinum = self.shx.anis[0].upper().split('_')[1]
-                for x in self.shx.anis.atoms:
-                    if '_' in x:
-                        name, resinum = x.upper().split('_')
-                    else:
-                        name = x.upper()
-                        resinum = 0
-                    if self.name == name and (int(self.resinum) == int(resinum) or resinum == '*'):
-                        self.uvals = [0.04, 0.0, 0.0, 0.0, 0.0, 0.0]
-                    if x.startswith('$'):
-                        if name[1:].upper() == self.element \
-                                and (int(self.resinum) == int(resinum) or resinum == '*'):
-                            self.uvals = [0.04, 0.0, 0.0, 0.0, 0.0, 0.0]
-                            # TODO: This is a mess. Test and fix all sorts of ANIS possibilities.
-            # ANIS for all atoms
+        self.name = atline[0][:4]  # Atom names are limited to 4 characters
+        uvals = [float(x) for x in atline[6:12]]
+        self.uvals_orig = uvals[:]
+        self.set_uvals(uvals)
+        self._line_numbers = list_of_lines
+        self.part = part
+        self.afix = afix
+        self.resi = resi
+        # TODO: test all variants of PART and AFIX sof combinations:
+        if self.part.sof != 11.0:
+            if self.afix and self.afix.sof:  # handles position of afix and part:
+                if self.afix.index > self.part.index:
+                    self.sof = self.afix.sof
             else:
-                if len(self.uvals) < 6:
-                    self.uvals = [0.04, 0.0, 0.0, 0.0, 0.0, 0.0]
-
-    def parse_line(self, line):
-        self.name = line[0][:4]
-        self.fullname = self.name + '_{}'.format(self.resinum)
-        uvals = [float(x) for x in line[6:12]]
+                self.sof = self.part.sof
+        elif self.afix and self.afix.sof:
+            if self.part.sof != 11.0:
+                if self.part.index > self.afix.index:
+                    self.sof = self.part.sof
+            else:
+                self.sof = self.afix.sof
+        else:
+            self.sof = float(atline[5])
         try:
-            x, y, z = [float(x) for x in line[2:5]]
+            x, y, z = [float(x) for x in atline[2:5]]
         except ValueError as e:
             if DEBUG:
                 print(e, 'Line:', self._line_numbers[-1])
@@ -340,14 +466,50 @@ class Atom():
         self.x = x
         self.y = y
         self.z = z
-        self.uvals = uvals
+        self.xc, self.yc, self.zc = frac_to_cart(self.frac_coords, self.cell)
         if len(self.uvals) == 2:
             self.peak_height = uvals.pop()
+            self.qpeak = True
         if self.shx.end:  # After 'END' can only be Q-peaks!
             self.qpeak = True
-        self.sfac_num = int(line[1])
-        self.element = self.shx.sfac2elem(self.sfac_num).capitalize()
-        self.xc, self.yc, self.zc = frac_to_cart([self.x, self.y, self.z], self.cell.cell_list)
+        self.sfac_num = int(atline[1])
+        self.shx.fvars.set_fvar_usage(self.fvar)
+
+    @property
+    def element(self) -> str:
+        """
+        >>> from shelxfile.shelx import ShelXFile
+        >>> shx = ShelXFile('tests/p21c.res')
+        >>> at = shx.atoms.get_atom_by_name('C1_4')
+        >>> at.sfac_num
+        1
+        >>> at.element
+        'C'
+        >>> at.element = 'O'
+        >>> at.element
+        'O'
+        >>> at.sfac_num
+        3
+        """
+        return self.shx.sfac2elem(self.sfac_num).capitalize()
+
+    @property
+    def an(self):
+        return elements.get_atomic_number(self.element)
+
+    @element.setter
+    def element(self, new_element: str) -> None:
+        """
+        Sets the element type of an atom.
+        """
+        self.sfac_num = self.shx.elem2sfac(new_element)
+
+    @property
+    def radius(self) -> float:
+        """
+        Returns the atomic covalence radius in angstrom.
+        """
+        return elements.get_radius_from_element(self.element)
 
     def __iter__(self):
         for x in self.__repr__().split():
@@ -384,46 +546,50 @@ class Atom():
                     return Atom._isoatomstr.format(self.name, self.sfac_num, self.x, self.y, self.z, self.sof, 0.04)
 
     def resolve_restraints(self):
+        """
+        This method should generate a list of restraints objects for each restraints involved with this atom.
+        TODO: Make this work 
+        """
         for num, r in enumerate(self.shx.restraints):
             for at in r.atoms:
-                #print(r.residue_number, self.resinum, r.residue_class, self.resiclass, self.name, at)
+                # print(r.residue_number, self.resinum, r.residue_class, self.resiclass, self.name, at)
                 if r.residue_number == self.resinum and r.residue_class == self.resiclass and self.name == at:
                     self.restraints.append(r)
 
     @property
-    def _line_numbers(self) -> list:
-        # Line numbers (indexes) in the resfile.
-        return self._lines
-
-    @_line_numbers.setter
-    def _line_numbers(self, value: list):
-        self._lines = value
+    def index(self):
+        # The position in the res file as index number (starting from 0).
+        return self.shx.index_of(self)
 
     @property
-    def position(self):
-        # The position in the res file.
-        return self.shx._reslist.index(self)
+    def frac_coords(self, rounded=False) -> list:
+        if rounded:
+            return [round(self.x, 14), round(self.y, 14), round(self.z, 14)]
+        else:
+            return [self.x, self.y, self.z]
 
-    @property
-    def frac_coords(self):
-        return [self.x, self.y, self.z]
+    @frac_coords.setter
+    def frac_coords(self, coords: list):
+        self.x, self.y, self.z = coords
 
     @property
     def cart_coords(self):
-        return [self.xc, self.yc, self.zc]
+        return [round(self.xc, 14), round(self.yc, 14), round(self.zc, 14)]
 
     def delete(self):
         """
         >>> from shelxfile.shelx import ShelXFile
         >>> shx = ShelXFile('./tests/p21c.res')
-        >>> shx._reslist[55:58]
-        ['', Atom ID: 56, '']
-        >>> at = shx.atoms.get_atom_by_id(56)
+        >>> at = shx.atoms.get_atom_by_id(40)
+        >>> shx.atoms.all_atoms[:3]
+        [Atom ID: 38, Atom ID: 40, Atom ID: 42]
+        >>> at.fullname
+        'C1_4'
         >>> at.delete()
-        >>> shx._reslist[55:58]
-        ['', '', '']
+        >>> shx.atoms.all_atoms[:3]
+        [Atom ID: 38, Atom ID: 41, Atom ID: 43]
         """
-        del self.shx.atoms[self.atomid]
+        del self.shx.atoms[self.index]
 
     def to_isotropic(self) -> None:
         """
@@ -452,12 +618,12 @@ class Atom():
         >>> at = shx.atoms.get_atom_by_name('C1_4')
         >>> at.find_atoms_around(dist=2, only_part=2)
         [Atom ID: 38, Atom ID: 42, Atom ID: 50, Atom ID: 58]
-        >>> shx.atoms.get_atom_by_id(42).cart_coords
-        [0.8366626279178722, 4.0648946100000005, 6.101228338240846]
+        >>> shx.atoms.get_atom_by_name('C1_4').cart_coords
+        [-0.19777464582151, 4.902748697, 6.89776640065679]
         """
         found = []
         for at in self.shx.atoms:
-            if atomic_distance([self.x, self.y, self.z], [at.x, at.y, at.z], self.cell.cell_list) < dist:
+            if atomic_distance([self.x, self.y, self.z], [at.x, at.y, at.z], self.cell) < dist:
                 # Not the atom itselv:
                 if not self == at:
                     # only in special part and no q-peaks:
