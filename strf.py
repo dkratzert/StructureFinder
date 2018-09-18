@@ -1100,6 +1100,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cCDCNumberLineEdit.clear()
         self.ui.refl2sigmaLineEdit.clear()
         self.ui.uniqReflLineEdit.clear()
+        self.ui.lastModifiedLineEdit.clear()
 
 
 if __name__ == "__main__":
