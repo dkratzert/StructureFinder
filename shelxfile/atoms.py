@@ -376,7 +376,12 @@ class Atom():
                     if DEBUG:
                         raise ParseSyntaxError
             else:
-                occ = 1 + (self.shx.fvars[self.fvar] * occ)
+                try:
+                    occ = 1 + (self.shx.fvars[self.fvar] * occ)
+                except IndexError:
+                    occ = 1.0
+                    if DEBUG:
+                        raise ParseSyntaxError
         return occ
 
     @occupancy.setter
