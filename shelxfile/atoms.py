@@ -372,6 +372,7 @@ class Atom():
                 try:
                     occ = self.shx.fvars[self.fvar] * occ
                 except IndexError:
+                    occ = 1.0  # Happens if the self.fvar is not defined
                     if DEBUG:
                         raise ParseSyntaxError
             else:
