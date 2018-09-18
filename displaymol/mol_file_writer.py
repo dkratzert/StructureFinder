@@ -15,11 +15,13 @@ class MolFile(object):
     """
     This mol file writer is only to use the file with JSmol, not to implement the standard exactly!
     """
+
     def __init__(self, id: str, db: StructureTable, cell: list, grow=False):
         self.db = db
         if grow:
             atoms = self.db.get_atoms_table(id, cell, cartesian=False)
-            cards = db.get_row_as_dict(id)['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")
+            cards = db.get_row_as_dict(id)['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split(
+                "\n")
             l = Lattice(atoms, cards, cell)
             atoms = l.pack_structure()
             a = lattice.A(cell).orthogonal_matrix
@@ -51,6 +53,7 @@ class MolFile(object):
     def get_atoms_string(self) -> str:
         """
         Returns a string with an atom in each line.
+        X Y Z Element
         """
         atoms = []
         for num, at in enumerate(self.atoms):
@@ -79,22 +82,25 @@ class MolFile(object):
         :param extra_param: additional distance to the covalence radius
         :type extra_param: float
         """
-        #t1 = time.clock()
+        # t1 = time.clock()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
             rad1 = get_radius_from_element(at1[1])
             for num2, at2 in enumerate(self.atoms, 1):
-                if at1[0] == at2[0]: # name1 = name2
+                if not isinstance(at1[5], str) or not isinstance(at2[5], str):
+                    if at1[5] * at2[5] != 0 and at1[5] != at2[5]:
+                        continue
+                if at1[0] == at2[0]:  # name1 = name2
                     continue
                 rad2 = get_radius_from_element(at2[1])
                 d = misc.distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
                 if (rad1 + rad2) + extra_param >= d > (rad1 or rad2):
                     conlist.append([num1, num2])
-                    #print(num1, num2, d)
+                    # print(num1, num2, d)
                     if [num2, num1] in conlist:
                         continue
-        #t2 = time.clock()
-        #print(round(t2-t1, 4), 's')
+        # t2 = time.clock()
+        # print(round(t2-t1, 4), 's')
         return conlist
 
     def footer(self) -> str:
@@ -111,5 +117,5 @@ class MolFile(object):
         atoms = self.get_atoms_string()
         bonds = self.get_bonds_string()
         footer = self.footer()
-        mol = "{0}{5}{1}{5}{2}{5}{3}{5}{4}".format(header,connection_table,atoms,bonds,footer, '\n')
+        mol = "{0}{5}{1}{5}{2}{5}{3}{5}{4}".format(header, connection_table, atoms, bonds, footer, '\n')
         return mol

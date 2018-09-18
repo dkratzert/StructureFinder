@@ -325,13 +325,13 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
     for x in cif._atom:
         try:
             try:
-                disord = cif._atom[x]['_atom_site_disorder_group']
-            except KeyError:
-                disord = "0"
+                disord = int(cif._atom[x]['_atom_site_disorder_group'])
+            except (KeyError, ValueError):
+                disord = 0
             try:
-                occu = cif._atom[x]['_atom_site_occupancy'].split('(')[0]
-            except KeyError:
-                occu = "1"
+                occu = float(cif._atom[x]['_atom_site_occupancy'].split('(')[0])
+            except (KeyError, ValueError):
+                occu = 1.0
             try:
                 atom_type_symbol = cif._atom[x]['_atom_site_type_symbol']
             except KeyError:
@@ -345,7 +345,7 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
                                          disord
                                         )
         except KeyError as e:
-            #print(x, filename)
+            #print(x, filename, e)
             pass
     structures.fill_residuals_table(structure_id, cif)
     return True

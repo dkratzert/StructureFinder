@@ -559,17 +559,17 @@ class StructureTable():
     def get_atoms_table(self, structure_id, cell=None, cartesian=False):
         """
         returns the atoms of structure with structure_id
+        returns: [Name, Element, X, Y, Z, Part, ocuupancy]
         """
         if cell is None:
             cell = []
-        req = """SELECT Name, element, x, y, z FROM Atoms WHERE StructureId = ?"""
+        req = """SELECT Name, element, x, y, z, part, occupancy FROM Atoms WHERE StructureId = ?"""
         result = self.database.db_request(req, (structure_id,))
-        #print(result, structure_id, '##')
         if cartesian:
             cartesian_coords = []
             a = lattice.A(cell).orthogonal_matrix
             for at in result:
-                cartesian_coords.append(list(at[:2]) + (Array([at[2], at[3], at[4]]) * a).values)
+                cartesian_coords.append(list(at[:2]) + (Array([at[2], at[3], at[4]]) * a).values + list(at[5:]))
             return cartesian_coords
         if result:
             return result
