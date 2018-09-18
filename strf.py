@@ -624,6 +624,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.thetaMaxLineEdit.setText("{}".format(thetamax))
         self.ui.thetaFullLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_theta_full']))
         self.ui.dLineEdit.setText("{:5.3f}".format(d))
+        self.ui.lastModifiedLineEdit.setText(cif_dic['modification_time'])
         try:
             compl = cif_dic['_diffrn_measured_fraction_theta_max'] * 100
             if not compl:

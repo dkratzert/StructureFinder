@@ -933,7 +933,7 @@ p, li { white-space: pre-wrap; }
             <layout class="QVBoxLayout" name="verticalLayout_2">
              <item>
               <layout class="QFormLayout" name="formLayout">
-               <item row="1" column="0">
+               <item row="0" column="0">
                 <widget class="QLabel" name="numParametersLabel">
                  <property name="text">
                   <string>Parameters</string>
@@ -943,7 +943,7 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="1" column="1">
+               <item row="0" column="1">
                 <widget class="QLineEdit" name="numParametersLineEdit">
                  <property name="minimumSize">
                   <size>
@@ -956,7 +956,7 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="2" column="0">
+               <item row="1" column="0">
                 <widget class="QLabel" name="dataReflnsLabel">
                  <property name="font">
                   <font>
@@ -972,14 +972,14 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="2" column="1">
+               <item row="1" column="1">
                 <widget class="QLineEdit" name="dataReflnsLineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="3" column="0">
+               <item row="2" column="0">
                 <widget class="QLabel" name="numRestraintsLabel">
                  <property name="text">
                   <string>Restraints</string>
@@ -989,14 +989,14 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="3" column="1">
+               <item row="2" column="1">
                 <widget class="QLineEdit" name="numRestraintsLineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="4" column="0">
+               <item row="3" column="0">
                 <widget class="QLabel" name="thetaMaxLabel">
                  <property name="text">
                   <string>θ(max) [°]</string>
@@ -1006,14 +1006,14 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="4" column="1">
+               <item row="3" column="1">
                 <widget class="QLineEdit" name="thetaMaxLineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="5" column="0">
+               <item row="4" column="0">
                 <widget class="QLabel" name="thetaFullLabel">
                  <property name="text">
                   <string>θ(full) [°]</string>
@@ -1023,14 +1023,14 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="5" column="1">
+               <item row="4" column="1">
                 <widget class="QLineEdit" name="thetaFullLineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0">
+               <item row="5" column="0">
                 <widget class="QLabel" name="dLabel">
                  <property name="font">
                   <font>
@@ -1046,14 +1046,14 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="6" column="1">
+               <item row="5" column="1">
                 <widget class="QLineEdit" name="dLineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="7" column="0">
+               <item row="6" column="0">
                 <widget class="QLabel" name="completeLabel">
                  <property name="font">
                   <font>
@@ -1069,22 +1069,36 @@ p, li { white-space: pre-wrap; }
                  </property>
                 </widget>
                </item>
-               <item row="7" column="1">
+               <item row="6" column="1">
                 <widget class="QLineEdit" name="completeLineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="0">
+               <item row="7" column="0">
                 <widget class="QLabel" name="cCDCNumberLabel">
                  <property name="text">
                   <string>CCDC Num.</string>
                  </property>
                 </widget>
                </item>
-               <item row="9" column="1">
+               <item row="7" column="1">
                 <widget class="QLineEdit" name="cCDCNumberLineEdit">
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QLabel" name="lastModifiedLabel">
+                 <property name="text">
+                  <string>Last Modified</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="1">
+                <widget class="QLineEdit" name="lastModifiedLineEdit">
                  <property name="readOnly">
                   <bool>true</bool>
                  </property>
