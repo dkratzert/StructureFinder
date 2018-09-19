@@ -2,6 +2,7 @@
 MOl V3000 format
 """
 import os
+from time import perf_counter
 
 from searcher import misc
 from searcher.atoms import get_radius_from_element
@@ -63,7 +64,7 @@ class MolFile(object):
         :param extra_param: additional distance to the covalence radius
         :type extra_param: float
         """
-        # t1 = time.clock()
+        t1 = perf_counter()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
             rad1 = get_radius_from_element(at1[1])
@@ -78,10 +79,11 @@ class MolFile(object):
                 if (rad1 + rad2) + extra_param >= d > (rad1 or rad2):
                     conlist.append([num1, num2])
                     # print(num1, num2, d)
+                    # The extra time for this is not too much:
                     if [num2, num1] in conlist:
                         continue
-        # t2 = time.clock()
-        # print(round(t2-t1, 4), 's')
+        t2 = perf_counter()
+        print('Bondzeit:', round(t2-t1, 3), 's')
         return conlist
 
     def footer(self) -> str:

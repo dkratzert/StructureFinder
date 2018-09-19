@@ -9,14 +9,15 @@
 # Daniel Kratzert
 # ----------------------------------------------------------------------------
 #
-import sys
+
 import time
-from math import sqrt, cos, radians
+from math import sqrt, cos, radians, sin
 
 from searcher import database_handler
 from searcher.atoms import get_radius_from_element
-from shelxfile.dsrmath import Array, SymmetryElement
+from shelxfile.dsrmath import Array, SymmetryElement, Matrix, frac_to_cart
 
+DEBUG = False
 
 class Atom():
     def __init__(self, name, element, x, z, y, part):
@@ -116,12 +117,18 @@ class SDM():
         self.bbe = self.cell[0] * self.cell[2] * self.cosbe
         self.cal = self.cell[1] * self.cell[2] * self.cosal
         self.sdm_list = []  # list of sdmitems
-        self.bondlist = []
         self.maxmol = 1
         self.sdmtime = 0
 
-    def __iter__(self):
-        yield self.bondlist
+    def orthogonal_matrix(self):
+        """
+        Converts von fractional to cartesian by .
+        Invert the matrix to do the opposite.
+        """
+        return Matrix([[self.cell[0], self.cell[1] * cos(self.cell[5]), self.cell[2] * cos(self.cell[4])],
+                       [0, self.cell[1] * sin(self.cell[5]),
+                        (self.cell[2] * (cos(self.cell[3]) - cos(self.cell[4]) * cos(self.cell[5])) / sin(self.cell[5]))],
+                       [0, 0, self.cell[6] / (self.cell[0] * self.cell[1] * sin(self.cell[5]))]])
 
     def calc_sdm(self) -> list:
         t1 = time.perf_counter()
@@ -160,7 +167,6 @@ class SDM():
                     dddd = 0.0
                 if sdmItem.dist < dddd:
                     if hma:
-                        self.bondlist.append((i, j))
                         sdmItem.covalent = True
                 else:
                     sdmItem.covalent = False
@@ -171,12 +177,12 @@ class SDM():
         t2 = time.perf_counter()
         self.sdmtime = t2 - t1
         #if DEBUG:
-        print('Zeit sdm_calc:', self.sdmtime)
+        print('Zeit sdm_calc:', round(self.sdmtime, 3))
         self.sdm_list.sort()
         self.calc_molindex(self.atoms)
         need_symm = self.collect_needed_symmetry()
-        #if DEBUG:
-        print("The asymmetric unit contains {} fragments.".format(self.maxmol))
+        if DEBUG:
+            print("The asymmetric unit contains {} fragments.".format(self.maxmol))
         return need_symm
 
     def collect_needed_symmetry(self) -> list:
@@ -230,7 +236,8 @@ class SDM():
                         someleft += 1
             for ni, at in enumerate(all_atoms):
                 #if not at.ishydrogen and at.molindex < 0:
-                if not at[1] == 'H' and at[-1] < 0:
+                #if not at[1] == 'H' and at[-1] < 0:
+                if at[-1] < 0:
                     nextmol = ni
                     break
             if nextmol:
@@ -252,53 +259,50 @@ class SDM():
         Packs atoms of the asymmetric unit to real molecules.
         TODO: Support hydrogen atoms!
         """
+        showatoms = self.atoms[:]
+        new_atoms = []
         for symm in need_symm:
             s, h, k, l, symmgroup = symm
             h -= 5
             k -= 5
             l -= 5
             s -= 1
-            for atom in asymm:
-                if not with_qpeaks:
-                    if atom.qpeak:
-                        continue
-                if not atom.ishydrogen and atom.molindex == symmgroup:
+            for atom in self.atoms:
+                # This is essential for displaying hydrogen atoms:
+                # if not atom[1] == 'H' and atom[-1] == symmgroup:
+                if atom[-1] == symmgroup:
                     # if atom.molindex == symmgroup:
-                    new_atom = Atom(self.shx)
-                    new_atom.set_atom_parameters(
-                        name=atom.name + ">" + 'a',
-                        sfac_num=atom.sfac_num,
-                        coords=Array(atom.frac_coords) * self.shx.symmcards[s].matrix
-                               + Array(self.shx.symmcards[s].trans) + Array([h, k, l]),
-                        part=atom.part,
-                        afix=AFIX(self.shx, ('AFIX ' + atom.afix).split()) if atom.afix else None,
-                        resi=RESI(self.shx, ('RESI ' + atom.resinum + atom.resiclass).split()) if atom.resi else None,
-                        site_occupation=atom.sof,
-                        uvals=atom.uvals,
-                        symmgen=True
-                    )
-                    # TODO: I have to transform the Uijs by symmetry here later.
+                    coords = Array(atom[2:5]) * self.symmcards[s].matrix \
+                             + Array(self.symmcards[s].trans) + Array([h, k, l])
+                    new = [atom[0], atom[1]] + list(coords) + [atom[5], atom[6], atom[7], 'symmgen']
+                    new_atoms.append(new)
                     isthere = False
-                    if new_atom.part.n >= 0:
+                    if new[5] >= 0:
                         for atom in showatoms:
-                            if atom.ishydrogen:
+                            #if atom.ishydrogen:
+                            #    continue
+                            if atom[5] != new[5]:
                                 continue
-                            if atom.part.n != new_atom.part.n:
-                                continue
-                            length = sdm.vector_length(new_atom.frac_coords[0] - atom.frac_coords[0],
-                                                       new_atom.frac_coords[1] - atom.frac_coords[1],
-                                                       new_atom.frac_coords[2] - atom.frac_coords[2])
+                            length = sdm.vector_length(new[2] - atom[2],
+                                                       new[3] - atom[3],
+                                                       new[4] - atom[4])
                             if length < 0.2:
                                 isthere = True
                     if not isthere:
-                        showatoms.append(new_atom)
+                        showatoms.append(new)
                 # elif grow_qpeaks:
                 #    add q-peaks here
-        return showatoms
+        cart_atoms = []
+        for a in showatoms:
+            cart_atoms.append(self.to_cartesian(a))
+        return cart_atoms
+
+    def to_cartesian(self, at):
+        return list(at[:2]) + frac_to_cart([at[2], at[3], at[4]], self.cell[:6]) + list(at[5:])
 
 
 if __name__ == "__main__":
-    structureId = 7
+    structureId = 214
     structures = database_handler.StructureTable('./test.sqlite')
     cell = structures.get_cell_by_id(structureId)
     atoms = structures.get_atoms_table(structureId, cell, cartesian=False, as_list=True)
@@ -306,8 +310,8 @@ if __name__ == "__main__":
         .replace("'", "").replace(" ", "").split("\n")]
     sdm = SDM(atoms, symmcards, cell)
     needsymm = sdm.calc_sdm()
-    print(needsymm)
-    sys.exit()
+    #print(needsymm)
+    #sys.exit()
     packed_atoms = sdm.packer(sdm, needsymm)
     # print(needsymm)
     # [[8, 5, 5, 5, 1], [16, 5, 5, 5, 1], [7, 4, 5, 5, 3]]
@@ -315,6 +319,6 @@ if __name__ == "__main__":
     # print(len(packed_atoms))
 
     for at in packed_atoms:
-        print(wrap_line(str(at)))
+        print(at)
 
     print('Zeit für sdm:', round(sdm.sdmtime, 3), 's')

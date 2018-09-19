@@ -294,7 +294,13 @@ $(document).ready(function($){
                 //console.log(result);
             });
     });
-
+    
+    // Switch between grow and fuse:
+    var growbutton = $('#growCheckBox');
+    growbutton.checked(function(){
+        
+    });
+    
     // Switch between advanced and simple search:
     var advbutton = $('#toggle_advsearch-button');
     advbutton.click(function(){
@@ -330,7 +336,7 @@ $(document).ready(function($){
             //console.log(txt);
         }
     });
-
+    
     // Enter key pressed in the simple cell search field:
     $('#smpl_cellsrch').keypress(function(e) {
         if (e.which === 13) {  // enter key
@@ -372,15 +378,15 @@ $(document).ready(function($){
         });
 
         // Get molecule data and display the molecule:
-        var jsmolcol = $("#jsmolcolumn");
         $.post(url = cgifile+'/molecule', data = {id: idstr}, function (result) {
+            var jsmolcol = $("#jsmolcolumn");
             Jmol._document = null;
             Jmol.getTMApplet("jmol", jsmol_options);
             jsmolcol.html(jmol._code);
             jmol.__loadModel(result);
             jsmolcol.removeClass('invisible');
             var tbl = $('#residualstable2');
-            jsmolcol.css("height", tbl.height()-20);
+            //jsmolcol.css("height", tbl.height()-20);
         });
 
         // Get unit cell row:

@@ -92,24 +92,22 @@ body {
         <div class="input-group input-group-sm">
             <span class="input-group-addon" data-toggle="tooltip" title="Search for a Unit Cell">Unit Cell</span>
             <input type="text" class="form-control" placeholder="a  b  c  &alpha;  &beta;  &gamma;    (or drag&drop .p4p, .res, cif file)" style="font-style: italic" id="smpl_cellsrch" name="cell">
-                <div class="input-group-sm input-group-btn">
-                <button class="btn btn-default" type="submit" id="smpl_cellsrchbutton">
-                    <i class="glyphicon glyphicon-search"></i>
-                </button>
-                </div>
-            </input>
+            <div class="input-group-sm input-group-btn">
+            <button class="btn btn-default" type="submit" id="smpl_cellsrchbutton">
+                <i class="glyphicon glyphicon-search"></i>
+            </button>
+            </div>
         </div>
     </div>
     <div class="col-sm-6">
         <div class="input-group input-group-sm">
             <span class="input-group-addon" data-toggle="tooltip" title="Search for a Unit Cell">Text</span>
             <input type="text" class="form-control" placeholder="Search Text" id="smpl_textsrch" name="text">
-                <div class="input-group-sm input-group-btn">
-                    <button class="btn btn-default" type="submit" id="smpl_textsrchbutton">
-                        <i class="glyphicon glyphicon-search"></i>
-                    </button>
-                </div>
-            </input>
+            <div class="input-group-sm input-group-btn">
+                <button class="btn btn-default" type="submit" id="smpl_textsrchbutton">
+                    <i class="glyphicon glyphicon-search"></i>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -122,8 +120,8 @@ body {
         <div class="col-sm-12">
             <div class="btn-group btn-group-sm" role="group">
                 <a href="#" class="badge" id="more_info_badge">info</a> &nbsp;&nbsp;&nbsp;
-                <input type="checkbox" value="" id="more_results">More cell search results &nbsp;&nbsp;&nbsp;
-                <input type="checkbox" value="" id="supercells">Find supercells &nbsp;&nbsp;&nbsp;
+                <input title="More cell search results" type="checkbox" value="" id="more_results">More cell search results &nbsp;&nbsp;&nbsp;
+                <input title="Find supercells" type="checkbox" value="" id="supercells">Find supercells &nbsp;&nbsp;&nbsp;
                 {{!space_groups}} Find by space group
             </div>
         </div>
@@ -161,9 +159,9 @@ body {
             <div class="input-group input-group-sm w2ui-field advsearchfields">
                 <span class="input-group-addon" data-toggle="tooltip"
                       title="Search for structures that were modified between two dates">Date from</span>
-                <input class="input-sm" type="text" id="date1" style="width: 95%">
+                <input class="input-sm" title="Date" type="text" id="date1" style="width: 95%">
                 <span class="input-group-addon">to</span>
-                <input class="input-sm" type="text" id="date2" style="width: 95%">
+                <input class="input-sm" title="Date" type="text" id="date2" style="width: 95%">
                 <a type="button" class="btn btn-sm btn-standard input-group-addon"
                    data-toggle="tooltip" title="Search for structures modified during the last month."
                    id="lastmsearchlink"> From Last Month</a>
@@ -236,7 +234,12 @@ body {
                 <span class="btn btn-default glyphicon glyphicon-copy invisible" id="cell_copy_btn"
                       data-toggle="tooltip" title="Copy cell to clipboard." data-clipboard-target="#hidden-cell">
                 </span>
+                <span class="btn" > 
+                    <input type="checkbox" title="Grow Structure" value="" id="growCheckBox">Grow Structure
+                </span>
+                 
             </div>
+            
         </div>
     </div>
 </div>
@@ -244,8 +247,7 @@ body {
 
 <div class="row">
     <div class="column col-md-4 panel panel-default invisible" id="jsmolcolumn"
-         data-toggle="tooltip" title="Asymmetric Unit">
-    </div>
+         data-toggle="tooltip" title="Asymmetric Unit"> </div>
     <div class="column col-md-4" id="residualstable1"> </div>
     <div class="column col-md-4" id="residualstable2"> </div>
 </div>
