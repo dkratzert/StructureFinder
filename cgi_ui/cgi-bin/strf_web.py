@@ -290,7 +290,7 @@ def get_residuals_table1(cif_dic: dict) -> str:
         <tr><td><b>Goof</b></td>                        <td>{6}</td></tr>
         <tr><td><b>Max Shift/esd</b></td>               <td>{7}</td></tr>
         <tr><td><b>Peak / Hole [e&angst;<sup>&minus;3</sup>]</b></td>             <td>{8}</td></tr>
-        <tr><td><b><i>R</i><sub>int</sub> / <i>R</i>&sigma;</b></b></td>    <td>{9}{10} </td></tr>
+        <tr><td><b><i>R</i><sub>int</sub> / <i>R</i><sub>&sigma;</sub></b></b></td>    <td>{9}{10} </td></tr>
         <tr><td><b>Wavelength [&angst;]</b></td>                      <td>{11}</td></tr>
         </tbody>
     </table>

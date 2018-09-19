@@ -368,11 +368,13 @@ $(document).ready(function($){
         }
     });
 
+    // display how many results I got
     function displayresultnum(result) {
         numresult = result.total;
         if (typeof numresult === 'undefined') numresult = 0;
         $("#cellrow").removeClass('invisible');
         $("#cell_copy_btn").addClass('invisible');
+        $("#growCheckBoxgroup").addClass('invisible');
         document.getElementById("cellrow").innerHTML = "Found " + numresult + " structures";
     }
     
@@ -414,6 +416,7 @@ $(document).ready(function($){
         // Get unit cell row:
         $.post(url = cgifile, data = {id: idstr, unitcell: true}, function (result) {
             $("#cellrow").removeClass('invisible');
+            $("#growCheckBoxgroup").removeClass('invisible');
             $("#cell_copy_btn").removeClass('invisible');
             document.getElementById("cellrow").innerHTML = result;
 

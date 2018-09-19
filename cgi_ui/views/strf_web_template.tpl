@@ -234,12 +234,11 @@ body {
                 <span class="btn btn-default glyphicon glyphicon-copy invisible" id="cell_copy_btn"
                       data-toggle="tooltip" title="Copy cell to clipboard." data-clipboard-target="#hidden-cell">
                 </span>
-                <span class="btn" > 
-                    <input type="checkbox" title="Grow Structure" value="" id="growCheckBox">Grow Structure
+                <span class="btn-group invisible" id="growCheckBoxgroup">
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <input type="checkbox" about="foo" title="Grow Structure" value="" id="growCheckBox">Grow Structure
                 </span>
-                 
             </div>
-            
         </div>
     </div>
 </div>
