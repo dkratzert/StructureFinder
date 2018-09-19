@@ -16,7 +16,6 @@ from math import sqrt, cos, radians
 from searcher import database_handler
 from searcher.atoms import get_radius_from_element
 from shelxfile.dsrmath import Array, SymmetryElement
-from shelxfile.misc import DEBUG, wrap_line
 
 
 class Atom():
@@ -230,7 +229,8 @@ class SDM():
                         sdmItem.atom2[-1] = self.maxmol
                         someleft += 1
             for ni, at in enumerate(all_atoms):
-                if at[-1] < 0:
+                #if not at.ishydrogen and at.molindex < 0:
+                if not at[1] == 'H' and at[-1] < 0:
                     nextmol = ni
                     break
             if nextmol:
