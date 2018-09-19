@@ -78,11 +78,13 @@ class MolFile(object):
                 rad2 = get_radius_from_element(at2[1])
                 d = distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
                 if (rad1 + rad2) + extra_param >= d > (rad1 or rad2):
-                    conlist.append([num1, num2])
+                    if at1[1] == 'H' and at2[1] == 'H':
+                        continue
                     # print(num1, num2, d)
                     # The extra time for this is not too much:
                     if [num2, num1] in conlist:
                         continue
+                    conlist.append([num1, num2])
         t2 = perf_counter()
         print('Bondzeit:', round(t2-t1, 3), 's')
         return conlist
