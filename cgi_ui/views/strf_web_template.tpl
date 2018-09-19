@@ -236,7 +236,7 @@ body {
                 </span>
                 <span class="btn-group invisible" id="growCheckBoxgroup">
                         &nbsp;&nbsp;&nbsp;&nbsp;
-                        <input type="checkbox" about="foo" title="Grow Structure" value="" id="growCheckBox">Grow Structure
+                        <input type="checkbox" title="Grow Structure" value="false" id="growCheckBox">Grow Structure
                 </span>
             </div>
         </div>

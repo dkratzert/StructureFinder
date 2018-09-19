@@ -394,7 +394,7 @@ $(document).ready(function($){
         */
         
         // Uncheck the grow button:
-        $('#growCheckBox').prop("checked", false);
+        //$('#growCheckBox').prop("checked", false);
         
         // Get residuals table 1:
         $.post(url = cgifile, data = {id: idstr, residuals1: true}, function (result) {
@@ -404,11 +404,6 @@ $(document).ready(function($){
         // Get residuals table 2:
         $.post(url = cgifile, data = {id: idstr, residuals2: true}, function (result) {
             document.getElementById("residualstable2").innerHTML = result;
-        });
-        
-        // Get molecule data and display the molecule:
-        $.post(url = cgifile+'/molecule', data = {id: idstr, grow: false}, function (result) {
-            display_molecule(result)
         });
 
         // Get unit cell row:
@@ -432,6 +427,17 @@ $(document).ready(function($){
                 document.getElementById("residuals").innerHTML = result;
             }
         );
+
+        // Get molecule data and display the molecule:
+        if ($('#growCheckBox').is(':checked') === true) {
+            $.post(url = cgifile+'/molecule', data = {id: idstr, grow: true}, function (result) {
+                display_molecule(result)
+            });
+        } else {
+            $.post(url = cgifile+'/molecule', data = {id: idstr, grow: false}, function (result) {
+                display_molecule(result)
+            });
+        }
     }
 
     // some options for JSmol:
