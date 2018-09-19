@@ -158,7 +158,7 @@ class SDM():
                 if not sdmItem.atom1:
                     # Do not grow grown atoms:
                     continue
-                if (not sdmItem.atom1[1] == 'H' and not sdmItem.atom2[1] == 'H') and \
+                if (not sdmItem.atom1[1] in ['H', 'D'] and not sdmItem.atom2[1] in ['H', 'D']) and \
                         sdmItem.atom1[5] * sdmItem.atom2[5] == 0 \
                         or sdmItem.atom1[5] == sdmItem.atom2[5]:
                     dddd = (get_radius_from_element(at1[1]) + get_radius_from_element(at2[1])) * 1.2
@@ -177,7 +177,7 @@ class SDM():
         t2 = time.perf_counter()
         self.sdmtime = t2 - t1
         #if DEBUG:
-        print('Zeit sdm_calc:', round(self.sdmtime, 3))
+        print('Time for sdm:', round(self.sdmtime, 3), 's')
         self.sdm_list.sort()
         self.calc_molindex(self.atoms)
         need_symm = self.collect_needed_symmetry()
@@ -198,7 +198,7 @@ class SDM():
                         # both not part 0 and different part numbers
                         continue
                     # Both the same atomic number and number 0 (hydrogen)
-                    if sdmItem.atom1[1] == sdmItem.atom2[1] and sdmItem.atom1[1] == 'H':
+                    if sdmItem.atom1[1] == sdmItem.atom2[1] and sdmItem.atom1[1] in ['H', 'D']:
                         continue
                     prime = Array(sdmItem.atom1[2:5]) * symop.matrix + symop.trans
                     D = prime - Array(sdmItem.atom2[2:5]) + Array([0.5, 0.5, 0.5])
@@ -209,7 +209,7 @@ class SDM():
                     dk = self.vector_length(*dp)
                     dddd = sdmItem.dist + 0.2
                     # TODO: Do I need this?
-                    if sdmItem.atom1[1] == 'H' and sdmItem.atom2[1] == 'H':
+                    if sdmItem.atom1[1] in ['H', 'D'] and sdmItem.atom2[1] in ['H', 'D']:
                         dddd = 1.8
                     if (dk > 0.001) and (dddd >= dk):
                         bs = [n + 1, (5 - floorD[0]), (5 - int(floorD[1])), (5 - int(floorD[2])), sdmItem.atom1[-1]]

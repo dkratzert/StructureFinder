@@ -131,7 +131,7 @@ def jsmol_request():
     print("Molecule id:", str_id)
     if str_id:
         cell = structures.get_cell_by_id(str_id)
-        if request.POST.growCheckbox:
+        if request.POST.grow == 'true':
             symmcards = [x.split(',') for x in structures.get_row_as_dict(str_id)
             ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
             atoms = structures.get_atoms_table(str_id, cell[:6], cartesian=False, as_list=True)
