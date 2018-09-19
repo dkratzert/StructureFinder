@@ -4,7 +4,6 @@
 
 ###########################################################
 ###  Configure the web server here:   #####################
-from displaymol.sdm import SDM
 
 host = "10.6.13.3"
 port = "80"
@@ -38,7 +37,8 @@ except(KeyError, ValueError):
     print('Unable to set PATH properly. strf_web.py might not work.')
 
 from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response
-from displaymol import mol_file_writer
+from displaymol.mol_file_writer import MolFile
+from displaymol.sdm import SDM
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher import database_handler, misc
@@ -141,7 +141,7 @@ def jsmol_request():
         else:
             atoms = structures.get_atoms_table(str_id, cell[:6], cartesian=True, as_list=False)
         try:
-            m = mol_file_writer.MolFile(atoms)
+            m = MolFile(atoms)
             return m.make_mol()
         except(KeyError, TypeError) as e:
             print('Exception in jsmol_request: {}'.format(e))
