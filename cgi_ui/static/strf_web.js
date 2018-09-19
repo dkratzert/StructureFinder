@@ -303,13 +303,11 @@ $(document).ready(function($){
         if (this.checked) {
             // Get molecule data and display the molecule:
             $.post(url = cgifile+'/molecule', data = {id: strid, grow: true}, function (result) {
-            jsmolcol.addClass('invisible');
             display_molecule(result);
             });
         } else {
             // Get molecule data and display the molecule:
             $.post(url = cgifile+'/molecule', data = {id: strid, grow: false}, function (result) {
-            jsmolcol.addClass('invisible');
             display_molecule(result);
             });
         }
