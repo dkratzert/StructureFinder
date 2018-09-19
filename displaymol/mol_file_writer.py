@@ -2,13 +2,10 @@
 MOl V3000 format
 """
 import os
+from time import perf_counter
 
-from lattice import lattice
 from searcher import misc
 from searcher.atoms import get_radius_from_element
-from searcher.database_handler import StructureTable
-from searcher.unitcell import Lattice
-from shelxfile.dsrmath import Array
 
 
 class MolFile(object):
@@ -16,23 +13,8 @@ class MolFile(object):
     This mol file writer is only to use the file with JSmol, not to implement the standard exactly!
     """
 
-    def __init__(self, id: str, db: StructureTable, cell: list, grow=False):
-        self.db = db
-        if grow:
-            atoms = self.db.get_atoms_table(id, cell, cartesian=False)
-            cards = db.get_row_as_dict(id)['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split(
-                "\n")
-            l = Lattice(atoms, cards, cell)
-            atoms = l.pack_structure()
-            a = lattice.A(cell).orthogonal_matrix
-            cartesian_coords = []
-            for at in atoms:
-                coord = Array([at[2], at[3], at[4]])
-                coords = list(coord * a)
-                cartesian_coords.append(list(at[:2]) + coords)
-            self.atoms = cartesian_coords
-        else:
-            self.atoms = self.db.get_atoms_table(id, cell, cartesian=True)
+    def __init__(self, atoms: list):
+        self.atoms = atoms
         self.bonds = self.get_conntable_from_atoms()
         self.bondscount = len(self.bonds)
         self.atomscount = len(self.atoms)
@@ -82,7 +64,7 @@ class MolFile(object):
         :param extra_param: additional distance to the covalence radius
         :type extra_param: float
         """
-        # t1 = time.clock()
+        t1 = perf_counter()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
             rad1 = get_radius_from_element(at1[1])
@@ -97,10 +79,11 @@ class MolFile(object):
                 if (rad1 + rad2) + extra_param >= d > (rad1 or rad2):
                     conlist.append([num1, num2])
                     # print(num1, num2, d)
+                    # The extra time for this is not too much:
                     if [num2, num1] in conlist:
                         continue
-        # t2 = time.clock()
-        # print(round(t2-t1, 4), 's')
+        t2 = perf_counter()
+        print('Bondzeit:', round(t2-t1, 3), 's')
         return conlist
 
     def footer(self) -> str:

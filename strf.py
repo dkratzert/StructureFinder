@@ -17,6 +17,7 @@ from __future__ import print_function
 from os.path import isfile
 from sqlite3 import DatabaseError
 
+from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
@@ -100,7 +101,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
         self.apx = None
-        self.structureId = ''
+        self.structureId = '0'
         self.passwd = ''
         self.show()
         self.setAcceptDrops(True)
@@ -181,6 +182,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.ad_elementsExclLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.add_res.clicked.connect(self.res_checkbox_clicked)
         self.ui.add_cif.clicked.connect(self.cif_checkbox_clicked)
+        self.ui.growCheckBox.toggled.connect(self.redraw_molecule)
 
     def res_checkbox_clicked(self, click):
         if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
@@ -510,6 +512,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if not self.structures.database.cur:
             return False
         structure_id = item.sibling(item.row(), 3).data()
+        self.structureId = structure_id
         dic = self.structures.get_row_as_dict(structure_id)
         self.display_properties(structure_id, dic)
         self.structureId = structure_id
@@ -541,6 +544,17 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 return True
         return False
 
+    def redraw_molecule(self):
+        cell = self.structures.get_cell_by_id(self.structureId)
+        if not cell:
+            return False
+        try:
+            self.display_molecule(cell, str(self.structureId))
+        except Exception as e:
+            print(e, "unable to display molecule")
+            if DEBUG:
+                raise
+
     def display_properties(self, structure_id: str, cif_dic: dict) -> bool:
         """
         Displays the residuals from the cif file
@@ -560,7 +574,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         except Exception as e:
             print(e, "unable to display molecule")
             if DEBUG:
-                raise 
+                raise
         self.ui.cifList_treeWidget.setFocus()
         if not cif_dic:
             return False
@@ -669,8 +683,17 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # TODO: Make a clas for Atoms(), fill it with db atoms, apply symmetry, feed Atoms() into MolFile
         # TODO: In order to apply symmetry, adapt grow from ShelXFile and Symmcards from ShelxFile.
         """
+        symmcards = [x.split(',') for x in self.structures.get_row_as_dict(structure_id)
+                    ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+        if self.ui.growCheckBox.isChecked():
+            atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=False, as_list=True)
+            sdm = SDM(atoms, symmcards, cell)
+            needsymm = sdm.calc_sdm()
+            atoms = sdm.packer(sdm, needsymm)
+        else:
+            atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=True, as_list=False)
         try:
-            tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6], grow=False)
+            tst = mol_file_writer.MolFile(atoms)
             mol = tst.make_mol()
         except (TypeError, KeyError):
             print("Error in structure", structure_id, "while writing mol file.")

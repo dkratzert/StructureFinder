@@ -355,7 +355,7 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
                           structures: database_handler.StructureTable, options: dict):
     if not res.cell:
         return False
-    if not all(res.cell.cell_list):
+    if not all([res.cell.a, res.cell.b, res.cell.al, res.cell.be, res.cell.ga]):
         return False
     if not res.cell.volume:
         return False
@@ -375,13 +375,6 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
                                     at.sof,
                                     at.part.n)
     cif = Cif(options=options)
-    cif.cif_data['_cell_length_a'] = res.cell.a
-    cif.cif_data['_cell_length_b'] = res.cell.b
-    cif.cif_data['_cell_length_b'] = res.cell.c
-    cif.cif_data['_cell_length_b'] = res.cell.al
-    cif.cif_data['_cell_length_b'] = res.cell.be
-    cif.cif_data['_cell_length_b'] = res.cell.ga
-    cif.cif_data["_cell_volume"] = res.cell.volume
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([repr(x) for x in res.symmcards])
     try:

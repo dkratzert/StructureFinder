@@ -4,6 +4,7 @@
 
 ###########################################################
 ###  Configure the web server here:   #####################
+from displaymol.sdm import SDM
 
 host = "10.6.13.3"
 port = "80"
@@ -129,9 +130,18 @@ def jsmol_request():
     str_id = request.POST.id
     print("Molecule id:", str_id)
     if str_id:
-        cell_list = structures.get_cell_by_id(str_id)[:6]
+        cell = structures.get_cell_by_id(str_id)
+        if request.POST.grow == 'true':
+            symmcards = [x.split(',') for x in structures.get_row_as_dict(str_id)
+            ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+            atoms = structures.get_atoms_table(str_id, cell[:6], cartesian=False, as_list=True)
+            sdm = SDM(atoms, symmcards, cell)
+            needsymm = sdm.calc_sdm()
+            atoms = sdm.packer(sdm, needsymm)
+        else:
+            atoms = structures.get_atoms_table(str_id, cell[:6], cartesian=True, as_list=False)
         try:
-            m = mol_file_writer.MolFile(str_id, structures, cell_list)
+            m = mol_file_writer.MolFile(atoms)
             return m.make_mol()
         except(KeyError, TypeError) as e:
             print('Exception in jsmol_request: {}'.format(e))

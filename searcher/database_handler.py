@@ -556,7 +556,7 @@ class StructureTable():
         if self.database.db_request(req, (structure_id, name, element, x, y, z, occ, part)):
             return True
 
-    def get_atoms_table(self, structure_id, cell=None, cartesian=False):
+    def get_atoms_table(self, structure_id, cell=None, cartesian=False, as_list=False):
         """
         returns the atoms of structure with structure_id
         returns: [Name, Element, X, Y, Z, Part, ocuupancy]
@@ -572,6 +572,8 @@ class StructureTable():
                 cartesian_coords.append(list(at[:2]) + (Array([at[2], at[3], at[4]]) * a).values + list(at[5:]))
             return cartesian_coords
         if result:
+            if as_list:
+                return [list(x) for x in result]
             return result
         else:
             return False

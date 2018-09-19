@@ -9,6 +9,8 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
 
 $(document).ready(function($){
+    // The structure ID
+    var strid = null;
     
     $.get(url = cgifile+'/version', function (result) {
             document.getElementById("version").innerHTML = result;
@@ -42,7 +44,8 @@ $(document).ready(function($){
         ],
         //sortData: [{field: 'dataname', direction: 'ASC'}],
         onSelect:function(event) {
-            showprop(event.recid);
+            strid = event.recid;
+            showprop(strid);
             //console.log(event);
         }
     });
@@ -152,8 +155,7 @@ $(document).ready(function($){
         }
     }
 
-
-
+    
     var dropZone = document.getElementById('dropZone');
 
     dropZone.addEventListener('dragover', function(e) {
@@ -294,7 +296,25 @@ $(document).ready(function($){
                 //console.log(result);
             });
     });
-
+    
+    // Switch between grow and fuse:
+    $('#growCheckBox').click(function(){
+        var jsmolcol = $("#jsmolcolumn");
+        if (this.checked) {
+            // Get molecule data and display the molecule:
+            $.post(url = cgifile+'/molecule', data = {id: strid, grow: true}, function (result) {
+            jsmolcol.addClass('invisible');
+            display_molecule(result);
+            });
+        } else {
+            // Get molecule data and display the molecule:
+            $.post(url = cgifile+'/molecule', data = {id: strid, grow: false}, function (result) {
+            jsmolcol.addClass('invisible');
+            display_molecule(result);
+            });
+        }
+    });
+    
     // Switch between advanced and simple search:
     var advbutton = $('#toggle_advsearch-button');
     advbutton.click(function(){
@@ -330,7 +350,7 @@ $(document).ready(function($){
             //console.log(txt);
         }
     });
-
+    
     // Enter key pressed in the simple cell search field:
     $('#smpl_cellsrch').keypress(function(e) {
         if (e.which === 13) {  // enter key
@@ -355,12 +375,27 @@ $(document).ready(function($){
         $("#cell_copy_btn").addClass('invisible');
         document.getElementById("cellrow").innerHTML = "Found " + numresult + " structures";
     }
-
+    
+    function display_molecule(atoms) {
+        var jsmolcol = $("#jsmolcolumn");
+        Jmol._document = null;
+        Jmol.getTMApplet("jmol", jsmol_options);
+        jsmolcol.html(jmol._code);
+        jmol.__loadModel(atoms);
+        jsmolcol.removeClass('invisible');
+        var tbl = $('#residualstable2');
+        jsmolcol.css("height", tbl.height()-20);
+    }
+    
     function showprop(idstr) {
         /*
         This function uses AJAX POST calls to get the data of a structure and displays
         them below the main table.
         */
+        
+        // Uncheck the grow button:
+        $('#growCheckBox').prop("checked", false);
+        
         // Get residuals table 1:
         $.post(url = cgifile, data = {id: idstr, residuals1: true}, function (result) {
             document.getElementById("residualstable1").innerHTML = result;
@@ -370,17 +405,10 @@ $(document).ready(function($){
         $.post(url = cgifile, data = {id: idstr, residuals2: true}, function (result) {
             document.getElementById("residualstable2").innerHTML = result;
         });
-
+        
         // Get molecule data and display the molecule:
-        var jsmolcol = $("#jsmolcolumn");
-        $.post(url = cgifile+'/molecule', data = {id: idstr}, function (result) {
-            Jmol._document = null;
-            Jmol.getTMApplet("jmol", jsmol_options);
-            jsmolcol.html(jmol._code);
-            jmol.__loadModel(result);
-            jsmolcol.removeClass('invisible');
-            var tbl = $('#residualstable2');
-            jsmolcol.css("height", tbl.height()-20);
+        $.post(url = cgifile+'/molecule', data = {id: idstr, grow: false}, function (result) {
+            display_molecule(result)
         });
 
         // Get unit cell row:
