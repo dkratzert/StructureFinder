@@ -9,18 +9,20 @@
 # Daniel Kratzert
 # ----------------------------------------------------------------------------
 #
+import sys
 import time
 from math import sqrt, cos, radians
 
 from searcher import database_handler
-from shelxfile.dsrmath import Array
+from searcher.atoms import get_radius_from_element
+from shelxfile.dsrmath import Array, SymmetryElement
 from shelxfile.misc import DEBUG, wrap_line
 
 
 class Atom():
     def __init__(self, name, element, x, z, y, part):
         self._dict = {'name': name, 'element': element, 'x': x, 'y': y, 'z': z,
-                      'part': part, 'binds_to': None, 'molindex': None}
+                      'part': part, 'molindex': None}
 
     def __getitem__(self, key):
         return self._dict[key]
@@ -32,7 +34,41 @@ class Atom():
         self._dict[key] = val
 
     def __iter__(self):
-        return iter(['name', 'element', 'x', 'y', 'z', 'part', 'binds_to', 'molindex'])
+        return iter(['name', 'element', 'x', 'y', 'z', 'part', 'molindex'])
+
+
+class SymmCards():
+    """
+    Contains the list of SYMM cards
+    """
+
+    def __init__(self):
+        self._symmcards = [SymmetryElement(['X', 'Y', 'Z'])]
+
+    def _as_str(self) -> str:
+        return "\n".join([str(x) for x in self._symmcards])
+
+    def __repr__(self) -> str:
+        return self._as_str()
+
+    def __str__(self) -> str:
+        return self._as_str()
+
+    def __getitem__(self, item):
+        return self._symmcards[item]
+
+    def __iter__(self):
+        for x in self._symmcards:
+            yield x
+
+    def append(self, symmData: list) -> None:
+        """
+        Add the content of a Shelxl SYMM command to generate the appropriate SymmetryElement instance.
+        :param symmData: list of strings. eg.['1/2+X', '1/2+Y', '1/2+Z']
+        :return: None
+        """
+        newSymm = SymmetryElement(symmData)
+        self._symmcards.append(newSymm)
 
 
 class SDMItem(object):
@@ -62,8 +98,17 @@ class SDMItem(object):
 
 class SDM():
     def __init__(self, atoms: list, symmcards: list, cell: list):
+        """
+        Calculates the shortest distance matrix
+                        0      1      2  3  4   5     6          7
+        :param atoms: [Name, Element, X, Y, Z, Part, ocuupancy, molindex -> (later)]
+        :param symmcards:
+        :param cell:
+        """
         self.atoms = atoms
-        self.symmcards = symmcards
+        self.symmcards = SymmCards()
+        for s in symmcards:
+            self.symmcards.append(s)
         self.cell = cell
         self.cosal = cos(radians(cell[3]))
         self.cosbe = cos(radians(cell[4]))
@@ -71,7 +116,6 @@ class SDM():
         self.aga = self.cell[0] * self.cell[1] * self.cosga
         self.bbe = self.cell[0] * self.cell[2] * self.cosbe
         self.cal = self.cell[1] * self.cell[2] * self.cosal
-        # contact.clear()  # sdmitem list for hydrogen contacts (not needed)?
         self.sdm_list = []  # list of sdmitems
         self.bondlist = []
         self.maxmol = 1
@@ -83,12 +127,11 @@ class SDM():
     def calc_sdm(self) -> list:
         t1 = time.perf_counter()
         for i, at1 in enumerate(self.atoms):
-            atneighb = []  # list of atom neigbors
-            atom1_array = Array(at1.frac_coords)
+            atom1_array = Array(at1[2:5])
             for j, at2 in enumerate(self.atoms):
                 mind = 1000000
                 hma = False
-                minushalf = Array([v + 0.5 for v in at2.frac_coords])
+                minushalf = Array([v + 0.5 for v in at2[2:5]])
                 sdmItem = SDMItem()
                 for n, symop in enumerate(self.symmcards):
                     prime = atom1_array * symop.matrix + symop.trans
@@ -109,17 +152,16 @@ class SDM():
                 if not sdmItem.atom1:
                     # Do not grow grown atoms:
                     continue
-                if (not sdmItem.atom1.ishydrogen and not sdmItem.atom2.ishydrogen) and \
-                        sdmItem.atom1.part.n * sdmItem.atom2.part.n == 0 \
-                        or sdmItem.atom1.part.n == sdmItem.atom2.part.n:
-                    dddd = (at1.radius + at2.radius) * 1.2
+                if (not sdmItem.atom1[1] == 'H' and not sdmItem.atom2[1] == 'H') and \
+                        sdmItem.atom1[5] * sdmItem.atom2[5] == 0 \
+                        or sdmItem.atom1[5] == sdmItem.atom2[5]:
+                    dddd = (get_radius_from_element(at1[1]) + get_radius_from_element(at2[1])) * 1.2
                     sdmItem.dddd = dddd
                 else:
                     dddd = 0.0
                 if sdmItem.dist < dddd:
                     if hma:
                         self.bondlist.append((i, j))
-                        #atneighb.append(j)
                         sdmItem.covalent = True
                 else:
                     sdmItem.covalent = False
@@ -129,13 +171,13 @@ class SDM():
             #self.knots.append(atneighb)
         t2 = time.perf_counter()
         self.sdmtime = t2 - t1
-        if DEBUG:
-            print('Zeit sdm_calc:', self.sdmtime)
+        #if DEBUG:
+        print('Zeit sdm_calc:', self.sdmtime)
         self.sdm_list.sort()
         self.calc_molindex(self.atoms)
         need_symm = self.collect_needed_symmetry()
-        if DEBUG:
-            print("The asymmetric unit contains {} fragments.".format(self.maxmol))
+        #if DEBUG:
+        print("The asymmetric unit contains {} fragments.".format(self.maxmol))
         return need_symm
 
     def collect_needed_symmetry(self) -> list:
@@ -143,18 +185,18 @@ class SDM():
         # Collect needsymm list:
         for sdmItem in self.sdm_list:
             if sdmItem.covalent:
-                if sdmItem.atom1.molindex < 1 or sdmItem.atom1.molindex > 6:
+                if sdmItem.atom1[-1] < 1 or sdmItem.atom1[-1] > 6:
                     continue
                 for n, symop in enumerate(self.symmcards):
-                    if sdmItem.atom1.part != 0 and sdmItem.atom2.part != 0 \
-                            and sdmItem.atom1.part != sdmItem.atom2.part:
+                    if sdmItem.atom1[5] != 0 and sdmItem.atom2[5] != 0 \
+                            and sdmItem.atom1[5] != sdmItem.atom2[5]:
                         # both not part 0 and different part numbers
                         continue
                     # Both the same atomic number and number 0 (hydrogen)
-                    if sdmItem.atom1.an == sdmItem.atom2.an and sdmItem.atom1.ishydrogen:
+                    if sdmItem.atom1[1] == sdmItem.atom2[1] and sdmItem.atom1[1] == 'H':
                         continue
-                    prime = Array(sdmItem.atom1.frac_coords) * symop.matrix + symop.trans
-                    D = prime - Array(sdmItem.atom2.frac_coords) + Array([0.5, 0.5, 0.5])
+                    prime = Array(sdmItem.atom1[2:5]) * symop.matrix + symop.trans
+                    D = prime - Array(sdmItem.atom2[2:5]) + Array([0.5, 0.5, 0.5])
                     floorD = D.floor
                     dp = D - floorD - Array([0.5, 0.5, 0.5])
                     if n == 0 and Array([0, 0, 0]) == floorD:
@@ -162,11 +204,10 @@ class SDM():
                     dk = self.vector_length(*dp)
                     dddd = sdmItem.dist + 0.2
                     # TODO: Do I need this?
-                    if sdmItem.atom1.ishydrogen and sdmItem.atom2.ishydrogen:
+                    if sdmItem.atom1[1] == 'H' and sdmItem.atom2[1] == 'H':
                         dddd = 1.8
                     if (dk > 0.001) and (dddd >= dk):
-                        bs = [n + 1, (5 - floorD[0]), (5 - int(floorD[1])), (5 - int(floorD[2])),
-                              sdmItem.atom1.molindex]
+                        bs = [n + 1, (5 - floorD[0]), (5 - int(floorD[1])), (5 - int(floorD[2])), sdmItem.atom1[-1]]
                         if bs not in need_symm:
                             need_symm.append(bs)
         return need_symm
@@ -176,25 +217,25 @@ class SDM():
         someleft = 1
         nextmol = 1
         for at in all_atoms:
-            at.molindex = -1
-        all_atoms[0].molindex = 1
+            at.append(-1)
+        all_atoms[0][-1] = 1
         while nextmol:
             someleft = 1
             nextmol = 0
             while someleft:
                 someleft = 0
                 for sdmItem in self.sdm_list:
-                    if sdmItem.covalent and sdmItem.atom1.molindex * sdmItem.atom2.molindex < 0:
-                        sdmItem.atom1.molindex = self.maxmol
-                        sdmItem.atom2.molindex = self.maxmol
+                    if sdmItem.covalent and sdmItem.atom1[-1] * sdmItem.atom2[-1] < 0:
+                        sdmItem.atom1[-1] = self.maxmol  # last item is the molindex
+                        sdmItem.atom2[-1] = self.maxmol
                         someleft += 1
             for ni, at in enumerate(all_atoms):
-                if not at.ishydrogen and at.molindex < 0:
+                if at[-1] < 0:
                     nextmol = ni
                     break
             if nextmol:
                 self.maxmol += 1
-                all_atoms[nextmol].molindex = self.maxmol
+                all_atoms[nextmol][-1] = self.maxmol
 
     def vector_length(self, x: float, y: float, z: float) -> float:
         """
@@ -257,14 +298,16 @@ class SDM():
 
 
 if __name__ == "__main__":
-    structureId = 5
-    structures = database_handler.StructureTable('../test.sqlite')
+    structureId = 7
+    structures = database_handler.StructureTable('./test.sqlite')
     cell = structures.get_cell_by_id(structureId)
-    atoms = structures.get_atoms_table(structureId, cell, cartesian=False)
-    symmcards = structures.get_row_as_dict(structureId)['_space_group_symop_operation_xyz'] \
-        .replace("'", "").replace(" ", "").split("\n")
+    atoms = structures.get_atoms_table(structureId, cell, cartesian=False, as_list=True)
+    symmcards = [x.split(',') for x in structures.get_row_as_dict(structureId)['_space_group_symop_operation_xyz'] \
+        .replace("'", "").replace(" ", "").split("\n")]
     sdm = SDM(atoms, symmcards, cell)
     needsymm = sdm.calc_sdm()
+    print(needsymm)
+    sys.exit()
     packed_atoms = sdm.packer(sdm, needsymm)
     # print(needsymm)
     # [[8, 5, 5, 5, 1], [16, 5, 5, 5, 1], [7, 4, 5, 5, 3]]
