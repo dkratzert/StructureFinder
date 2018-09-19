@@ -4,7 +4,7 @@ MOl V3000 format
 import os
 from time import perf_counter
 
-from searcher import misc
+from searcher.misc import distance
 from searcher.atoms import get_radius_from_element
 
 
@@ -67,15 +67,16 @@ class MolFile(object):
         t1 = perf_counter()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
+            at1_part = at1[5]
             rad1 = get_radius_from_element(at1[1])
             for num2, at2 in enumerate(self.atoms, 1):
-                if not isinstance(at1[5], str) or not isinstance(at2[5], str):
-                    if at1[5] * at2[5] != 0 and at1[5] != at2[5]:
-                        continue
-                if at1[0] == at2[0]:  # name1 = name2
+                at2_part = at2[5]
+                if at1_part * at2_part != 0 and at1_part != at2_part:
+                    continue
+                if at1[0] == at2[0] and at1_part != at2_part:  # name1 = name2
                     continue
                 rad2 = get_radius_from_element(at2[1])
-                d = misc.distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
+                d = distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
                 if (rad1 + rad2) + extra_param >= d > (rad1 or rad2):
                     conlist.append([num1, num2])
                     # print(num1, num2, d)

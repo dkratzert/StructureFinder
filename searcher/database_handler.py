@@ -563,7 +563,8 @@ class StructureTable():
         """
         if cell is None:
             cell = []
-        req = """SELECT Name, element, x, y, z, part, occupancy FROM Atoms WHERE StructureId = ?"""
+        req = """SELECT Name, element, x, y, z, CAST(part as integer), occupancy FROM Atoms WHERE StructureId = ?"""
+        #req = """SELECT Name, element, x, y, z, part, occupancy FROM Atoms WHERE StructureId = ?"""
         result = self.database.db_request(req, (structure_id,))
         if cartesian:
             cartesian_coords = []

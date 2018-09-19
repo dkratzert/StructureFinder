@@ -133,15 +133,14 @@ class SDM():
     def calc_sdm(self) -> list:
         t1 = time.perf_counter()
         for i, at1 in enumerate(self.atoms):
-            atom1_array = Array(at1[2:5])
+            prime_array = [Array(at1[2:5]) * symop.matrix + symop.trans for symop in self.symmcards]
             for j, at2 in enumerate(self.atoms):
                 mind = 1000000
                 hma = False
-                minushalf = Array([v + 0.5 for v in at2[2:5]])
+                at2_plushalf = Array(at2[2:5]) + 0.5
                 sdmItem = SDMItem()
                 for n, symop in enumerate(self.symmcards):
-                    prime = atom1_array * symop.matrix + symop.trans
-                    D = prime - minushalf
+                    D = prime_array[n] - at2_plushalf
                     dp = [v - 0.5 for v in D - D.floor]
                     dk = self.vector_length(*dp)
                     if n:
@@ -251,8 +250,7 @@ class SDM():
         a = 2.0 * x * y * self.aga
         b = 2.0 * x * z * self.bbe
         c = 2.0 * y * z * self.cal
-        return sqrt(x ** 2 * self.cell[0] ** 2 + y ** 2 * self.cell[1] ** 2
-                    + z ** 2 * self.cell[2] ** 2 + a + b + c)
+        return sqrt(x ** 2 * self.cell[0] ** 2 + y ** 2 * self.cell[1] ** 2 + z ** 2 * self.cell[2] ** 2 + a + b + c)
 
     def packer(self, sdm: 'SDM', need_symm: list, with_qpeaks=False):
         """
@@ -302,8 +300,8 @@ class SDM():
 
 
 if __name__ == "__main__":
-    structureId = 214
-    structures = database_handler.StructureTable('./test.sqlite')
+    structureId = 25999
+    structures = database_handler.StructureTable('../structurefinder.sqlite')
     cell = structures.get_cell_by_id(structureId)
     atoms = structures.get_atoms_table(structureId, cell, cartesian=False, as_list=True)
     symmcards = [x.split(',') for x in structures.get_row_as_dict(structureId)['_space_group_symop_operation_xyz'] \
@@ -318,7 +316,7 @@ if __name__ == "__main__":
     # print(len(shx.atoms))
     # print(len(packed_atoms))
 
-    for at in packed_atoms:
-        print(at)
+    #for at in packed_atoms:
+    #    print(at)
 
     print('Zeit für sdm:', round(sdm.sdmtime, 3), 's')
