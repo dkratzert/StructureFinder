@@ -731,7 +731,8 @@ class ShelXFile():
                 return
         else:
             try:
-                self.run_after_parse()
+                #self.run_after_parse()
+                pass
             except Exception as e:
                 # print('File not parsed!:', self.resfile)
                 if DEBUG:
