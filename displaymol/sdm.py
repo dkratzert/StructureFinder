@@ -10,12 +10,29 @@
 # ----------------------------------------------------------------------------
 #
 import time
-from math import sqrt
+from math import sqrt, cos, radians
 
-from shelxfile.atoms import Atom
-from shelxfile.cards import AFIX, RESI
+from searcher import database_handler
 from shelxfile.dsrmath import Array
 from shelxfile.misc import DEBUG, wrap_line
+
+
+class Atom():
+    def __init__(self, name, element, x, z, y, part):
+        self._dict = {'name': name, 'element': element, 'x': x, 'y': y, 'z': z,
+                      'part': part, 'binds_to': None, 'molindex': None}
+
+    def __getitem__(self, key):
+        return self._dict[key]
+
+    def __repr__(self):
+        return "Atom: " + repr(self._dict)
+
+    def __setitem__(self, key, val):
+        self._dict[key] = val
+
+    def __iter__(self):
+        return iter(['name', 'element', 'x', 'y', 'z', 'part', 'binds_to', 'molindex'])
 
 
 class SDMItem(object):
@@ -44,32 +61,36 @@ class SDMItem(object):
 
 
 class SDM():
-    def __init__(self, shx: 'ShelXFile'):
-        self.shx = shx
-        self.aga = self.shx.cell[0] * self.shx.cell[1] * self.shx.cell.cosga
-        self.bbe = self.shx.cell[0] * self.shx.cell[2] * self.shx.cell.cosbe
-        self.cal = self.shx.cell[1] * self.shx.cell[2] * self.shx.cell.cosal
+    def __init__(self, atoms: list, symmcards: list, cell: list):
+        self.atoms = atoms
+        self.symmcards = symmcards
+        self.cell = cell
+        self.cosal = cos(radians(cell[3]))
+        self.cosbe = cos(radians(cell[4]))
+        self.cosga = cos(radians(cell[5]))
+        self.aga = self.cell[0] * self.cell[1] * self.cosga
+        self.bbe = self.cell[0] * self.cell[2] * self.cosbe
+        self.cal = self.cell[1] * self.cell[2] * self.cosal
         # contact.clear()  # sdmitem list for hydrogen contacts (not needed)?
         self.sdm_list = []  # list of sdmitems
-        self.knots = []
+        self.bondlist = []
         self.maxmol = 1
         self.sdmtime = 0
 
     def __iter__(self):
-        yield self.knots
+        yield self.bondlist
 
     def calc_sdm(self) -> list:
         t1 = time.perf_counter()
-        all_atoms = self.shx.atoms.all_atoms
-        for i, at1 in enumerate(all_atoms):
+        for i, at1 in enumerate(self.atoms):
             atneighb = []  # list of atom neigbors
             atom1_array = Array(at1.frac_coords)
-            for j, at2 in enumerate(all_atoms):
+            for j, at2 in enumerate(self.atoms):
                 mind = 1000000
                 hma = False
                 minushalf = Array([v + 0.5 for v in at2.frac_coords])
                 sdmItem = SDMItem()
-                for n, symop in enumerate(self.shx.symmcards):
+                for n, symop in enumerate(self.symmcards):
                     prime = atom1_array * symop.matrix + symop.trans
                     D = prime - minushalf
                     dp = [v - 0.5 for v in D - D.floor]
@@ -97,20 +118,21 @@ class SDM():
                     dddd = 0.0
                 if sdmItem.dist < dddd:
                     if hma:
-                        atneighb.append(j)
+                        self.bondlist.append((i, j))
+                        #atneighb.append(j)
                         sdmItem.covalent = True
                 else:
                     sdmItem.covalent = False
                 if hma:
                     self.sdm_list.append(sdmItem)
                 # print(sdmItem)
-            self.knots.append(atneighb)
+            #self.knots.append(atneighb)
         t2 = time.perf_counter()
         self.sdmtime = t2 - t1
         if DEBUG:
             print('Zeit sdm_calc:', self.sdmtime)
         self.sdm_list.sort()
-        self.calc_molindex(all_atoms)
+        self.calc_molindex(self.atoms)
         need_symm = self.collect_needed_symmetry()
         if DEBUG:
             print("The asymmetric unit contains {} fragments.".format(self.maxmol))
@@ -123,7 +145,7 @@ class SDM():
             if sdmItem.covalent:
                 if sdmItem.atom1.molindex < 1 or sdmItem.atom1.molindex > 6:
                     continue
-                for n, symop in enumerate(self.shx.symmcards):
+                for n, symop in enumerate(self.symmcards):
                     if sdmItem.atom1.part != 0 and sdmItem.atom2.part != 0 \
                             and sdmItem.atom1.part != sdmItem.atom2.part:
                         # both not part 0 and different part numbers
@@ -181,19 +203,14 @@ class SDM():
         a = 2.0 * x * y * self.aga
         b = 2.0 * x * z * self.bbe
         c = 2.0 * y * z * self.cal
-        return sqrt(x ** 2 * self.shx.cell[0] ** 2 + y ** 2 * self.shx.cell[1] ** 2
-                    + z ** 2 * self.shx.cell[2] ** 2 + a + b + c)
+        return sqrt(x ** 2 * self.cell[0] ** 2 + y ** 2 * self.cell[1] ** 2
+                    + z ** 2 * self.cell[2] ** 2 + a + b + c)
 
     def packer(self, sdm: 'SDM', need_symm: list, with_qpeaks=False):
         """
         Packs atoms of the asymmetric unit to real molecules.
         TODO: Support hydrogen atoms!
         """
-        asymm = self.shx.atoms.all_atoms
-        if with_qpeaks:
-            showatoms = asymm[:]
-        else:
-            showatoms = [at for at in asymm if not at.qpeak]
         for symm in need_symm:
             s, h, k, l, symmgroup = symm
             h -= 5
@@ -240,10 +257,13 @@ class SDM():
 
 
 if __name__ == "__main__":
-    from shelxfile.shelx import ShelXFile
-
-    shx = ShelXFile('tests/I-43d.res')
-    sdm = SDM(shx)
+    structureId = 5
+    structures = database_handler.StructureTable('../test.sqlite')
+    cell = structures.get_cell_by_id(structureId)
+    atoms = structures.get_atoms_table(structureId, cell, cartesian=False)
+    symmcards = structures.get_row_as_dict(structureId)['_space_group_symop_operation_xyz'] \
+        .replace("'", "").replace(" ", "").split("\n")
+    sdm = SDM(atoms, symmcards, cell)
     needsymm = sdm.calc_sdm()
     packed_atoms = sdm.packer(sdm, needsymm)
     # print(needsymm)
@@ -252,8 +272,6 @@ if __name__ == "__main__":
     # print(len(packed_atoms))
 
     for at in packed_atoms:
-        if at.qpeak:
-            continue
         print(wrap_line(str(at)))
 
     print('Zeit für sdm:', round(sdm.sdmtime, 3), 's')

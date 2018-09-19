@@ -669,8 +669,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # TODO: Make a clas for Atoms(), fill it with db atoms, apply symmetry, feed Atoms() into MolFile
         # TODO: In order to apply symmetry, adapt grow from ShelXFile and Symmcards from ShelxFile.
         """
+        atoms = self.db.get_atoms_table(id, cell, cartesian=False)
+        cards = self.structures.get_row_as_dict(id)['_space_group_symop_operation_xyz']\
+                .replace("'", "").replace(" ", "").split("\n")
+
         try:
-            tst = mol_file_writer.MolFile(structure_id, self.structures, cell[:6], grow=False)
+            tst = mol_file_writer.MolFile(atoms)
             mol = tst.make_mol()
         except (TypeError, KeyError):
             print("Error in structure", structure_id, "while writing mol file.")
