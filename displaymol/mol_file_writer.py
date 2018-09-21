@@ -86,7 +86,7 @@ class MolFile(object):
                         continue
                     conlist.append([num1, num2])
         t2 = perf_counter()
-        print('Bondzeit:', round(t2-t1, 3), 's')
+        #print('Bondzeit:', round(t2-t1, 3), 's')
         return conlist
 
     def footer(self) -> str:
