@@ -834,15 +834,6 @@ class ShelXFile():
             resl.append(line)
         return "\n".join(resl)
 
-    def grow(self, with_qpeaks: bool = False):
-        """
-        Returns a list of atoms that represent the complete molecules of the structure.
-        """
-        sdm = SDM(self)
-        needsymm = sdm.calc_sdm()
-        packed_atoms = sdm.packer(sdm, needsymm, with_qpeaks=with_qpeaks)
-        return packed_atoms
-
     def write_shelx_file(self, filename=None, verbose=False):
         if not filename:
             filename = self.resfile
@@ -1175,15 +1166,16 @@ class ShelXFile():
 if __name__ == "__main__":
     # get_commands()
     # sys.exit()
-    file = r'tests/I-43d.res'
+    file = r'/Users/daniel/GitHub/StructureFinder/test-data/p21c_a_only_isotropic.res'
     try:
         shx = ShelXFile(file)
     except Exception:
         raise
+    print(shx.atoms)
     print(shx.sum_formula_exact)
-    shx.write_shelx_file('tests/complete_run/test.ins')
-    for at in shx.grow(with_qpeaks=True):
-        print(wrap_line(str(at)))
+    #shx.write_shelx_file('tests/complete_run/test.ins')
+    #for at in shx.grow(with_qpeaks=True):
+    #    print(wrap_line(str(at)))
     sys.exit()
     from shelxfile.misc import walkdir
 
