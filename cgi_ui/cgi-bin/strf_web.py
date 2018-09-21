@@ -135,9 +135,10 @@ def jsmol_request():
             symmcards = [x.split(',') for x in structures.get_row_as_dict(str_id)
             ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
             atoms = structures.get_atoms_table(str_id, cell[:6], cartesian=False, as_list=True)
-            sdm = SDM(atoms, symmcards, cell)
-            needsymm = sdm.calc_sdm()
-            atoms = sdm.packer(sdm, needsymm)
+            if atoms:
+                sdm = SDM(atoms, symmcards, cell)
+                needsymm = sdm.calc_sdm()
+                atoms = sdm.packer(sdm, needsymm)
         else:
             atoms = structures.get_atoms_table(str_id, cell[:6], cartesian=True, as_list=False)
         try:
