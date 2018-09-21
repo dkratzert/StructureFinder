@@ -171,8 +171,6 @@ class SDM():
                     sdmItem.covalent = False
                 if hma:
                     self.sdm_list.append(sdmItem)
-                # print(sdmItem)
-            #self.knots.append(atneighb)
         t2 = time.perf_counter()
         self.sdmtime = t2 - t1
         #if DEBUG:
@@ -234,8 +232,6 @@ class SDM():
                         sdmItem.atom2[-1] = self.maxmol
                         someleft += 1
             for ni, at in enumerate(all_atoms):
-                #if not at.ishydrogen and at.molindex < 0:
-                #if not at[1] == 'H' and at[-1] < 0:
                 if at[-1] < 0:
                     nextmol = ni
                     break
@@ -269,16 +265,14 @@ class SDM():
                 # This is essential for displaying hydrogen atoms:
                 # if not atom[1] == 'H' and atom[-1] == symmgroup:
                 if atom[-1] == symmgroup:
-                    # if atom.molindex == symmgroup:
                     coords = Array(atom[2:5]) * self.symmcards[s].matrix \
                              + Array(self.symmcards[s].trans) + Array([h, k, l])
+                    # The new atom:
                     new = [atom[0], atom[1]] + list(coords) + [atom[5], atom[6], atom[7], 'symmgen']
                     new_atoms.append(new)
                     isthere = False
                     if new[5] >= 0:
                         for atom in showatoms:
-                            #if atom.ishydrogen:
-                            #    continue
                             if atom[5] != new[5]:
                                 continue
                             length = sdm.vector_length(new[2] - atom[2],
@@ -300,7 +294,7 @@ class SDM():
 
 
 if __name__ == "__main__":
-    structureId = 25999
+    structureId = 32503
     structures = database_handler.StructureTable('../structurefinder.sqlite')
     cell = structures.get_cell_by_id(structureId)
     atoms = structures.get_atoms_table(structureId, cell, cartesian=False, as_list=True)
