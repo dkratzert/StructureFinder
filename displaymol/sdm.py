@@ -116,6 +116,9 @@ class SDM():
         self.aga = self.cell[0] * self.cell[1] * self.cosga
         self.bbe = self.cell[0] * self.cell[2] * self.cosbe
         self.cal = self.cell[1] * self.cell[2] * self.cosal
+        self.asq = self.cell[0] ** 2
+        self.bsq = self.cell[1] ** 2
+        self.csq = self.cell[2] ** 2
         self.sdm_list = []  # list of sdmitems
         self.maxmol = 1
         self.sdmtime = 0
@@ -145,6 +148,8 @@ class SDM():
                     D = prime_array[n] - at2_plushalf
                     dp = [v - 0.5 for v in D - D.floor]
                     dk = self.vector_length(*dp)
+                    if dk > 5:
+                        continue
                     if n:
                         dk += 0.0001
                     if (dk > 0.01) and (mind >= dk):
@@ -248,10 +253,8 @@ class SDM():
         """
         Calculates the vector length given in fractional coordinates.
         """
-        a = 2.0 * x * y * self.aga
-        b = 2.0 * x * z * self.bbe
-        c = 2.0 * y * z * self.cal
-        return sqrt(x ** 2 * self.cell[0] ** 2 + y ** 2 * self.cell[1] ** 2 + z ** 2 * self.cell[2] ** 2 + a + b + c)
+        A = 2.0 * (x * y * self.aga + x * z * self.bbe + y * z * self.cal)
+        return sqrt(x ** 2 * self.asq + y ** 2 * self.bsq + z ** 2 * self.csq + A)
 
     def packer(self, sdm: 'SDM', need_symm: list, with_qpeaks=False):
         """
@@ -299,7 +302,7 @@ class SDM():
 
 
 if __name__ == "__main__":
-    structureId = 32503
+    structureId = 32
     structures = database_handler.StructureTable('../structurefinder.sqlite')
     cell = structures.get_cell_by_id(structureId)
     atoms = structures.get_atoms_table(structureId, cell, cartesian=False, as_list=True)
