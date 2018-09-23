@@ -165,8 +165,7 @@ class SDM():
                     # Do not grow grown atoms:
                     continue
                 if (not sdmItem.atom1[1] in ['H', 'D'] and not sdmItem.atom2[1] in ['H', 'D']) and \
-                        sdmItem.atom1[5] * sdmItem.atom2[5] == 0 \
-                        or sdmItem.atom1[5] == sdmItem.atom2[5]:
+                        sdmItem.atom1[5] * sdmItem.atom2[5] == 0 or sdmItem.atom1[5] == sdmItem.atom2[5]:
                     dddd = (get_radius_from_element(at1[1]) + get_radius_from_element(at2[1])) * 1.2
                     sdmItem.dddd = dddd
                 else:
