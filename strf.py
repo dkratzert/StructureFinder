@@ -685,16 +685,20 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         symmcards = [x.split(',') for x in self.structures.get_row_as_dict(structure_id)
                     ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+        blist = None
         if self.ui.growCheckBox.isChecked():
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=False, as_list=True)
             if atoms:
                 sdm = SDM(atoms, symmcards, cell)
                 needsymm = sdm.calc_sdm()
                 atoms = sdm.packer(sdm, needsymm)
+                #blist = [(x[0]+1, x[1]+1) for x in sdm.bondlist]
+                #print(len(blist))
         else:
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=True, as_list=False)
+            blist = None
         try:
-            tst = mol_file_writer.MolFile(atoms)
+            tst = mol_file_writer.MolFile(atoms, blist)
             mol = tst.make_mol()
         except (TypeError, KeyError):
             print("Error in structure", structure_id, "while writing mol file.")

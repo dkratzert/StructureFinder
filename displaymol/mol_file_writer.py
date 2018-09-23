@@ -13,9 +13,12 @@ class MolFile(object):
     This mol file writer is only to use the file with JSmol, not to implement the standard exactly!
     """
 
-    def __init__(self, atoms: list):
+    def __init__(self, atoms: list, bonds = None):
         self.atoms = atoms
-        self.bonds = self.get_conntable_from_atoms()
+        if bonds:
+            self.bonds = bonds
+        else:
+            self.bonds = self.get_conntable_from_atoms()
         self.bondscount = len(self.bonds)
         self.atomscount = len(self.atoms)
 
@@ -87,6 +90,7 @@ class MolFile(object):
                     conlist.append([num1, num2])
         t2 = perf_counter()
         #print('Bondzeit:', round(t2-t1, 3), 's')
+        #print('len:', len(conlist))
         return conlist
 
     def footer(self) -> str:

@@ -119,6 +119,7 @@ class SDM():
         self.sdm_list = []  # list of sdmitems
         self.maxmol = 1
         self.sdmtime = 0
+        self.bondlist = []
 
     def orthogonal_matrix(self):
         """
@@ -132,6 +133,7 @@ class SDM():
 
     def calc_sdm(self) -> list:
         t1 = time.perf_counter()
+        self.bondlist.clear()
         for i, at1 in enumerate(self.atoms):
             prime_array = [Array(at1[2:5]) * symop.matrix + symop.trans for symop in self.symmcards]
             for j, at2 in enumerate(self.atoms):
@@ -167,6 +169,7 @@ class SDM():
                 if sdmItem.dist < dddd:
                     if hma:
                         sdmItem.covalent = True
+                        #self.bondlist.append((i, j, sdmItem.atom1[0], sdmItem.atom2[0], sdmItem.dist))
                 else:
                     sdmItem.covalent = False
                 if hma:
@@ -205,11 +208,13 @@ class SDM():
                         continue
                     dk = self.vector_length(*dp)
                     dddd = sdmItem.dist + 0.2
-                    # TODO: Do I need this?
+                    # Idea for fast bon list:
+                    #self.bondlist.append((sdmItem.a1, sdmItem.a2, sdmItem.atom1[0] + '<',
+                    #                      sdmItem.atom2[0] + '<', sdmItem.dist))
                     if sdmItem.atom1[1] in ['H', 'D'] and sdmItem.atom2[1] in ['H', 'D']:
                         dddd = 1.8
                     if (dk > 0.001) and (dddd >= dk):
-                        bs = [n + 1, (5 - floorD[0]), (5 - int(floorD[1])), (5 - int(floorD[2])), sdmItem.atom1[-1]]
+                        bs = [n + 1, (5 - floorD[0]), (5 - floorD[1]), (5 - floorD[2]), sdmItem.atom1[-1]]
                         if bs not in need_symm:
                             need_symm.append(bs)
         return need_symm
