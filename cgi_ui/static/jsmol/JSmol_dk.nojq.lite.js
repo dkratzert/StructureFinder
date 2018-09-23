@@ -1286,7 +1286,7 @@ if (!Jmol._version)
             applet._spinner = spinner = (!spinner || spinner === "none" ? "" : "background-image:url(" + spinner + "); background-repeat:no-repeat; background-position:center;");
             css = spinner + (css.indexOf("style=\"") >= 0 ? css.split("style=\"")[1] : "\" " + css);
             s = "\
-...<div id=\"ID_appletinfotablediv\" style=\"width:Wpx;height:Hpx;position:relative;font-size:14px;text-align:left\">IMG WAIT\
+...<div id=\"ID_appletinfotablediv\" style=\"width:Wpx;height:Hpx;font-size:14px;text-align:left\">IMG WAIT\
 ......<div id=\"ID_appletdiv\" style=\"z-index:" + Jmol._getZ(applet, "header") + ";width:100%;height:100%;position:absolute;top:0px;left:0px;" + css + ">";
             var height = applet._height;
             var width = applet._width;

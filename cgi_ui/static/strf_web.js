@@ -377,14 +377,14 @@ $(document).ready(function($){
     }
     
     function display_molecule(atoms) {
-        var jsmolcol = $("#jsmolcolumn");
         Jmol._document = null;
         Jmol.getTMApplet("jmol", jsmol_options);
+        var jsmolcol = $("#jsmolcolumn");
         jsmolcol.html(jmol._code);
         jmol.__loadModel(atoms);
-        jsmolcol.removeClass('invisible');
         var tbl = $('#residualstable2');
         jsmolcol.css("height", tbl.height()-20);
+        jsmolcol.removeClass('invisible');
     }
     
     function showprop(idstr) {
@@ -444,8 +444,8 @@ $(document).ready(function($){
     var bgcolor = $(this.body).css("background-color");
     var jsmol_options;
     jsmol_options = {
-        width: 320,
-        height: 300,
+        //width: 320,
+        //height: 300,
         color: bgcolor,
         //color: "0xf0f0f0",
         shadeAtoms: false,
