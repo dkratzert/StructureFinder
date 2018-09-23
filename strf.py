@@ -645,7 +645,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 compl = 0.0
         except TypeError:
             compl = 0.0
-        self.ui.completeLineEdit.setText("{:<5.1f}".format(compl))
+        try:
+            self.ui.completeLineEdit.setText("{:<5.1f}".format(compl))
+        except ValueError:
+            pass
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
         #####  Maybe put this into a new method and only let it run when all values tab opens:
         self.ui.allCifTreeWidget.clear()
