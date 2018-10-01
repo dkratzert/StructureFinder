@@ -55,7 +55,7 @@ TODO:
 
 structures = database_handler.StructureTable(dbfilename)
 
-app = Bottle()
+app = application = Bottle()
 # bottle.debug(True)  # Do not enable debug in production systems!
 
 
