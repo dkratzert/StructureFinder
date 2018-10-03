@@ -599,4 +599,9 @@ if __name__ == "__main__":
         print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
         sys.exit()
     print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
-    app.run(host=host, port=port, reloader=True)
+    # plain python wsgiref server:
+    # app.run(host=host, port=port, reloader=True)
+    # gunicorn server: Best used behind an nginx proxy server: http://docs.gunicorn.org/en/stable/deploy.html
+    # you need "pip3 install gunicorn" to run this:
+    app.run(host=host, port=port, reload=True, server='gunicorn', accesslog='-', workers=2,
+            access_log_format='%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s"')
