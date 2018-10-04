@@ -2,33 +2,24 @@
 MOl V3000 format
 """
 import os
+from time import perf_counter
 
-from sqlalchemy.orm import Session
 
-from lattice import lattice
-from searcher import misc
+from searcher.misc import distance
 from searcher.atoms import get_radius_from_element
-from searcher.database_handler import StructureTable, Atoms, Structure
-from searcher.unitcell import Lattice
-from shelxfile.dsrmath import Array
+
 
 
 class MolFile(object):
     """
     This mol file writer is only to use the file with JSmol, not to implement the standard exactly!
     """
-    def __init__(self, id: str, session: Session, cell: list, grow=False):
-        self.session = session
-        self.atoms = []
-        if grow:
-            pass
+    def __init__(self, atoms: list, bonds = None):
+        self.atoms = atoms
+        if bonds:
+            self.bonds = bonds
         else:
-            atoms = [(at.Name, at.element, at.x, at.y, at.z) for at in
-                     session.query(Atoms).filter(Atoms.StructureId == id).all() if at.Name]
-            a = lattice.A(cell).orthogonal_matrix
-            for at in atoms:
-                self.atoms.append(at[:2] + tuple((Array([at[2], at[3], at[4]]) * a).values))
-        self.bonds = self.get_conntable_from_atoms()
+            self.bonds = self.get_conntable_from_atoms()
         self.bondscount = len(self.bonds)
         self.atomscount = len(self.atoms)
 
@@ -48,6 +39,7 @@ class MolFile(object):
     def get_atoms_string(self) -> str:
         """
         Returns a string with an atom in each line.
+        X Y Z Element
         """
         atoms = []
         for num, at in enumerate(self.atoms):
@@ -76,22 +68,30 @@ class MolFile(object):
         :param extra_param: additional distance to the covalence radius
         :type extra_param: float
         """
-        #t1 = time.clock()
+        t1 = perf_counter()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
+            at1_part = at1[5]
             rad1 = get_radius_from_element(at1[1])
             for num2, at2 in enumerate(self.atoms, 1):
-                if at1[0] == at2[0]: # name1 = name2
+                at2_part = at2[5]
+                if at1_part * at2_part != 0 and at1_part != at2_part:
+                    continue
+                if at1[0] == at2[0] and at1_part != at2_part:  # name1 = name2
                     continue
                 rad2 = get_radius_from_element(at2[1])
-                d = misc.distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
+                d = distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
                 if (rad1 + rad2) + extra_param >= d > (rad1 or rad2):
-                    conlist.append([num1, num2])
-                    #print(num1, num2, d)
+                    if at1[1] == 'H' and at2[1] == 'H':
+                        continue
+                    # print(num1, num2, d)
+                    # The extra time for this is not too much:
                     if [num2, num1] in conlist:
                         continue
-        #t2 = time.clock()
-        #print(round(t2-t1, 4), 's')
+                    conlist.append([num1, num2])
+        t2 = perf_counter()
+        #print('Bondzeit:', round(t2-t1, 3), 's')
+        #print('len:', len(conlist))
         return conlist
 
     def footer(self) -> str:
@@ -108,5 +108,5 @@ class MolFile(object):
         atoms = self.get_atoms_string()
         bonds = self.get_bonds_string()
         footer = self.footer()
-        mol = "{0}{5}{1}{5}{2}{5}{3}{5}{4}".format(header,connection_table,atoms,bonds,footer, '\n')
+        mol = "{0}{5}{1}{5}{2}{5}{3}{5}{4}".format(header, connection_table, atoms, bonds, footer, '\n')
         return mol

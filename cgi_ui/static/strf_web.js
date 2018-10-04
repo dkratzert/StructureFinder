@@ -9,6 +9,8 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
 
 $(document).ready(function($){
+    // The structure ID
+    var strid = null;
     
     $.get(url = cgifile+'/version', function (result) {
             document.getElementById("version").innerHTML = result;
@@ -42,7 +44,8 @@ $(document).ready(function($){
         ],
         //sortData: [{field: 'dataname', direction: 'ASC'}],
         onSelect:function(event) {
-            showprop(event.recid);
+            strid = event.recid;
+            showprop(strid);
             //console.log(event);
         }
     });
@@ -152,8 +155,7 @@ $(document).ready(function($){
         }
     }
 
-
-
+    
     var dropZone = document.getElementById('dropZone');
 
     dropZone.addEventListener('dragover', function(e) {
@@ -294,7 +296,23 @@ $(document).ready(function($){
                 //console.log(result);
             });
     });
-
+    
+    // Switch between grow and fuse:
+    $('#growCheckBox').click(function(){
+        var jsmolcol = $("#jsmolcolumn");
+        if (this.checked) {
+            // Get molecule data and display the molecule:
+            $.post(url = cgifile+'/molecule', data = {id: strid, grow: true}, function (result) {
+            display_molecule(result);
+            });
+        } else {
+            // Get molecule data and display the molecule:
+            $.post(url = cgifile+'/molecule', data = {id: strid, grow: false}, function (result) {
+            display_molecule(result);
+            });
+        }
+    });
+    
     // Switch between advanced and simple search:
     var advbutton = $('#toggle_advsearch-button');
     advbutton.click(function(){
@@ -330,7 +348,7 @@ $(document).ready(function($){
             //console.log(txt);
         }
     });
-
+    
     // Enter key pressed in the simple cell search field:
     $('#smpl_cellsrch').keypress(function(e) {
         if (e.which === 13) {  // enter key
@@ -348,19 +366,36 @@ $(document).ready(function($){
         }
     });
 
+    // display how many results I got
     function displayresultnum(result) {
         numresult = result.total;
         if (typeof numresult === 'undefined') numresult = 0;
         $("#cellrow").removeClass('invisible');
         $("#cell_copy_btn").addClass('invisible');
+        $("#growCheckBoxgroup").addClass('invisible');
         document.getElementById("cellrow").innerHTML = "Found " + numresult + " structures";
     }
-
+    
+    function display_molecule(atoms) {
+        Jmol._document = null;
+        Jmol.getTMApplet("jmol", jsmol_options);
+        var jsmolcol = $("#jsmolcolumn");
+        jsmolcol.html(jmol._code);
+        jmol.__loadModel(atoms);
+        var tbl = $('#residualstable2');
+        jsmolcol.css("height", tbl.height()-20);
+        jsmolcol.removeClass('invisible');
+    }
+    
     function showprop(idstr) {
         /*
         This function uses AJAX POST calls to get the data of a structure and displays
         them below the main table.
         */
+        
+        // Uncheck the grow button:
+        //$('#growCheckBox').prop("checked", false);
+        
         // Get residuals table 1:
         $.post(url = cgifile, data = {id: idstr, residuals1: true}, function (result) {
             document.getElementById("residualstable1").innerHTML = result;
@@ -371,21 +406,10 @@ $(document).ready(function($){
             document.getElementById("residualstable2").innerHTML = result;
         });
 
-        // Get molecule data and display the molecule:
-        var jsmolcol = $("#jsmolcolumn");
-        $.post(url = cgifile+'/molecule', data = {id: idstr}, function (result) {
-            Jmol._document = null;
-            Jmol.getTMApplet("jmol", jsmol_options);
-            jsmolcol.html(jmol._code);
-            jmol.__loadModel(result);
-            jsmolcol.removeClass('invisible');
-            var tbl = $('#residualstable2');
-            jsmolcol.css("height", tbl.height()-20);
-        });
-
         // Get unit cell row:
         $.post(url = cgifile, data = {id: idstr, unitcell: true}, function (result) {
             $("#cellrow").removeClass('invisible');
+            $("#growCheckBoxgroup").removeClass('invisible');
             $("#cell_copy_btn").removeClass('invisible');
             document.getElementById("cellrow").innerHTML = result;
 
@@ -403,14 +427,25 @@ $(document).ready(function($){
                 document.getElementById("residuals").innerHTML = result;
             }
         );
+
+        // Get molecule data and display the molecule:
+        if ($('#growCheckBox').is(':checked') === true) {
+            $.post(url = cgifile+'/molecule', data = {id: idstr, grow: true}, function (result) {
+                display_molecule(result)
+            });
+        } else {
+            $.post(url = cgifile+'/molecule', data = {id: idstr, grow: false}, function (result) {
+                display_molecule(result)
+            });
+        }
     }
 
     // some options for JSmol:
     var bgcolor = $(this.body).css("background-color");
     var jsmol_options;
     jsmol_options = {
-        width: 320,
-        height: 300,
+        //width: 320,
+        //height: 300,
         color: bgcolor,
         //color: "0xf0f0f0",
         shadeAtoms: false,

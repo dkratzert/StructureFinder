@@ -19,8 +19,9 @@ from os.path import isfile
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import sessionmaker
 
+from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
-from searcher.database_handler import Structure, Residuals, Cell, Base, Measurement, object_as_dict, as_dict
+from searcher.database_handler import Structure, Residuals, Cell, Base, Measurement, object_as_dict, as_dict, Atoms
 from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
 
@@ -103,9 +104,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
         self.ui.statusbar.addWidget(self.abort_import_button)
-        self.structures = None
+        self.structures_session = None
         self.apx = None
-        self.structureId = ''
+        self.structureId = '0'
         self.passwd = ''
         self.show()
         self.setAcceptDrops(True)
@@ -141,7 +142,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 #self.structures = database_handler.StructureTable(self.dbfilename)
                 engine = create_engine('sqlite:///' + self.dbfilename)
                 #engine.echo = True
-                self.structures = sessionmaker(bind=engine)
+                self.structures_session = sessionmaker(bind=engine)
                 self.show_full_list()
         if update_check.is_update_needed(VERSION=VERSION):
             self.statusBar().showMessage('A new Version of StructureFinder is available at '
@@ -186,6 +187,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.ad_elementsExclLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.add_res.clicked.connect(self.res_checkbox_clicked)
         self.ui.add_cif.clicked.connect(self.cif_checkbox_clicked)
+        self.ui.growCheckBox.toggled.connect(self.redraw_molecule)
 
     def res_checkbox_clicked(self, click):
         if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
@@ -275,7 +277,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if self.structureId:
             try:
                 cell = "{:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f}" \
-                    .format(*self.structures.get_cell_by_id(self.structureId))
+                    .format(*self.structures_session.get_cell_by_id(self.structureId))
             except Exception:
                 return False
             clipboard = QtWidgets.QApplication.clipboard()
@@ -290,7 +292,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Combines all the search fields. Collects all includes, all excludes ad calculates
         the difference.
         """
-        if not self.structures:
+        if not self.structures_session:
             return
         excl = []
         incl = []
@@ -311,7 +313,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             spgr = 0
         if spgr:
             try:
-                it_results = self.structures.find_by_it_number(spgr)
+                it_results = self.structures_session.find_by_it_number(spgr)
             except ValueError:
                 pass
         if date1 != date2:
@@ -324,7 +326,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if txt:
             if len(txt) >= 2 and "*" not in txt:
                 txt = '*' + txt + '*'
-            idlist = self.structures.find_by_strings(txt)
+            idlist = self.structures_session.find_by_strings(txt)
             try:
                 incl.append([i[0] for i in idlist])
             except(IndexError, KeyError):
@@ -334,7 +336,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if txt_ex:
             if len(txt_ex) >= 2 and "*" not in txt_ex:
                 txt_ex = '*' + txt_ex + '*'
-            idlist = self.structures.find_by_strings(txt_ex)
+            idlist = self.structures_session.find_by_strings(txt_ex)
             try:
                 excl.append([i[0] for i in idlist])
             except(IndexError, KeyError):
@@ -369,7 +371,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if not idlist:
             self.statusBar().showMessage('Found {} structures.'.format(0))
             return
-        searchresult = self.structures.get_all_structure_names(idlist)
+        searchresult = self.structures_session.get_all_structure_names(idlist)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
@@ -431,7 +433,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         filecrawler.put_cifs_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked(), 
                                    fillcif=self.ui.add_cif.isChecked())
         self.progress.hide()
-        session = self.structures
+        session = self.structures_session
         #self.structures.database.init_textsearch()
         #self.structures.populate_fulltext_search_table()
         #session.commit()
@@ -515,13 +517,14 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         This slot shows the properties of a cif file in the properties widget
         """
-        if not self.structures:
+        if not self.structures_session:
             return False
         structure_id = item.sibling(item.row(), 3).data()
-        session = self.structures()
+        session = self.structures_session()
         row = session.query(Residuals).filter(Residuals.StructureId == structure_id).first()
         dic = as_dict(row)
         #print('##', dic)
+        self.structureId = structure_id
         self.display_properties(structure_id, dic)
         self.structureId = structure_id
         return True
@@ -552,6 +555,17 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 return True
         return False
 
+    def redraw_molecule(self):
+        cell = self.structures_session.get_cell_by_id(self.structureId)
+        if not cell:
+            return False
+        try:
+            self.display_molecule(cell, str(self.structureId))
+        except Exception as e:
+            print(e, "unable to display molecule")
+            if DEBUG:
+                raise
+
     def display_properties(self, structure_id: str, cif_dic: dict) -> bool:
         """
         Displays the residuals from the cif file
@@ -564,10 +578,16 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         self.clear_fields()
         #cell = self.structures.get_cell_by_id(structure_id)
-        session = self.structures()
+        session = self.structures_session()
         cell_row = session.query(Cell).filter(Cell.StructureId == structure_id).first()
         if not cell_row:
             return False
+        try:
+            self.display_molecule(cell_row, structure_id)
+        except Exception as e:
+            print(e, "unable to display molecule")
+            if DEBUG:
+                raise
         self.ui.cifList_treeWidget.setFocus()
         if not cif_dic:
             return False
@@ -639,13 +659,17 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.thetaMaxLineEdit.setText("{}".format(thetamax))
         self.ui.thetaFullLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_theta_full']))
         self.ui.dLineEdit.setText("{:5.3f}".format(d))
+        self.ui.lastModifiedLineEdit.setText(cif_dic['modification_time'])
         try:
             compl = cif_dic['_diffrn_measured_fraction_theta_max'] * 100
             if not compl:
                 compl = 0.0
         except TypeError:
             compl = 0.0
-        self.ui.completeLineEdit.setText("{:<5.1f}".format(compl))
+        try:
+            self.ui.completeLineEdit.setText("{:<5.1f}".format(compl))
+        except ValueError:
+            pass
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
         #####  Maybe put this into a new method and only let it run when all values tab opens:
         self.ui.allCifTreeWidget.clear()
@@ -680,10 +704,28 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def display_molecule(self, cell: list, structure_id: str) -> None:
         """
         Creates a html file from a mol file to display the molecule in jsmol-lite
+        # TODO: Make a clas for Atoms(), fill it with db atoms, apply symmetry, feed Atoms() into MolFile
+        # TODO: In order to apply symmetry, adapt grow from ShelXFile and Symmcards from ShelxFile.
         """
-        session = self.structures()
+        session = self.structures_session()
+        atoms = [(at.Name, at.element, at.x, at.y, at.z) for at in
+                 session.query(Atoms).filter(Atoms.StructureId == id).all() if at.Name]
+        symmcards = [x.split(',') for x in self.structures_session.get_row_as_dict(structure_id)
+                    ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+        blist = None
+        if self.ui.growCheckBox.isChecked():
+            atoms = self.structures_session.get_atoms_table(structure_id, cell[:6], cartesian=False, as_list=True)
+            if atoms:
+                sdm = SDM(atoms, symmcards, cell)
+                needsymm = sdm.calc_sdm()
+                atoms = sdm.packer(sdm, needsymm)
+                #blist = [(x[0]+1, x[1]+1) for x in sdm.bondlist]
+                #print(len(blist))
+        else:
+            atoms = self.structures_session.get_atoms_table(structure_id, cell[:6], cartesian=True, as_list=False)
+            blist = None
         try:
-            tst = mol_file_writer.MolFile(structure_id, session, cell[:6], grow=False)
+            tst = mol_file_writer.MolFile(atoms, blist)
             mol = tst.make_mol()
         except (TypeError, KeyError) as e:
             print("Error in structure", structure_id, "while writing mol file.\n", e)
@@ -705,7 +747,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             date1 = '0000-01-01'
         if not date2:
             date2 = 'NOW'
-        result = self.structures.find_by_date(date1, date2)
+        result = self.structures_session.find_by_date(date1, date2)
         return result
 
     @QtCore.pyqtSlot('QString')
@@ -716,7 +758,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.searchCellLineEDit.clear()
         self.ui.cifList_treeWidget.clear()
         try:
-            if not self.structures:
+            if not self.structures_session:
                 return False  # Empty database
         except:
             return False  # No database cursor
@@ -727,7 +769,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if len(search_string) >= 2 and "*" not in search_string:
             search_string = "{}{}{}".format('*', search_string, '*')
         try:
-            idlist = self.structures.find_by_strings(search_string)
+            idlist = self.structures_session.find_by_strings(search_string)
         except AttributeError as e:
             print(e)
         try:
@@ -756,12 +798,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
             atol = 1
         try:
             volume = lattice.vol_unitcell(*cell)
-            idlist = self.structures.find_by_volume(volume, vol_threshold)
+            idlist = self.structures_session.find_by_volume(volume, vol_threshold)
             if self.ui.sublattCheckbox.isChecked() or self.ui.ad_superlatticeCheckBox.isChecked():
                 # sub- and superlattices:
                 for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
                     # First a list of structures where the volume is similar:
-                    idlist.extend(self.structures.find_by_volume(v, vol_threshold))
+                    idlist.extend(self.structures_session.find_by_volume(v, vol_threshold))
                 idlist = list(set(idlist))
                 idlist.sort()
         except (ValueError, AttributeError):
@@ -777,7 +819,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             cells = []
             # SQLite can only handle 999 variables at once:
             for cids in chunks(idlist, 500):
-                cells.extend(self.structures.get_cells_as_list(cids))
+                cells.extend(self.structures_session.get_cells_as_list(cids))
             for num, cell_id in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist) - 1)
                 try:
@@ -815,7 +857,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 return False
             return False
         try:
-            if not self.structures:
+            if not self.structures_session:
                 return False  # Empty database
         except Exception:
             return False  # No database cursor
@@ -824,7 +866,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.ui.cifList_treeWidget.clear()
             self.statusBar().showMessage('Found 0 cells.', msecs=0)
             return False
-        searchresult = self.structures.get_all_structure_names(idlist)
+        searchresult = self.structures_session.get_all_structure_names(idlist)
         self.statusBar().showMessage('Found {} cells.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
@@ -848,7 +890,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
             return []
         try:
-            res = self.structures.find_by_elements(formula, anyresult=anyresult)
+            res = self.structures_session.find_by_elements(formula, anyresult=anyresult)
         except AttributeError:
             pass
         return list(res)
@@ -884,9 +926,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.dbfilename = fname[0]
         #self.structures = database_handler.StructureTable(self.dbfilename)
         engine = create_engine('sqlite://' + self.dbfilename)
-        self.structures = sessionmaker(bind=engine)
+        self.structures_session = sessionmaker(bind=engine)
         self.show_full_list()
-        if not self.structures:
+        if not self.structures_session:
             return False
         return True
 
@@ -1020,13 +1062,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 if comp:
                     cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
                 tst = filecrawler.fill_db_tables(cif=cif, filename=i[8], path=i[12],
-                                                 structure_id=n, structures=self.structures)
+                                                 structure_id=n, structures=self.structures_session)
                 if not tst:
                     continue
                 self.add_table_row(name=i[8], data=i[8], path=i[12], structure_id=str(n))
                 n += 1
                 if n % 300 == 0:
-                    self.structures.database.commit_db()
+                    self.structures_session.database.commit_db()
                 num += 1
                 if not self.decide_import:
                     # This means, import was aborted.
@@ -1042,9 +1084,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
                                       .format(n, int(h), int(m), s), msecs=0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.set_columnsize()
-        self.structures.database.init_textsearch()
-        self.structures.populate_fulltext_search_table()
-        self.structures.database.commit_db("Committed")
+        self.structures_session.database.init_textsearch()
+        self.structures_session.populate_fulltext_search_table()
+        self.structures_session.database.commit_db("Committed")
         self.abort_import_button.hide()
 
     def set_columnsize(self):
@@ -1065,9 +1107,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         self.ui.cifList_treeWidget.clear()
         structure_id = 0
-        if not self.structures:
+        if not self.structures_session:
             return
-        session = self.structures()
+        session = self.structures_session()
         for row in session.query(Structure).all():
             self.add_table_row(name=row.filename, path=row.path, structure_id=row.Id, data=row.dataname)
         mess = "Loaded {} entries.".format(structure_id)
@@ -1115,6 +1157,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cCDCNumberLineEdit.clear()
         self.ui.refl2sigmaLineEdit.clear()
         self.ui.uniqReflLineEdit.clear()
+        self.ui.lastModifiedLineEdit.clear()
 
 
 if __name__ == "__main__":

@@ -204,8 +204,7 @@ def distance(x1: float, y1: float, z1: float,
     >>> distance(1, 0, 0, 2, 0, 0)
     1.0
     """
-    d = sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
-    return d
+    return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
 
 
 def format_sum_formula(sumform: str) -> str:

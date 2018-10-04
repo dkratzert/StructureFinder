@@ -272,8 +272,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
     return lastid-1
 
 
-def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: str,
-                   structures: database_handler.StructureTable):
+def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: str, structures):
     """
     Fill all info from cif file into the database tables
     _atom_site_label
@@ -325,13 +324,13 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
     for x in cif._atom:
         try:
             try:
-                disord = cif._atom[x]['_atom_site_disorder_group']
-            except KeyError:
-                disord = "0"
+                disord = int(cif._atom[x]['_atom_site_disorder_group'])
+            except (KeyError, ValueError):
+                disord = 0
             try:
-                occu = cif._atom[x]['_atom_site_occupancy'].split('(')[0]
-            except KeyError:
-                occu = "1"
+                occu = float(cif._atom[x]['_atom_site_occupancy'].split('(')[0])
+            except (KeyError, ValueError):
+                occu = 1.0
             try:
                 atom_type_symbol = cif._atom[x]['_atom_site_type_symbol']
             except KeyError:
@@ -345,17 +344,16 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
                                          disord
                                         )
         except KeyError as e:
-            #print(x, filename)
+            #print(x, filename, e)
             pass
     structures.fill_residuals_table(structure_id, cif)
     return True
 
 
-def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: str,
-                          structures: database_handler.StructureTable, options: dict):
+def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: str, structures, options: dict):
     if not res.cell:
         return False
-    if not all(res.cell.cell_list):
+    if not all([res.cell.a, res.cell.b, res.cell.al, res.cell.be, res.cell.ga]):
         return False
     if not res.cell.volume:
         return False
@@ -375,13 +373,6 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
                                     at.sof,
                                     at.part.n)
     cif = Cif(options=options)
-    cif.cif_data['_cell_length_a'] = res.cell.a
-    cif.cif_data['_cell_length_b'] = res.cell.b
-    cif.cif_data['_cell_length_b'] = res.cell.c
-    cif.cif_data['_cell_length_b'] = res.cell.al
-    cif.cif_data['_cell_length_b'] = res.cell.be
-    cif.cif_data['_cell_length_b'] = res.cell.ga
-    cif.cif_data["_cell_volume"] = res.cell.volume
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([repr(x) for x in res.symmcards])
     try:

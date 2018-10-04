@@ -53,13 +53,13 @@ def write(moldata: str, width: int = 240, height: int = 240):
       var mol = $('html').html().split("MOL DATA\n")[1].split("-->")[0];
       jmol.__loadModel(mol);
     });
-    
+
     </script>
     </head>
     <body>
-    
+
     <div id="apphere"></div>
-    
+
     </body>
     </html>
     """

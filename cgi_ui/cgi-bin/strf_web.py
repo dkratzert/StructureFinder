@@ -37,7 +37,8 @@ except(KeyError, ValueError):
     print('Unable to set PATH properly. strf_web.py might not work.')
 
 from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response
-from displaymol import mol_file_writer
+from displaymol.mol_file_writer import MolFile
+from displaymol.sdm import SDM
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher import database_handler, misc
@@ -54,7 +55,7 @@ TODO:
 
 structures = database_handler.StructureTable(dbfilename)
 
-app = Bottle()
+app = application = Bottle()
 # bottle.debug(True)  # Do not enable debug in production systems!
 
 
@@ -129,9 +130,19 @@ def jsmol_request():
     str_id = request.POST.id
     print("Molecule id:", str_id)
     if str_id:
-        cell_list = structures.get_cell_by_id(str_id)[:6]
+        cell = structures.get_cell_by_id(str_id)
+        if request.POST.grow == 'true':
+            symmcards = [x.split(',') for x in structures.get_row_as_dict(str_id)
+            ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+            atoms = structures.get_atoms_table(str_id, cell[:6], cartesian=False, as_list=True)
+            if atoms:
+                sdm = SDM(atoms, symmcards, cell)
+                needsymm = sdm.calc_sdm()
+                atoms = sdm.packer(sdm, needsymm)
+        else:
+            atoms = structures.get_atoms_table(str_id, cell[:6], cartesian=True, as_list=False)
         try:
-            m = mol_file_writer.MolFile(str_id, structures, cell_list)
+            m = MolFile(atoms)
             return m.make_mol()
         except(KeyError, TypeError) as e:
             print('Exception in jsmol_request: {}'.format(e))
@@ -280,7 +291,7 @@ def get_residuals_table1(cif_dic: dict) -> str:
         <tr><td><b>Goof</b></td>                        <td>{6}</td></tr>
         <tr><td><b>Max Shift/esd</b></td>               <td>{7}</td></tr>
         <tr><td><b>Peak / Hole [e&angst;<sup>&minus;3</sup>]</b></td>             <td>{8}</td></tr>
-        <tr><td><b><i>R</i><sub>int</sub> / <i>R</i>&sigma;</b></b></td>    <td>{9}{10} </td></tr>
+        <tr><td><b><i>R</i><sub>int</sub> / <i>R</i><sub>&sigma;</sub></b></b></td>    <td>{9}{10} </td></tr>
         <tr><td><b>Wavelength [&angst;]</b></td>                      <td>{11}</td></tr>
         </tbody>
     </table>
@@ -544,7 +555,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
             pass
     if txt_in:
         if len(txt_in) >= 2 and "*" not in txt_in:
-            txt = '*' + txt_in + '*'
+            txt_in = '*' + txt_in + '*'
         idlist = structures.find_by_strings(txt_in)
         try:
             incl.append([i[0] for i in idlist])
@@ -554,7 +565,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
         excl.append(search_elements(structures, elexcl, anyresult=True))
     if txt_out:
         if len(txt_out) >= 2 and "*" not in txt_out:
-            txt_ex = '*' + txt_out + '*'
+            txt_out = '*' + txt_out + '*'
         idlist = structures.find_by_strings(txt_out)
         try:
             excl.append([i[0] for i in idlist])
@@ -588,4 +599,10 @@ if __name__ == "__main__":
         print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
         sys.exit()
     print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
-    app.run(host=host, port=port, reloader=True)
+    # plain python wsgiref server:
+    # app.run(host=host, port=port, reloader=True)
+    # gunicorn server: Best used behind an nginx proxy server: http://docs.gunicorn.org/en/stable/deploy.html
+    # you need "pip3 install gunicorn" to run this:
+    # The current database interface allows only one worker (have to go to sqlalchemy!)
+    app.run(host=host, port=port, reload=True, server='gunicorn', accesslog='-', errorlog='-', workers=1,
+            access_log_format='%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s"')

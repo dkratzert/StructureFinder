@@ -9,7 +9,7 @@
 # Daniel Kratzert
 # ----------------------------------------------------------------------------
 #
-import operator
+from operator import sub, add
 import random
 import string
 from math import sqrt, radians, cos, sin, acos, degrees, floor
@@ -51,6 +51,7 @@ class Array(object):
     >>> a * a
     30.81
     """
+    __slots__ = ['values']
 
     def __init__(self, values: list):
         self.values = values
@@ -71,8 +72,9 @@ class Array(object):
         Array([2, 3, 4])
         """
         if isinstance(other, Array):
-            return Array(list(map(operator.add, self.values, other)))
+            return Array(list(map(add, self.values, other)))
         elif type(other) == float or type(other) == int:
+            #return Array( list(map(lambda x: x - other, self.values)) )
             return Array([i + other for i in self.values])
         else:
             raise TypeError('Cannot add type Array to type {}.'.format(str(type(other))))
@@ -105,7 +107,7 @@ class Array(object):
         Array([0, -1, -2])
         """
         if isinstance(other, Array):
-            return Array(list(map(operator.sub, self.values, other)))  # slightly faster
+            return Array(list(map(sub, self.values, other)))  # slightly faster
         elif isinstance(other, float) or isinstance(other, int):
             return Array([i - other for i in self.values])
         else:
@@ -276,6 +278,7 @@ class Matrix(object):
     | 15.000  18.000  21.000|
     <BLANKLINE>
     """
+    __slots__ = ['values', 'shape']
 
     def __init__(self, values):
         self.shape = (len(values[0]), len(values))
@@ -549,6 +552,7 @@ class SymmetryElement(object):
     True
     """
     symm_ID = 1
+    __slots__ = ['centric', 'symms', 'ID', 'matrix', 'trans']
 
     def __init__(self, symms, centric=False):
         """
@@ -864,18 +868,6 @@ def atomic_distance(p1: list, p2: list, cell=None, shortest_dist=False):
                     2 * dx * dz * a * c * cos(be) + 2 * dx * dy * a * b * cos(ga))
     else:
         return sqrt(dx ** 2 + dy ** 2 + dz ** 2)
-
-
-def fmin(x, y):
-    """
-    Retruns the smaller value of x and y
-
-    >>> fmin(5, 4)
-    4
-    >>> fmin(1, 2)
-    1
-    """
-    return x if x < y else y
 
 
 def determinante(a):
