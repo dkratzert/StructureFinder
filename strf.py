@@ -25,7 +25,6 @@ from searcher.database_handler import Structure, Residuals, Cell, Base, Measurem
 from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
 
-# from sqlite3 import DatabaseError
 
 DEBUG = True
 import math
@@ -63,12 +62,11 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
-- Grow structure. 
 - Improve text search (in cif file). Figure out which tokenchars configuration works best.
 - refractor put_cifs_in_db()
 - Move indexer to extra thread
 - sort results by G6 distance
-
+- colour table according to structure quality.
   
 Search for:
 - draw structure (with JSME? Acros? Kekule?, https://github.com/ggasoftware/ketcher)
