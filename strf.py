@@ -464,21 +464,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
             molf.write_text(data=' ', encoding="utf-8", errors='ignore')
             self.view.reload()
-        """
-        try:
-            self.structures.database.cur.close()
-        except Exception:
-            pass
-        try:
-            self.structures.database.con.close()
-        except Exception:
-            pass
-        try:
-            os.close(self.dbfdesc)
-            self.dbfdesc = None
-        except:
-            pass
-        """
+        self.structures_session.close_all()
+        self.engine.dispose()
         if copy_on_close:
             if shutil._samefile(self.dbfilename, copy_on_close):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
