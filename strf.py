@@ -23,7 +23,7 @@ from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from searcher.database_handler import Structure, get_cell_by_id, get_symmcards, get_atoms_table, \
     get_residuals, find_cell_by_volume, get_cells_as_list, get_all_structure_names, find_by_date, init_textsearch, \
-    populate_fulltext_search_table, find_by_strings, find_by_it_number, find_by_elements
+    populate_fulltext_search_table, find_by_strings, find_by_it_number, find_by_elements, Base
 from searcher.filecrawler import fill_db_tables
 from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
@@ -430,8 +430,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
                                    fillcif=self.ui.add_cif.isChecked(), session=self.structures_session())
         self.progress.hide()
         session = self.structures_session()
+        session.commit()
         init_textsearch(self.engine)
-        populate_fulltext_search_table(self.engine)
+        #populate_fulltext_search_table(self.engine)
         session.commit()
         self.ui.cifList_treeWidget.show()
         self.set_columnsize()
@@ -464,8 +465,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
             molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
             molf.write_text(data=' ', encoding="utf-8", errors='ignore')
             self.view.reload()
-        self.structures_session.close_all()
-        self.engine.dispose()
         if copy_on_close:
             if shutil._samefile(self.dbfilename, copy_on_close):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
@@ -492,8 +491,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Initializes the database.
         """
         self.dbfdesc, self.dbfilename = tempfile.mkstemp()
-        # self.structures = database_handler.StructureTable(self.dbfilename)
-        # self.structures.database.initialize_db()
+        print('tmpfile: ', self.dbfdesc, self.dbfilename)
+        self.engine = create_engine('sqlite:///' + self.dbfilename)
+        # engine.echo = True
+        self.structures_session = sessionmaker(bind=self.engine)
+        Base.metadata.create_all(self.engine)  # creates the table
 
     @QtCore.pyqtSlot('QModelIndex', name="get_properties")
     def get_properties(self, item):
@@ -894,8 +896,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         print("Opened {}.".format(fname[0]))
         self.dbfilename = fname[0]
         # self.structures = database_handler.StructureTable(self.dbfilename)
-        engine = create_engine('sqlite://' + self.dbfilename)
-        self.structures_session = sessionmaker(bind=engine)
+        self.engine = create_engine('sqlite://' + self.dbfilename)
+        self.structures_session = sessionmaker(bind=self.engine)
         self.show_full_list()
         if not self.structures_session:
             return False
