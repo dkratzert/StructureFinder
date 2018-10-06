@@ -16,7 +16,7 @@ from operator import not_
 
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, Date, inspect, TypeDecorator, Numeric
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql.expression import cast
+from sqlalchemy.sql.expression import cast, func
 
 import sqlite3
 import sys
@@ -412,7 +412,7 @@ def populate_fulltext_search_table(engine: 'Engine'):
         con.execute(element_search)
 
 
-def get_cell_by_id(session: 'Session', structure_id: str):
+def get_cell_by_id(session: 'Session', structure_id: str) -> list:
     """
     returns the cell of a res file in the db
     """
@@ -424,7 +424,7 @@ def get_cell_by_id(session: 'Session', structure_id: str):
     else:
         return False
 
-def get_symmcards(session: 'Session', structure_id: str):
+def get_symmcards(session: 'Session', structure_id: str) -> list:
     """
     Retruns the symm cards of a structure as string list.
     [['x', 'y', 'z'], ['-x', 'y', '-z+1/2'], ... ]
@@ -575,10 +575,13 @@ def find_by_elements(session: 'Session', elements: list, anyresult: bool = False
         return []
 
 
+def get_lastrow_id(session: 'Session') -> int:
+    return session.query(func.max(Structure.Id))[0][0]
+
+
 def fill_structures_table(session, path: str, filename: str, structure_id: str, dataname: str):
     """
     Fills a structure into the database.
-
     """
     entry = Structure(filename=filename.encode(db_enoding, "ignore"),
                       path=path.encode(db_enoding, "ignore"),

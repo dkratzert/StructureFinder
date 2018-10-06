@@ -4,11 +4,13 @@ import argparse
 
 import time
 
-from misc import update_check
-from searcher import filecrawler, database_handler
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-#from searcher.spinner import Spinner
+from misc import update_check
+from searcher import filecrawler
 from misc.version import VERSION
+from searcher.database_handler import Structure, get_lastrow_id, Base
 
 parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect .cif/.res files to a '
                                              'database.\n'
@@ -68,24 +70,26 @@ else:
         print("Error: You need to give either option -c, -r or both.")
         sys.exit()
     db = None
-    structures = None
     time1 = time.perf_counter()
     if args.outfile:
         dbfilename = args.outfile
     else:
         dbfilename = 'structuredb.sqlite'
+    engine = create_engine('sqlite:///' + dbfilename)
+    Base.metadata.create_all(engine)  # creates the table
+    Session = sessionmaker(bind=engine)
+    session = Session()
     for p in args.dir:
         # the command line version
         # TODO: initialize db here
-        lastid = db.get_lastrowid()
+        lastid = get_lastrow_id(session)
         if not lastid:
             lastid = 1
         else:
             lastid += 1
-        structures = database_handler.StructureTable(dbfilename)
         try:
             ncifs = filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex,
-                                               structures=structures, lastid=lastid, 
+                                               session=session, lastid=lastid,
                                                fillres=args.fillres, fillcif=args.fillcif)
         except OSError as e:
             print("Unable to collect files:")
@@ -93,9 +97,9 @@ else:
         except KeyboardInterrupt:
             sys.exit()
         print("---------------------")
-    if db and structures:
-        db.init_textsearch()
-        structures.populate_fulltext_search_table()
+
+    #db.init_textsearch()
+    #structures.populate_fulltext_search_table()
     time2 = time.perf_counter()
     diff = time2 - time1
     m, s = divmod(diff, 60)

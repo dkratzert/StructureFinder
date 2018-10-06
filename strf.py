@@ -139,9 +139,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if len(sys.argv) > 1:
             self.dbfilename = sys.argv[1]
             if isfile(self.dbfilename):
-                # self.structures = database_handler.StructureTable(self.dbfilename)
                 self.engine = create_engine('sqlite:///' + self.dbfilename)
-                # engine.echo = True
                 self.Session = sessionmaker(bind=self.engine)
                 self.show_full_list()
         if update_check.is_update_needed(VERSION=VERSION):
