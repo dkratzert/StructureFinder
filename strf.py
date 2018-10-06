@@ -502,7 +502,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Initializes the database.
         """
         self.dbfdesc, self.dbfilename = tempfile.mkstemp()
-        print('tmpfile: ', self.dbfdesc, self.dbfilename)
         self.engine = create_engine('sqlite:///' + self.dbfilename)
         # engine.echo = True
         self.Session = sessionmaker(bind=self.engine)

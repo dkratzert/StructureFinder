@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 
 from searcher import atoms, fileparser
 from lattice.lattice import vol_unitcell
-from searcher.database_handler import fill_structures_table, fill_cell_table, fill_atoms_table
+from searcher.database_handler import fill_structures_table, fill_cell_table, fill_atoms_table, fill_residuals_table
 from searcher.fileparser import Cif
 from shelxfile.shelx import ShelXFile
 
@@ -345,7 +345,7 @@ def fill_db_tables(session: Session, cif: fileparser.Cif, filename: str, path: s
         except KeyError as e:
             #print(x, filename, e)
             pass
-    #fill_residuals_table(session, structure_id, cif)
+    fill_residuals_table(session, structure_id, cif)
     return True
 
 
