@@ -316,10 +316,8 @@ def fill_db_tables(session: Session, cif: fileparser.Cif, filename: str, path: s
             volume = str(vol_unitcell(a, b, c, alpha, beta, gamma))
         except ValueError:
             volume = ''
-    #measurement_id = structures.fill_measuremnts_table(filename, structure_id)
     fill_structures_table(session, path, filename, structure_id, cif.cif_data['data'])
     fill_cell_table(session, structure_id, a, b, c, alpha, beta, gamma, volume)
-    #pprint(cif._atom)
     for x in cif._atom:
         try:
             try:

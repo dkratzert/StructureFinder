@@ -588,8 +588,7 @@ def fill_structures_table(session, path: str, filename: str, structure_id: str, 
                       dataname=dataname.encode(db_enoding, "ignore"),
                       measurement=structure_id,
                       Id=structure_id)
-    a = session.add(entry)
-    return a
+    session.add(entry)
 
 
 def fill_cell_table(session: 'Session', structure_id: str, a: float, b: float, c: float,
@@ -617,8 +616,7 @@ def fill_cell_table(session: 'Session', structure_id: str, a: float, b: float, c
     entry = Cell(StructureId=structure_id, a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma,
                                       esda=aerror, esdb=berror, esdc=cerror, esdalpha=alphaerror,
                                       esdbeta=betaerror, esdgamma=gammaerror, volume=vol)
-    a = session.add(entry)
-    return a
+    session.add(entry)
 
 
 def fill_atoms_table(session, structure_id: str, name: str, element: str, x: float, y: float, z: float,
@@ -627,8 +625,7 @@ def fill_atoms_table(session, structure_id: str, name: str, element: str, x: flo
     fill the atoms into structure(structureId)
     """
     atom = Atoms(StructureId=structure_id, Name=name, element=element, x=x, y=y, z=z, occupancy=occ, part=part)
-    a = session.add(atom)
-    return a
+    session.add(atom)
 
 
 def fill_residuals_table(session: 'Session', structure_id: str, cif: Cif) -> bool:
@@ -692,8 +689,7 @@ def fill_residuals_table(session: 'Session', structure_id: str, cif: Cif) -> boo
         _shelx_res_file                       = cif.cif_data['_shelx_res_file'],  # The content of the SHELXL res file
         modification_time                     = date(*[int(x) for x in cif.cif_data['modification_time'].split('-')]),
         file_size                             = cif.cif_data['file_size'] )
-    a = session.add(resid)
-    return a
+    session.add(resid)
 
 
 if __name__ == '__main__':
