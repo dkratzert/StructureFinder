@@ -21,8 +21,11 @@ import tarfile
 import time
 import zipfile
 
+from sqlalchemy.orm import Session
+
 from searcher import atoms, database_handler, fileparser
 from lattice.lattice import vol_unitcell
+from searcher.database_handler import fill_structures_table, fill_cell_table
 from searcher.fileparser import Cif
 from shelxfile.shelx import ShelXFile
 
@@ -139,7 +142,7 @@ def filewalker_walk(startdir: str, patterns: list):
 
 
 def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, lastid: int = 1, 
-                   structures=None, fillcif=True, fillres=True) -> int:
+                   session=None, fillcif=True, fillres=True) -> int:
     """
     Imports cif files from a certain directory
     :param fillres: Should it index res files or not.
@@ -149,8 +152,6 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
         excluded_names.extend(excludes)
     if not searchpath:
         return 0
-    if self:
-        structures = self.structures
     if lastid <= 1:
         lastid = 1
     prognum = 0
@@ -180,8 +181,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 except IndexError:
                     continue
                 if cif:  # means cif object has data inside (cif could be parsed)
-                    tst = fill_db_tables(cif, filename=name, path=filepth, structure_id=lastid,
-                                         structures=structures)
+                    tst = fill_db_tables(session, cif, filename=name, path=filepth, structure_id=lastid)
                     if not tst:
                         continue
                     if self:
@@ -190,7 +190,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                     num += 1
                     if lastid % 1000 == 0:
                         print('{} files ...'.format(num))
-                        structures.database.commit_db()
+                        session.commit()
                     prognum += 1
             continue
         if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2') 
@@ -215,8 +215,8 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 except IndexError:
                     continue
                 if cif:
-                    tst = fill_db_tables(cif, filename=z.cifname, path=fullpath,
-                                         structure_id=str(lastid), structures=structures)
+                    tst = fill_db_tables(session, cif, filename=z.cifname, path=fullpath,
+                                         structure_id=str(lastid))
                     zipcifs += 1
                     if not tst:
                         continue
@@ -227,7 +227,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                     num += 1
                     if lastid % 1000 == 0:
                         print('{} files ...'.format(num))
-                        structures.database.commit_db()
+                        session.commit()
                     prognum += 1
             continue
         if name.endswith('.res') and fillres:
@@ -239,8 +239,8 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 #print('res file not added.')
                 continue
             if res:
-                tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=lastid,
-                                            structures=structures, options=options)
+                tst = fill_db_with_res_data(session, res, filename=name, path=filepth, structure_id=lastid,
+                                            options=options)
             if not tst:
                 #print('res file not added')
                 continue
@@ -251,7 +251,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
             num += 1
             if lastid % 1000 == 0:
                 print('{} files ...'.format(num))
-                structures.database.commit_db()
+                session.commit()
             prognum += 1
             continue
         if self:
@@ -260,7 +260,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 self.abort_import_button.hide()
                 self.decide_import = True
                 break
-    structures.database.commit_db()
+    session.commit()
     time2 = time.clock()
     diff = time2 - time1
     m, s = divmod(diff, 60)
@@ -272,7 +272,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
     return lastid-1
 
 
-def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: str, structures):
+def fill_db_tables(session: Session, cif: fileparser.Cif, filename: str, path: str, structure_id: str):
     """
     Fill all info from cif file into the database tables
     _atom_site_label
@@ -317,9 +317,9 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
             volume = str(vol_unitcell(a, b, c, alpha, beta, gamma))
         except ValueError:
             volume = ''
-    measurement_id = structures.fill_measuremnts_table(filename, structure_id)
-    structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
-    structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma, volume)
+    #measurement_id = structures.fill_measuremnts_table(filename, structure_id)
+    fill_structures_table(session, path, filename, structure_id, cif.cif_data['data'])
+    fill_cell_table(session, structure_id, a, b, c, alpha, beta, gamma, volume)
     #pprint(cif._atom)
     for x in cif._atom:
         try:
@@ -335,7 +335,7 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
                 atom_type_symbol = cif._atom[x]['_atom_site_type_symbol']
             except KeyError:
                 atom_type_symbol  = atoms.get_atomlabel(x)
-            structures.fill_atoms_table(structure_id, x,
+            fill_atoms_table(session, structure_id, x,
                                          atom_type_symbol,
                                          cif._atom[x]['_atom_site_fract_x'].split('(')[0],
                                          cif._atom[x]['_atom_site_fract_y'].split('(')[0],
@@ -346,7 +346,7 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
         except KeyError as e:
             #print(x, filename, e)
             pass
-    structures.fill_residuals_table(structure_id, cif)
+    fill_residuals_table(structure_id, cif)
     return True
 
 

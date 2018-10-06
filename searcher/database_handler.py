@@ -307,6 +307,87 @@ class Cell(Base):
     def values(self):
         return [self.a, self.b, self.c, self.alpha, self.beta, self.gamma, self.volume]
 
+'''
+class textsearch(Base):
+    """
+    textsearch virtual table
+    """
+    __tablename__ = 'textsearch'
+
+    StructureId = Column(Integer)
+    filename = Column(String)
+    dataname = Column(String)
+    path = Column(String)
+    shelx_res_file = Column(String)
+
+
+class ElementSearch(Base):
+    __tablename__ = 'ElementSearch'
+
+    StructureId = Column(Integer)
+    _chemical_formula_sum = Column(String)
+'''
+
+
+def init_textsearch(engine: 'Engine'):
+    """
+    Initializes the full text search (fts) tables.
+    """
+    with engine.connect() as con:
+        con.execute("DROP TABLE IF EXISTS textsearch")
+        con.execute("DROP TABLE IF EXISTS ElementSearch")
+
+        # The simple tokenizer is best for my purposes (A self-written tokenizer would even be better):
+        con.execute("""
+            CREATE VIRTUAL TABLE textsearch USING 
+                    fts4(StructureId    INTEGER, 
+                         filename       TEXT, 
+                         dataname       TEXT, 
+                         path           TEXT,
+                         shelx_res_file TEXT,
+                            tokenize=simple "tokenchars= .=-_");  
+                          """
+                         )
+
+        # Now the table for element search:
+        con.execute("""
+            CREATE VIRTUAL TABLE ElementSearch USING
+                    fts4(StructureId        INTEGER,
+                    _chemical_formula_sum   TEXT,
+                        tokenize=simple 'tokenchars= 0123456789');
+                      """
+                         )
+
+def populate_fulltext_search_table(engine: 'Engine'):
+    """
+    Populates the fts4 table with data to search for text.
+    _publ_contact_author_name
+    """
+    populate_index = """
+    INSERT INTO txtsearch (
+                            StructureId, 
+                            filename, 
+                            dataname, 
+                            path,
+                            shelx_res_file
+                            )
+    SELECT  str.Id, 
+            str.filename, 
+            str.dataname, 
+            str.path,
+            res._shelx_res_file
+                FROM Structure AS str
+                    INNER JOIN Residuals AS res WHERE str.Id = res.Id; """
+    optimize_queries = """INSERT INTO textsearch(txtsearch) VALUES('optimize'); """
+    element_search = """
+        INSERT INTO ElementSearch(StructureId,
+                                _chemical_formula_sum) 
+              SELECT Id, _chemical_formula_sum FROM residuals; """
+    with engine.connect() as con:
+        con.execute(populate_index)
+        con.execute(optimize_queries)
+        con.execute(element_search)
+
 
 def get_cell_by_id(session: 'Session', structure_id: str):
     """
@@ -405,22 +486,112 @@ def find_by_date(session, start='0000-01-01', end='NOW'):
     return ids
 
 
-def find_by_strings(session: 'Session', text: str):
+def find_by_strings(engine: 'Engine', text: str):
     """
-    Searches cells with volume between upper and lower limit
-    :param text: Volume uncertaincy where to search
-    id, name, data, path
+    Searches for text in the virtual textsearch table.
     """
+    ids = []
     req = '''
-    SELECT StructureId, filename, dataname, path FROM txtsearch WHERE filename MATCH ?
-      UNION
-    SELECT StructureId, filename, dataname, path FROM txtsearch WHERE dataname MATCH ?
-      UNION
-    SELECT StructureId, filename, dataname, path FROM txtsearch WHERE path MATCH ?
-      UNION
-    SELECT StructureId, filename, dataname, path FROM txtsearch WHERE shelx_res_file MATCH ?
-    '''
-    #rows = session.query(text)
+            SELECT StructureId, filename, dataname, path FROM txtsearch WHERE filename MATCH ?
+              UNION
+            SELECT StructureId, filename, dataname, path FROM txtsearch WHERE dataname MATCH ?
+              UNION
+            SELECT StructureId, filename, dataname, path FROM txtsearch WHERE path MATCH ?
+              UNION
+            SELECT StructureId, filename, dataname, path FROM txtsearch WHERE shelx_res_file MATCH ?
+           '''
+    with engine.connect() as con:
+        try:
+            ids = con.execute(req, (text, text, text, text)).fetchall()
+        except (TypeError, sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
+            print('DB request error in find_by_strings().', e)
+            return tuple([])
+    return ids
+
+
+def find_by_it_number(session, number: int) -> list:
+    """
+    Find structures by space group number in international tables of
+    crystallography.
+    Returns a list of index numbers.
+    """
+    try:
+        value = int(number)
+    except ValueError:
+        return []
+    req = '''SELECT StructureId from Residuals WHERE _space_group_IT_number IS ?'''
+    result = [sid for sid, in session.query(Residuals.StructureId)
+                .filter(Residuals._space_group_IT_number.is_(value)).all()]
+    return result
+
+
+def find_by_elements(session: 'Session', elements: list, anyresult: bool = False) -> list:
+    """
+    Find structures where certain elements are included in the sum formula.
+    TODO: Have to make an element table during index to have a real formula search like in the CSD!
+    """
+    import re
+    matches = []
+    # Get all formulas to prevent false negatives with text search in the db:
+    result = session.query(Residuals.StructureId, Residuals._chemical_formula_sum).all()
+    if result:
+        for el in elements:  # The second search excludes false hits like Ca instead of C
+            regex = re.compile(r'[\s|\d]?' + el + '[\d|\s]*|[$]+', re.IGNORECASE)
+            res = []
+            for num, form in result:
+                if regex.search(form):
+                    # print(form)
+                    res.append(num)
+            matches.append(res)
+    if matches:
+        if anyresult:
+            return list(set(misc.flatten(matches)))
+        else:
+            return list(set(matches[0]).intersection(*matches))
+    else:
+        return []
+
+
+def fill_structures_table(session, path: str, filename: str, structure_id: str, dataname: str):
+    """
+    Fills a structure into the database.
+
+    """
+    entry = Structure(filename=filename.encode(db_enoding, "ignore"),
+                      path=path.encode(db_enoding, "ignore"),
+                      dataname=dataname.encode(db_enoding, "ignore"),
+                      Id=structure_id)
+    a = session.add(entry)
+    return a
+
+
+def fill_cell_table(session: 'Session', structure_id: str, a: float, b: float, c: float,
+                    alpha: float, beta: float, gamma:float, volume: float):
+    """
+    fill the cell of structure(structureId) in the table
+    cell = [a, b, c, alpha, beta, gamma]
+    """
+    aerror = get_error_from_value(a)
+    berror = get_error_from_value(b)
+    cerror = get_error_from_value(c)
+    alphaerror = get_error_from_value(alpha)
+    betaerror = get_error_from_value(beta)
+    gammaerror = get_error_from_value(gamma)
+    vol = volume
+    if isinstance(a, str):
+        a = a.split('(')[0]
+        b = b.split('(')[0]
+        c = c.split('(')[0]
+        alpha = alpha.split('(')[0]
+        beta = beta.split('(')[0]
+        gamma = gamma.split('(')[0]
+    if isinstance(volume, str):
+        vol = volume.split('(')[0]
+    entry = Cell(StructureId=structure_id, a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma,
+                                      esda=aerror, esdb=berror, esdc=cerror, esdalpha=alphaerror,
+                                      esdbeta=betaerror, esdgamma=gammaerror, volume=vol)
+    a = session.add(entry)
+    return a
 
 
 if __name__ == '__main__':
@@ -439,3 +610,5 @@ if __name__ == '__main__':
     #cells = get_cells_as_list(session, ids)
     #print(ids)
     #print(cells)
+    string = find_by_strings(engine, '2004805')
+    print(string)
