@@ -399,7 +399,7 @@ def fill_db_with_res_data(session: Session, res: ShelXFile, filename: str, path:
         cif.cif_data["_shelx_res_file"] = str(res)
     except IndexError:
         pass
-    fill_residuals_table(structure_id, cif)
+    fill_residuals_table(session, structure_id, cif)
     return True
 
 

@@ -11,6 +11,7 @@ Created on 09.02.2015
 
 @author: daniel
 """
+from datetime import date
 from operator import not_
 
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, Date, inspect, TypeDecorator, Numeric
@@ -52,6 +53,23 @@ class CastToIntType(TypeDecorator):
 
     def column_expression(self, col):
         return cast(col, Integer)
+
+
+class MyFloat(TypeDecorator):
+    '''
+    Converts string to float or empty field if sting is empty.
+    '''
+
+    impl = Float
+
+    def process_bind_param(self, value, dialect):
+        try:
+            if isinstance(value, float):
+                return value
+            val = float(value.split('(')[0])
+        except ValueError:
+            return None
+        return val
 
 
 class DBFormat(Base):
@@ -129,15 +147,16 @@ class Atoms(Base):
     StructureId = Column(Integer, ForeignKey(Structure.Id))
     Name = Column(String)
     element = Column(String)
-    x = Column(String)
-    y = Column(String)
-    z = Column(String)
+    x = Column(MyFloat)
+    y = Column(MyFloat)
+    z = Column(MyFloat)
     occupancy = Column(Float)
     part = Column(CastToIntType)
 
     def __repr__(self):
         return '<Atom: {}, {}, {}, {}, {}, {}, {}, {}, {}>'.format(self.Id, self.StructureId, self.Name, self.element,
                                                                    self.x, self.y, self.z, self.occupancy, self.part)
+
 
 class Residuals(Base):
     '''
@@ -220,27 +239,27 @@ class Residuals(Base):
     _chemical_formula_weight = Column(String)
     _exptl_crystal_description = Column(String)
     _exptl_crystal_colour = Column(String)
-    _exptl_crystal_size_max = Column(Float)
-    _exptl_crystal_size_mid = Column(Float)
-    _exptl_crystal_size_min = Column(Float)
-    _exptl_absorpt_coefficient_mu = Column(Float)
+    _exptl_crystal_size_max = Column(MyFloat)
+    _exptl_crystal_size_mid = Column(MyFloat)
+    _exptl_crystal_size_min = Column(MyFloat)
+    _exptl_absorpt_coefficient_mu = Column(MyFloat)
     _exptl_absorpt_correction_type = Column(String)
-    _diffrn_ambient_temperature = Column(Float)
-    _diffrn_radiation_wavelength = Column(Float)
+    _diffrn_ambient_temperature = Column(MyFloat)
+    _diffrn_radiation_wavelength = Column(MyFloat)
     _diffrn_radiation_type = Column(String)
     _diffrn_source = Column(String)
     _diffrn_measurement_device_type = Column(String)
     _diffrn_reflns_number = Column(Integer)
     _diffrn_reflns_av_R_equivalents = Column(Integer)
-    _diffrn_reflns_theta_min = Column(Float)
-    _diffrn_reflns_theta_max = Column(Float)
-    _diffrn_reflns_theta_full = Column(Float)
-    _diffrn_measured_fraction_theta_max = Column(Float)
-    _diffrn_measured_fraction_theta_full = Column(Float)
+    _diffrn_reflns_theta_min = Column(MyFloat)
+    _diffrn_reflns_theta_max = Column(MyFloat)
+    _diffrn_reflns_theta_full = Column(MyFloat)
+    _diffrn_measured_fraction_theta_max = Column(MyFloat)
+    _diffrn_measured_fraction_theta_full = Column(MyFloat)
     _reflns_number_total = Column(Integer)
     _reflns_number_gt = Column(Integer)
     _reflns_threshold_expression = Column(String)
-    _reflns_Friedel_coverage = Column(Float)
+    _reflns_Friedel_coverage = Column(MyFloat)
     _computing_structure_solution = Column(String)
     _computing_structure_refinement = Column(String)
     _refine_special_details = Column(String)
@@ -249,17 +268,17 @@ class Residuals(Base):
     _refine_ls_number_reflns = Column(Integer)
     _refine_ls_number_parameters = Column(Integer)
     _refine_ls_number_restraints = Column(Integer)
-    _refine_ls_R_factor_all = Column(Float)
-    _refine_ls_R_factor_gt = Column(Float)
-    _refine_ls_wR_factor_ref = Column(Float)
-    _refine_ls_wR_factor_gt = Column(Float)
-    _refine_ls_goodness_of_fit_ref = Column(Float)
-    _refine_ls_restrained_S_all = Column(Float)
-    _refine_ls_shift_su_max = Column(Float)
-    _refine_ls_shift_su_mean = Column(Float)
-    _refine_diff_density_max = Column(Float)
-    _refine_diff_density_min = Column(Float)
-    _diffrn_reflns_av_unetI_netI = Column(Float)
+    _refine_ls_R_factor_all = Column(MyFloat)
+    _refine_ls_R_factor_gt = Column(MyFloat)
+    _refine_ls_wR_factor_ref = Column(MyFloat)
+    _refine_ls_wR_factor_gt = Column(MyFloat)
+    _refine_ls_goodness_of_fit_ref = Column(MyFloat)
+    _refine_ls_restrained_S_all = Column(MyFloat)
+    _refine_ls_shift_su_max = Column(MyFloat)
+    _refine_ls_shift_su_mean = Column(MyFloat)
+    _refine_diff_density_max = Column(MyFloat)
+    _refine_diff_density_min = Column(MyFloat)
+    _diffrn_reflns_av_unetI_netI = Column(MyFloat)
     _database_code_depnum_ccdc_archive = Column(String)
     _shelx_res_file = Column(String)
     modification_time = Column(Date)
@@ -668,9 +687,8 @@ def fill_residuals_table(session: 'Session', structure_id: str, cif: Cif) -> boo
         _diffrn_reflns_av_unetI_netI          = cif.cif_data['_diffrn_reflns_av_unetI/netI'],  # R(sigma)
         _database_code_depnum_ccdc_archive    = cif.cif_data['_database_code_depnum_ccdc_archive'],  # CCDC number
         _shelx_res_file                       = cif.cif_data['_shelx_res_file'],  # The content of the SHELXL res file
-        modification_time                     = cif.cif_data['modification_time'],
+        modification_time                     = date(*[int(x) for x in cif.cif_data['modification_time'].split('-')]),
         file_size                             = cif.cif_data['file_size'] )
-
     a = session.add(resid)
     return a
 

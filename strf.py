@@ -594,14 +594,14 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cellField.setToolTip("Double click on 'Unit Cell' to copy to clipboard.")
         try:
             self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
-        except ValueError:
+        except (ValueError, TypeError):
             pass
         try:  # R1:
             if cif_dic['_refine_ls_R_factor_gt']:
                 self.ui.r1LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_R_factor_gt']))
             else:
                 self.ui.r1LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_R_factor_all']))
-        except ValueError:
+        except (ValueError, TypeError):
             pass
         self.ui.zLineEdit.setText("{}".format(cif_dic['_cell_formula_units_Z']))
         try:
