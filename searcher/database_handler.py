@@ -11,8 +11,11 @@ Created on 09.02.2015
 
 @author: daniel
 """
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, Date, inspect
+from operator import not_
+
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, Date, inspect, TypeDecorator, Numeric
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.sql.expression import cast
 
 import sqlite3
 import sys
@@ -32,10 +35,6 @@ Base = declarative_base()
 
 from sqlalchemy import inspect
 
-def object_as_dict(obj):
-    return {c.key: getattr(obj, c.key)
-            for c in inspect(obj).mapper.column_attrs}
-
 
 def as_dict(row) -> dict:
     """
@@ -43,6 +42,15 @@ def as_dict(row) -> dict:
     """
     return dict((col, getattr(row, col)) for col in row.__table__.columns.keys())
 
+
+class CastToIntType(TypeDecorator):
+    '''
+    Converts stored values to int via CAST operation
+    '''
+    impl = Numeric
+
+    def column_expression(self, col):
+        return cast(col, Integer)
 
 class DBFormat(Base):
      __tablename__ = 'database_format'
@@ -121,7 +129,7 @@ class Atoms(Base):
     y = Column(String)
     z = Column(String)
     occupancy = Column(Float)
-    part = Column(Integer)
+    part = Column(CastToIntType)
 
     def __repr__(self):
         return '<Atom: {}, {}, {}, {}, {}, {}, {}, {}, {}>'.format(self.Id, self.StructureId, self.Name, self.element,
@@ -300,17 +308,119 @@ class Cell(Base):
         return [self.a, self.b, self.c, self.alpha, self.beta, self.gamma, self.volume]
 
 
-def get_cell_by_id(structure_id: str, session):
+def get_cell_by_id(session: 'Session', structure_id: str):
     """
     returns the cell of a res file in the db
     """
     if not structure_id:
         return False
     cell = session.query(Cell).filter(Cell.StructureId == structure_id).first()
-    if cell and len(cell) > 0:
-        return cell
+    if cell.values() and len(cell.values()) > 0:
+        return cell.values()
     else:
         return False
+
+def get_symmcards(session: 'Session', structure_id: str):
+    """
+    Retruns the symm cards of a structure as string list.
+    [['x', 'y', 'z'], ['-x', 'y', '-z+1/2'], ... ]
+    """
+    if not structure_id:
+        return False
+    symm = session.query(Residuals).filter(Residuals.StructureId == structure_id).first()
+    return [x.split(',') for x in symm._space_group_symop_operation_xyz.replace("'", "").replace(" ", "").split("\n")]
+
+
+def get_atoms_table(session, structure_id, cell, cartesian=False):
+    """
+    Get atoms in fractional or cartesian coordinates.
+    """
+    # make sure part is an integer number:
+    result = session.query(Atoms).filter(Atoms.StructureId == structure_id)\
+                                .filter(Atoms.Name != None).all()
+    result = [[at.Name, at.element, at.x, at.y, at.z, at.part, at.occupancy] for at in result]
+    if cartesian:
+        cartesian_coords = []
+        a = lattice.A(cell).orthogonal_matrix
+        for at in result:
+            cartesian_coords.append(list(at[:2]) + (Array([at[2], at[3], at[4]]) * a).values + list(at[5:]))
+        return cartesian_coords
+    else:
+        return result
+
+
+def get_residuals(session, structure_id):
+    """
+    Returns the residuals table values.
+    """
+    row = session.query(Residuals).filter(Residuals.StructureId == structure_id).first()
+    try:
+        dic = as_dict(row)
+    except AttributeError:
+        return False
+    return dic
+
+
+def find_cell_by_volume(session: 'Session', volume: float, threshold: float):
+    """
+    Searches cells with volume between upper and lower limit
+    """
+    upper_limit = float(volume + volume * threshold)
+    lower_limit = float(volume - volume * threshold)
+    volumes = [StructureId for StructureId, in session.query(Cell.StructureId).filter(Cell.volume >= lower_limit)\
+                                                .filter(Cell.volume <= upper_limit).all()]
+    return volumes
+
+def get_cells_as_list(session: 'Session', structure_ids: list):
+    """
+    Returns a list of unit cells from the input ids.
+    """
+    #req = 'select * from cell where StructureId IN ({seq})'.format(seq=self.joined_arglist(structure_ids))
+    cells = session.query(Cell).filter(Cell.StructureId.in_(structure_ids)).all()
+    result = [[c.a, c.b, c.c, c.alpha, c.beta, c.gamma, c.volume] for c in cells]
+    return result
+
+def get_all_structure_names(session, idlist: list = None):
+    if idlist:
+        # certain ids:
+        return session.query(Structure).filter(Structure.Id.in_(idlist)).all()
+    else:
+        #just all:
+        return session.query(Structure).all()
+
+
+def find_by_date(session, start='0000-01-01', end='NOW'):
+    """
+    Find structures between start and end date.
+
+    >>> db = StructureTable('../structuredb.sqlite')
+    >>> db.database.initialize_db()
+    >>> db.find_by_date()
+    """
+    req = """
+          SELECT StructureId FROM Residuals WHERE modification_time between DATE(?) AND DATE(?);
+          """
+    ids = [StructureId for StructureId, in session.query(Residuals.StructureId)
+                        .filter(Residuals.modification_time.between(start, end))]
+    return ids
+
+
+def find_by_strings(session: 'Session', text: str):
+    """
+    Searches cells with volume between upper and lower limit
+    :param text: Volume uncertaincy where to search
+    id, name, data, path
+    """
+    req = '''
+    SELECT StructureId, filename, dataname, path FROM txtsearch WHERE filename MATCH ?
+      UNION
+    SELECT StructureId, filename, dataname, path FROM txtsearch WHERE dataname MATCH ?
+      UNION
+    SELECT StructureId, filename, dataname, path FROM txtsearch WHERE path MATCH ?
+      UNION
+    SELECT StructureId, filename, dataname, path FROM txtsearch WHERE shelx_res_file MATCH ?
+    '''
+    #rows = session.query(text)
 
 
 if __name__ == '__main__':
@@ -319,5 +429,13 @@ if __name__ == '__main__':
     engine = create_engine('sqlite:///./test.sqlite')
     Session = sessionmaker(bind=engine)
     session = Session()
-    cell = session.query(Cell).filter(Cell.StructureId == 4).first()
-    print(cell.values())
+    cell = get_cell_by_id(session, 4)
+    #print(cell.values())
+    #symm = get_symmcards(session, 4)
+    #print(symm)
+    #atoms = get_atoms_table(session, 4, cell, cartesian=True)
+    #print(atoms)
+    #ids = find_cell_by_volume(session, 1319, 2)
+    #cells = get_cells_as_list(session, ids)
+    #print(ids)
+    #print(cells)

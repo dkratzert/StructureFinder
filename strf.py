@@ -21,7 +21,8 @@ from sqlalchemy.orm import sessionmaker
 
 from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
-from searcher.database_handler import Structure, Residuals, Cell, Base, Measurement, object_as_dict, as_dict, Atoms
+from searcher.database_handler import Structure, Residuals, as_dict, get_cell_by_id, get_symmcards, get_atoms_table, \
+    get_residuals, find_cell_by_volume, get_cells_as_list, get_all_structure_names, find_by_date
 from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
 
@@ -275,7 +276,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if self.structureId:
             try:
                 cell = "{:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f}" \
-                    .format(*self.structures_session.get_cell_by_id(self.structureId))
+                    .format(*get_cell_by_id(self.structures_session(), self.structureId))
             except Exception:
                 return False
             clipboard = QtWidgets.QApplication.clipboard()
@@ -369,12 +370,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if not idlist:
             self.statusBar().showMessage('Found {} structures.'.format(0))
             return
-        searchresult = self.structures_session.get_all_structure_names(idlist)
+        searchresult = get_all_structure_names(self.structures_session(), idlist)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
-        for i in searchresult:
-            self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
+        for row in searchresult:
+            self.add_table_row(name=row.filename, path=row.path, structure_id=row.Id, data=row.dataname)
         self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         if idlist:
@@ -519,9 +520,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
             return False
         structure_id = item.sibling(item.row(), 3).data()
         session = self.structures_session()
-        row = session.query(Residuals).filter(Residuals.StructureId == structure_id).first()
-        dic = as_dict(row)
-        #print('##', dic)
+        dic = get_residuals(session, structure_id)
+        if not dic:
+            return False
         self.structureId = structure_id
         self.display_properties(structure_id, dic)
         self.structureId = structure_id
@@ -554,7 +555,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         return False
 
     def redraw_molecule(self):
-        cell = self.structures_session.get_cell_by_id(self.structureId)
+        session = self.structures_session()
+        cell = get_cell_by_id(session, self.structureId)
         if not cell:
             return False
         try:
@@ -575,13 +577,16 @@ class StartStructureDB(QtWidgets.QMainWindow):
         _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
         self.clear_fields()
-        #cell = self.structures.get_cell_by_id(structure_id)
         session = self.structures_session()
-        cell_row = session.query(Cell).filter(Cell.StructureId == structure_id).first()
-        if not cell_row:
+        cell = get_cell_by_id(session, structure_id)
+        a, b, c, alpha, beta, gamma, volume = cell
+        if not all((a, b, c, alpha, beta, gamma, volume)):
+            self.ui.cellField.setText('            ')
+            return False
+        if not cell:
             return False
         try:
-            self.display_molecule(cell_row, structure_id)
+            self.display_molecule(cell[:6], structure_id)
         except Exception as e:
             print(e, "unable to display molecule")
             if DEBUG:
@@ -589,20 +594,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cifList_treeWidget.setFocus()
         if not cif_dic:
             return False
-        a, b, c, alpha, beta, gamma, volume = 0, 0, 0, 0, 0, 0, 0
-        if cell_row:
-            a, b, c, alpha, beta, gamma, volume = cell_row.a, cell_row.b, cell_row.c, cell_row.alpha, \
-                                                  cell_row.beta, cell_row.gamma, cell_row.volume
-        if not all((a, b, c, alpha, beta, gamma, volume)):
-            self.ui.cellField.setText('            ')
-            return False
-        try:
-            cell = [a, b, c, alpha, beta, gamma, volume]
-            self.display_molecule(cell, structure_id)
-        except Exception as e:
-            print(e, "unable to display molecule")
-            if DEBUG:
-                raise
         # self.ui.cellField.setMinimumWidth(180)
         self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, ''))
         self.ui.cellField.installEventFilter(self)
@@ -657,7 +648,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.thetaMaxLineEdit.setText("{}".format(thetamax))
         self.ui.thetaFullLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_theta_full']))
         self.ui.dLineEdit.setText("{:5.3f}".format(d))
-        self.ui.lastModifiedLineEdit.setText(cif_dic['modification_time'])
+        self.ui.lastModifiedLineEdit.setText(str(cif_dic['modification_time']))
         try:
             compl = cif_dic['_diffrn_measured_fraction_theta_max'] * 100
             if not compl:
@@ -702,26 +693,21 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def display_molecule(self, cell: list, structure_id: str) -> None:
         """
         Creates a html file from a mol file to display the molecule in jsmol-lite
-        # TODO: Make a clas for Atoms(), fill it with db atoms, apply symmetry, feed Atoms() into MolFile
-        # TODO: In order to apply symmetry, adapt grow from ShelXFile and Symmcards from ShelxFile.
         """
         session = self.structures_session()
-        atoms = [(at.Name, at.element, at.x, at.y, at.z) for at in
-                 session.query(Atoms).filter(Atoms.StructureId == id).all() if at.Name]
-        symmcards = [x.split(',') for x in self.structures_session.get_row_as_dict(structure_id)
-                    ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+        symmcards = get_symmcards(session, structure_id)
+        grow = self.ui.growCheckBox.isChecked()
+        if len(symmcards) == 1:
+            grow = False
         blist = None
-        if self.ui.growCheckBox.isChecked():
-            atoms = self.structures_session.get_atoms_table(structure_id, cell[:6], cartesian=False, as_list=True)
+        if grow:
+            atoms = get_atoms_table(session, structure_id, cell, cartesian=False)
             if atoms:
                 sdm = SDM(atoms, symmcards, cell)
                 needsymm = sdm.calc_sdm()
                 atoms = sdm.packer(sdm, needsymm)
-                #blist = [(x[0]+1, x[1]+1) for x in sdm.bondlist]
-                #print(len(blist))
         else:
-            atoms = self.structures_session.get_atoms_table(structure_id, cell[:6], cartesian=True, as_list=False)
-            blist = None
+            atoms = get_atoms_table(session, structure_id, cell, cartesian=True)
         try:
             tst = mol_file_writer.MolFile(atoms, blist)
             mol = tst.make_mol()
@@ -745,7 +731,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             date1 = '0000-01-01'
         if not date2:
             date2 = 'NOW'
-        result = self.structures_session.find_by_date(date1, date2)
+        result = find_by_date(self.structures_session(), date1, date2)
         return result
 
     @QtCore.pyqtSlot('QString')
@@ -767,13 +753,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if len(search_string) >= 2 and "*" not in search_string:
             search_string = "{}{}{}".format('*', search_string, '*')
         try:
-            idlist = self.structures_session.find_by_strings(search_string)
+            idlist = find_by_strings(self.structures_session(), search_string)
         except AttributeError as e:
             print(e)
         try:
             self.statusBar().showMessage("Found {} entries.".format(len(idlist)))
-            for i in idlist:
-                self.add_table_row(name=i[1], path=i[3], structure_id=i[0], data=i[2])
+            for row in idlist:
+                self.add_table_row(name=row.filename, path=row.path, structure_id=row.Id, data=row.dataname)
             self.set_columnsize()
             # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except Exception:
@@ -784,6 +770,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Searches for a unit cell and resturns a list of found database ids.
         This method does not validate the cell. This has to be done before!
         """
+        session = self.structures_session()
         if self.ui.moreResultsCheckBox.isChecked() or self.ui.ad_moreResultscheckBox.isChecked():
             # more results:
             vol_threshold = 0.09
@@ -796,12 +783,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
             atol = 1
         try:
             volume = lattice.vol_unitcell(*cell)
-            idlist = self.structures_session.find_by_volume(volume, vol_threshold)
+            idlist = find_cell_by_volume(session, volume, vol_threshold)
             if self.ui.sublattCheckbox.isChecked() or self.ui.ad_superlatticeCheckBox.isChecked():
                 # sub- and superlattices:
                 for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
                     # First a list of structures where the volume is similar:
-                    idlist.extend(self.structures_session.find_by_volume(v, vol_threshold))
+                    idlist.extend(find_cell_by_volume(session, v, vol_threshold))
                 idlist = list(set(idlist))
                 idlist.sort()
         except (ValueError, AttributeError):
@@ -817,17 +804,17 @@ class StartStructureDB(QtWidgets.QMainWindow):
             cells = []
             # SQLite can only handle 999 variables at once:
             for cids in chunks(idlist, 500):
-                cells.extend(self.structures_session.get_cells_as_list(cids))
+                cells.extend(get_cells_as_list(session, cids))
             for num, cell_id in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist) - 1)
                 try:
                     lattice2 = mat_lattice.Lattice.from_parameters(
+                            float(cells[num][0]),
+                            float(cells[num][1]),
                             float(cells[num][2]),
                             float(cells[num][3]),
                             float(cells[num][4]),
-                            float(cells[num][5]),
-                            float(cells[num][6]),
-                            float(cells[num][7]))
+                            float(cells[num][5]))
                 except ValueError:
                     continue
                 mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
@@ -844,6 +831,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         cell = is_valid_cell(search_string)
         self.ui.txtSearchEdit.clear()
+        session = self.structures_session()
         if not cell:
             if self.ui.searchCellLineEDit.text():
                 self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
@@ -864,12 +852,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.ui.cifList_treeWidget.clear()
             self.statusBar().showMessage('Found 0 cells.', msecs=0)
             return False
-        searchresult = self.structures_session.get_all_structure_names(idlist)
+        searchresult = get_all_structure_names(session, idlist)
         self.statusBar().showMessage('Found {} cells.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
-        for i in searchresult:
-            self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
+        for row in searchresult:
+            self.add_table_row(name=row.filename, path=row.path, structure_id=row.Id, data=row.dataname)
             # self.add_table_row(name, path, id)
         self.set_columnsize()
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)

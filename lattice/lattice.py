@@ -58,8 +58,12 @@ class A(object):
     """
 
     def __init__(self, cell: list):
-        self.a, self.b, self.c, alpha, beta, gamma = cell
-        self.V = vol_unitcell(self.a, self.b, self.c, alpha, beta, gamma)
+        alpha, beta, gamma = None, None, None
+        if len(cell) == 6:
+            self.a, self.b, self.c, alpha, beta, gamma = cell
+            self.V = vol_unitcell(self.a, self.b, self.c, alpha, beta, gamma)
+        if len(cell) > 6:
+            self.a, self.b, self.c, alpha, beta, gamma, self.V = cell
         self.alpha = radians(alpha)
         self.beta = radians(beta)
         self.gamma = radians(gamma)
