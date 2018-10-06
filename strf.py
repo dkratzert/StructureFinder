@@ -901,8 +901,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         self.tmpfile = False
         self.close_db()
-        fname = QtWidgets.QFileDialog.getOpenFileName(self, caption='Open File', directory='./',
-                                                      filter="*.sqlite")
+        fname = QtWidgets.QFileDialog.getOpenFileName(self, caption='Open File', directory='./', filter="*.sqlite")
         if not fname[0]:
             return False
         print("Opened {}.".format(fname[0]))

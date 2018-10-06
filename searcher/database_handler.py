@@ -68,6 +68,8 @@ class Measurement(Base):
         Id    INTEGER NOT NULL,
         name    VARCHAR(255),
         PRIMARY KEY(Id));
+
+    This is unused and probably never will be.
     '''
     __tablename__ = 'measurement'
 
@@ -593,6 +595,15 @@ def fill_cell_table(session: 'Session', structure_id: str, a: float, b: float, c
     a = session.add(entry)
     return a
 
+def fill_atoms_table(session, structure_id, name, element, x, y, z, occ, part):
+    """
+    fill the atoms into structure(structureId)
+    """
+    req = '''INSERT INTO Atoms (StructureId, name, element, x, y, z, occupancy, part) 
+                                VALUES(?, ?, ?, ?, ?, ?, ?, ?)'''
+    atom = Atoms(StructureId=structure_id, Name=name, element=element, x=x, y=y, z=z, occupancy=occ, part=part)
+    a = session.add(atom)
+    return a
 
 if __name__ == '__main__':
     from sqlalchemy import create_engine

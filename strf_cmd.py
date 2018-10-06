@@ -76,8 +76,7 @@ else:
         dbfilename = 'structuredb.sqlite'
     for p in args.dir:
         # the command line version
-        db = database_handler.DatabaseRequest(dbfilename)
-        db.initialize_db()
+        # TODO: initialize db here
         lastid = db.get_lastrowid()
         if not lastid:
             lastid = 1

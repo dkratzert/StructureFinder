@@ -23,9 +23,9 @@ import zipfile
 
 from sqlalchemy.orm import Session
 
-from searcher import atoms, database_handler, fileparser
+from searcher import atoms, fileparser
 from lattice.lattice import vol_unitcell
-from searcher.database_handler import fill_structures_table, fill_cell_table
+from searcher.database_handler import fill_structures_table, fill_cell_table, fill_atoms_table
 from searcher.fileparser import Cif
 from shelxfile.shelx import ShelXFile
 
@@ -215,8 +215,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 except IndexError:
                     continue
                 if cif:
-                    tst = fill_db_tables(session, cif, filename=z.cifname, path=fullpath,
-                                         structure_id=str(lastid))
+                    tst = fill_db_tables(session, cif, filename=z.cifname, path=fullpath, structure_id=str(lastid))
                     zipcifs += 1
                     if not tst:
                         continue
@@ -239,7 +238,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 #print('res file not added.')
                 continue
             if res:
-                tst = fill_db_with_res_data(session, res, filename=name, path=filepth, structure_id=lastid,
+                tst = fill_db_with_res_data(session, res=res, filename=name, path=filepth, structure_id=lastid,
                                             options=options)
             if not tst:
                 #print('res file not added')
@@ -346,25 +345,25 @@ def fill_db_tables(session: Session, cif: fileparser.Cif, filename: str, path: s
         except KeyError as e:
             #print(x, filename, e)
             pass
-    fill_residuals_table(structure_id, cif)
+    #fill_residuals_table(session, structure_id, cif)
     return True
 
 
-def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: str, structures, options: dict):
+def fill_db_with_res_data(session: Session, res: ShelXFile, filename: str, path: str, structure_id: str, options: dict):
     if not res.cell:
         return False
     if not all([res.cell.a, res.cell.b, res.cell.al, res.cell.be, res.cell.ga]):
         return False
     if not res.cell.volume:
         return False
-    measurement_id = structures.fill_measuremnts_table(filename, structure_id)
-    structures.fill_structures_table(path, filename, structure_id, measurement_id, res.titl)
-    structures.fill_cell_table(structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.al,
+    #measurement_id = fill_measuremnts_table(filename, structure_id)
+    fill_structures_table(session, path, filename, structure_id, res.titl)
+    fill_cell_table(session, structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.al,
                                res.cell.be, res.cell.ga, res.cell.volume)
     for at in res.atoms:
         if at.qpeak:
             continue
-        structures.fill_atoms_table(structure_id, 
+        fill_atoms_table(session, structure_id,
                                     at.name,
                                     at.element.capitalize(),
                                     at.x,
@@ -400,7 +399,7 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         cif.cif_data["_shelx_res_file"] = str(res)
     except IndexError:
         pass
-    structures.fill_residuals_table(structure_id, cif)
+    fill_residuals_table(structure_id, cif)
     return True
 
 
