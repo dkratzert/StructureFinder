@@ -190,7 +190,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                     num += 1
                     if lastid % 1000 == 0:
                         print('{} files ...'.format(num))
-                        session.commit()
+                        #session.commit()
                     prognum += 1
             continue
         if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2') 
@@ -220,13 +220,13 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                     if not tst:
                         continue
                     if self:
-                        self.add_table_row(name=z.cifname, path=fullpath,
+                        self.add_table_row(filename=z.cifname, path=fullpath,
                                            data=cif.cif_data['data'], structure_id=str(lastid))
                     lastid += 1
                     num += 1
                     if lastid % 1000 == 0:
                         print('{} files ...'.format(num))
-                        session.commit()
+                        #session.commit()
                     prognum += 1
             continue
         if name.endswith('.res') and fillres:
@@ -244,7 +244,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 #print('res file not added')
                 continue
             if self:
-                self.add_table_row(name=name, path=fullpath,
+                self.add_table_row(filename=name, path=fullpath,
                                data=name, structure_id=str(lastid))
             lastid += 1
             num += 1

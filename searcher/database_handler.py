@@ -74,7 +74,7 @@ class Measurement(Base):
     '''
     __tablename__ = 'measurement'
 
-    Id = Column(Integer, primary_key=True, nullable=True)
+    Id = Column(Integer, primary_key=True, nullable=True, unique=False)
     name = Column(String)
 
 
@@ -95,7 +95,7 @@ class Structure(Base):
     __tablename__ = 'Structure'
 
     Id = Column(Integer, primary_key=True)
-    measurement = Column(Integer, ForeignKey(Measurement.Id), nullable=True)
+    measurement = Column(Integer, ForeignKey(Measurement.Id), nullable=True, unique=False)
     path = Column(String)
     filename = Column(String)
     dataname = Column(String)

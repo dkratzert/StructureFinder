@@ -16,6 +16,7 @@ from __future__ import print_function
 
 from os.path import isfile
 
+from PyQt5.QtWidgets import QTreeWidgetItem
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -25,7 +26,6 @@ from searcher.database_handler import Structure, get_cell_by_id, get_symmcards, 
     get_residuals, find_cell_by_volume, get_cells_as_list, get_all_structure_names, find_by_date, init_textsearch, \
     populate_fulltext_search_table, find_by_strings, find_by_it_number, find_by_elements, Base
 from searcher.filecrawler import fill_db_tables
-from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
 
 DEBUG = True
@@ -51,6 +51,7 @@ from searcher import constants, misc, filecrawler  # , database_handler
 from searcher.constants import py36
 from searcher.fileparser import Cif
 from searcher.misc import is_valid_cell, elements
+from contextlib import contextmanager
 
 if py36:
     """Only import this if Python 3.6 is used."""
@@ -103,7 +104,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
         self.ui.statusbar.addWidget(self.abort_import_button)
-        self.structures_session = None
+        self.Session = None
         self.apx = None
         self.structureId = '0'
         self.passwd = ''
@@ -141,7 +142,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 # self.structures = database_handler.StructureTable(self.dbfilename)
                 self.engine = create_engine('sqlite:///' + self.dbfilename)
                 # engine.echo = True
-                self.structures_session = sessionmaker(bind=self.engine)
+                self.Session = sessionmaker(bind=self.engine)
                 self.show_full_list()
         if update_check.is_update_needed(VERSION=VERSION):
             self.statusBar().showMessage('A new Version of StructureFinder is available at '
@@ -150,13 +151,26 @@ class StartStructureDB(QtWidgets.QMainWindow):
         item = self.ui.cifList_treeWidget.topLevelItem(0)
         self.ui.cifList_treeWidget.setCurrentItem(item)
 
+    @contextmanager
+    def session_scope(self):
+        """Provide a transactional scope around a series of operations."""
+        session = self.Session()
+        try:
+            yield session
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+
     def connect_signals_and_slots(self):
         """
         Connects the signals and slot.
         The actionExit signal is connected in the ui file.
         """
         # Buttons:
-        self.ui.importDatabaseButton.clicked.connect(self.import_cif_database)
+        self.ui.importDatabaseButton.clicked.connect(self.open_sql_database)
         self.ui.saveDatabaseButton.clicked.connect(self.save_database)
         self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
         self.ui.openApexDBButton.clicked.connect(self.import_apex_db)
@@ -169,7 +183,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
-        self.ui.actionImport_file.triggered.connect(self.import_cif_database)
+        self.ui.actionImport_file.triggered.connect(self.open_sql_database)
         self.ui.actionSave_Database.triggered.connect(self.save_database)
         self.ui.actionCopy_Unit_Cell.triggered.connect(self.copyUnitCell)
         self.ui.actionGo_to_All_CIF_Tab.triggered.connect(self.on_click_item)
@@ -275,8 +289,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def copyUnitCell(self):
         if self.structureId:
             try:
-                cell = "{:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f}" \
-                    .format(*get_cell_by_id(self.structures_session(), self.structureId))
+                with self.session_scope() as session:
+                    cell = "{:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f}" \
+                        .format(*get_cell_by_id(session, self.structureId))
             except Exception:
                 return False
             clipboard = QtWidgets.QApplication.clipboard()
@@ -291,8 +306,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Combines all the search fields. Collects all includes, all excludes ad calculates
         the difference.
         """
-        if not self.structures_session:
-            return
         excl = []
         incl = []
         date_results = []
@@ -311,10 +324,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         except:
             spgr = 0
         if spgr:
-            try:
-                it_results = find_by_it_number(self.structures_session(), spgr)
-            except ValueError:
-                pass
+            with self.session_scope() as session:
+                it_results = find_by_it_number(session, spgr)
         if date1 != date2:
             date_results = self.find_dates(date1, date2)
         if cell:
@@ -366,12 +377,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if not idlist:
             self.statusBar().showMessage('Found {} structures.'.format(0))
             return
-        searchresult = get_all_structure_names(self.structures_session(), idlist)
+        with self.session_scope() as session:
+            searchresult = get_all_structure_names(session, idlist)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for row in searchresult:
-            self.add_table_row(name=row.filename, path=row.path, structure_id=row.Id, data=row.dataname)
+            self.add_table_row(filename=row.filename, path=row.path, structure_id=row.Id, data=row.dataname)
         self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         if idlist:
@@ -400,7 +412,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.view = QWebEngineView()
         # QtWebEngine.initialize()
         self.view.load(
-            QtCore.QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
+                QtCore.QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
         # self.view.setMaximumWidth(260)
         # self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
@@ -426,14 +438,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if not fname:
             self.progress.hide()
             self.abort_import_button.hide()
-        filecrawler.put_cifs_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked(),
-                                   fillcif=self.ui.add_cif.isChecked(), session=self.structures_session())
+        with self.session_scope() as session:
+            filecrawler.put_cifs_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked(),
+                                       fillcif=self.ui.add_cif.isChecked(), session=session)
         self.progress.hide()
-        session = self.structures_session()
-        session.commit()
         init_textsearch(self.engine)
-        #populate_fulltext_search_table(self.engine)
-        session.commit()
+        # with self.session_scope() as session:
+        # populate_fulltext_search_table(self.engine)
         self.ui.cifList_treeWidget.show()
         self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
@@ -494,7 +505,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         print('tmpfile: ', self.dbfdesc, self.dbfilename)
         self.engine = create_engine('sqlite:///' + self.dbfilename)
         # engine.echo = True
-        self.structures_session = sessionmaker(bind=self.engine)
+        self.Session = sessionmaker(bind=self.engine)
         Base.metadata.create_all(self.engine)  # creates the table
 
     @QtCore.pyqtSlot('QModelIndex', name="get_properties")
@@ -502,11 +513,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         This slot shows the properties of a cif file in the properties widget
         """
-        if not self.structures_session:
-            return False
         structure_id = item.sibling(item.row(), 3).data()
-        session = self.structures_session()
-        dic = get_residuals(session, structure_id)
+        with self.session_scope() as session:
+            dic = get_residuals(session, structure_id)
         if not dic:
             return False
         self.structureId = structure_id
@@ -541,8 +550,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         return False
 
     def redraw_molecule(self):
-        session = self.structures_session()
-        cell = get_cell_by_id(session, self.structureId)
+        with self.session_scope() as session:
+            cell = get_cell_by_id(session, self.structureId)
         if not cell:
             return False
         try:
@@ -563,8 +572,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
         self.clear_fields()
-        session = self.structures_session()
-        cell = get_cell_by_id(session, structure_id)
+        with self.session_scope() as session:
+            cell = get_cell_by_id(session, structure_id)
         a, b, c, alpha, beta, gamma, volume = cell
         if not all((a, b, c, alpha, beta, gamma, volume)):
             self.ui.cellField.setText('            ')
@@ -680,20 +689,22 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         Creates a html file from a mol file to display the molecule in jsmol-lite
         """
-        session = self.structures_session()
-        symmcards = get_symmcards(session, structure_id)
+        with self.session_scope() as session:
+            symmcards = get_symmcards(session, structure_id)
         grow = self.ui.growCheckBox.isChecked()
         if len(symmcards) == 1:
             grow = False
         blist = None
         if grow:
-            atoms = get_atoms_table(session, structure_id, cell, cartesian=False)
+            with self.session_scope() as session:
+                atoms = get_atoms_table(session, structure_id, cell, cartesian=False)
             if atoms:
                 sdm = SDM(atoms, symmcards, cell)
                 needsymm = sdm.calc_sdm()
                 atoms = sdm.packer(sdm, needsymm)
         else:
-            atoms = get_atoms_table(session, structure_id, cell, cartesian=True)
+            with self.session_scope() as session:
+                atoms = get_atoms_table(session, structure_id, cell, cartesian=True)
         try:
             tst = mol_file_writer.MolFile(atoms, blist)
             mol = tst.make_mol()
@@ -717,7 +728,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             date1 = '0000-01-01'
         if not date2:
             date2 = 'NOW'
-        result = find_by_date(self.structures_session(), date1, date2)
+        with self.session_scope() as session:
+            result = find_by_date(session, date1, date2)
         return result
 
     @QtCore.pyqtSlot('QString')
@@ -727,11 +739,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         self.ui.searchCellLineEDit.clear()
         self.ui.cifList_treeWidget.clear()
-        try:
-            if not self.structures_session:
-                return False  # Empty database
-        except:
-            return False  # No database cursor
         result_list = []
         if len(search_string) == 0:
             self.show_full_list()
@@ -745,7 +752,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         try:
             self.statusBar().showMessage("Found {} entries.".format(len(result_list)))
             for row in result_list:
-                self.add_table_row(name=row[1], path=row[3], structure_id=row[0], data=row[2])
+                self.add_table_row(filename=row[1], path=row[3], structure_id=row[0], data=row[2])
             self.set_columnsize()
             # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except Exception:
@@ -756,7 +763,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Searches for a unit cell and resturns a list of found database ids.
         This method does not validate the cell. This has to be done before!
         """
-        session = self.structures_session()
         if self.ui.moreResultsCheckBox.isChecked() or self.ui.ad_moreResultscheckBox.isChecked():
             # more results:
             vol_threshold = 0.09
@@ -769,12 +775,14 @@ class StartStructureDB(QtWidgets.QMainWindow):
             atol = 1
         try:
             volume = lattice.vol_unitcell(*cell)
-            idlist = find_cell_by_volume(session, volume, vol_threshold)
+            with self.session_scope() as session:
+                idlist = find_cell_by_volume(session, volume, vol_threshold)
             if self.ui.sublattCheckbox.isChecked() or self.ui.ad_superlatticeCheckBox.isChecked():
                 # sub- and superlattices:
                 for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
                     # First a list of structures where the volume is similar:
-                    idlist.extend(find_cell_by_volume(session, v, vol_threshold))
+                    with self.session_scope() as session:
+                        idlist.extend(find_cell_by_volume(session, v, vol_threshold))
                 idlist = list(set(idlist))
                 idlist.sort()
         except (ValueError, AttributeError):
@@ -789,8 +797,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.statusBar().clearMessage()
             cells = []
             # SQLite can only handle 999 variables at once:
-            for cids in chunks(idlist, 500):
-                cells.extend(get_cells_as_list(session, cids))
+            # for cids in chunks(idlist, 500):
+            with self.session_scope() as session:
+                cells.extend(get_cells_as_list(session, idlist))
             for num, cell_id in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist) - 1)
                 try:
@@ -817,7 +826,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         cell = is_valid_cell(search_string)
         self.ui.txtSearchEdit.clear()
-        session = self.structures_session()
         if not cell:
             if self.ui.searchCellLineEDit.text():
                 self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
@@ -828,23 +836,18 @@ class StartStructureDB(QtWidgets.QMainWindow):
             if self.full_list:
                 return False
             return False
-        try:
-            if not self.structures_session:
-                return False  # Empty database
-        except Exception:
-            return False  # No database cursor
         idlist = self.search_cell_idlist(cell)
         if not idlist:
             self.ui.cifList_treeWidget.clear()
             self.statusBar().showMessage('Found 0 cells.', msecs=0)
             return False
-        searchresult = get_all_structure_names(session, idlist)
-        self.statusBar().showMessage('Found {} cells.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
+        with self.session_scope() as session:
+            for row in get_all_structure_names(session, idlist):
+                self.add_table_row(filename=row.filename, path=row.path, structure_id=row.Id, data=row.dataname)
+        self.statusBar().showMessage('Found {} cells.'.format(len(idlist)))
+
         self.full_list = False
-        for row in searchresult:
-            self.add_table_row(name=row.filename, path=row.path, structure_id=row.Id, data=row.dataname)
-            # self.add_table_row(name, path, id)
         self.set_columnsize()
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
@@ -862,29 +865,30 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
             return []
         try:
-            res = find_by_elements(self.structures_session(), formula, anyresult=anyresult)
+            with self.session_scope() as session:
+                res = find_by_elements(session, formula, anyresult=anyresult)
         except AttributeError:
             pass
         return list(res)
 
-    def add_table_row(self, name: str, path: str, data: bytes, structure_id: str) -> None:
+    def add_table_row(self, filename: str, path: str, data: bytes, structure_id: str) -> None:
         """
         Adds a line to the search results table.
         """
-        if isinstance(name, bytes):
-            name = name.decode("utf-8", "surrogateescape")
+        if isinstance(filename, bytes):
+            filename = filename.decode("utf-8", "surrogateescape")
         if isinstance(path, bytes):
             path = path.decode("utf-8", "surrogateescape")
         if isinstance(data, bytes):
             data = data.decode("utf-8", "surrogateescape")
         tree_item = QtWidgets.QTreeWidgetItem()
-        tree_item.setText(0, name)  # name
+        tree_item.setText(0, filename)  # name
         tree_item.setText(1, data)  # data
         tree_item.setText(2, path)  # path
         tree_item.setData(3, 0, structure_id)  # id
         self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
 
-    def import_cif_database(self) -> bool:
+    def open_sql_database(self) -> bool:
         """
         Import a new database.
         """
@@ -896,10 +900,17 @@ class StartStructureDB(QtWidgets.QMainWindow):
         print("Opened {}.".format(fname[0]))
         self.dbfilename = fname[0]
         # self.structures = database_handler.StructureTable(self.dbfilename)
-        self.engine = create_engine('sqlite://' + self.dbfilename)
-        self.structures_session = sessionmaker(bind=self.engine)
+        try:
+            self.engine.dispose()
+        except AttributeError:
+            pass
+        self.engine = create_engine('sqlite:///' + self.dbfilename)
+        if self.Session:
+            self.Session.configure(bind=self.engine)
+        else:
+            self.Session = sessionmaker(bind=self.engine)
         self.show_full_list()
-        if not self.structures_session:
+        if not self.Session:
             return False
         return True
 
@@ -995,7 +1006,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         Imports data from apex into own db
         """
-        session = self.structures_session()
         self.statusBar().showMessage('')
         self.close_db()
         self.start_db()
@@ -1009,44 +1019,45 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.abort_import_button.hide()
             return None
         cif = Cif()
-        if conn:
-            for i in self.apx.get_all_data():
-                if num == 20:
-                    num = 0
-                self.progressbar(num, 0, 20)
-                cif.cif_data['_cell_length_a'] = i[1]
-                cif.cif_data['_cell_length_b'] = i[2]
-                cif.cif_data['_cell_length_c'] = i[3]
-                cif.cif_data['_cell_angle_alpha'] = i[4]
-                cif.cif_data['_cell_angle_beta'] = i[5]
-                cif.cif_data['_cell_angle_gamma'] = i[6]
-                cif.cif_data["data"] = i[8]
-                cif.cif_data['_diffrn_radiation_wavelength'] = i[13]
-                cif.cif_data['_exptl_crystal_colour'] = i[14]
-                cif.cif_data['_exptl_crystal_size_max'] = i[16]
-                cif.cif_data['_exptl_crystal_size_mid'] = i[17]
-                cif.cif_data['_exptl_crystal_size_min'] = i[18]
-                cif.cif_data["_chemical_formula_sum"] = i[25]
-                cif.cif_data['_diffrn_reflns_av_R_equivalents'] = i[21]  # rint
-                cif.cif_data['_diffrn_reflns_av_unetI/netI'] = i[22]  # rsig
-                cif.cif_data['_diffrn_reflns_number'] = i[23]
-                comp = i[26]
-                if comp:
-                    cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
-                tst = fill_db_tables(session=session, cif=cif, filename=i[8], path=i[12],
-                                                 structure_id=n)
-                if not tst:
-                    continue
-                self.add_table_row(name=i[8], data=i[8], path=i[12], structure_id=str(n))
-                n += 1
-                if n % 300 == 0:
-                    session.commit()
-                num += 1
-                if not self.decide_import:
-                    # This means, import was aborted.
-                    self.abort_import_button.hide()
-                    self.decide_import = True
-                    break
+        with self.session_scope() as session:
+            if conn:
+                for i in self.apx.get_all_data():
+                    if num == 20:
+                        num = 0
+                    self.progressbar(num, 0, 20)
+                    cif.cif_data['_cell_length_a'] = i[1]
+                    cif.cif_data['_cell_length_b'] = i[2]
+                    cif.cif_data['_cell_length_c'] = i[3]
+                    cif.cif_data['_cell_angle_alpha'] = i[4]
+                    cif.cif_data['_cell_angle_beta'] = i[5]
+                    cif.cif_data['_cell_angle_gamma'] = i[6]
+                    cif.cif_data["data"] = i[8]
+                    cif.cif_data['_diffrn_radiation_wavelength'] = i[13]
+                    cif.cif_data['_exptl_crystal_colour'] = i[14]
+                    cif.cif_data['_exptl_crystal_size_max'] = i[16]
+                    cif.cif_data['_exptl_crystal_size_mid'] = i[17]
+                    cif.cif_data['_exptl_crystal_size_min'] = i[18]
+                    cif.cif_data["_chemical_formula_sum"] = i[25]
+                    cif.cif_data['_diffrn_reflns_av_R_equivalents'] = i[21]  # rint
+                    cif.cif_data['_diffrn_reflns_av_unetI/netI'] = i[22]  # rsig
+                    cif.cif_data['_diffrn_reflns_number'] = i[23]
+                    comp = i[26]
+                    if comp:
+                        cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
+                    tst = fill_db_tables(session=session, cif=cif, filename=i[8], path=i[12], structure_id=n)
+                    if not tst:
+                        continue
+                    self.add_table_row(filename=i[8], data=i[8], path=i[12], structure_id=str(n))
+                    n += 1
+                    if n % 300 == 0:
+                        pass
+                        session.commit()
+                    num += 1
+                    if not self.decide_import:
+                        # This means, import was aborted.
+                        self.abort_import_button.hide()
+                        self.decide_import = True
+                        break
         time2 = time.perf_counter()
         diff = time2 - time1
         self.progress.hide()
@@ -1058,7 +1069,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.set_columnsize()
         init_textsearch(self.engine)
         populate_fulltext_search_table(self.engine)
-        session.commit()
         self.abort_import_button.hide()
 
     def set_columnsize(self):
@@ -1079,11 +1089,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         self.ui.cifList_treeWidget.clear()
         structure_id = 0
-        if not self.structures_session:
-            return
-        session = self.structures_session()
-        for row in session.query(Structure).all():
-            self.add_table_row(name=row.filename, path=row.path, structure_id=row.Id, data=row.dataname)
+        with self.session_scope() as session:
+            for row in session.query(Structure).all():
+                self.add_table_row(row.filename, row.path, row.dataname, row.Id)
         mess = "Loaded {} entries.".format(structure_id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.set_columnsize()
