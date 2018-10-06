@@ -52,6 +52,7 @@ class CastToIntType(TypeDecorator):
     def column_expression(self, col):
         return cast(col, Integer)
 
+
 class DBFormat(Base):
      __tablename__ = 'database_format'
 
@@ -73,7 +74,7 @@ class Measurement(Base):
     '''
     __tablename__ = 'measurement'
 
-    Id = Column(Integer, primary_key=True)
+    Id = Column(Integer, primary_key=True, nullable=True)
     name = Column(String)
 
 
@@ -94,7 +95,7 @@ class Structure(Base):
     __tablename__ = 'Structure'
 
     Id = Column(Integer, primary_key=True)
-    measurement = Column(Integer, ForeignKey(Measurement.Id))
+    measurement = Column(Integer, ForeignKey(Measurement.Id), nullable=True)
     path = Column(String)
     filename = Column(String)
     dataname = Column(String)
@@ -562,6 +563,7 @@ def fill_structures_table(session, path: str, filename: str, structure_id: str, 
     entry = Structure(filename=filename.encode(db_enoding, "ignore"),
                       path=path.encode(db_enoding, "ignore"),
                       dataname=dataname.encode(db_enoding, "ignore"),
+                      measurement=structure_id,
                       Id=structure_id)
     a = session.add(entry)
     return a

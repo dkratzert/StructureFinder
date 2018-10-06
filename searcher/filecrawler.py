@@ -215,7 +215,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 except IndexError:
                     continue
                 if cif:
-                    tst = fill_db_tables(session, cif, filename=z.cifname, path=fullpath, structure_id=str(lastid))
+                    tst = fill_db_tables(session, cif, filename=z.cifname, path=fullpath, structure_id=lastid)
                     zipcifs += 1
                     if not tst:
                         continue
