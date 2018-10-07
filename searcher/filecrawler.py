@@ -197,7 +197,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     num += 1
                     if lastid % 1000 == 0:
                         print('{} files ...'.format(num))
-                        #session.commit()
+                        session.flush()
                     prognum += 1
             continue
         if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2') 
@@ -234,7 +234,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     num += 1
                     if lastid % 1000 == 0:
                         print('{} files ...'.format(num))
-                        #session.commit()
+                        session.flush()
                     prognum += 1
             continue
         if name.endswith('.res') and fillres:
