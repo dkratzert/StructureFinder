@@ -11,6 +11,7 @@ from misc import update_check
 from searcher import filecrawler
 from misc.version import VERSION
 from searcher.database_handler import Structure, get_lastrow_id, Base, init_textsearch, populate_fulltext_search_table
+from searcher.filecrawler import put_files_in_db
 
 parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect .cif/.res files to a '
                                              'database.\n'
@@ -76,6 +77,8 @@ else:
     else:
         dbfilename = 'structuredb.sqlite'
     engine = create_engine('sqlite:///' + dbfilename)
+    #engine.logging_name = 'log.txt'
+    #engine.echo = True
     Base.metadata.create_all(engine)  # creates the table
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -88,9 +91,9 @@ else:
         else:
             lastid += 1
         try:
-            ncifs = filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex,
-                                               session=session, lastid=lastid,
-                                               fillres=args.fillres, fillcif=args.fillcif)
+            ncifs = put_files_in_db(searchpath=p, excludes=args.ex,
+                                                session=session, lastid=lastid,
+                                                fillres=args.fillres, fillcif=args.fillcif)
         except OSError as e:
             print("Unable to collect files:")
             print(e)

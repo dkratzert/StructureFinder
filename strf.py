@@ -16,7 +16,6 @@ from __future__ import print_function
 
 from os.path import isfile
 
-from PyQt5.QtWidgets import QTreeWidgetItem
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -25,7 +24,7 @@ from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from searcher.database_handler import Structure, get_cell_by_id, get_symmcards, get_atoms_table, \
     get_residuals, find_cell_by_volume, get_cells_as_list, get_all_structure_names, find_by_date, init_textsearch, \
     populate_fulltext_search_table, find_by_strings, find_by_it_number, find_by_elements, Base, get_lastrow_id
-from searcher.filecrawler import fill_db_with_cif_data
+from searcher.filecrawler import fill_db_with_cif_data, put_files_in_db
 from shelxfile.shelx import ShelXFile
 
 DEBUG = True
@@ -47,7 +46,7 @@ from lattice import lattice
 from misc import update_check
 from misc.version import VERSION
 from pymatgen.core import mat_lattice
-from searcher import constants, misc, filecrawler  # , database_handler
+from searcher import constants, misc  # , database_handler
 from searcher.constants import py36
 from searcher.fileparser import Cif
 from searcher.misc import is_valid_cell, elements
@@ -153,7 +152,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def session_scope(self):
         """Provide a transactional scope around a series of operations."""
         session = self.Session()
-        #session.autoflush = False
+        # session.autoflush = False
         try:
             yield session
             session.commit()
@@ -438,8 +437,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.progress.hide()
             self.abort_import_button.hide()
         with self.session_scope() as session:
-            filecrawler.put_cifs_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked(),
-                                       fillcif=self.ui.add_cif.isChecked(), session=session)
+            put_files_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked(),
+                            fillcif=self.ui.add_cif.isChecked(), session=session)
         self.progress.hide()
         init_textsearch(self.engine)
         populate_fulltext_search_table(self.engine)
@@ -1046,7 +1045,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 n += 1
                 if n % 300 == 0:
                     pass
-                    #session.commit()
+                    # session.commit()
                 num += 1
                 if not self.decide_import:
                     # This means, import was aborted.

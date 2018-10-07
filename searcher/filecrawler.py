@@ -142,8 +142,8 @@ def filewalker_walk(startdir: str, patterns: list):
     return filelist
 
 
-def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, lastid: int = 1, 
-                   session=None, fillcif=True, fillres=True) -> int:
+def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, lastid: int = 1,
+                    session=None, fillcif=True, fillres=True) -> int:
     """
     Imports cif files from a certain directory
     :param self: The StructureFinder instance
