@@ -25,7 +25,8 @@ from sqlalchemy.orm import Session
 
 from searcher import atoms, fileparser
 from lattice.lattice import vol_unitcell
-from searcher.database_handler import fill_structures_table, fill_cell_table, fill_atoms_table, fill_residuals_table
+from searcher.database_handler import fill_structures_table, fill_cell_table, fill_atoms_table, fill_residuals_table, \
+    Atoms
 from searcher.fileparser import Cif
 from shelxfile.shelx import ShelXFile
 
@@ -324,31 +325,38 @@ def fill_db_with_cif_data(session: Session, cif: fileparser.Cif, filename: str, 
             volume = ''
     fill_structures_table(session, path, filename, structure_id, cif.cif_data['data'])
     fill_cell_table(session, structure_id, a, b, c, alpha, beta, gamma, volume)
-    for x in cif._atom:
+    #atomslist = []
+    for name in cif._atom:
         try:
             try:
-                disord = int(cif._atom[x]['_atom_site_disorder_group'])
+                part = int(cif._atom[name]['_atom_site_disorder_group'])
             except (KeyError, ValueError):
-                disord = 0
+                part = 0
             try:
-                occu = float(cif._atom[x]['_atom_site_occupancy'].split('(')[0])
+                occu = float(cif._atom[name]['_atom_site_occupancy'].split('(')[0])
             except (KeyError, ValueError):
                 occu = 1.0
             try:
-                atom_type_symbol = cif._atom[x]['_atom_site_type_symbol']
+                atom_type_symbol = cif._atom[name]['_atom_site_type_symbol']
             except KeyError:
-                atom_type_symbol  = atoms.get_atomlabel(x)
-            fill_atoms_table(session, structure_id, x,
-                                         atom_type_symbol,
-                                         cif._atom[x]['_atom_site_fract_x'].split('(')[0],
-                                         cif._atom[x]['_atom_site_fract_y'].split('(')[0],
-                                         cif._atom[x]['_atom_site_fract_z'].split('(')[0],
-                                         occu,
-                                         disord
+                atom_type_symbol  = atoms.get_atomlabel(name)
+            #atomslist.append(dict(StructureId=structure_id, Name=name, element=atom_type_symbol,
+            #     x=cif._atom[name]['_atom_site_fract_x'].split('(')[0],
+            #     y=cif._atom[name]['_atom_site_fract_y'].split('(')[0],
+            #     z=cif._atom[name]['_atom_site_fract_z'].split('(')[0],
+            #     occupancy=occu,
+            #     part=part))
+            fill_atoms_table(session, structure_id, name, atom_type_symbol,
+                                         cif._atom[name]['_atom_site_fract_x'].split('(')[0],
+                                         cif._atom[name]['_atom_site_fract_y'].split('(')[0],
+                                         cif._atom[name]['_atom_site_fract_z'].split('(')[0],
+                                         occu, part
                                         )
         except KeyError as e:
             #print(x, filename, e)
             pass
+    #session.bulk_insert_mappings(Atoms, atomslist)
+    #session.commit()
     fill_residuals_table(session, structure_id, cif)
     return True
 
