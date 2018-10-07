@@ -101,10 +101,10 @@ else:
             sys.exit()
         print("---------------------")
 
+    session.commit()
     init_textsearch(engine)
     populate_fulltext_search_table(engine)
     time2 = time.perf_counter()
-    session.commit()
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
