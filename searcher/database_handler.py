@@ -438,10 +438,9 @@ def get_residuals(session, structure_id):
     """
     row = session.query(Residuals).filter(Residuals.StructureId == structure_id).first()
     try:
-        dic = as_dict(row)
+        return as_dict(row)
     except AttributeError:
         return False
-    return dic
 
 
 def find_cell_by_volume(session: 'Session', volume: float, threshold: float):
