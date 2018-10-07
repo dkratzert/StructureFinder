@@ -66,10 +66,12 @@ class MyFloat(TypeDecorator):
         if isinstance(value, float):
             return value
         try:
-            val = float(value.split('(')[0])
+            return float(value)
         except ValueError:
-            return None
-        return val
+            try:
+                return float(value.split('(')[0])
+            except ValueError:
+                return None
 
 
 class DBFormat(Base):
@@ -329,27 +331,6 @@ class Cell(Base):
 
     def values(self):
         return [self.a, self.b, self.c, self.alpha, self.beta, self.gamma, self.volume]
-
-'''
-class txtsearch(Base):
-    """
-    txtsearch virtual table
-    """
-    __tablename__ = 'txtsearch'
-
-    StructureId = Column(Integer)
-    filename = Column(String)
-    dataname = Column(String)
-    path = Column(String)
-    shelx_res_file = Column(String)
-
-
-class ElementSearch(Base):
-    __tablename__ = 'ElementSearch'
-
-    StructureId = Column(Integer)
-    _chemical_formula_sum = Column(String)
-'''
 
 
 def init_textsearch(engine: 'Engine'):
