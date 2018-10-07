@@ -24,7 +24,7 @@ from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from searcher.database_handler import Structure, get_cell_by_id, get_symmcards, get_atoms_table, \
     get_residuals, find_cell_by_volume, get_cells_as_list, get_all_structure_names, find_by_date, init_textsearch, \
-    populate_fulltext_search_table, find_by_strings, find_by_it_number, find_by_elements, Base
+    populate_fulltext_search_table, find_by_strings, find_by_it_number, find_by_elements, Base, get_lastrow_id
 from searcher.filecrawler import fill_db_with_cif_data
 from shelxfile.shelx import ShelXFile
 
@@ -896,7 +896,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
             return False
         print("Opened {}.".format(fname[0]))
         self.dbfilename = fname[0]
-        # self.structures = database_handler.StructureTable(self.dbfilename)
         try:
             self.engine.dispose()
         except AttributeError:
@@ -1084,11 +1083,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
         [structure_id, meas, path, filename, data]
         """
         self.ui.cifList_treeWidget.clear()
-        structure_id = 0
+        las_rowid = 0
         with self.session_scope() as session:
-            for row in session.query(Structure).all():
-                self.add_table_row(row.filename, row.path, row.dataname, row.Id)
-        mess = "Loaded {} entries.".format(structure_id)
+            las_rowid = get_lastrow_id(session)
+            for Id, filename, dataname, path in session.query(Structure.Id, Structure.filename,
+                                                              Structure.dataname, Structure.path).all():
+                self.add_table_row(filename, path, dataname, Id)
+        mess = "Loaded {} entries.".format(las_rowid)
         self.statusBar().showMessage(mess, msecs=5000)
         self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)

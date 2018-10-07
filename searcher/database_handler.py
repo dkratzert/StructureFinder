@@ -418,18 +418,18 @@ def get_atoms_table(session, structure_id, cell, cartesian=False):
     """
     Get atoms in fractional or cartesian coordinates.
     """
-    # make sure part is an integer number:
-    result = session.query(Atoms).filter(Atoms.StructureId == structure_id)\
+    result = session.query(Atoms.Name, Atoms.element, Atoms.x, Atoms.y, Atoms.z, Atoms.part, Atoms.occupancy)\
+                                .filter(Atoms.StructureId == structure_id)\
                                 .filter(Atoms.Name != None).all()
-    result = [[at.Name, at.element, at.x, at.y, at.z, at.part, at.occupancy] for at in result]
+    atoms = [[at.Name, at.element, at.x, at.y, at.z, at.part, at.occupancy] for at in result]
     if cartesian:
         cartesian_coords = []
         a = lattice.A(cell).orthogonal_matrix
-        for at in result:
+        for at in atoms:
             cartesian_coords.append(list(at[:2]) + (Array([at[2], at[3], at[4]]) * a).values + list(at[5:]))
         return cartesian_coords
     else:
-        return result
+        return atoms
 
 
 def get_residuals(session, structure_id):
