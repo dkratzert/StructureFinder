@@ -25,7 +25,7 @@ from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from searcher.database_handler import Structure, get_cell_by_id, get_symmcards, get_atoms_table, \
     get_residuals, find_cell_by_volume, get_cells_as_list, get_all_structure_names, find_by_date, init_textsearch, \
     populate_fulltext_search_table, find_by_strings, find_by_it_number, find_by_elements, Base
-from searcher.filecrawler import fill_db_tables
+from searcher.filecrawler import fill_db_with_cif_data
 from shelxfile.shelx import ShelXFile
 
 DEBUG = True
@@ -1041,7 +1041,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                     comp = i[26]
                     if comp:
                         cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
-                    tst = fill_db_tables(session=session, cif=cif, filename=i[8], path=i[12], structure_id=n)
+                    tst = fill_db_with_cif_data(session=session, cif=cif, filename=i[8], path=i[12], structure_id=n)
                     if not tst:
                         continue
                     self.add_table_row(filename=i[8], data=i[8], path=i[12], structure_id=str(n))

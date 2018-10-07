@@ -181,7 +181,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 except IndexError:
                     continue
                 if cif:  # means cif object has data inside (cif could be parsed)
-                    tst = fill_db_tables(session, cif, filename=name, path=filepth, structure_id=lastid)
+                    tst = fill_db_with_cif_data(session, cif, filename=name, path=filepth, structure_id=lastid)
                     if not tst:
                         continue
                     if self:
@@ -215,7 +215,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 except IndexError:
                     continue
                 if cif:
-                    tst = fill_db_tables(session, cif, filename=z.cifname, path=fullpath, structure_id=lastid)
+                    tst = fill_db_with_cif_data(session, cif, filename=z.cifname, path=fullpath, structure_id=lastid)
                     zipcifs += 1
                     if not tst:
                         continue
@@ -250,7 +250,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
             num += 1
             if lastid % 1000 == 0:
                 print('{} files ...'.format(num))
-                session.commit()
+                #session.commit()
             prognum += 1
             continue
         if self:
@@ -259,7 +259,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                 self.abort_import_button.hide()
                 self.decide_import = True
                 break
-    session.commit()
+    #session.commit()
     time2 = time.clock()
     diff = time2 - time1
     m, s = divmod(diff, 60)
@@ -271,7 +271,7 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
     return lastid-1
 
 
-def fill_db_tables(session: Session, cif: fileparser.Cif, filename: str, path: str, structure_id: str):
+def fill_db_with_cif_data(session: Session, cif: fileparser.Cif, filename: str, path: str, structure_id: str):
     """
     Fill all info from cif file into the database tables
     _atom_site_label
@@ -354,7 +354,6 @@ def fill_db_with_res_data(session: Session, res: ShelXFile, filename: str, path:
         return False
     if not res.cell.volume:
         return False
-    #measurement_id = fill_measuremnts_table(filename, structure_id)
     fill_structures_table(session, path, filename, structure_id, res.titl)
     fill_cell_table(session, structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.al,
                                res.cell.be, res.cell.ga, res.cell.volume)

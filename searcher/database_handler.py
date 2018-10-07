@@ -63,9 +63,9 @@ class MyFloat(TypeDecorator):
     impl = Float
 
     def process_bind_param(self, value, dialect):
+        if isinstance(value, float):
+            return value
         try:
-            if isinstance(value, float):
-                return value
             val = float(value.split('(')[0])
         except ValueError:
             return None
