@@ -172,13 +172,13 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
         fullpath = os.path.join(filepth, name)
         options['modification_time'] = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(fullpath)))
         options['file_size'] = int(os.stat(str(fullpath)).st_size)
-        cif = fileparser.Cif(options=options)
         if self:
             if prognum == 20:
                 prognum = 0
             self.progressbar(prognum, 0, 20)
         # This is really ugly copy&pase code. TODO: refractor this:
         if name.endswith('.cif') and fillcif:
+            cif = fileparser.Cif(options=options)
             with open(fullpath, mode='r', encoding='ascii', errors="ignore") as f:
                 try:
                     cifok = cif.parsefile(f.readlines())
@@ -214,6 +214,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                         omit = True
                 if omit:
                     continue
+                cif = fileparser.Cif(options=options)
                 try:
                     cifok = cif.parsefile(zippedfile)
                     if not cifok:
@@ -257,7 +258,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
             num += 1
             if lastid % 1000 == 0:
                 print('{} files ...'.format(num))
-                #session.commit()
+                session.flush()
             prognum += 1
             continue
         if self:

@@ -8,7 +8,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from misc import update_check
-from searcher import filecrawler
 from misc.version import VERSION
 from searcher.database_handler import Structure, get_lastrow_id, Base, init_textsearch, populate_fulltext_search_table
 from searcher.filecrawler import put_files_in_db
