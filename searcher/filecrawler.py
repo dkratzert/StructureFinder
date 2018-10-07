@@ -29,8 +29,9 @@ from searcher.database_handler import fill_structures_table, fill_cell_table, fi
 from searcher.fileparser import Cif
 from shelxfile.shelx import ShelXFile
 
-excluded_names = ['ROOT',
-                  '.OLEX',
+excluded_names = ['root',
+                  '.olex',
+                  'olex'
                   'TMP',
                   'TEMP',
                   'Papierkorb',
@@ -145,6 +146,11 @@ def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, las
                    session=None, fillcif=True, fillres=True) -> int:
     """
     Imports cif files from a certain directory
+    :param self: The StructureFinder instance
+    :param session: The sqlalchemy session
+    :param lastid: Id of the last db insertion
+    :param excludes: Additional excluded file names
+    :param searchpath: Path where to search for files.
     :param fillres: Should it index res files or not.
     :param fillcif: Should it index cif files or not.
     """
