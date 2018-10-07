@@ -4,6 +4,14 @@
 
 ###########################################################
 ###  Configure the web server here:   #####################
+from contextlib import contextmanager
+from os.path import isfile
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from searcher.database_handler import get_residuals, get_cell_by_id, find_by_it_number, find_by_strings, \
+    get_atoms_table, find_by_elements, find_by_date, find_cell_by_volume, get_cells_as_list
 
 host = "10.6.13.3"
 port = "80"
@@ -41,9 +49,7 @@ from displaymol.mol_file_writer import MolFile
 from displaymol.sdm import SDM
 from lattice import lattice
 from pymatgen.core import mat_lattice
-from searcher import database_handler, misc
-from searcher.database_handler import StructureTable
-from searcher.misc import is_valid_cell
+from searcher.misc import is_valid_cell, flatten, is_a_nonzero_file, get_list_of_elements
 
 """
 TODO:
@@ -52,8 +58,25 @@ TODO:
 - Maybe http://www.daterangepicker.com
 """
 
+if isfile(dbfilename):
+    engine = create_engine('sqlite:///' + dbfilename)
+    Session = sessionmaker(bind=engine)
 
-structures = database_handler.StructureTable(dbfilename)
+
+@contextmanager
+def session_scope():
+    """Provide a transactional scope around a series of operations."""
+    session = Session()
+    # session.autoflush = False
+    try:
+        yield session
+        session.commit()
+    except:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
 
 app = application = Bottle()
 # bottle.debug(True)  # Do not enable debug in production systems!
@@ -64,7 +87,8 @@ def structures_list_data():
     """
     The content of the structures list.
     """
-    return get_structures_json(structures, show_all=True)
+    with session_scope() as session:
+        return get_structures_json(session, show_all=True)
 
 
 @app.route('/', method=['POST', 'GET'])
@@ -88,17 +112,19 @@ def cellsrch():
     cell = is_valid_cell(cell_search)
     print("Cell search:", cell)
     if cell:
-        ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
-        print("--> Got {} structures from cell search.".format(len(ids)))
-        return get_structures_json(structures, ids, show_all=False)
+        with session_scope() as session:
+            ids = find_cell(session, cell, more_results=more_results, sublattice=sublattice)
+            print("--> Got {} structures from cell search.".format(len(ids)))
+            return get_structures_json(session, ids, show_all=False)
 
 
 @app.route("/txtsrch")
 def txtsrch():
     text_search = request.GET.text_search
     print("Text search:", text_search)
-    ids = search_text(structures, text_search)
-    return get_structures_json(structures, ids, show_all=False)
+    with session_scope() as session:
+        ids = search_text(session, text_search)
+        return get_structures_json(session, ids, show_all=False)
 
 
 @app.route("/adv_srch")
@@ -115,11 +141,11 @@ def adv():
     it_num = request.GET.it_num
     print("Advanced search:", elincl, elexcl, date1, date2, cell_search, txt_in, txt_out, more_results, sublattice,
           it_num)
-    ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
-                          sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
-                          structures=structures, it_num=it_num)
-    print("--> Got {} structures from Advanced search.".format(len(ids)))
-    return get_structures_json(structures, ids)
+    with session_scope() as session:
+        ids = advanced_search(session, cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
+                              sublattice=sublattice, more_results=more_results, date1=date1, date2=date2, it_num=it_num)
+        print("--> Got {} structures from Advanced search.".format(len(ids)))
+        return get_structures_json(session, ids)
 
 
 @app.route('/molecule', method='POST')
@@ -129,24 +155,25 @@ def jsmol_request():
     """
     str_id = request.POST.id
     print("Molecule id:", str_id)
-    if str_id:
-        cell = structures.get_cell_by_id(str_id)
-        if request.POST.grow == 'true':
-            symmcards = [x.split(',') for x in structures.get_row_as_dict(str_id)
-            ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
-            atoms = structures.get_atoms_table(str_id, cell[:6], cartesian=False, as_list=True)
-            if atoms:
-                sdm = SDM(atoms, symmcards, cell)
-                needsymm = sdm.calc_sdm()
-                atoms = sdm.packer(sdm, needsymm)
-        else:
-            atoms = structures.get_atoms_table(str_id, cell[:6], cartesian=True, as_list=False)
-        try:
-            m = MolFile(atoms)
-            return m.make_mol()
-        except(KeyError, TypeError) as e:
-            print('Exception in jsmol_request: {}'.format(e))
-            return ''
+    with session_scope() as session:
+        if str_id:
+            cell = get_cell_by_id(session, str_id)
+            if request.POST.grow == 'true':
+                symmcards = [x.split(',') for x in get_row_as_dict(str_id)
+                ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+                atoms = get_atoms_table(str_id, cell[:6], cartesian=False)
+                if atoms:
+                    sdm = SDM(atoms, symmcards, cell)
+                    needsymm = sdm.calc_sdm()
+                    atoms = sdm.packer(sdm, needsymm)
+            else:
+                atoms = get_atoms_table(session, str_id, cell[:6], cartesian=True)
+            try:
+                m = MolFile(atoms)
+                return m.make_mol()
+            except(KeyError, TypeError) as e:
+                print('Exception in jsmol_request: {}'.format(e))
+                return ''
 
 
 @app.route('/', method='POST')
@@ -161,21 +188,22 @@ def post_request():
     all_cif = (request.POST.all == 'true')
     unitcell = request.POST.unitcell
     print("Structure id:", str_id)
-    if str_id:
-        cif_dic = structures.get_row_as_dict(str_id)
-    if str_id and unitcell and not (resid1 or resid2 or all_cif):
-        try:
-            return get_cell_parameters(structures, str_id)
-        except ValueError as e:
-            print("Exception raised:")
-            print(e)
-            return ''
-    if str_id and resid1:
-        return get_residuals_table1(cif_dic)
-    if str_id and resid2:
-        return get_residuals_table2(cif_dic)
-    if str_id and all_cif:
-        return get_all_cif_val_table(structures, str_id)
+    with session_scope() as session:
+        if str_id:
+            cif_dic = get_residuals(session, str_id)
+        if str_id and unitcell and not (resid1 or resid2 or all_cif):
+            try:
+                return get_cell_by_id(session, str_id)
+            except ValueError as e:
+                print("Exception raised:")
+                print(e)
+                return ''
+        if str_id and resid1:
+            return get_residuals_table1(cif_dic)
+        if str_id and resid2:
+            return get_residuals_table2(cif_dic)
+        if str_id and all_cif:
+            return get_all_cif_val_table(session, str_id)
 
 
 @app.route('/static/<filepath:path>')
@@ -227,7 +255,7 @@ def is_ajax():
         return False
 
 
-def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, show_all: bool = False) -> dict:
+def get_structures_json(session: Session, ids: (list, tuple) = None, show_all: bool = False) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
@@ -238,7 +266,7 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     if not ids and not show_all:
         # return json.dumps(failure)
         return {}
-    dic = structures.get_all_structures_as_dict(ids, all_ids=show_all)
+    dic = get_all_structures_as_dict(ids, all_ids=show_all)
     number = len(dic)
     print("--> Got {} structures from actual search.".format(number))
     if number == 0:
@@ -247,11 +275,11 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     return {"total": number, "records": dic, "status": "success"}
 
 
-def get_cell_parameters(structures: StructureTable, strid: str) -> str:
+def get_cell_parameters(session: Session, strid: str) -> str:
     """
     Resturns unit cell parameters as html formated string.
     """
-    c = structures.get_cell_by_id(strid)
+    c = get_cell_by_id(session, strid)
     cstr = """<b>Unit Cell:</b>&nbsp;&nbsp; 
                       <i>a</i> = {0:>8.3f}&nbsp;&angst;,&nbsp;
                       <i>b</i> = {1:>8.3f}&nbsp;&angst;,&nbsp;
@@ -368,7 +396,7 @@ def get_residuals_table2(cif_dic: dict) -> str:
     return table2
 
 
-def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
+def get_all_cif_val_table(session, structure_id: int) -> str:
     """
     Returns a html table with the residuals values of a structure.
     """
@@ -385,7 +413,7 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
                             </thead>
                         <tbody>"""
     # get the residuals of the cif file as a dictionary:
-    dic = structures.get_row_as_dict(structure_id)
+    dic = get_residuals(session, structure_id)
     if not dic:
         return ""
     # filling table with data rows:
@@ -426,7 +454,7 @@ def chunks(l: list, n: int) -> list:
     return [l[i:i + n] for i in range(0, len(l), n)]
 
 
-def find_cell(structures: StructureTable, cell: list, sublattice=False, more_results=False) -> list:
+def find_cell(session: Session, cell: list, sublattice=False, more_results=False) -> list:
     """
     Finds unit cells in db. Rsturns hits a a list of ids.
     """
@@ -441,12 +469,12 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
         ltol = 0.06
         atol = 1
     volume = lattice.vol_unitcell(*cell)
-    idlist = structures.find_by_volume(volume, vol_threshold)
+    idlist = find_cell_by_volume(session, volume, vol_threshold)
     if sublattice:
         # sub- and superlattices:
         for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
             # First a list of structures where the volume is similar:
-            idlist.extend(structures.find_by_volume(v, vol_threshold))
+            idlist.extend(find_cell_by_volume(session, v, vol_threshold))
         idlist = list(set(idlist))
         idlist.sort()
     idlist2 = []
@@ -456,7 +484,7 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
         cells = []
         # SQLite can only handle 999 variables at once:
         for cids in chunks(idlist, 500):
-            cells.extend(structures.get_cells_as_list(cids))
+            cells.extend(get_cells_as_list(cids))
         for num, cell_id in enumerate(idlist):
             try:
                 lattice2 = mat_lattice.Lattice.from_parameters(
@@ -477,7 +505,7 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
         return []
 
 
-def search_text(structures: StructureTable, search_string: str) -> tuple:
+def search_text(session: Session, search_string: str) -> tuple:
     """
     searches db for given text
     """
@@ -489,32 +517,32 @@ def search_text(structures: StructureTable, search_string: str) -> tuple:
             search_string = "{}{}{}".format('*', search_string, '*')
     try:
         #  bad hack, should make this return ids like cell search
-        idlist = tuple([x[0] for x in structures.find_by_strings(search_string)])
+        idlist = tuple([x[0] for x in find_by_strings(session, search_string)])
     except AttributeError as e:
         print("Exception in search_text:")
         print(e)
     return idlist
 
 
-def search_elements(structures: StructureTable, elements: str, anyresult: bool = False) -> list:
+def search_elements(session: Session, elements: str, anyresult: bool = False) -> list:
     """
     list(set(l).intersection(l2))
     """
     res = []
     try:
-        formula = misc.get_list_of_elements(elements)
+        formula = get_list_of_elements(elements)
     except KeyError:
         print('Element search error!')
         return []
     try:
-        res = structures.find_by_elements(formula, anyresult=anyresult)
+        res = find_by_elements(session, formula, anyresult=anyresult)
     except AttributeError:
         print('Element search error!')
         pass
     return list(res)
 
 
-def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
+def find_dates(session: Session, date1: str, date2: str) -> list:
     """
     Returns a list if id between date1 and date2
     """
@@ -522,13 +550,12 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
         date1 = '0000-01-01'
     if not date2:
         date2 = 'NOW'
-    result = structures.find_by_date(date1, date2)
+    result = find_by_date(session, date1, date2)
     return result
 
 
-def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, more_results,
-                    date1: str = None, date2: str = None, structures: database_handler.StructureTable = None,
-                    it_num: str = None) -> list:
+def advanced_search(session: Session, cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, more_results,
+                    date1: str = None, date2: str = None, it_num: str = None) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
@@ -542,31 +569,31 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
     if cellstr:
         cell = is_valid_cell(cellstr)
     if cell:
-        cellres = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
+        cellres = find_cell(session, cell, sublattice=sublattice, more_results=more_results)
         incl.append(cellres)
     if elincl:
-        incl.append(search_elements(structures, elincl))
+        incl.append(search_elements(session, elincl))
     if date1 != date2:
-        date_results = find_dates(structures, date1, date2)
+        date_results = find_dates(session, date1, date2)
     if it_num:
         try:
-            it_results = structures.find_by_it_number(int(it_num))
+            it_results = find_by_it_number(session, int(it_num))
         except ValueError:
             pass
     if txt_in:
         if len(txt_in) >= 2 and "*" not in txt_in:
             txt_in = '*' + txt_in + '*'
-        idlist = structures.find_by_strings(txt_in)
+        idlist = find_by_strings(session, txt_in)
         try:
             incl.append([i[0] for i in idlist])
         except(IndexError, KeyError):
             incl.append([idlist])  # only one result
     if elexcl:
-        excl.append(search_elements(structures, elexcl, anyresult=True))
+        excl.append(search_elements(session, elexcl, anyresult=True))
     if txt_out:
         if len(txt_out) >= 2 and "*" not in txt_out:
             txt_out = '*' + txt_out + '*'
-        idlist = structures.find_by_strings(txt_out)
+        idlist = find_by_strings(session, txt_out)
         try:
             excl.append([i[0] for i in idlist])
         except(IndexError, KeyError):
@@ -586,7 +613,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
     if excl:
         # excl list should not be in the resukts at all
         try:
-            return list(results - set(misc.flatten(excl)))
+            return list(results - set(flatten(excl)))
         except TypeError:
             return []
     return list(results)
@@ -594,7 +621,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
 
 if __name__ == "__main__":
     print("Running on Python version {}".format(sys.version))
-    if not misc.is_a_nonzero_file(dbfilename):
+    if not is_a_nonzero_file(dbfilename):
         print("Unable to start!")
         print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
         sys.exit()
