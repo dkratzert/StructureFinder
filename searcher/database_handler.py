@@ -331,11 +331,11 @@ class Cell(Base):
         return [self.a, self.b, self.c, self.alpha, self.beta, self.gamma, self.volume]
 
 '''
-class textsearch(Base):
+class txtsearch(Base):
     """
-    textsearch virtual table
+    txtsearch virtual table
     """
-    __tablename__ = 'textsearch'
+    __tablename__ = 'txtsearch'
 
     StructureId = Column(Integer)
     filename = Column(String)
@@ -357,27 +357,25 @@ def init_textsearch(engine: 'Engine'):
     Initializes the full text search (fts) tables.
     """
     with engine.connect() as con:
-        con.execute("DROP TABLE IF EXISTS textsearch")
+        con.execute("DROP TABLE IF EXISTS txtsearch")
         con.execute("DROP TABLE IF EXISTS ElementSearch")
 
         # The simple tokenizer is best for my purposes (A self-written tokenizer would even be better):
-        con.execute("""
-            CREATE VIRTUAL TABLE textsearch USING 
-                    fts4(StructureId    INTEGER, 
-                         filename       TEXT, 
-                         dataname       TEXT, 
-                         path           TEXT,
-                         shelx_res_file TEXT,
-                            tokenize=simple "tokenchars= .=-_");  
+        con.execute("""CREATE VIRTUAL TABLE txtsearch USING 
+                        fts4(StructureId    INTEGER, 
+                             filename       TEXT, 
+                             dataname       TEXT, 
+                             path           TEXT,
+                             shelx_res_file TEXT,
+                                tokenize=simple "tokenchars= .=-_");  
                           """
                          )
 
         # Now the table for element search:
-        con.execute("""
-            CREATE VIRTUAL TABLE ElementSearch USING
-                    fts4(StructureId        INTEGER,
-                    _chemical_formula_sum   TEXT,
-                        tokenize=simple 'tokenchars= 0123456789');
+        con.execute("""CREATE VIRTUAL TABLE ElementSearch USING
+                        fts4(StructureId        INTEGER,
+                        _chemical_formula_sum   TEXT,
+                            tokenize=simple 'tokenchars= 0123456789');
                       """
                          )
 
@@ -401,7 +399,7 @@ def populate_fulltext_search_table(engine: 'Engine'):
             res._shelx_res_file
                 FROM Structure AS str
                     INNER JOIN Residuals AS res WHERE str.Id = res.Id; """
-    optimize_queries = """INSERT INTO textsearch(txtsearch) VALUES('optimize'); """
+    optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize'); """
     element_search = """
         INSERT INTO ElementSearch(StructureId,
                                 _chemical_formula_sum) 
@@ -511,7 +509,7 @@ def find_by_date(session, start='0000-01-01', end='NOW'):
 
 def find_by_strings(engine: 'Engine', text: str):
     """
-    Searches for text in the virtual textsearch table.
+    Searches for text in the virtual txtsearch table.
     """
     ids = []
     req = '''

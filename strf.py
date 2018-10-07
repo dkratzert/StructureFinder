@@ -153,6 +153,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def session_scope(self):
         """Provide a transactional scope around a series of operations."""
         session = self.Session()
+        #session.autoflush = False
         try:
             yield session
             session.commit()
@@ -441,8 +442,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                                        fillcif=self.ui.add_cif.isChecked(), session=session)
         self.progress.hide()
         init_textsearch(self.engine)
-        # with self.session_scope() as session:
-        # populate_fulltext_search_table(self.engine)
+        populate_fulltext_search_table(self.engine)
         self.ui.cifList_treeWidget.show()
         self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
@@ -1017,44 +1017,43 @@ class StartStructureDB(QtWidgets.QMainWindow):
             return None
         cif = Cif()
         with self.session_scope() as session:
-            if conn:
-                for i in self.apx.get_all_data():
-                    if num == 20:
-                        num = 0
-                    self.progressbar(num, 0, 20)
-                    cif.cif_data['_cell_length_a'] = i[1]
-                    cif.cif_data['_cell_length_b'] = i[2]
-                    cif.cif_data['_cell_length_c'] = i[3]
-                    cif.cif_data['_cell_angle_alpha'] = i[4]
-                    cif.cif_data['_cell_angle_beta'] = i[5]
-                    cif.cif_data['_cell_angle_gamma'] = i[6]
-                    cif.cif_data["data"] = i[8]
-                    cif.cif_data['_diffrn_radiation_wavelength'] = i[13]
-                    cif.cif_data['_exptl_crystal_colour'] = i[14]
-                    cif.cif_data['_exptl_crystal_size_max'] = i[16]
-                    cif.cif_data['_exptl_crystal_size_mid'] = i[17]
-                    cif.cif_data['_exptl_crystal_size_min'] = i[18]
-                    cif.cif_data["_chemical_formula_sum"] = i[25]
-                    cif.cif_data['_diffrn_reflns_av_R_equivalents'] = i[21]  # rint
-                    cif.cif_data['_diffrn_reflns_av_unetI/netI'] = i[22]  # rsig
-                    cif.cif_data['_diffrn_reflns_number'] = i[23]
-                    comp = i[26]
-                    if comp:
-                        cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
-                    tst = fill_db_with_cif_data(session=session, cif=cif, filename=i[8], path=i[12], structure_id=n)
-                    if not tst:
-                        continue
-                    self.add_table_row(filename=i[8], data=i[8], path=i[12], structure_id=str(n))
-                    n += 1
-                    if n % 300 == 0:
-                        pass
-                        session.commit()
-                    num += 1
-                    if not self.decide_import:
-                        # This means, import was aborted.
-                        self.abort_import_button.hide()
-                        self.decide_import = True
-                        break
+            for apd in self.apx.get_all_data():
+                if num == 20:
+                    num = 0
+                self.progressbar(num, 0, 20)
+                cif.cif_data['_cell_length_a'] = apd[1]
+                cif.cif_data['_cell_length_b'] = apd[2]
+                cif.cif_data['_cell_length_c'] = apd[3]
+                cif.cif_data['_cell_angle_alpha'] = apd[4]
+                cif.cif_data['_cell_angle_beta'] = apd[5]
+                cif.cif_data['_cell_angle_gamma'] = apd[6]
+                cif.cif_data["data"] = apd[8]
+                cif.cif_data['_diffrn_radiation_wavelength'] = apd[13]
+                cif.cif_data['_exptl_crystal_colour'] = apd[14]
+                cif.cif_data['_exptl_crystal_size_max'] = apd[16]
+                cif.cif_data['_exptl_crystal_size_mid'] = apd[17]
+                cif.cif_data['_exptl_crystal_size_min'] = apd[18]
+                cif.cif_data["_chemical_formula_sum"] = apd[25]
+                cif.cif_data['_diffrn_reflns_av_R_equivalents'] = apd[21]  # rint
+                cif.cif_data['_diffrn_reflns_av_unetI/netI'] = apd[22]  # rsig
+                cif.cif_data['_diffrn_reflns_number'] = apd[23]
+                comp = apd[26]
+                if comp:
+                    cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
+                tst = fill_db_with_cif_data(session=session, cif=cif, filename=apd[8], path=apd[12], structure_id=n)
+                if not tst:
+                    continue
+                self.add_table_row(filename=apd[8], data=apd[8], path=apd[12], structure_id=str(n))
+                n += 1
+                if n % 300 == 0:
+                    pass
+                    #session.commit()
+                num += 1
+                if not self.decide_import:
+                    # This means, import was aborted.
+                    self.abort_import_button.hide()
+                    self.decide_import = True
+                    break
         time2 = time.perf_counter()
         diff = time2 - time1
         self.progress.hide()

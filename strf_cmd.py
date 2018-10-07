@@ -10,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from misc import update_check
 from searcher import filecrawler
 from misc.version import VERSION
-from searcher.database_handler import Structure, get_lastrow_id, Base
+from searcher.database_handler import Structure, get_lastrow_id, Base, init_textsearch, populate_fulltext_search_table
 
 parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect .cif/.res files to a '
                                              'database.\n'
@@ -98,9 +98,10 @@ else:
             sys.exit()
         print("---------------------")
 
-    #db.init_textsearch()
-    #structures.populate_fulltext_search_table()
+    init_textsearch(engine)
+    populate_fulltext_search_table(engine)
     time2 = time.perf_counter()
+    session.commit()
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
