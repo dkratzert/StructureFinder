@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 from searcher import atoms, fileparser
 from lattice.lattice import vol_unitcell
 from searcher.database_handler import fill_structures_table, fill_cell_table, fill_atoms_table, fill_residuals_table, \
-    Atoms
+    Atoms, fill_residuals_table2
 from searcher.fileparser import Cif
 from shelxfile.shelx import ShelXFile
 
@@ -144,7 +144,7 @@ def filewalker_walk(startdir: str, patterns: list):
 
 
 def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, lastid: int = 1,
-                    session=None, fillcif=True, fillres=True) -> int:
+                    session=None, engine=None, fillcif=True, fillres=True) -> int:
     """
     Imports cif files from a certain directory
     :param self: The StructureFinder instance
@@ -188,7 +188,8 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 except IndexError:
                     continue
                 if cif:  # means cif object has data inside (cif could be parsed)
-                    tst = fill_db_with_cif_data(session, cif, filename=name, path=filepth, structure_id=lastid)
+                    tst = fill_db_with_cif_data(session, engine=engine, cif=cif, filename=name,
+                                                path=filepth, structure_id=lastid)
                     if not tst:
                         continue
                     if self:
@@ -223,7 +224,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 except IndexError:
                     continue
                 if cif:
-                    tst = fill_db_with_cif_data(session, cif, filename=z.cifname, path=fullpath, structure_id=lastid)
+                    tst = fill_db_with_cif_data(session, cif, engine=engine, filename=z.cifname, path=fullpath, structure_id=lastid)
                     zipcifs += 1
                     if not tst:
                         continue
@@ -246,7 +247,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 #print('res file not added.')
                 continue
             if res:
-                tst = fill_db_with_res_data(session, res=res, filename=name, path=filepth, structure_id=lastid,
+                tst = fill_db_with_res_data(session, res=res, engine=engine, filename=name, path=filepth, structure_id=lastid,
                                             options=options)
             if not tst:
                 #print('res file not added')
@@ -279,7 +280,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
     return lastid-1
 
 
-def fill_db_with_cif_data(session: Session, cif: fileparser.Cif, filename: str, path: str, structure_id: str):
+def fill_db_with_cif_data(session: Session, engine, cif: fileparser.Cif, filename: str, path: str, structure_id: str):
     """
     Fill all info from cif file into the database tables
     _atom_site_label
@@ -358,11 +359,11 @@ def fill_db_with_cif_data(session: Session, cif: fileparser.Cif, filename: str, 
             pass
     #session.bulk_insert_mappings(Atoms, atomslist)
     #session.commit()
-    fill_residuals_table(session, structure_id, cif)
+    fill_residuals_table2(engine, structure_id, cif)
     return True
 
 
-def fill_db_with_res_data(session: Session, res: ShelXFile, filename: str, path: str, structure_id: str, options: dict):
+def fill_db_with_res_data(session: Session, engine, res: ShelXFile, filename: str, path: str, structure_id: str, options: dict):
     if not res.cell:
         return False
     if not all([res.cell.a, res.cell.b, res.cell.al, res.cell.be, res.cell.ga]):
@@ -411,7 +412,7 @@ def fill_db_with_res_data(session: Session, res: ShelXFile, filename: str, path:
         cif.cif_data["_shelx_res_file"] = str(res)
     except IndexError:
         pass
-    fill_residuals_table(session, structure_id, cif)
+    fill_residuals_table2(engine, structure_id, cif)
     return True
 
 

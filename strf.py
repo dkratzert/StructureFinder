@@ -438,7 +438,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.progress.hide()
             self.abort_import_button.hide()
         with self.session_scope() as session:
-            put_files_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked(),
+            put_files_in_db(self, engine=self.engine, searchpath=fname, fillres=self.ui.add_res.isChecked(),
                             fillcif=self.ui.add_cif.isChecked(), session=session)
         self.progress.hide()
         init_textsearch(self.engine)
@@ -1038,7 +1038,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 comp = apd[26]
                 if comp:
                     cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
-                tst = fill_db_with_cif_data(session=session, cif=cif, filename=apd[8], path=apd[12], structure_id=n)
+                tst = fill_db_with_cif_data(session=session, engine=self.engine, cif=cif, filename=apd[8], path=apd[12], structure_id=n)
                 if not tst:
                     continue
                 self.add_table_row(filename=apd[8], data=apd[8], path=apd[12], structure_id=str(n))
