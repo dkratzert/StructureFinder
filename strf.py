@@ -23,7 +23,8 @@ from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from searcher.database_handler import Structure, get_cell_by_id, get_symmcards, get_atoms_table, \
     get_residuals, find_cell_by_volume, get_cells_as_list, get_all_structure_names, find_by_date, init_textsearch, \
-    populate_fulltext_search_table, find_by_strings, find_by_it_number, find_by_elements, Base, get_lastrow_id
+    populate_fulltext_search_table, find_by_strings, find_by_it_number, find_by_elements, Base, get_lastrow_id, \
+    get_structures_list
 from searcher.filecrawler import fill_db_with_cif_data, put_files_in_db
 from shelxfile.shelx import ShelXFile
 
@@ -842,7 +843,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
             for row in get_all_structure_names(session, idlist):
                 self.add_table_row(filename=row.filename, path=row.path, structure_id=row.Id, data=row.dataname)
         self.statusBar().showMessage('Found {} cells.'.format(len(idlist)))
-
         self.full_list = False
         self.set_columnsize()
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
@@ -1082,13 +1082,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
         [structure_id, meas, path, filename, data]
         """
         self.ui.cifList_treeWidget.clear()
-        las_rowid = 0
+        last_rowid = 0
         with self.session_scope() as session:
-            las_rowid = get_lastrow_id(session)
-            for Id, filename, dataname, path in session.query(Structure.Id, Structure.filename,
-                                                              Structure.dataname, Structure.path).all():
+            last_rowid = get_lastrow_id(session)
+            for Id, path, filename, dataname in get_structures_list(self.engine):
                 self.add_table_row(filename, path, dataname, Id)
-        mess = "Loaded {} entries.".format(las_rowid)
+        mess = "Loaded {} entries.".format(last_rowid)
         self.statusBar().showMessage(mess, msecs=5000)
         self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)

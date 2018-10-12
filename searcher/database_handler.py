@@ -47,7 +47,7 @@ def as_dict(row) -> dict:
 
 class CastToIntType(TypeDecorator):
     '''
-    Converts stored values to int via CAST operation
+    Converts stored values to int via SQL CAST operation
     '''
     impl = Numeric
 
@@ -389,6 +389,21 @@ def populate_fulltext_search_table(engine: 'Engine'):
         con.execute(populate_index)
         con.execute(optimize_queries)
         con.execute(element_search)
+
+
+def get_structures_list(engine):
+    """
+    This method returns the list of structures without ORM, because of the ORM slowness.
+    """
+    req = '''SELECT Structure.Id, Structure.path, Structure.filename, Structure.dataname FROM Structure'''
+    connection = engine.connect()
+    result = connection.execute(req)
+    try:
+        return result
+        connection.close()
+    except:
+        connection.close()
+        return []
 
 
 def get_cell_by_id(session: 'Session', structure_id: str) -> list:
