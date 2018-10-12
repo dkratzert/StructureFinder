@@ -149,8 +149,8 @@ def is_a_nonzero_file(filename):
     return status
 
 
-def get_error_from_value(value: str) -> str:
-    """ 
+def get_error_from_value(value: str) -> float:
+    """
     Returns the error value from a number string.
     :TODO: Make exponents work "1.234e23"
     :type value: str
@@ -169,16 +169,16 @@ def get_error_from_value(value: str) -> str:
     try:
         value = value.replace(" ", "")
     except AttributeError:
-        return "0.0"
+        return 0.0
     if "(" in value and ")":
         val = value.split("(")[0].split('.')
-        err = value.split("(")[1].split(")")[0]
+        err = float(value.split("(")[1].split(")")[0])
         if len(val) > 1:
-            return str(int(err) * (10 ** (-1 * len(val[1]))))
+            return int(err) * (10 ** (-1 * len(val[1])))
         else:
             return err
     else:
-        return '0.0'
+        return 0.0
 
 
 def flatten(lis: list) -> list:

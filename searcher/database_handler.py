@@ -11,31 +11,23 @@ Created on 09.02.2015
 
 @author: daniel
 """
+import sqlite3
 from datetime import date
-from operator import not_
 
-from sqlalchemy import Column, Integer, String, ForeignKey, Float, Date, inspect, TypeDecorator, Numeric
+from sqlalchemy import Column, Integer, String, ForeignKey, Float, Date, TypeDecorator, Numeric
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.expression import cast, func
 
-import sqlite3
-import sys
-from sqlite3 import OperationalError
-
-import searcher
 from lattice import lattice
 from searcher import misc
 from searcher.fileparser import Cif
 from searcher.misc import get_error_from_value
 from shelxfile.dsrmath import Array
 
-#db_enoding = 'ISO-8859-15'
+# db_enoding = 'ISO-8859-15'
 db_enoding = 'utf-8'
 
 Base = declarative_base()
-
-
-from sqlalchemy import inspect
 
 
 def as_dict(row) -> dict:
@@ -75,24 +67,24 @@ class MyFloat(TypeDecorator):
 
 
 class DBFormat(Base):
-     __tablename__ = 'database_format'
+    __tablename__ = 'database_format'
 
-     id = Column(Integer, primary_key=True)
-     format = Column(String)
+    id = Column(Integer, primary_key=True)
+    format = Column(String)
 
-     def __repr__(self):
+    def __repr__(self):
         return "<DBFormat(id={0}, format={1})>".format(self.id, self.format)
 
 
 class Measurement(Base):
-    '''
+    """
     CREATE TABLE IF NOT EXISTS measurement (
         Id    INTEGER NOT NULL,
         name    VARCHAR(255),
         PRIMARY KEY(Id));
 
     This is unused and probably never will be.
-    '''
+    """
     __tablename__ = 'measurement'
 
     Id = Column(Integer, primary_key=True, nullable=True, unique=False)
@@ -100,7 +92,7 @@ class Measurement(Base):
 
 
 class Structure(Base):
-    '''
+    """
     CREATE TABLE IF NOT EXISTS Structure (
         Id    INTEGER NOT NULL,
         measurement INTEGER NOT NULL,
@@ -112,7 +104,7 @@ class Structure(Base):
             REFERENCES Structure(Id)
               ON DELETE CASCADE
               ON UPDATE NO ACTION);
-    '''
+    """
     __tablename__ = 'Structure'
 
     Id = Column(Integer, primary_key=True)
@@ -122,11 +114,12 @@ class Structure(Base):
     dataname = Column(String)
 
     def __repr__(self):
-        return "<Structure: (id={0}, measurement={1}, path={1}, filename={1}, dataname={1})>"\
-            .format(self.id, self.measurement, self.path, self.filename, self.dataname)
+        return "<Structure: (id={0}, measurement={1}, path={1}, filename={1}, dataname={1})>" \
+            .format(self.Id, self.measurement, self.path, self.filename, self.dataname)
+
 
 class Atoms(Base):
-    '''
+    """
     CREATE TABLE IF NOT EXISTS Atoms (
         Id    INTEGER NOT NULL,
         StructureId    INTEGER NOT NULL,
@@ -142,7 +135,7 @@ class Atoms(Base):
         REFERENCES Structure(Id)
           ON DELETE CASCADE
           ON UPDATE NO ACTION);
-    '''
+    """
     __tablename__ = 'Atoms'
 
     Id = Column(Integer, primary_key=True)
@@ -161,7 +154,7 @@ class Atoms(Base):
 
 
 class Residuals(Base):
-    '''
+    """
     CREATE TABLE IF NOT EXISTS Residuals (
         Id                                      INTEGER NOT NULL,
         StructureId                             INTEGER NOT NULL,
@@ -225,7 +218,7 @@ class Residuals(Base):
         REFERENCES Structure(Id)
           ON DELETE CASCADE
           ON UPDATE NO ACTION);
-    '''
+    """
     __tablename__ = 'Residuals'
 
     Id = Column(Integer, primary_key=True)
@@ -288,7 +281,7 @@ class Residuals(Base):
 
 
 class Cell(Base):
-    '''
+    """
     CREATE TABLE IF NOT EXISTS cell (
         Id        INTEGER NOT NULL,
         StructureId    INTEGER NOT NULL,
@@ -310,7 +303,7 @@ class Cell(Base):
         REFERENCES Structure(Id)
           ON DELETE CASCADE
           ON UPDATE NO ACTION);
-    '''
+    """
     __tablename__ = 'cell'
 
     Id = Column(Integer, primary_key=True)
@@ -342,37 +335,35 @@ def init_textsearch(engine: 'Engine'):
         con.execute("DROP TABLE IF EXISTS ElementSearch")
 
         # The simple tokenizer is best for my purposes (A self-written tokenizer would even be better):
-        con.execute("""CREATE VIRTUAL TABLE txtsearch USING 
+        con.execute("""CREATE VIRTUAL TABLE txtsearch USING
                         fts4(StructureId    INTEGER, 
                              filename       TEXT, 
                              dataname       TEXT, 
                              path           TEXT,
                              shelx_res_file TEXT,
-                                tokenize=simple "tokenchars= .=-_");  
-                          """
-                         )
+                                tokenize=simple "tokenchars= .=-_");
+                          """)
 
         # Now the table for element search:
         con.execute("""CREATE VIRTUAL TABLE ElementSearch USING
                         fts4(StructureId        INTEGER,
                         _chemical_formula_sum   TEXT,
                             tokenize=simple 'tokenchars= 0123456789');
-                      """
-                         )
+                      """)
 
-def populate_fulltext_search_table(engine: 'Engine'):
+
+def populate_fulltext_search_table(engine):
     """
     Populates the fts4 table with data to search for text.
     _publ_contact_author_name
     """
     populate_index = """
     INSERT INTO txtsearch (
-                            StructureId, 
-                            filename, 
-                            dataname, 
+                            StructureId,
+                            filename,
+                            dataname,
                             path,
-                            shelx_res_file
-                            )
+                            shelx_res_file)
     SELECT  str.Id, 
             str.filename, 
             str.dataname, 
@@ -400,7 +391,6 @@ def get_structures_list(engine):
     result = connection.execute(req)
     try:
         return result
-        connection.close()
     except:
         connection.close()
         return []
@@ -411,12 +401,13 @@ def get_cell_by_id(session: 'Session', structure_id: str) -> list:
     returns the cell of a res file in the db
     """
     if not structure_id:
-        return False
+        return []
     cell = session.query(Cell).filter(Cell.StructureId == structure_id).first()
     if cell.values() and len(cell.values()) > 0:
         return cell.values()
     else:
-        return False
+        return []
+
 
 def get_symmcards(session: 'Session', structure_id: str) -> list:
     """
@@ -424,7 +415,7 @@ def get_symmcards(session: 'Session', structure_id: str) -> list:
     [['x', 'y', 'z'], ['-x', 'y', '-z+1/2'], ... ]
     """
     if not structure_id:
-        return False
+        return []
     symm = session.query(Residuals).filter(Residuals.StructureId == structure_id).first()
     return [x.split(',') for x in symm._space_group_symop_operation_xyz.replace("'", "").replace(" ", "").split("\n")]
 
@@ -433,9 +424,9 @@ def get_atoms_table(session, structure_id, cell, cartesian=False):
     """
     Get atoms in fractional or cartesian coordinates.
     """
-    result = session.query(Atoms.Name, Atoms.element, Atoms.x, Atoms.y, Atoms.z, Atoms.part, Atoms.occupancy)\
-                                .filter(Atoms.StructureId == structure_id)\
-                                .filter(Atoms.Name != None).all()
+    result = session.query(Atoms.Name, Atoms.element, Atoms.x, Atoms.y, Atoms.z, Atoms.part, Atoms.occupancy) \
+        .filter(Atoms.StructureId == structure_id) \
+        .filter(Atoms.Name != None).all()
     atoms = [[at.Name, at.element, at.x, at.y, at.z, at.part, at.occupancy] for at in result]
     if cartesian:
         cartesian_coords = []
@@ -464,25 +455,27 @@ def find_cell_by_volume(session: 'Session', volume: float, threshold: float):
     """
     upper_limit = float(volume + volume * threshold)
     lower_limit = float(volume - volume * threshold)
-    volumes = [StructureId for StructureId, in session.query(Cell.StructureId).filter(Cell.volume >= lower_limit)\
-                                                .filter(Cell.volume <= upper_limit).all()]
+    volumes = [StructureId for StructureId, in session.query(Cell.StructureId).filter(Cell.volume >= lower_limit) \
+        .filter(Cell.volume <= upper_limit).all()]
     return volumes
+
 
 def get_cells_as_list(session: 'Session', structure_ids: list):
     """
     Returns a list of unit cells from the input ids.
     """
-    #req = 'select * from cell where StructureId IN ({seq})'.format(seq=self.joined_arglist(structure_ids))
+    # req = 'select * from cell where StructureId IN ({seq})'.format(seq=self.joined_arglist(structure_ids))
     cells = session.query(Cell).filter(Cell.StructureId.in_(structure_ids)).all()
     result = [[c.a, c.b, c.c, c.alpha, c.beta, c.gamma, c.volume] for c in cells]
     return result
+
 
 def get_all_structure_names(session, idlist: list = None):
     if idlist:
         # certain ids:
         return session.query(Structure).filter(Structure.Id.in_(idlist)).all()
     else:
-        #just all:
+        # just all:
         return session.query(Structure).all()
 
 
@@ -498,7 +491,7 @@ def find_by_date(session, start='0000-01-01', end='NOW'):
           SELECT StructureId FROM Residuals WHERE modification_time between DATE(?) AND DATE(?);
           """
     ids = [StructureId for StructureId, in session.query(Residuals.StructureId)
-                        .filter(Residuals.modification_time.between(start, end))]
+        .filter(Residuals.modification_time.between(start, end))]
     return ids
 
 
@@ -537,7 +530,7 @@ def find_by_it_number(session, number: int) -> list:
         return []
     req = '''SELECT StructureId from Residuals WHERE _space_group_IT_number IS ?'''
     result = [sid for sid, in session.query(Residuals.StructureId)
-                .filter(Residuals._space_group_IT_number.is_(value)).all()]
+        .filter(Residuals._space_group_IT_number.is_(value)).all()]
     return result
 
 
@@ -584,8 +577,8 @@ def fill_structures_table(session, path: str, filename: str, structure_id: str, 
     session.add(entry)
 
 
-def fill_cell_table(session: 'Session', structure_id: str, a: float, b: float, c: float,
-                    alpha: float, beta: float, gamma:float, volume: float):
+def fill_cell_table(session: 'Session', structure_id: int, a: str, b: str, c: str,
+                    alpha: str, beta: str, gamma: str, volume: str):
     """
     fill the cell of structure(structureId) in the table
     cell = [a, b, c, alpha, beta, gamma]
@@ -607,13 +600,13 @@ def fill_cell_table(session: 'Session', structure_id: str, a: float, b: float, c
     if isinstance(volume, str):
         vol = volume.split('(')[0]
     entry = Cell(StructureId=structure_id, a=a, b=b, c=c, alpha=alpha, beta=beta, gamma=gamma,
-                                      esda=aerror, esdb=berror, esdc=cerror, esdalpha=alphaerror,
-                                      esdbeta=betaerror, esdgamma=gammaerror, volume=vol)
+                 esda=aerror, esdb=berror, esdc=cerror, esdalpha=alphaerror,
+                 esdbeta=betaerror, esdgamma=gammaerror, volume=vol)
     session.add(entry)
 
 
 def fill_atoms_table(session, structure_id: str, name: str, element: str, x: float, y: float, z: float,
-                            occ: float, part: int):
+                     occ: float, part: int):
     """
     fill the atoms into structure(structureId)
     """
@@ -626,62 +619,84 @@ def fill_residuals_table(session: 'Session', structure_id: str, cif: Cif) -> boo
     Fill the table with residuals of the refinement.
     """
     resid = Residuals(
-        StructureId                           = structure_id,
-        _cell_formula_units_Z                 = cif.cif_data['_cell_formula_units_Z'],  # Z
-        _space_group_name_H_M_alt             = cif.cif_data['_space_group_name_H-M_alt'],  # Raumgruppe (Herman-Maugin)
-        _space_group_name_Hall                = cif.cif_data['_space_group_name_Hall'],  # Hall-Symbol
-        _space_group_IT_number                = cif.cif_data['_space_group_IT_number'],  # Raumgruppen-Nummer aus IT
-        _space_group_crystal_system           = cif.cif_data['_space_group_crystal_system'],  # Kristallsystem
-        _space_group_symop_operation_xyz      = cif.cif_data['_space_group_symop_operation_xyz'],  # SYMM cards
-        _chemical_formula_sum                 = cif.cif_data['_chemical_formula_sum'],  # Summenformel
-        _chemical_formula_weight              = cif.cif_data['_chemical_formula_weight'],  # Moyety-Formel
-        _exptl_crystal_description            = cif.cif_data['_exptl_crystal_description'],  # Habitus
-        _exptl_crystal_colour                 = cif.cif_data['_exptl_crystal_colour'],  # Farbe
-        _exptl_crystal_size_max               = cif.cif_data['_exptl_crystal_size_max'],  # Größe
-        _exptl_crystal_size_mid               = cif.cif_data['_exptl_crystal_size_mid'],  # Größe
-        _exptl_crystal_size_min               = cif.cif_data['_exptl_crystal_size_min'],  # Größe
-        _audit_creation_method                = cif.cif_data['_audit_creation_method'],  # how data were entered into the data block.
-        _exptl_absorpt_coefficient_mu         = cif.cif_data['_exptl_absorpt_coefficient_mu'],  # Linear absorption coefficient (mm-1)
-        _exptl_absorpt_correction_type        = cif.cif_data['_exptl_absorpt_correction_type'],  # Code for absorption correction
-        _diffrn_ambient_temperature           = cif.cif_data['_diffrn_ambient_temperature'],  # The mean temperature in kelvins at which the
-        _diffrn_radiation_wavelength          = cif.cif_data['_diffrn_radiation_wavelength'],  # Radiation wavelength (Å)
-        _diffrn_radiation_type                = cif.cif_data['_diffrn_radiation_type'],  # Radiation type (e.g. neutron or `Mo Kα')
-        _diffrn_source                        = cif.cif_data['_diffrn_source'],  # Röntgenquelle
-        _diffrn_measurement_device_type       = cif.cif_data['_diffrn_measurement_device_type'],  # Diffractometer make and type
-        _diffrn_reflns_number                 = cif.cif_data['_diffrn_reflns_number'],  # Total number of reflections measured excluding systematic absences
-        _diffrn_reflns_av_R_equivalents       = cif.cif_data['_diffrn_reflns_av_R_equivalents'],  # R(int) -> R factor for symmetry-equivalent intensities
-        _diffrn_reflns_theta_min              = cif.cif_data['_diffrn_reflns_theta_min'],  # Minimum θ of measured reflections (°)
-        _diffrn_reflns_theta_max              = cif.cif_data['_diffrn_reflns_theta_max'],  # Maximum θ of measured reflections (°)
-        _diffrn_reflns_theta_full             = cif.cif_data['_diffrn_reflns_theta_full'], # θ to which available reflections are close to 100% complete (°)
-        _diffrn_measured_fraction_theta_max   = cif.cif_data['_diffrn_measured_fraction_theta_max'], # completeness, Fraction of unique reflections measured to θmax
-        _diffrn_measured_fraction_theta_full  = cif.cif_data['_diffrn_measured_fraction_theta_full'],  # Fraction of unique reflections measured to θfull
-        _reflns_number_total                  = cif.cif_data['_reflns_number_total'],  # Number of symmetry-independent reflections excluding systematic absences.
-        _reflns_number_gt                     = cif.cif_data['_reflns_number_gt'],  # Number of reflections > σ threshold
-        _reflns_threshold_expression          = cif.cif_data['_reflns_threshold_expression'],  # σ expression for F, F2 or I threshold
-        _reflns_Friedel_coverage              = cif.cif_data['_reflns_Friedel_coverage'],  # The proportion of Friedel-related reflections present in the number of reported unique reflections
-        _computing_structure_solution         = cif.cif_data['_computing_structure_solution'],  # Reference to structure-solution software
-        _computing_structure_refinement       = cif.cif_data['_computing_structure_refinement'],  # Reference to structure-refinement software
-        _refine_special_details               = cif.cif_data['_refine_special_details'],  # Details about the refinement
-        _refine_ls_structure_factor_coef      = cif.cif_data['_refine_ls_structure_factor_coef'],  # Code for F, F2 or I used in least-squares refinement
-        _refine_ls_weighting_details          = cif.cif_data['_refine_ls_weighting_details'],  # Weighting expression
-        _refine_ls_number_reflns              = cif.cif_data['_refine_ls_number_reflns'],  # The number of unique reflections contributing to the least-squares refinement calculation.
-        _refine_ls_number_parameters          = cif.cif_data['_refine_ls_number_parameters'],  # Number of parameters refined
-        _refine_ls_number_restraints          = cif.cif_data['_refine_ls_number_restraints'],  # Number of restraints applied during refinement
-        _refine_ls_R_factor_all               = cif.cif_data['_refine_ls_R_factor_all'],
-        _refine_ls_R_factor_gt                = cif.cif_data['_refine_ls_R_factor_gt'],  # R1 factor of F for reflections > threshold
-        _refine_ls_wR_factor_ref              = cif.cif_data['_refine_ls_wR_factor_ref'],  # wR2 factor of coefficient for refinement reflections
-        _refine_ls_wR_factor_gt               = cif.cif_data['_refine_ls_wR_factor_gt'],
-        _refine_ls_goodness_of_fit_ref        = cif.cif_data['_refine_ls_goodness_of_fit_ref'],  # Goodness of fit S for refinement reflections
-        _refine_ls_restrained_S_all           = cif.cif_data['_refine_ls_restrained_S_all'],  # The least-squares goodness-of-fit parameter S' for all reflections after the final cycle of least-squares refinement.
-        _refine_ls_shift_su_max               = cif.cif_data['_refine_ls_shift/su_max'],  # Maximum shift/s.u. ratio after final refinement cycle
-        _refine_ls_shift_su_mean              = cif.cif_data['_refine_ls_shift/su_mean'],
-        _refine_diff_density_max              = cif.cif_data['_refine_diff_density_max'],  # Maximum difference density after refinement
-        _refine_diff_density_min              = cif.cif_data['_refine_diff_density_min'],  # Deepest hole
-        _diffrn_reflns_av_unetI_netI          = cif.cif_data['_diffrn_reflns_av_unetI/netI'],  # R(sigma)
-        _database_code_depnum_ccdc_archive    = cif.cif_data['_database_code_depnum_ccdc_archive'],  # CCDC number
-        _shelx_res_file                       = cif.cif_data['_shelx_res_file'],  # The content of the SHELXL res file
-        modification_time                     = date(*[int(x) for x in cif.cif_data['modification_time'].split('-')]),
-        file_size                             = cif.cif_data['file_size'] )
+            StructureId=structure_id,
+            _cell_formula_units_Z=cif.cif_data['_cell_formula_units_Z'],  # Z
+            _space_group_name_H_M_alt=cif.cif_data['_space_group_name_H-M_alt'],  # Raumgruppe (Herman-Maugin)
+            _space_group_name_Hall=cif.cif_data['_space_group_name_Hall'],  # Hall-Symbol
+            _space_group_IT_number=cif.cif_data['_space_group_IT_number'],  # Raumgruppen-Nummer aus IT
+            _space_group_crystal_system=cif.cif_data['_space_group_crystal_system'],  # Kristallsystem
+            _space_group_symop_operation_xyz=cif.cif_data['_space_group_symop_operation_xyz'],  # SYMM cards
+            _chemical_formula_sum=cif.cif_data['_chemical_formula_sum'],  # Summenformel
+            _chemical_formula_weight=cif.cif_data['_chemical_formula_weight'],  # Moyety-Formel
+            _exptl_crystal_description=cif.cif_data['_exptl_crystal_description'],  # Habitus
+            _exptl_crystal_colour=cif.cif_data['_exptl_crystal_colour'],  # Farbe
+            _exptl_crystal_size_max=cif.cif_data['_exptl_crystal_size_max'],  # Größe
+            _exptl_crystal_size_mid=cif.cif_data['_exptl_crystal_size_mid'],  # Größe
+            _exptl_crystal_size_min=cif.cif_data['_exptl_crystal_size_min'],  # Größe
+            _audit_creation_method=cif.cif_data['_audit_creation_method'],  # how data were entered into the data block.
+            _exptl_absorpt_coefficient_mu=cif.cif_data['_exptl_absorpt_coefficient_mu'],
+            # Linear absorption coefficient (mm-1)
+            _exptl_absorpt_correction_type=cif.cif_data['_exptl_absorpt_correction_type'],
+            # Code for absorption correction
+            _diffrn_ambient_temperature=cif.cif_data['_diffrn_ambient_temperature'],
+            # The mean temperature in kelvins at which the
+            _diffrn_radiation_wavelength=cif.cif_data['_diffrn_radiation_wavelength'],  # Radiation wavelength (Å)
+            _diffrn_radiation_type=cif.cif_data['_diffrn_radiation_type'],  # Radiation type (e.g. neutron or `Mo Kα')
+            _diffrn_source=cif.cif_data['_diffrn_source'],  # Röntgenquelle
+            _diffrn_measurement_device_type=cif.cif_data['_diffrn_measurement_device_type'],
+            # Diffractometer make and type
+            _diffrn_reflns_number=cif.cif_data['_diffrn_reflns_number'],
+            # Total number of reflections measured excluding systematic absences
+            _diffrn_reflns_av_R_equivalents=cif.cif_data['_diffrn_reflns_av_R_equivalents'],
+            # R(int) -> R factor for symmetry-equivalent intensities
+            _diffrn_reflns_theta_min=cif.cif_data['_diffrn_reflns_theta_min'],  # Minimum θ of measured reflections (°)
+            _diffrn_reflns_theta_max=cif.cif_data['_diffrn_reflns_theta_max'],  # Maximum θ of measured reflections (°)
+            _diffrn_reflns_theta_full=cif.cif_data['_diffrn_reflns_theta_full'],
+            # θ to which available reflections are close to 100% complete (°)
+            _diffrn_measured_fraction_theta_max=cif.cif_data['_diffrn_measured_fraction_theta_max'],
+            # completeness, Fraction of unique reflections measured to θmax
+            _diffrn_measured_fraction_theta_full=cif.cif_data['_diffrn_measured_fraction_theta_full'],
+            # Fraction of unique reflections measured to θfull
+            _reflns_number_total=cif.cif_data['_reflns_number_total'],
+            # Number of symmetry-independent reflections excluding systematic absences.
+            _reflns_number_gt=cif.cif_data['_reflns_number_gt'],  # Number of reflections > σ threshold
+            _reflns_threshold_expression=cif.cif_data['_reflns_threshold_expression'],
+            # σ expression for F, F2 or I threshold
+            _reflns_Friedel_coverage=cif.cif_data['_reflns_Friedel_coverage'],
+            # The proportion of Friedel-related reflections present in the number of reported unique reflections
+            _computing_structure_solution=cif.cif_data['_computing_structure_solution'],
+            # Reference to structure-solution software
+            _computing_structure_refinement=cif.cif_data['_computing_structure_refinement'],
+            # Reference to structure-refinement software
+            _refine_special_details=cif.cif_data['_refine_special_details'],  # Details about the refinement
+            _refine_ls_structure_factor_coef=cif.cif_data['_refine_ls_structure_factor_coef'],
+            # Code for F, F2 or I used in least-squares refinement
+            _refine_ls_weighting_details=cif.cif_data['_refine_ls_weighting_details'],  # Weighting expression
+            _refine_ls_number_reflns=cif.cif_data['_refine_ls_number_reflns'],
+            # The number of unique reflections contributing to the least-squares refinement calculation.
+            _refine_ls_number_parameters=cif.cif_data['_refine_ls_number_parameters'],  # Number of parameters refined
+            _refine_ls_number_restraints=cif.cif_data['_refine_ls_number_restraints'],
+            # Number of restraints applied during refinement
+            _refine_ls_R_factor_all=cif.cif_data['_refine_ls_R_factor_all'],
+            _refine_ls_R_factor_gt=cif.cif_data['_refine_ls_R_factor_gt'],  # R1 factor of F for reflections > threshold
+            _refine_ls_wR_factor_ref=cif.cif_data['_refine_ls_wR_factor_ref'],
+            # wR2 factor of coefficient for refinement reflections
+            _refine_ls_wR_factor_gt=cif.cif_data['_refine_ls_wR_factor_gt'],
+            _refine_ls_goodness_of_fit_ref=cif.cif_data['_refine_ls_goodness_of_fit_ref'],
+            # Goodness of fit S for refinement reflections
+            _refine_ls_restrained_S_all=cif.cif_data['_refine_ls_restrained_S_all'],
+            # The least-squares goodness-of-fit parameter S' for all reflections after the final cycle of least-squares refinement.
+            _refine_ls_shift_su_max=cif.cif_data['_refine_ls_shift/su_max'],
+            # Maximum shift/s.u. ratio after final refinement cycle
+            _refine_ls_shift_su_mean=cif.cif_data['_refine_ls_shift/su_mean'],
+            _refine_diff_density_max=cif.cif_data['_refine_diff_density_max'],
+            # Maximum difference density after refinement
+            _refine_diff_density_min=cif.cif_data['_refine_diff_density_min'],  # Deepest hole
+            _diffrn_reflns_av_unetI_netI=cif.cif_data['_diffrn_reflns_av_unetI/netI'],  # R(sigma)
+            _database_code_depnum_ccdc_archive=cif.cif_data['_database_code_depnum_ccdc_archive'],  # CCDC number
+            _shelx_res_file=cif.cif_data['_shelx_res_file'],  # The content of the SHELXL res file
+            modification_time=date(*[int(x) for x in cif.cif_data['modification_time'].split('-')]),
+            file_size=cif.cif_data['file_size'])
     session.add(resid)
 
 
@@ -756,86 +771,89 @@ def fill_residuals_table2(engine, structure_id: str, cif: Cif) -> bool:
                     """
     req = '''INSERT INTO Residuals {} VALUES ({});'''.format(residuals, joined_arglist(residuals.split(',')))
     result = connection.execute(req, (
-                structure_id,
-                cif.cif_data['_cell_formula_units_Z'],              # Z
-                cif.cif_data['_space_group_name_H-M_alt'],          # Raumgruppe (Herman-Maugin)
-                cif.cif_data['_space_group_name_Hall'],             # Hall-Symbol
-                cif.cif_data['_space_group_IT_number'],             # Raumgruppen-Nummer aus IT
-                cif.cif_data['_space_group_crystal_system'],        # Kristallsystem
-                cif.cif_data['_space_group_symop_operation_xyz'],   # SYMM cards
-                cif.cif_data['_chemical_formula_sum'],              # Summenformel
-                cif.cif_data['_chemical_formula_weight'],           # Moyety-Formel
-                cif.cif_data['_exptl_crystal_description'],         # Habitus
-                cif.cif_data['_exptl_crystal_colour'],              # Farbe
-                cif.cif_data['_exptl_crystal_size_max'],            # Größe
-                cif.cif_data['_exptl_crystal_size_mid'],            # Größe
-                cif.cif_data['_exptl_crystal_size_min'],            # Größe
-                cif.cif_data['_audit_creation_method'],             # how data were entered into the data block.
-                cif.cif_data['_exptl_absorpt_coefficient_mu'],      # Linear absorption coefficient (mm-1)
-                cif.cif_data['_exptl_absorpt_correction_type'],     # Code for absorption correction
-                cif.cif_data['_diffrn_ambient_temperature'],        # The mean temperature in kelvins at which the
-                                                                    # intensities were measured.
-                cif.cif_data['_diffrn_radiation_wavelength'],       # Radiation wavelength (Å)
-                cif.cif_data['_diffrn_radiation_type'],             # Radiation type (e.g. neutron or `Mo Kα')
-                cif.cif_data['_diffrn_source'],                     # Röntgenquelle
-                cif.cif_data['_diffrn_measurement_device_type'],    # Diffractometer make and type
-                cif.cif_data['_diffrn_reflns_number'],              # Total number of reflections measured excluding systematic absences
-                cif.cif_data['_diffrn_reflns_av_R_equivalents'],    # R(int) -> R factor for symmetry-equivalent intensities
-                cif.cif_data['_diffrn_reflns_theta_min'],           # Minimum θ of measured reflections (°)
-                cif.cif_data['_diffrn_reflns_theta_max'],           # Maximum θ of measured reflections (°)
-                cif.cif_data['_diffrn_reflns_theta_full'],          # θ to which available reflections are close to 100% complete (°)
-                cif.cif_data['_diffrn_measured_fraction_theta_max'],   # completeness, Fraction of unique reflections measured to θmax
-                cif.cif_data['_diffrn_measured_fraction_theta_full'],  # Fraction of unique reflections measured to θfull
-                cif.cif_data['_reflns_number_total'],               # Number of symmetry-independent reflections excluding
-                                                                    #   systematic absences.
-                cif.cif_data['_reflns_number_gt'],                  # Number of reflections > σ threshold
-                cif.cif_data['_reflns_threshold_expression'],       # σ expression for F, F2 or I threshold
-                cif.cif_data['_reflns_Friedel_coverage'],           # The proportion of Friedel-related reflections
-                                                                    #   present in the number of reported unique reflections
-                cif.cif_data['_computing_structure_solution'],      # Reference to structure-solution software
-                cif.cif_data['_computing_structure_refinement'],    # Reference to structure-refinement software
-                cif.cif_data['_refine_special_details'],            # Details about the refinement
-                cif.cif_data['_refine_ls_structure_factor_coef'],   # Code for F, F2 or I used in least-squares refinement
-                cif.cif_data['_refine_ls_weighting_details'],       # Weighting expression
-                cif.cif_data['_refine_ls_number_reflns'],           # The number of unique reflections contributing to the
-                                                                    #   least-squares refinement calculation.
-                cif.cif_data['_refine_ls_number_parameters'],       # Number of parameters refined
-                cif.cif_data['_refine_ls_number_restraints'],       # Number of restraints applied during refinement
-                cif.cif_data['_refine_ls_R_factor_all'],
-                cif.cif_data['_refine_ls_R_factor_gt'],             # R1 factor of F for reflections > threshold
-                cif.cif_data['_refine_ls_wR_factor_ref'],           # wR2 factor of coefficient for refinement reflections
-                cif.cif_data['_refine_ls_wR_factor_gt'],
-                cif.cif_data['_refine_ls_goodness_of_fit_ref'],     # Goodness of fit S for refinement reflections
-                cif.cif_data['_refine_ls_restrained_S_all'],        # The least-squares goodness-of-fit parameter S' for
-                                                                    # all reflections after the final cycle of least-squares refinement.
-                cif.cif_data['_refine_ls_shift/su_max'],            # Maximum shift/s.u. ratio after final refinement cycle
-                cif.cif_data['_refine_ls_shift/su_mean'],
-                cif.cif_data['_refine_diff_density_max'],           # Maximum difference density after refinement
-                cif.cif_data['_refine_diff_density_min'],           # Deepest hole
-                cif.cif_data['_diffrn_reflns_av_unetI/netI'],       # R(sigma)
-                cif.cif_data['_database_code_depnum_ccdc_archive'],  # CCDC number
-                cif.cif_data['_shelx_res_file'],                     # The content of the SHELXL res file
-                cif.cif_data['modification_time'],
-                cif.cif_data['file_size']
-                )
-            )
+        structure_id,
+        cif.cif_data['_cell_formula_units_Z'],  # Z
+        cif.cif_data['_space_group_name_H-M_alt'],  # Raumgruppe (Herman-Maugin)
+        cif.cif_data['_space_group_name_Hall'],  # Hall-Symbol
+        cif.cif_data['_space_group_IT_number'],  # Raumgruppen-Nummer aus IT
+        cif.cif_data['_space_group_crystal_system'],  # Kristallsystem
+        cif.cif_data['_space_group_symop_operation_xyz'],  # SYMM cards
+        cif.cif_data['_chemical_formula_sum'],  # Summenformel
+        cif.cif_data['_chemical_formula_weight'],  # Moyety-Formel
+        cif.cif_data['_exptl_crystal_description'],  # Habitus
+        cif.cif_data['_exptl_crystal_colour'],  # Farbe
+        cif.cif_data['_exptl_crystal_size_max'],  # Größe
+        cif.cif_data['_exptl_crystal_size_mid'],  # Größe
+        cif.cif_data['_exptl_crystal_size_min'],  # Größe
+        cif.cif_data['_audit_creation_method'],  # how data were entered into the data block.
+        cif.cif_data['_exptl_absorpt_coefficient_mu'],  # Linear absorption coefficient (mm-1)
+        cif.cif_data['_exptl_absorpt_correction_type'],  # Code for absorption correction
+        cif.cif_data['_diffrn_ambient_temperature'],  # The mean temperature in kelvins at which the
+        # intensities were measured.
+        cif.cif_data['_diffrn_radiation_wavelength'],  # Radiation wavelength (Å)
+        cif.cif_data['_diffrn_radiation_type'],  # Radiation type (e.g. neutron or `Mo Kα')
+        cif.cif_data['_diffrn_source'],  # Röntgenquelle
+        cif.cif_data['_diffrn_measurement_device_type'],  # Diffractometer make and type
+        cif.cif_data['_diffrn_reflns_number'],  # Total number of reflections measured excluding systematic absences
+        cif.cif_data['_diffrn_reflns_av_R_equivalents'],  # R(int) -> R factor for symmetry-equivalent intensities
+        cif.cif_data['_diffrn_reflns_theta_min'],  # Minimum θ of measured reflections (°)
+        cif.cif_data['_diffrn_reflns_theta_max'],  # Maximum θ of measured reflections (°)
+        cif.cif_data['_diffrn_reflns_theta_full'],  # θ to which available reflections are close to 100% complete (°)
+        cif.cif_data['_diffrn_measured_fraction_theta_max'],
+        # completeness, Fraction of unique reflections measured to θmax
+        cif.cif_data['_diffrn_measured_fraction_theta_full'],  # Fraction of unique reflections measured to θfull
+        cif.cif_data['_reflns_number_total'],  # Number of symmetry-independent reflections excluding
+        #   systematic absences.
+        cif.cif_data['_reflns_number_gt'],  # Number of reflections > σ threshold
+        cif.cif_data['_reflns_threshold_expression'],  # σ expression for F, F2 or I threshold
+        cif.cif_data['_reflns_Friedel_coverage'],  # The proportion of Friedel-related reflections
+        #   present in the number of reported unique reflections
+        cif.cif_data['_computing_structure_solution'],  # Reference to structure-solution software
+        cif.cif_data['_computing_structure_refinement'],  # Reference to structure-refinement software
+        cif.cif_data['_refine_special_details'],  # Details about the refinement
+        cif.cif_data['_refine_ls_structure_factor_coef'],  # Code for F, F2 or I used in least-squares refinement
+        cif.cif_data['_refine_ls_weighting_details'],  # Weighting expression
+        cif.cif_data['_refine_ls_number_reflns'],  # The number of unique reflections contributing to the
+        #   least-squares refinement calculation.
+        cif.cif_data['_refine_ls_number_parameters'],  # Number of parameters refined
+        cif.cif_data['_refine_ls_number_restraints'],  # Number of restraints applied during refinement
+        cif.cif_data['_refine_ls_R_factor_all'],
+        cif.cif_data['_refine_ls_R_factor_gt'],  # R1 factor of F for reflections > threshold
+        cif.cif_data['_refine_ls_wR_factor_ref'],  # wR2 factor of coefficient for refinement reflections
+        cif.cif_data['_refine_ls_wR_factor_gt'],
+        cif.cif_data['_refine_ls_goodness_of_fit_ref'],  # Goodness of fit S for refinement reflections
+        cif.cif_data['_refine_ls_restrained_S_all'],  # The least-squares goodness-of-fit parameter S' for
+        # all reflections after the final cycle of least-squares refinement.
+        cif.cif_data['_refine_ls_shift/su_max'],  # Maximum shift/s.u. ratio after final refinement cycle
+        cif.cif_data['_refine_ls_shift/su_mean'],
+        cif.cif_data['_refine_diff_density_max'],  # Maximum difference density after refinement
+        cif.cif_data['_refine_diff_density_min'],  # Deepest hole
+        cif.cif_data['_diffrn_reflns_av_unetI/netI'],  # R(sigma)
+        cif.cif_data['_database_code_depnum_ccdc_archive'],  # CCDC number
+        cif.cif_data['_shelx_res_file'],  # The content of the SHELXL res file
+        cif.cif_data['modification_time'],
+        cif.cif_data['file_size']
+    )
+                                )
     return result
+
 
 if __name__ == '__main__':
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
+
     engine = create_engine('sqlite:///./test.sqlite')
     Session = sessionmaker(bind=engine)
     session = Session()
     cell = get_cell_by_id(session, 4)
-    #print(cell.values())
-    #symm = get_symmcards(session, 4)
-    #print(symm)
-    #atoms = get_atoms_table(session, 4, cell, cartesian=True)
-    #print(atoms)
-    #ids = find_cell_by_volume(session, 1319, 2)
-    #cells = get_cells_as_list(session, ids)
-    #print(ids)
-    #print(cells)
+    # print(cell.values())
+    # symm = get_symmcards(session, 4)
+    # print(symm)
+    # atoms = get_atoms_table(session, 4, cell, cartesian=True)
+    # print(atoms)
+    # ids = find_cell_by_volume(session, 1319, 2)
+    # cells = get_cells_as_list(session, ids)
+    # print(ids)
+    # print(cells)
     string = find_by_strings(engine, '2004805')
     print(string)
