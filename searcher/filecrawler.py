@@ -224,7 +224,8 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 except IndexError:
                     continue
                 if cif:
-                    tst = fill_db_with_cif_data(session, cif, engine=engine, filename=z.cifname, path=fullpath, structure_id=lastid)
+                    tst = fill_db_with_cif_data(session, engine=engine, cif=cif, filename=z.cifname,
+                                                path=fullpath, structure_id=lastid)
                     zipcifs += 1
                     if not tst:
                         continue
@@ -342,23 +343,14 @@ def fill_db_with_cif_data(session: Session, engine, cif: fileparser.Cif, filenam
                 atom_type_symbol = cif._atom[name]['_atom_site_type_symbol']
             except KeyError:
                 atom_type_symbol  = atoms.get_atomlabel(name)
-            #atomslist.append(dict(StructureId=structure_id, Name=name, element=atom_type_symbol,
-            #     x=cif._atom[name]['_atom_site_fract_x'].split('(')[0],
-            #     y=cif._atom[name]['_atom_site_fract_y'].split('(')[0],
-            #     z=cif._atom[name]['_atom_site_fract_z'].split('(')[0],
-            #     occupancy=occu,
-            #     part=part))
             fill_atoms_table(session, structure_id, name, atom_type_symbol,
                                          cif._atom[name]['_atom_site_fract_x'].split('(')[0],
                                          cif._atom[name]['_atom_site_fract_y'].split('(')[0],
                                          cif._atom[name]['_atom_site_fract_z'].split('(')[0],
-                                         occu, part
-                                        )
+                                         occu, part)
         except KeyError as e:
             #print(x, filename, e)
             pass
-    #session.bulk_insert_mappings(Atoms, atomslist)
-    #session.commit()
     fill_residuals_table2(engine, structure_id, cif)
     return True
 

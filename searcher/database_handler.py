@@ -685,6 +685,10 @@ def fill_residuals_table(session: 'Session', structure_id: str, cif: Cif) -> boo
     session.add(resid)
 
 
+def joined_arglist(items):
+    return ','.join(['?'] * len(items))
+
+
 def fill_residuals_table2(engine, structure_id: str, cif: Cif) -> bool:
     """
     Fill the table with residuals of the refinement.
