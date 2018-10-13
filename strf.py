@@ -821,6 +821,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         searches db for given cell via the cell volume
         """
         cell = is_valid_cell(search_string)
+        self.ui.ad_unitCellLineEdit.setText('  '.join([str(x) for x in cell]))
         self.ui.txtSearchEdit.clear()
         if not cell:
             if self.ui.searchCellLineEDit.text():
