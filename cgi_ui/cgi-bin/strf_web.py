@@ -11,7 +11,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from searcher.database_handler import get_residuals, get_cell_by_id, find_by_it_number, find_by_strings, \
-    get_atoms_table, find_by_elements, find_by_date, find_cell_by_volume, get_cells_as_list
+    get_atoms_table, find_by_elements, find_by_date, find_cell_by_volume, get_cells_as_list, get_all_structures_as_dict
 
 host = "10.6.13.3"
 port = "80"
@@ -255,7 +255,7 @@ def is_ajax():
         return False
 
 
-def get_structures_json(session: Session, ids: (list, tuple) = None, show_all: bool = False) -> dict:
+def get_structures_json(session: 'Session', ids: (list, tuple) = None, show_all: bool = False) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
@@ -266,7 +266,7 @@ def get_structures_json(session: Session, ids: (list, tuple) = None, show_all: b
     if not ids and not show_all:
         # return json.dumps(failure)
         return {}
-    dic = get_all_structures_as_dict(ids, all_ids=show_all)
+    dic = get_all_structures_as_dict(session)
     number = len(dic)
     print("--> Got {} structures from actual search.".format(number))
     if number == 0:
@@ -275,7 +275,7 @@ def get_structures_json(session: Session, ids: (list, tuple) = None, show_all: b
     return {"total": number, "records": dic, "status": "success"}
 
 
-def get_cell_parameters(session: Session, strid: str) -> str:
+def get_cell_parameters(session: 'Session', strid: str) -> str:
     """
     Resturns unit cell parameters as html formated string.
     """

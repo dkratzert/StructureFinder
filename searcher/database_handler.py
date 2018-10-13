@@ -16,7 +16,8 @@ from datetime import date
 
 from sqlalchemy import Column, Integer, String, ForeignKey, Float, Date, TypeDecorator, Numeric
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql.expression import cast, func
+from sqlalchemy.sql.expression import cast, func, alias
+from sqlalchemy.orm import aliased
 
 from lattice import lattice
 from searcher import misc
@@ -479,6 +480,21 @@ def get_all_structure_names(session, idlist: list = None):
         return session.query(Structure).all()
 
 
+def get_all_structures_as_dict(session):
+    """
+    >>> dbfilename = '../structurefinder.sqlite'
+    >>> engine = create_engine('sqlite:///' + dbfilename)
+    >>> Session = sessionmaker(bind=engine)
+    >>> session = Session()
+    >>> get_all_structures_as_dict(session)
+    """
+    #req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename,
+    #                          Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
+    result = session.query(Structure.Id.label('recid'), Structure.measurement, Structure.path, Structure.filename,
+                  Structure.dataname)
+    return [{'recid': recid, 'measurement': measurement, 'path': path, 'filename': filename, 'dataname': dataname}
+                for recid, measurement, path, filename, dataname in result]
+
 def find_by_date(session, start='0000-01-01', end='NOW'):
     """
     Find structures between start and end date.
@@ -855,5 +871,6 @@ if __name__ == '__main__':
     # cells = get_cells_as_list(session, ids)
     # print(ids)
     # print(cells)
-    string = find_by_strings(engine, '2004805')
-    print(string)
+    #string = find_by_strings(engine, '2004805')
+    res = get_all_structures_as_dict(session)
+    print(res)
