@@ -368,24 +368,6 @@ class StructureTable():
         #else:
         #    raise IndexError('Database entry not found.')
 
-    def __iter__(self):
-        """
-        This method is called when an iterator is required for FragmentTable.
-        Returns the Id and the Name as tuple.
-  
-        >>> dbfile = 'test-data/test.sqlite'
-        >>> db = StructureTable(dbfile)
-        >>> for num, i in enumerate(db):
-        ...   print(i)
-        ...   if num > 1:
-        ...     break
-        """
-        all_structures = self.get_all_structure_names()
-        if all_structures:
-            return iter(all_structures)
-        else:
-            return False
-
     def get_all_structures_as_dict(self, ids: (list, tuple)=None, all_ids: bool=False) -> dict:
         """
         Returns the list of structures as dictionary.
@@ -436,11 +418,7 @@ class StructureTable():
         else:  # just all
             req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
                                      Structure.dataname FROM Structure'''
-        try:
-            rows = [list(i) for i in self.database.db_request(req)]
-        except TypeError:
-            return []
-        return rows
+        return self.database.db_request(req)
 
     def get_filepath(self, structure_id):
         """
@@ -464,7 +442,7 @@ class StructureTable():
         else:
             return cell
 
-    def __contains__(self, str_id):
+    def __contains__(self, str_id: int):
         """
         return if db contains entry of id
         """
@@ -526,20 +504,13 @@ class StructureTable():
         req = '''INSERT INTO cell (StructureId, a, b, c, alpha, beta, gamma, 
                                    esda, esdb, esdc, esdalpha, esdbeta, esdgamma, volume) 
                             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-        aerror = get_error_from_value(a)
-        berror = get_error_from_value(b)
-        cerror = get_error_from_value(c)
-        alphaerror = get_error_from_value(alpha)
-        betaerror = get_error_from_value(beta)
-        gammaerror = get_error_from_value(gamma)
+        a, aerror = get_error_from_value(a)
+        b, berror = get_error_from_value(b)
+        c, cerror = get_error_from_value(c)
+        alpha, alphaerror = get_error_from_value(alpha)
+        beta, betaerror = get_error_from_value(beta)
+        gamma, gammaerror = get_error_from_value(gamma)
         vol = volume
-        if isinstance(a, str):
-            a = a.split('(')[0]
-            b = b.split('(')[0]
-            c = c.split('(')[0]
-            alpha = alpha.split('(')[0]
-            beta = beta.split('(')[0]
-            gamma = gamma.split('(')[0]
         if isinstance(volume, str):
             vol = volume.split('(')[0]
         if self.database.db_request(req, (structure_id, a, b, c, alpha, beta, gamma,

@@ -830,8 +830,7 @@ class ShelXFile():
             except IndexError:
                 pass
             # Prevent wrapping long lines with \n breaks by splitting first:
-            line = "\n".join([wrap_line(x) for x in str(line).split("\n")])
-            resl.append(line)
+            resl.append("\n".join([wrap_line(x) for x in str(line).split("\n")]))
         return "\n".join(resl)
 
     def write_shelx_file(self, filename=None, verbose=False):

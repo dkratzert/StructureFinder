@@ -425,8 +425,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if not fname:
             self.progress.hide()
             self.abort_import_button.hide()
-        filecrawler.put_cifs_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked(), 
-                                   fillcif=self.ui.add_cif.isChecked())
+        filecrawler.put_files_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked(),
+                                    fillcif=self.ui.add_cif.isChecked())
         self.progress.hide()
         self.structures.database.init_textsearch()
         self.structures.populate_fulltext_search_table()

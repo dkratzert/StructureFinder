@@ -85,9 +85,9 @@ else:
             lastid += 1
         structures = database_handler.StructureTable(dbfilename)
         try:
-            ncifs = filecrawler.put_cifs_in_db(searchpath=p, excludes=args.ex,
-                                               structures=structures, lastid=lastid, 
-                                               fillres=args.fillres, fillcif=args.fillcif)
+            ncifs = filecrawler.put_files_in_db(searchpath=p, excludes=args.ex,
+                                                structures=structures, lastid=lastid,
+                                                fillres=args.fillres, fillcif=args.fillcif)
         except OSError as e:
             print("Unable to collect files:")
             print(e)

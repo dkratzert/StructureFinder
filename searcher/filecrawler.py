@@ -28,6 +28,7 @@ from shelxfile.shelx import ShelXFile
 
 excluded_names = ['ROOT',
                   '.OLEX',
+                  'olex',
                   'TMP',
                   'TEMP',
                   'Papierkorb',
@@ -83,7 +84,7 @@ class MyTarReader(MyZipBase):
         try:
             tfile = tarfile.open(self.filepath, mode='r')
             for name in tfile.getnames():
-                (self.cifpath, self.cifname) = os.path.split(name)
+                self.cifpath, self.cifname = os.path.split(name)
                 if self.cifname.endswith('.cif'):
                     yield tfile.extractfile(name).read().decode('utf-8', 'ignore').splitlines(keepends=True)
         except Exception as e:
@@ -138,10 +139,10 @@ def filewalker_walk(startdir: str, patterns: list):
     return filelist
 
 
-def put_cifs_in_db(self=None, searchpath: str = './', excludes: list = None, lastid: int = 1, 
-                   structures=None, fillcif=True, fillres=True) -> int:
+def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, lastid: int = 1,
+                    structures=None, fillcif=True, fillres=True) -> int:
     """
-    Imports cif files from a certain directory
+    Imports files from a certain directory
     :param fillres: Should it index res files or not.
     :param fillcif: Should it index cif files or not.
     """
@@ -302,6 +303,7 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
     if not all((a, b, c, alpha, beta, gamma)):
         return False
     if not volume or volume == "?":
+        # TODO: bring get_error_from_value() to here:
         try:
             if isinstance(a, str):
                 a = float(a.split('(')[0])
@@ -321,7 +323,6 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
     measurement_id = structures.fill_measuremnts_table(filename, structure_id)
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
     structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma, volume)
-    #pprint(cif._atom)
     for x in cif._atom:
         try:
             try:
