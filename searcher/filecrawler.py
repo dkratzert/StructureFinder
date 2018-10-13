@@ -404,6 +404,7 @@ def fill_db_with_res_data(session: Session, engine, res: ShelXFile, filename: st
         cif.cif_data["_shelx_res_file"] = str(res)
     except IndexError:
         pass
+    session.commit()
     fill_residuals_table2(engine, structure_id, cif)
     return True
 

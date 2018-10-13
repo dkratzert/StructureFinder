@@ -90,7 +90,7 @@ else:
         else:
             lastid += 1
         try:
-            ncifs = put_files_in_db(searchpath=p, excludes=args.ex, engine=engine
+            ncifs = put_files_in_db(searchpath=p, excludes=args.ex, engine=engine,
                                                 session=session, lastid=lastid,
                                                 fillres=args.fillres, fillcif=args.fillcif)
         except OSError as e:
