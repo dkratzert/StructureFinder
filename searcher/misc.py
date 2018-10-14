@@ -179,7 +179,10 @@ def get_error_from_value(value: str) -> tuple:
         else:
             return float(vval), err
     else:
-        return float(value), 0.0
+        try:
+            return float(value), 0.0
+        except ValueError:
+            return 0.0, 0.0
 
 
 def flatten(lis: list) -> list:
