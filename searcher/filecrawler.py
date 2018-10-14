@@ -157,11 +157,15 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
     prognum = 0
     num = 1
     zipcifs = 0
+    rescount = 0
+    cifcount = 0
     time1 = time.clock()
     patterns = ['*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '*.res']
     filelist = filewalker_walk(str(searchpath), patterns)
     options = {}
-    for filepth, name in filelist:
+    filecount = 1
+    for filenum, (filepth, name) in enumerate(filelist, start=1):
+        filecount = filenum
         fullpath = os.path.join(filepth, name)
         options['modification_time'] = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(fullpath)))
         options['file_size'] = int(os.stat(str(fullpath)).st_size)
@@ -187,6 +191,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                         continue
                     if self:
                         self.add_table_row(name, filepth, cif.cif_data['data'], str(lastid))
+                    cifcount += 1
                     lastid += 1
                     num += 1
                     if lastid % 1000 == 0:
@@ -218,12 +223,13 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 if cif:
                     tst = fill_db_tables(cif, filename=z.cifname, path=fullpath,
                                          structure_id=str(lastid), structures=structures)
-                    zipcifs += 1
                     if not tst:
                         continue
                     if self:
                         self.add_table_row(name=z.cifname, path=fullpath,
                                            data=cif.cif_data['data'], structure_id=str(lastid))
+                    zipcifs += 1
+                    cifcount += 1
                     lastid += 1
                     num += 1
                     if lastid % 1000 == 0:
@@ -250,6 +256,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                                data=name, structure_id=str(lastid))
             lastid += 1
             num += 1
+            rescount += 1
             if lastid % 1000 == 0:
                 print('{} files ...'.format(num))
                 structures.database.commit_db()
@@ -266,10 +273,12 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
-    tmessage = 'Added {0} cif/res files ({4} in compressed files) to database in: {1:>2d} h, {2:>2d} m, {3:>3.2f} s'
-    print(tmessage.format(num - 1, int(h), int(m), s, zipcifs))
+    tmessage = 'Added {0} files ({5} cif, {6} res) files ({4} in compressed files) to database in: ' \
+               '{1:>2d} h, {2:>2d} m, {3:>3.2f} s'
+    print('      {} files considered.'.format(filecount))
+    print(tmessage.format(num - 1, int(h), int(m), s, zipcifs, cifcount, rescount))
     if self:
-        self.ui.statusbar.showMessage(tmessage.format(num - 1, int(h), int(m), s, zipcifs))
+        self.ui.statusbar.showMessage(tmessage.format(num - 1, int(h), int(m), s, zipcifs, cifcount, rescount))
     return lastid-1
 
 
