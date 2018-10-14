@@ -41,9 +41,8 @@ from displaymol.mol_file_writer import MolFile
 from displaymol.sdm import SDM
 from lattice import lattice
 from pymatgen.core import mat_lattice
-from searcher import database_handler, misc
 from searcher.database_handler import StructureTable
-from searcher.misc import is_valid_cell
+from searcher.misc import is_valid_cell, get_list_of_elements, flatten, is_a_nonzero_file
 
 """
 TODO:
@@ -52,8 +51,6 @@ TODO:
 - Maybe http://www.daterangepicker.com
 """
 
-
-structures = database_handler.StructureTable(dbfilename)
 
 app = application = Bottle()
 # bottle.debug(True)  # Do not enable debug in production systems!
@@ -64,6 +61,7 @@ def structures_list_data():
     """
     The content of the structures list.
     """
+    structures = StructureTable(dbfilename)
     return get_structures_json(structures, show_all=True)
 
 
@@ -87,6 +85,7 @@ def cellsrch():
     sublattice = (request.GET.supercell == "true")
     cell = is_valid_cell(cell_search)
     print("Cell search:", cell)
+    structures = StructureTable(dbfilename)
     if cell:
         ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
         print("--> Got {} structures from cell search.".format(len(ids)))
@@ -95,6 +94,7 @@ def cellsrch():
 
 @app.route("/txtsrch")
 def txtsrch():
+    structures = StructureTable(dbfilename)
     text_search = request.GET.text_search
     print("Text search:", text_search)
     ids = search_text(structures, text_search)
@@ -113,6 +113,7 @@ def adv():
     more_results = (request.GET.more == "true")
     sublattice = (request.GET.supercell == "true")
     it_num = request.GET.it_num
+    structures = StructureTable(dbfilename)
     print("Advanced search:", elincl, elexcl, date1, date2, cell_search, txt_in, txt_out, more_results, sublattice,
           it_num)
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
@@ -129,6 +130,7 @@ def jsmol_request():
     """
     str_id = request.POST.id
     print("Molecule id:", str_id)
+    structures = StructureTable(dbfilename)
     if str_id:
         cell = structures.get_cell_by_id(str_id)
         if request.POST.grow == 'true':
@@ -160,6 +162,7 @@ def post_request():
     resid2 = request.POST.residuals2 == 'true'
     all_cif = (request.POST.all == 'true')
     unitcell = request.POST.unitcell
+    structures = StructureTable(dbfilename)
     print("Structure id:", str_id)
     if str_id:
         cif_dic = structures.get_row_as_dict(str_id)
@@ -502,7 +505,7 @@ def search_elements(structures: StructureTable, elements: str, anyresult: bool =
     """
     res = []
     try:
-        formula = misc.get_list_of_elements(elements)
+        formula = get_list_of_elements(elements)
     except KeyError:
         print('Element search error!')
         return []
@@ -527,7 +530,7 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
 
 
 def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, more_results,
-                    date1: str = None, date2: str = None, structures: database_handler.StructureTable = None,
+                    date1: str = None, date2: str = None, structures: StructureTable = None,
                     it_num: str = None) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
@@ -586,7 +589,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
     if excl:
         # excl list should not be in the resukts at all
         try:
-            return list(results - set(misc.flatten(excl)))
+            return list(results - set(flatten(excl)))
         except TypeError:
             return []
     return list(results)
@@ -594,7 +597,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
 
 if __name__ == "__main__":
     print("Running on Python version {}".format(sys.version))
-    if not misc.is_a_nonzero_file(dbfilename):
+    if not is_a_nonzero_file(dbfilename):
         print("Unable to start!")
         print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
         sys.exit()

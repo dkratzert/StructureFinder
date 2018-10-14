@@ -36,8 +36,8 @@ class DatabaseRequest():
         """
         # open the database
         self.con = sqlite3.connect(dbfile)
-        self.con.execute("PRAGMA foreign_keys = ON")
-        self.con.text_factory = str
+        #self.con.execute("PRAGMA foreign_keys = ON")
+        #self.con.text_factory = str
         #self.con.text_factory = bytes
         with self.con:
             # set the database cursor
@@ -341,18 +341,9 @@ class StructureTable():
 
     def __len__(self):
         """
-        Called to implement the built-in function len().
-        Should return the number of database entrys.
-        
-        :rtype: int
+        Number of database entries.
         """
-        req = '''SELECT Structure.Id FROM Structure'''
-        rows = self.database.db_request(req)
-        if rows:
-            return len(rows)
-        else:
-            return False
-            #raise IndexError('Could not determine database size')
+        return self.database.get_lastrowid()
 
     def __getitem__(self, str_id):
         try:
@@ -365,8 +356,7 @@ class StructureTable():
         found = self.get_filepath(str_id)
         if found:
             return found
-        #else:
-        #    raise IndexError('Database entry not found.')
+
 
     def get_all_structures_as_dict(self, ids: (list, tuple)=None, all_ids: bool=False) -> dict:
         """
@@ -458,11 +448,6 @@ class StructureTable():
     def has_index(self, Id, table='Structure'):
         """
         Returns True if db has index Id
-        :param table: which db table to query
-        :type table: str
-        :param Id: Id of the respective cell
-        :type Id: int
-        :rtype: bool
         """
         req = '''SELECT Id FROM ? WHERE ?.Id = ?'''
         if self.database.db_request(req, (table, table, Id)):
@@ -484,7 +469,7 @@ class StructureTable():
         self.database.db_request(req, (structure_id, measurement_id, filename, path, dataname))
         return structure_id
 
-    def fill_measuremnts_table(self, name, structure_id):
+    def fill_measuremnts_table(self, name: str, structure_id):
         """
         Fills a measurements into the database.
 
@@ -519,8 +504,7 @@ class StructureTable():
 
     def fill_atoms_table(self, structure_id, name, element, x, y, z, occ, part):
         """
-        fill the atoms into structure(structureId) 
-        :TODO: Add bonds?
+        Fill the atoms into the Atoms table.
         """
         req = '''INSERT INTO Atoms (StructureId, name, element, x, y, z, occupancy, part) 
                                     VALUES(?, ?, ?, ?, ?, ?, ?, ?)'''
@@ -698,14 +682,6 @@ class StructureTable():
                 )
             )
         return result
-
-    def clean_name(some_var):
-        """
-        Make sure only alphanumerical characters are in the name
-        :type some_var: str
-        :rtype: str
-        """
-        return ''.join(char for char in some_var if char.isalnum())
 
     def populate_fulltext_search_table(self):
         """
