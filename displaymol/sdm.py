@@ -260,7 +260,6 @@ class SDM():
     def packer(self, sdm: 'SDM', need_symm: list, with_qpeaks=False):
         """
         Packs atoms of the asymmetric unit to real molecules.
-        TODO: Support hydrogen atoms!
         """
         showatoms = self.atoms[:]
         new_atoms = []
@@ -271,8 +270,6 @@ class SDM():
             l -= 5
             s -= 1
             for atom in self.atoms:
-                # This is essential for displaying hydrogen atoms:
-                # if not atom[1] == 'H' and atom[-1] == symmgroup:
                 if atom[-1] == symmgroup:
                     coords = Array(atom[2:5]) * self.symmcards[s].matrix \
                              + Array(self.symmcards[s].trans) + Array([h, k, l])

@@ -60,10 +60,7 @@ class MolFile(object):
         """
         returns a connectivity table from the atomic coordinates and the covalence
         radii of the atoms.
-        # a bond is defined with less than the sum of the covalence
-        # radii plus the extra_param:
-        TODO:
-        - read FREE command from db to control binding here.
+        a bond is defined with less than the sum of the covalence radii plus the extra_param:
         :param extra_param: additional distance to the covalence radius
         :type extra_param: float
         """

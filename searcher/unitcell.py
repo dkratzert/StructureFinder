@@ -78,9 +78,6 @@ class Lattice(object):
             # if imax > maxmax:
             #    break  # break after too many iterations
         return self.atoms
-        # TODO: Use algorithm of george to get complete molecules:
-
-
 
 
 if __name__ == '__main__':

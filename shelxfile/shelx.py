@@ -792,21 +792,6 @@ class ShelXFile():
         """
         Converts von fractional to cartesian by .
         Invert the matrix to do the opposite.
-
-        Old tests:
-        TODO: port these to current implementation:
-        #>>> import mpmath as mpm
-        #>>> cell = (10.5086, 20.9035, 20.5072, 90, 94.13, 90)
-        #>>> coord = (-0.186843,   0.282708,   0.526803)
-        #>>> print(mpm.nstr(A*mpm.matrix(coord)))
-        [-2.74151]
-        [ 5.90959]
-        [ 10.7752]
-        #>>> cartcoord = mpm.matrix([['-2.74150542399906'], ['5.909586678'], ['10.7752007008937']])
-        #>>> print(mpm.nstr(A**-1*cartcoord))
-        [-0.186843]
-        [ 0.282708]
-        [ 0.526803]
         """
         return Matrix([[self._a, self._b * cos(self._gamma), self._c * cos(self._beta)],
                        [0, self._b * sin(self._gamma),
@@ -918,37 +903,6 @@ class ShelXFile():
         if DEBUG:
             print('loading file:', self.resfile)
         self.__init__(self.resfile)
-
-    def refine(self, cycles: int = 0) -> bool:
-        cycl = self.cycles.cycles.textline[:]
-        filen, _ = os.path.splitext(self.resfile)
-        self.write_shelx_file(filen + '.ins')
-        # shutil.copyfile(filen+'.res', filen+'.ins')
-        ref = ShelxlRefine(self, self.resfile)
-        ref.remove_acta_card(self.acta)
-        ref.run_shelxl()
-        self.reload()
-        ref.restore_acta_card()
-        c = LSCycles(self, cycl)
-        self.cycles.cycles = c
-        self.write_shelx_file(filen + '.res')
-        return True
-
-    def refine_weight_convergence(self, stop_after: int = 10):
-        """
-        Tries to refine weigting sheme from SHELXL until it converged (self.weight_difference() is zero) or
-        stopt_after cycles are reached. 
-        """
-        for n in range(stop_after):
-            diff = self.wght.difference()
-            print("Weighting difference = {} {}".format(*diff))
-            if diff == [0.0, 0.0]:
-                return True
-            else:
-                self.update_weight()
-                self.refine(8)
-        print("Maximum number of refinement cycles reached, but no WGHT convergence.")
-        return False
 
     def append_card(self, obj, card, line_num):
         """

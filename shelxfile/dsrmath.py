@@ -411,7 +411,7 @@ class Matrix(object):
 
     def __setitem__(self, key, value):
         # TODO: Implement setitem
-        pass
+        raise NotImplementedError
 
     @property
     def T(self):

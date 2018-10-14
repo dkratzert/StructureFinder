@@ -152,7 +152,6 @@ def is_a_nonzero_file(filename):
 def get_error_from_value(value: str) -> tuple:
     """ 
     Returns the error value from a number string.
-    :TODO: Make exponents work "1.234e23"
     :type value: str
     :rtype: str
     >>> get_error_from_value("0.0123 (23)")

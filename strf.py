@@ -58,12 +58,9 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
-- Grow structure. 
+- Add search in CellSearchCSD.
 - Improve text search (in cif file). Figure out which tokenchars configuration works best.
-- refractor put_cifs_in_db()
-- Move indexer to extra thread
 - sort results by G6 distance
-
   
 Search for:
 - draw structure (with JSME? Acros? Kekule?, https://github.com/ggasoftware/ketcher)
@@ -650,21 +647,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         except ValueError:
             pass
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
-        #####  Maybe put this into a new method and only let it run when all values tab opens:
         self.ui.allCifTreeWidget.clear()
         # This makes selection slow and is not really needed:
         #atoms_item = QtWidgets.QTreeWidgetItem()
-        #self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
-        #atoms_item.setText(0, 'Atoms')
-        #try:
-        #    atoms = self.structures.get_atoms_table(structure_id, cartesian=False)
-        #    for at in atoms:
-        #        data_cif_tree_item = QtWidgets.QTreeWidgetItem(atoms_item)
-        #        self.ui.allCifTreeWidget.addTopLevelItem(atoms_item)
-        #        data_cif_tree_item.setText(1, '{:<8.8s}\t {:<4s}\t {:>8.5f}\t {:>8.5f}\t {:>8.5f}'.format(*at))
-        #except TypeError:
-        #    pass
-        #######################################
         for key, value in cif_dic.items():
             if key == "_shelx_res_file":
                 self.ui.SHELXplainTextEdit.setPlainText(cif_dic['_shelx_res_file'])
@@ -683,8 +668,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def display_molecule(self, cell: list, structure_id: str) -> None:
         """
         Creates a html file from a mol file to display the molecule in jsmol-lite
-        # TODO: Make a clas for Atoms(), fill it with db atoms, apply symmetry, feed Atoms() into MolFile
-        # TODO: In order to apply symmetry, adapt grow from ShelXFile and Symmcards from ShelxFile.
         """
         symmcards = [x.split(',') for x in self.structures.get_row_as_dict(structure_id)
                     ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
