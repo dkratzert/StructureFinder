@@ -26,4 +26,4 @@ echo "DB creation finished at: "$(date) "------------------------------------" >
 rm ${DBPATH}/structurefinder.sqlite
 mv ${DBPATH}/structurefinder_new.sqlite ${DBPATH}/structurefinder.sqlite
 # To restart the web server:
-touch ${DBPATH}/structurefinder.sqlite
+touch ${GITPATH}/strf_cmd.py
