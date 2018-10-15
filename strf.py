@@ -14,10 +14,10 @@ Created on 09.02.2015
 """
 from __future__ import print_function
 
+import webbrowser
 from os.path import isfile
 from sqlite3 import DatabaseError
 
-from ccdc.query import get_cccsd_path, search_csd, parse_results
 from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.misc import chunks
@@ -47,12 +47,22 @@ from searcher.constants import py36
 from searcher.fileparser import Cif
 from searcher.misc import is_valid_cell, elements
 
+is_windows = False
+if sys.platform == 'Windows':
+    is_windows = True
+
+if is_windows:
+    from xml.etree.ElementTree import ParseError
+    from ccdc.query import get_cccsd_path, search_csd, parse_results
+
 if py36:
     """Only import this if Python 3.6 is used."""
     try:
         from PyQt5.QtWebEngineWidgets import QWebEngineView
     except Exception as e:
-        print(e)
+        print(e, '#')
+        if DEBUG:
+            raise
 
 
 __metaclass__ = type  # use new-style classes
@@ -60,10 +70,11 @@ __metaclass__ = type  # use new-style classes
 """
 TODO:
 - Add search in CellSearchCSD.
+  Download  https://www.ccdc.cam.ac.uk/Community/csd-community/cellcheckcsd/
   Open structure via idetifier:
   https://www.ccdc.cam.ac.uk/structures/Search?entry_list=ASOCES
   https://www.ccdc.cam.ac.uk/structures/Search?Ccdcid={identifier}&DatabaseToSearch=Published
-- Improve text search (in cif file). Figure out which tokenchars configuration works best.
+- Improve text search (in cif file). Figure out which tokenchars co:nfiguration works best.
 - sort results by G6 distance
   
 Search for:
@@ -104,9 +115,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.apx = None
         self.structureId = '0'
         self.passwd = ''
-        # Check for CellCheckCSD:
-        if not get_cccsd_path():
-            self.ui.MaintabWidget.removeTab(4)
+        if is_windows:  # Not valid for MacOS
+            # Check for CellCheckCSD:
+            if not get_cccsd_path():
+                self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
+                #self.ui.MaintabWidget.removeTab(4)
+        else:
+            self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
         self.show()
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
@@ -122,7 +137,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 self.init_webview()
             except Exception as e:
                 # Graphics driver not compatible
-                print(e)
+                print(e, '##')
+                raise
         else:
             self.ui.MaintabWidget.removeTab(2)
             self.ui.txtSearchEdit.hide()
@@ -143,6 +159,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
                     self.show_full_list()
                 except (IndexError, DatabaseError) as e:
                     print(e)
+                    if DEBUG:
+                        raise
         if update_check.is_update_needed(VERSION=VERSION):
             self.statusBar().showMessage('A new Version of StructureFinder is available at '
                                          'https://www.xs3.uni-freiburg.de/research/structurefinder')
@@ -166,7 +184,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
         self.ui.ad_SearchPushButton.clicked.connect(self.advanced_search)
         self.ui.ad_ClearSearchButton.clicked.connect(self.show_full_list)
-        self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
+        if is_windows:
+            self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
@@ -175,14 +194,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.actionCopy_Unit_Cell.triggered.connect(self.copyUnitCell)
         self.ui.actionGo_to_All_CIF_Tab.triggered.connect(self.on_click_item)
         # Other fields:
-        if py36:
-            self.ui.txtSearchEdit.textChanged.connect(self.search_text)
-        else:
-            self.ui.txtSearchEdit.setText("For full test search, use a modern Operating system.")
+        self.ui.txtSearchEdit.textChanged.connect(self.search_text)
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.p4pCellButton.clicked.connect(self.get_name_from_p4p)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
+        self.ui.CSDtreeWidget.itemDoubleClicked.connect(self.on_click_csdresult)
         self.ui.ad_elementsIncLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.ad_elementsExclLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.add_res.clicked.connect(self.res_checkbox_clicked)
@@ -199,6 +216,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
 
     def on_click_item(self, item):
         self.ui.MaintabWidget.setCurrentIndex(1)
+
+    def on_click_csdresult(self, item):
+        identifier = item.sibling(item.row(), 8).data()
+        webbrowser.open_new_tab('https://www.ccdc.cam.ac.uk/structures/Search?entry_list=' + identifier)
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasText():
@@ -261,16 +282,32 @@ class StartStructureDB(QtWidgets.QMainWindow):
 
     def search_csd_and_display_results(self):
         centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
-        cell = self.ui.cellSearchCSDLineEdit.text().split()
+        cell = is_valid_cell(self.ui.cellSearchCSDLineEdit.text().split())
+        if len(cell) < 6:
+            return None
         center = centering[self.ui.lattCentComboBox.currentIndex()]
         xml = search_csd(cell, centering=center)
-        results = parse_results(xml)
-        print(len(results), 'Structure found...')
-        for res in results:
+        try:
+            results = parse_results(xml)
+        except ParseError as e:
+            print(e)
+            return
+        print(len(results), 'Structures found...')
+        for identifier in results:
+            print(identifier)
             csd_tree_item = QtWidgets.QTreeWidgetItem()
             self.ui.CSDtreeWidget.addTopLevelItem(csd_tree_item)
-            csd_tree_item.setText(0, results[res]['chemical_formula'])
-            csd_tree_item.setText(1, results[res]['cell_length_a'])
+            csd_tree_item.setText(0, results[identifier]['chemical_formula'])
+            csd_tree_item.setText(1, results[identifier]['cell_length_a'])
+            csd_tree_item.setText(2, results[identifier]['cell_length_b'])
+            csd_tree_item.setText(3, results[identifier]['cell_length_c'])
+            csd_tree_item.setText(4, results[identifier]['cell_angle_alpha'])
+            csd_tree_item.setText(5, results[identifier]['cell_angle_beta'])
+            csd_tree_item.setText(6, results[identifier]['cell_angle_gamma'])
+            csd_tree_item.setText(7, results[identifier]['space_group'])
+            csd_tree_item.setText(8, identifier)
+        for n in range(8):
+            self.ui.CSDtreeWidget.resizeColumnToContents(n)
 
     def elements_invalid(self):
         # Elements not valid:
@@ -416,7 +453,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Initializes a QWebengine to view the molecule.
         """
         self.view = QWebEngineView()
-        # QtWebEngine.initialize()
         self.view.load(QtCore.QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
         #self.view.setMaximumWidth(260)
         #self.view.setMaximumHeight(290)

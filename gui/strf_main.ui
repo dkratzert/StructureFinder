@@ -2758,6 +2758,12 @@ p, li { white-space: pre-wrap; }
        </layout>
       </widget>
       <widget class="QWidget" name="CCDCSearchTab">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <attribute name="title">
         <string>CCDC Search</string>
        </attribute>
@@ -2765,156 +2771,193 @@ p, li { white-space: pre-wrap; }
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <layout class="QGridLayout" name="gridLayout_5" columnstretch="1,1">
+           <layout class="QGridLayout" name="gridLayout_5" columnstretch="4,0,0,0,0">
             <item row="0" column="1">
-             <widget class="QTreeWidget" name="CSDtreeWidget">
-              <property name="verticalScrollBarPolicy">
-               <enum>Qt::ScrollBarAsNeeded</enum>
+             <widget class="QLineEdit" name="cellSearchCSDLineEdit">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>20</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
-              <property name="horizontalScrollBarPolicy">
-               <enum>Qt::ScrollBarAsNeeded</enum>
+             </widget>
+            </item>
+            <item row="0" column="3">
+             <widget class="QComboBox" name="lattCentComboBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                <horstretch>3</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
-              <property name="sizeAdjustPolicy">
-               <enum>QAbstractScrollArea::AdjustToContents</enum>
+              <item>
+               <property name="text">
+                <string comment="P">Primitive (P)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string comment="A">A-centered (A)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string comment="B">B-centered (B)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string comment="C">C-centered (C)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string comment="F">Face-centered (F)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string comment="I">Body-centered (I)</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string comment="R">Rhombohedral (R)</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="0" column="4">
+             <widget class="QPushButton" name="CSDpushButton">
+              <property name="minimumSize">
+               <size>
+                <width>120</width>
+                <height>0</height>
+               </size>
               </property>
-              <attribute name="headerDefaultSectionSize">
-               <number>70</number>
-              </attribute>
-              <attribute name="headerMinimumSectionSize">
-               <number>30</number>
-              </attribute>
-              <attribute name="headerShowSortIndicator" stdset="0">
-               <bool>true</bool>
-              </attribute>
-              <column>
-               <property name="text">
-                <string>Formula</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>a</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>b</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>c</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>alpha</string>
-               </property>
-               <property name="font">
-                <font>
-                 <weight>50</weight>
-                 <bold>false</bold>
-                </font>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>beta</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>gamma</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
-                <string>Identifier</string>
-               </property>
-              </column>
+              <property name="text">
+               <string>Search</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QLabel" name="latticeCenteringLabel">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>4</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Lattice centring</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+              </property>
              </widget>
             </item>
             <item row="0" column="0">
-             <layout class="QFormLayout" name="formLayout_4">
-              <item row="0" column="0">
-               <widget class="QLabel" name="cellSearchLabelCSD">
-                <property name="text">
-                 <string>Cell Search</string>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="1">
-               <widget class="QLineEdit" name="cellSearchCSDLineEdit"/>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="latticeCenteringLabel">
-                <property name="text">
-                 <string>Lattice centring</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QComboBox" name="lattCentComboBox">
-                <item>
-                 <property name="text">
-                  <string comment="P">Primitive (P)</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string comment="A">A-centered (A)</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string comment="B">B-centered (B)</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string comment="C">C-centered (C)</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string comment="F">Face-centered (F)</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string comment="I">Body-centered (I)</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string comment="R">Rhombohedral (R)</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item row="3" column="1">
-               <widget class="QPushButton" name="CSDpushButton">
-                <property name="text">
-                 <string>Search</string>
-                </property>
-               </widget>
-              </item>
-              <item row="2" column="1">
-               <spacer name="verticalSpacer_8">
-                <property name="orientation">
-                 <enum>Qt::Vertical</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>20</width>
-                  <height>40</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
+             <widget class="QLabel" name="cellSearchLabelCSD">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="text">
+               <string>Cell Search</string>
+              </property>
+             </widget>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QTreeWidget" name="CSDtreeWidget">
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
+            <property name="sizeAdjustPolicy">
+             <enum>QAbstractScrollArea::AdjustToContents</enum>
+            </property>
+            <property name="uniformRowHeights">
+             <bool>false</bool>
+            </property>
+            <property name="sortingEnabled">
+             <bool>false</bool>
+            </property>
+            <attribute name="headerCascadingSectionResizes">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="headerDefaultSectionSize">
+             <number>60</number>
+            </attribute>
+            <attribute name="headerHighlightSections">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="headerMinimumSectionSize">
+             <number>20</number>
+            </attribute>
+            <attribute name="headerShowSortIndicator" stdset="0">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="headerStretchLastSection">
+             <bool>true</bool>
+            </attribute>
+            <column>
+             <property name="text">
+              <string>Formula</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>a</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>b</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>c</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>alpha</string>
+             </property>
+             <property name="font">
+              <font>
+               <weight>50</weight>
+               <bold>false</bold>
+              </font>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>beta</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>gamma</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Space Group</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Identifier</string>
+             </property>
+            </column>
+           </widget>
           </item>
          </layout>
         </item>

@@ -6,7 +6,11 @@ from pathlib import Path
 from pprint import pprint
 from shutil import which
 from tempfile import mkstemp
-from winreg import OpenKey, HKEY_CURRENT_USER, EnumKey, QueryInfoKey, EnumValue
+try:
+    from winreg import OpenKey, HKEY_CURRENT_USER, EnumKey, QueryInfoKey, EnumValue
+except ModuleNotFoundError:
+    pass
+
 
 querytext = """<?xml version="1.0" encoding="UTF-8"?>
 <query name="reduced_cell_search" version="1.0" originator="generic">
