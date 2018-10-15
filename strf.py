@@ -862,6 +862,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         cell = is_valid_cell(search_string)
         self.ui.ad_unitCellLineEdit.setText('  '.join([str(x) for x in cell]))
+        self.ui.cellSearchCSDLineEdit.setText('  '.join([str(x) for x in cell]))
         self.ui.txtSearchEdit.clear()
         if not cell:
             if self.ui.searchCellLineEDit.text():
