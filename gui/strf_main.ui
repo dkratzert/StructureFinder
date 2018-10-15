@@ -212,7 +212,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QTabWidget" name="tabWidget">
+     <widget class="QTabWidget" name="MaintabWidget">
       <property name="accessibleName">
        <string/>
       </property>
@@ -226,7 +226,7 @@
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="maintab">
        <attribute name="title">
@@ -2757,6 +2757,169 @@ p, li { white-space: pre-wrap; }
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="CCDCSearchTab">
+       <attribute name="title">
+        <string>CCDC Search</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <layout class="QGridLayout" name="gridLayout_5" columnstretch="1,1">
+            <item row="0" column="1">
+             <widget class="QTreeWidget" name="CSDtreeWidget">
+              <property name="verticalScrollBarPolicy">
+               <enum>Qt::ScrollBarAsNeeded</enum>
+              </property>
+              <property name="horizontalScrollBarPolicy">
+               <enum>Qt::ScrollBarAsNeeded</enum>
+              </property>
+              <property name="sizeAdjustPolicy">
+               <enum>QAbstractScrollArea::AdjustToContents</enum>
+              </property>
+              <attribute name="headerDefaultSectionSize">
+               <number>70</number>
+              </attribute>
+              <attribute name="headerMinimumSectionSize">
+               <number>30</number>
+              </attribute>
+              <attribute name="headerShowSortIndicator" stdset="0">
+               <bool>true</bool>
+              </attribute>
+              <column>
+               <property name="text">
+                <string>Formula</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>a</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>b</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>c</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>alpha</string>
+               </property>
+               <property name="font">
+                <font>
+                 <weight>50</weight>
+                 <bold>false</bold>
+                </font>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>beta</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>gamma</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Identifier</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <layout class="QFormLayout" name="formLayout_4">
+              <item row="0" column="0">
+               <widget class="QLabel" name="cellSearchLabelCSD">
+                <property name="text">
+                 <string>Cell Search</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="cellSearchCSDLineEdit"/>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="latticeCenteringLabel">
+                <property name="text">
+                 <string>Lattice centring</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QComboBox" name="lattCentComboBox">
+                <item>
+                 <property name="text">
+                  <string comment="P">Primitive (P)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string comment="A">A-centered (A)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string comment="B">B-centered (B)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string comment="C">C-centered (C)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string comment="F">Face-centered (F)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string comment="I">Body-centered (I)</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string comment="R">Rhombohedral (R)</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item row="3" column="1">
+               <widget class="QPushButton" name="CSDpushButton">
+                <property name="text">
+                 <string>Search</string>
+                </property>
+               </widget>
+              </item>
+              <item row="2" column="1">
+               <spacer name="verticalSpacer_8">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -2788,6 +2951,9 @@ p, li { white-space: pre-wrap; }
   <action name="actionSave_Database">
    <property name="text">
     <string>Save Database</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionAdvanced_Search">
@@ -2825,7 +2991,7 @@ p, li { white-space: pre-wrap; }
   <tabstop>openApexDBButton</tabstop>
   <tabstop>saveDatabaseButton</tabstop>
   <tabstop>closeDatabaseButton</tabstop>
-  <tabstop>tabWidget</tabstop>
+  <tabstop>MaintabWidget</tabstop>
   <tabstop>cifList_treeWidget</tabstop>
   <tabstop>searchCellLineEDit</tabstop>
   <tabstop>moreResultsCheckBox</tabstop>

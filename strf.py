@@ -17,6 +17,7 @@ from __future__ import print_function
 from os.path import isfile
 from sqlite3 import DatabaseError
 
+from ccdc.query import get_cccsd_path, search_csd, parse_results
 from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.misc import chunks
@@ -59,6 +60,9 @@ __metaclass__ = type  # use new-style classes
 """
 TODO:
 - Add search in CellSearchCSD.
+  Open structure via idetifier:
+  https://www.ccdc.cam.ac.uk/structures/Search?entry_list=ASOCES
+  https://www.ccdc.cam.ac.uk/structures/Search?Ccdcid={identifier}&DatabaseToSearch=Published
 - Improve text search (in cif file). Figure out which tokenchars configuration works best.
 - sort results by G6 distance
   
@@ -100,6 +104,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.apx = None
         self.structureId = '0'
         self.passwd = ''
+        # Check for CellCheckCSD:
+        if not get_cccsd_path():
+            self.ui.MaintabWidget.removeTab(4)
         self.show()
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
@@ -117,11 +124,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 # Graphics driver not compatible
                 print(e)
         else:
-            self.ui.tabWidget.removeTab(2)
+            self.ui.MaintabWidget.removeTab(2)
             self.ui.txtSearchEdit.hide()
             self.ui.txtSearchLabel.hide()
             self.ui.openglview.hide()
-        self.ui.tabWidget.setCurrentIndex(0)
+        self.ui.MaintabWidget.setCurrentIndex(0)
         self.setWindowIcon(QtGui.QIcon(os.path.join(application_path, './icons/strf.png')))
         self.uipass = Ui_PasswdDialog()
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
@@ -159,6 +166,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
         self.ui.ad_SearchPushButton.clicked.connect(self.advanced_search)
         self.ui.ad_ClearSearchButton.clicked.connect(self.show_full_list)
+        self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
@@ -190,7 +198,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.ui.add_cif.setChecked(True)
 
     def on_click_item(self, item):
-        self.ui.tabWidget.setCurrentIndex(1)
+        self.ui.MaintabWidget.setCurrentIndex(1)
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasText():
@@ -250,6 +258,19 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if not self.validate_sumform(elem1):
             ok = False
         return ok
+
+    def search_csd_and_display_results(self):
+        centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
+        cell = self.ui.cellSearchCSDLineEdit.text().split()
+        center = centering[self.ui.lattCentComboBox.currentIndex()]
+        xml = search_csd(cell, centering=center)
+        results = parse_results(xml)
+        print(len(results), 'Structure found...')
+        for res in results:
+            csd_tree_item = QtWidgets.QTreeWidgetItem()
+            self.ui.CSDtreeWidget.addTopLevelItem(csd_tree_item)
+            csd_tree_item.setText(0, results[res]['chemical_formula'])
+            csd_tree_item.setText(1, results[res]['cell_length_a'])
 
     def elements_invalid(self):
         # Elements not valid:
@@ -372,7 +393,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         if idlist:
-            self.ui.tabWidget.setCurrentIndex(0)
+            self.ui.MaintabWidget.setCurrentIndex(0)
 
     def passwd_handler(self):
         """
@@ -1076,7 +1097,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
-        self.ui.tabWidget.setCurrentIndex(0)
+        self.ui.MaintabWidget.setCurrentIndex(0)
         self.ui.SpGrcomboBox.setCurrentIndex(0)
         self.ui.ad_elementsIncLineEdit.clear()
         self.ui.ad_elementsExclLineEdit.clear()
@@ -1123,6 +1144,7 @@ if __name__ == "__main__":
         uic.compileUiDir(os.path.join(application_path, './gui'))
     except:
         print("Unable to compile UI!")
+        raise 
     from gui.strf_main import Ui_stdbMainwindow
     from gui.strf_dbpasswd import Ui_PasswdDialog
 
