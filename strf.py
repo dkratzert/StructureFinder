@@ -14,9 +14,13 @@ Created on 09.02.2015
 """
 from __future__ import print_function
 
+import platform
 import webbrowser
 from os.path import isfile
 from sqlite3 import DatabaseError
+
+from PyQt5.QtCore import QModelIndex
+from PyQt5.QtWidgets import QTreeWidgetItem
 
 from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
@@ -48,7 +52,7 @@ from searcher.fileparser import Cif
 from searcher.misc import is_valid_cell, elements
 
 is_windows = False
-if sys.platform == 'Windows':
+if platform.system() == 'Windows':
     is_windows = True
 
 if is_windows:
@@ -186,6 +190,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.ad_ClearSearchButton.clicked.connect(self.show_full_list)
         if is_windows:
             self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
+            # TODO: search on enter key press
+            #self.ui.cellSearchCSDLineEdit.
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
@@ -199,7 +205,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.p4pCellButton.clicked.connect(self.get_name_from_p4p)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
-        self.ui.CSDtreeWidget.itemDoubleClicked.connect(self.on_click_csdresult)
+        self.ui.CSDtreeWidget.itemDoubleClicked.connect(self.show_csdentry)
+        #self.ui.CSDtreeWidget.selectionModel().currentChanged.connect(self.show_csdentry)
         self.ui.ad_elementsIncLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.ad_elementsExclLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.add_res.clicked.connect(self.res_checkbox_clicked)
@@ -217,9 +224,15 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def on_click_item(self, item):
         self.ui.MaintabWidget.setCurrentIndex(1)
 
-    def on_click_csdresult(self, item):
-        identifier = item.sibling(item.row(), 8).data()
-        webbrowser.open_new_tab('https://www.ccdc.cam.ac.uk/structures/Search?entry_list=' + identifier)
+    def show_csdentry(self, item: QModelIndex):
+        print(self.ui.CSDtreeWidget.selectionModel().currentIndex().row())
+        rownumber = self.ui.CSDtreeWidget.selectionModel().currentIndex().row()
+        parent = item.parent()
+        print(parent)
+        #print(item.c.index(rownumber, 8))
+        #print(item.sibling(item.row(), 8).data())
+        #identifier = item.data(8, item.in)
+        #webbrowser.open_new_tab('https://www.ccdc.cam.ac.uk/structures/Search?entry_list=' + identifier)
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasText():
@@ -282,7 +295,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
 
     def search_csd_and_display_results(self):
         centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
-        cell = is_valid_cell(self.ui.cellSearchCSDLineEdit.text().split())
+        cell = is_valid_cell(self.ui.cellSearchCSDLineEdit.text())
         if len(cell) < 6:
             return None
         center = centering[self.ui.lattCentComboBox.currentIndex()]
@@ -294,7 +307,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
             return
         print(len(results), 'Structures found...')
         for identifier in results:
-            print(identifier)
             csd_tree_item = QtWidgets.QTreeWidgetItem()
             self.ui.CSDtreeWidget.addTopLevelItem(csd_tree_item)
             csd_tree_item.setText(0, results[identifier]['chemical_formula'])
@@ -328,7 +340,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
             try:
                 cell = "{:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f}" \
                     .format(*self.structures.get_cell_by_id(self.structureId))
-            except Exception:
+                self.ui.cellSearchCSDLineEdit.setText(cell)
+            except Exception as e:
+                print(e)
+                if DEBUG:
+                    raise 
                 return False
             clipboard = QtWidgets.QApplication.clipboard()
             clipboard.setText(cell)
