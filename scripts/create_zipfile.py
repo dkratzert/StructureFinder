@@ -1,11 +1,14 @@
 """
 Creates a zip file with the content of the StructureDB program.
 """
+import shutil
+import tempfile
 from zipfile import ZipFile
 
 import os
 
 from misc.version import VERSION
+from searcher.misc import copy_file, remove_file, walkdir
 
 version = VERSION
 
@@ -14,28 +17,24 @@ files = [
     "strf_cmd.py",
     "apex/__init__.py",
     "apex/apeximporter.py",
-    "searcher/__init__.py",
-    "searcher/atoms.py",
-    "searcher/constants.py",
-    "searcher/database_handler.py",
-    "searcher/elements.py",
-    "searcher/filecrawler.py",
-    "searcher/fileparser.py",
-    "searcher/misc.py",
-    "searcher/spinner.py",
-    "pymatgen/__init__.py",
-    "pymatgen/core/__init__.py",
-    "pymatgen/core/mat_lattice.py",
-    "pymatgen/util/__init__.py",
-    "pymatgen/util/num_utils.py",
-    "lattice/__init__.py",
-    "lattice/lattice.py",
-    "pg8000/__init__.py",
-    "pg8000/_version.py",
-    "pg8000/core.py",
+    "searcher",
+    "shelxfile",
+    "pymatgen",
+    "ccdc",
+    "lattice",
+    "pg8000",
+    "p4pfile",
     "misc/__init__.py",
     "misc/update_check.py",
-    "misc/version.py"
+    "misc/version.py",
+    "cgi_ui/bottle.py",
+    "cgi_ui/__init__.py",
+    "cgi_ui/cgi-bin/",
+    "cgi_ui/static/",
+    "cgi_ui/static/w2ui",
+    "cgi_ui/views/",
+    "displaymol",
+    "icons"
     ]
 
 
@@ -43,13 +42,27 @@ def make_zip(filelist):
     """
     :type filelist: list
     """
-    os.chdir('../')
-    with ZipFile('strf_cmd-v{}.zip'.format(version), mode='w',
-                 allowZip64=False) as myzip:
-        for f in filelist:
-            print("Adding {}".format(f))
-            myzip.write("StructureFinder/"+f)
-
+    maindir = 'StructureFinder'
+    tmpdir = tempfile.mkdtemp()
+    fulldir = os.path.abspath(os.path.join(tmpdir, maindir))
+    os.makedirs(fulldir)
+    zipfilen = './scripts/Output/strf_cmd-v{}.zip'.format(version)
+    remove_file(zipfilen)
+    for f in filelist:
+        for filen in walkdir(f, exclude=['.pyc']):
+            path, _ = os.path.split(filen)
+            target_dir = os.path.join(fulldir, path)
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
+            print("Adding {}".format(filen))
+            copy_file(filen, target_dir)
+    with ZipFile(zipfilen, mode='w', allowZip64=False) as myzip:
+        os.chdir(tmpdir)
+        for filen in walkdir(maindir):
+            myzip.write(filen)
+    print("File written to {}".format(zipfilen))
+    os.chdir('..')
+    shutil.rmtree(tmpdir)
 
 if __name__ == "__main__":
     make_zip(files)

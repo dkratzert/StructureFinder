@@ -10,8 +10,9 @@ Created on 09.02.2015
 
 @author: daniel
 """
-import math
+from math import sqrt
 import os
+import shutil
 
 from searcher import constants
 
@@ -25,6 +26,16 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+
+
+elements = ['X', 'H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
+            'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr',
+            'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr',
+            'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd',
+            'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd',
+            'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',
+            'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn',
+            'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es']
 
 
 def write_file(list: list, name: str) -> None:
@@ -52,13 +63,48 @@ def find_binary_string(file, string, seek, size, return_ascii=False):
         binary = f.read()
         position = binary.find(b'{0}'.format(string))
         if position > 0:
-            f.seek(position+seek, 0) # seek to version string
-            result = f.read(size)   # read version string
+            f.seek(position + seek, 0)  # seek to version string
+            result = f.read(size)  # read version string
             if return_ascii:
                 return result.decode('ascii')
             else:
                 return result
-            
+
+
+def walkdir(rootdir, include="", exclude=""):
+    """
+    Returns a list of files in all subdirectories with full path.
+    :param rootdir: base path from which walk should start
+    :param filter: list of file endings to include only e.g. ['.py', '.res']
+    :return: list of files
+
+    >>> walkdir("../docs") #doctest: +REPORT_NDIFF +NORMALIZE_WHITESPACE +ELLIPSIS
+    ['../docs/test.txt']
+    >>> walkdir("../setup/modpath.iss")
+    ['../setup/modpath.iss']
+    >>> walkdir("../setup/modpath.iss", exclude=['.iss'])
+    []
+    >>> walkdir("../docs", exclude=['.txt']) #doctest: +REPORT_NDIFF +NORMALIZE_WHITESPACE +ELLIPSIS
+    []
+    """
+    results = []
+    if not os.path.isdir(rootdir):
+        if os.path.splitext(rootdir)[1] in exclude:
+            return []
+        return [rootdir]
+    for root, subFolders, files in os.walk(rootdir):
+        for file in files:
+            fullfilepath = os.path.join(root, file)
+            if exclude:
+                if os.path.splitext(fullfilepath)[1] in exclude:
+                    continue
+            if include:
+                if os.path.splitext(fullfilepath)[1] in include:
+                    results.append(os.path.normpath(fullfilepath).replace('\\', '/'))
+            else:
+                results.append(os.path.normpath(fullfilepath).replace('\\', '/'))
+    return results
+
 
 def open_file_read(filename: str, asci: bool = True) -> str or list:
     if asci:
@@ -103,36 +149,39 @@ def is_a_nonzero_file(filename):
     return status
 
 
-def get_error_from_value(value: str) -> str:
+def get_error_from_value(value: str) -> tuple:
     """ 
     Returns the error value from a number string.
-    :TODO: Make exponents work "1.234e23"
     :type value: str
     :rtype: str
     >>> get_error_from_value("0.0123 (23)")
-    '0.0023'
+    ("0.0123", '0.0023')
     >>> get_error_from_value("0.0123(23)")
-    '0.0023'
+    ("0.0123, '0.0023')
     >>> get_error_from_value('0.0123')
-    '0.0'
+    ('0.0123', '0.0')
     >>> get_error_from_value("250.0123(23)")
-    '0.0023'
+    ("250.0123", '0.0023')
     >>> get_error_from_value("123(25)")
-    '25'
+    ("123", '25')
     """
     try:
         value = value.replace(" ", "")
     except AttributeError:
-        return "0.0"
+        return value, 0.0
     if "(" in value and ")":
-        val = value.split("(")[0].split('.')
+        vval = value.split("(")[0]
+        val = vval.split('.')
         err = value.split("(")[1].split(")")[0]
         if len(val) > 1:
-            return str(int(err) * (10 ** (-1 * len(val[1]))))
+            return float(vval), int(err) * (10 ** (-1 * len(val[1])))
         else:
-            return err
+            return float(vval), err
     else:
-        return '0.0'
+        try:
+            return float(value), 0.0
+        except ValueError:
+            return 0.0, 0.0
 
 
 def flatten(lis: list) -> list:
@@ -158,12 +207,11 @@ def distance(x1: float, y1: float, z1: float,
     >>> distance(1, 0, 0, 2, 0, 0)
     1.0
     """
-    d = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
-    return d
+    return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
 
 
 def format_sum_formula(sumform: str) -> str:
-    """ 
+    """
     Makes html formated sum formula from dictionary.
     >>> format_sum_formula("C12H6O3Mn7")
     '<html><body>C<sub>12</sub>H<sub>6</sub>O<sub>3</sub>Mn<sub>7</sub></body></html>'
@@ -286,6 +334,41 @@ def remove_file(filename):
             print('Can not delete {}'.format(filename))
             return False
     return True
+
+
+def copy_file(source, target, move=False):
+    """
+    Copy a file from source to target. Source can be a single file or
+    a directory. Target can be a single file or a directory.
+    :param source: list or string
+    :param target: string
+    """
+    target_path = os.path.dirname(target)
+    source_file = os.path.basename(source)
+    listcopy = False
+    if isinstance(source, (list, tuple)):
+        listcopy = True
+    if not os.path.exists(target_path) and target_path != '':
+        try:
+            os.makedirs(target_path)
+        except(IOError, OSError):
+            print('Unable to create directory {}.'.format(target_path))
+    try:
+        if listcopy:
+            for filen in source:
+                if move:
+                    shutil.move(filen, target)
+                else:
+                    shutil.copy(filen, target)
+
+        else:
+            if move:
+                shutil.move(source, target)
+            else:
+                shutil.copy(source, target)
+    except IOError as e:
+        print('Unable to copy {}.'.format(source_file))
+        print(e)
 
 
 def is_valid_cell(cell: str = None) -> list:

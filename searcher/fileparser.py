@@ -14,7 +14,6 @@ Created on 09.02.2015
 import os
 from pprint import pprint
 
-
 class Cif(object):
     def __init__(self, options=None):
         """
@@ -285,7 +284,7 @@ class Cif(object):
         return hash(self.cif_data)
 
     def __getattr__(self, item, item_alt=''):
-        """ 
+        """
         Returns an attribute of the cif data dictionary.
         """
         if item in self.cif_data or item_alt in self.cif_data:
@@ -297,7 +296,7 @@ class Cif(object):
             return ''
 
     def __str__(self) -> str:
-        """ 
+        """
         The string representation for print(self)
         """
         out = ''
@@ -307,6 +306,30 @@ class Cif(object):
                 continue
             out += item+':  \t'+"'"+str(self.cif_data[item])+"'"+'\n'
         return out
+
+    @property
+    def cell(self):
+        a = self.cif_data['_cell_length_a']
+        b = self.cif_data['_cell_length_b']
+        c = self.cif_data['_cell_length_c']
+        alpha = self.cif_data['_cell_angle_alpha']
+        beta = self.cif_data['_cell_angle_beta']
+        gamma = self.cif_data['_cell_angle_gamma']
+        if not all((a, b, c, alpha, beta, gamma)):
+            return False
+        if isinstance(a, str):
+            a = float(a.split('(')[0])
+        if isinstance(b, str):
+            b = float(b.split('(')[0])
+        if isinstance(c, str):
+            c = float(c.split('(')[0])
+        if isinstance(alpha, str):
+            alpha = float(alpha.split('(')[0])
+        if isinstance(beta, str):
+            beta = float(beta.split('(')[0])
+        if isinstance(gamma, str):
+            gamma = float(gamma.split('(')[0])
+        return [a, b, c, alpha, beta, gamma]
 
 
 def delimit_line(line: str) -> list:
@@ -349,31 +372,6 @@ def delimit_line(line: str) -> list:
             else:
                 data.append(i)
     return data
-
-
-def get_res_cell(filename):
-    """
-    Returns the unit cell parameters from the list file as list:
-    ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
-    """
-    cell = False
-    with filename.open(mode='r', encoding='ascii', errors="ignore") as f:
-        for line in f:
-            if line[:4] == 'CELL':
-                cell = line.split()[2:8]
-                try:
-                    cell = [float(i) for i in cell]
-                    if not len(cell) == 6:
-                        raise ValueError
-                except ValueError:
-                    print('Bad cell parameters in {0}.'.format(filename))
-                    return False
-                if line[:4] == 'UNIT':
-                    break
-    if not cell:
-        # Unable to find unit cell parameters in the file.
-        return False
-    return cell
 
 
 if __name__ == '__main__':

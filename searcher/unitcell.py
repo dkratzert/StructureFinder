@@ -16,7 +16,7 @@ from searcher.fileparser import Cif
 
 
 class Lattice(object):
-    def __init__(self, atoms: list, symmcards: list, cell:list):
+    def __init__(self, atoms: list, symmcards: list, cell: list):
         """
         Atoms:
         [(label, float(x), float(x), float(x)), (label, x, y, z), ...]
@@ -27,13 +27,7 @@ class Lattice(object):
         self.atoms = atoms
         self.symmcards = [x.replace("/", "./") for x in (i for i in symmcards)]
 
-    def calc_sdm(self):
-        """
-        Calculates shortest-distance matrix.
-        :return:
-        """
-
-    def grow_structure(self):
+    def pack_structure(self):
         """
         Grows the atoms according to symmetry.
 
@@ -45,13 +39,13 @@ class Lattice(object):
             xn = (xn + 10) % 1.0
             yn = (yn + 10) % 1.0
             zn = (zn + 10) % 1.0
-            #name = get_atomlabel(name)  # name is now the atomic symbol
+            # name = get_atomlabel(name)  # name is now the atomic symbol
             self.atoms[i] = (name, symbol, xn, yn, zn)
         mindist = 0.01  # Angstrom
         # For each atom, apply each symmetry operation to create a new atom.
         imax = len(self.atoms)
         i = 0
-        #maxmax = 20 * imax
+        # maxmax = 20 * imax
         while i < imax:
             name, at_type, x, y, z = self.atoms[i]
             for op in self.symmcards:
@@ -72,32 +66,32 @@ class Lattice(object):
                         new_atom = False
                         # Check that this is the same atom type.
                         if at[1] != at_type:
-                            #print("{}, {}".format(at[0], at_type))
+                            # print("{}, {}".format(at[0], at_type))
                             break
-                            #print('Invalid atom found')
+                            # print('Invalid atom found')
                 # If the atom is new, add it to the list:
                 if new_atom:
                     self.atoms.append((name, at_type, xn, yn, zn))
             # Update the loop iterator.
             i = i + 1
             imax = len(self.atoms)
-            #if imax > maxmax:
+            # if imax > maxmax:
             #    break  # break after too many iterations
         return self.atoms
-        # TODO: Use algorithm of george to get complete molecules:
+
 
 if __name__ == '__main__':
     cif = Cif()
     with open('test-data/p-1_a.cif', 'r') as f:
         cifok = cif.parsefile(f.readlines())
-    #pprint(cif.cif_data)
-    #print(cifok)
+    # pprint(cif.cif_data)
+    # print(cifok)
     db = StructureTable('./structuredb.sqlite')
     db.database.initialize_db()
     ats = db.get_atoms_table(263, cartesian=False)
     cards = db.get_row_as_dict(263)['_space_group_symop_operation_xyz'].replace("'", "").split("\n")
     print(cards)
     l = Lattice(ats, cards)
-    gr = l.grow_structure()
+    gr = l.pack_structure()
     for i in gr:
         print(i)

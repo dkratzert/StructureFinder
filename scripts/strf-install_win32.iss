@@ -2,9 +2,10 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "13"
+#define MyAppVersion "30"
 #define MyAppPublisher "Daniel Kratzert"
 #define pzipfile "Python3.6.1-32.7z"
+
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -15,7 +16,7 @@ AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={pf}\StructureFinder
-OutputBaseFilename=StructureFinder-setup-v{#MyAppVersion}
+OutputBaseFilename=StructureFinder-setup-x32-v{#MyAppVersion}
 Compression=lzma2/fast
 SolidCompression=yes
 SetupLogging=True
@@ -66,6 +67,9 @@ Source: "..\misc\*"; DestDir: "{app}\misc"; Flags: ignoreversion createallsubdir
 Source: "..\pg8000\*"; DestDir: "{app}\pg8000"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\pymatgen\*"; DestDir: "{app}\pymatgen"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\searcher\*"; DestDir: "{app}\searcher"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\ccdc\*"; DestDir: "{app}\ccdc"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\shelxfile\*"; DestDir: "{app}\shelxfile"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\p4pfile\*"; DestDir: "{app}\p4pfile"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\strf.py"; DestDir: "{app}"; 
 Source: "..\six.py"; DestDir: "{app}";
 Source: "..\strf_cmd.py"; DestDir: "{app}"; 

@@ -16,13 +16,11 @@ import sqlite3
 import sys
 from sqlite3 import OperationalError
 
-import numpy as np
-
 import searcher
 from lattice import lattice
 from searcher import misc
-from searcher.constants import py36
 from searcher.misc import get_error_from_value
+from shelxfile.dsrmath import Array
 
 __metaclass__ = type  # use new-style classes
 
@@ -38,8 +36,8 @@ class DatabaseRequest():
         """
         # open the database
         self.con = sqlite3.connect(dbfile)
-        self.con.execute("PRAGMA foreign_keys = ON")
-        self.con.text_factory = str
+        #self.con.execute("PRAGMA foreign_keys = ON")
+        #self.con.text_factory = str
         #self.con.text_factory = bytes
         with self.con:
             # set the database cursor
@@ -281,9 +279,10 @@ class DatabaseRequest():
         """
         try:
             if many:
-                #print(args[0])
+                #print(args)
                 self.cur.executemany(request, *args)
             else:
+                #print(request, args)
                 self.cur.execute(request, *args)
             last_rowid = self.cur.lastrowid
         except OperationalError as e:
@@ -323,10 +322,8 @@ class DatabaseRequest():
         if comment:
             print(comment)
 
+
 ##################################################################
-
-
-
 
 
 class StructureTable():
@@ -344,18 +341,9 @@ class StructureTable():
 
     def __len__(self):
         """
-        Called to implement the built-in function len().
-        Should return the number of database entrys.
-        
-        :rtype: int
+        Number of database entries.
         """
-        req = '''SELECT Structure.Id FROM Structure'''
-        rows = self.database.db_request(req)
-        if rows:
-            return len(rows)
-        else:
-            return False
-            #raise IndexError('Could not determine database size')
+        return self.database.get_lastrowid()
 
     def __getitem__(self, str_id):
         try:
@@ -368,28 +356,9 @@ class StructureTable():
         found = self.get_filepath(str_id)
         if found:
             return found
-        #else:
-        #    raise IndexError('Database entry not found.')
 
-    def __iter__(self):
-        """
-        This method is called when an iterator is required for FragmentTable.
-        Returns the Id and the Name as tuple.
-  
-        >>> dbfile = 'test-data/test.sqlite'
-        >>> db = StructureTable(dbfile)
-        >>> for num, i in enumerate(db):
-        ...   print(i)
-        ...   if num > 1:
-        ...     break
-        """
-        all_structures = self.get_all_structure_names()
-        if all_structures:
-            return iter(all_structures)
-        else:
-            return False
 
-    def get_all_structures_as_dict(self, ids: (list, tuple)=None, all_ids:bool=False) -> dict:
+    def get_all_structures_as_dict(self, ids: (list, tuple)=None, all_ids: bool=False) -> dict:
         """
         Returns the list of structures as dictionary.
 
@@ -434,16 +403,12 @@ class StructureTable():
             else:  # only one id
                 req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
                             Structure.dataname FROM Structure WHERE Structure.Id == ?'''
-                rows = [list(i) for i in self.database.db_request(req, ids[0])]
+                rows = self.database.db_request(req, ids)
                 return rows
         else:  # just all
             req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
                                      Structure.dataname FROM Structure'''
-        try:
-            rows = [list(i) for i in self.database.db_request(req)]
-        except TypeError:
-            return []
-        return rows
+        return self.database.db_request(req)
 
     def get_filepath(self, structure_id):
         """
@@ -467,7 +432,7 @@ class StructureTable():
         else:
             return cell
 
-    def __contains__(self, str_id):
+    def __contains__(self, str_id: int):
         """
         return if db contains entry of id
         """
@@ -483,11 +448,6 @@ class StructureTable():
     def has_index(self, Id, table='Structure'):
         """
         Returns True if db has index Id
-        :param table: which db table to query
-        :type table: str
-        :param Id: Id of the respective cell
-        :type Id: int
-        :rtype: bool
         """
         req = '''SELECT Id FROM ? WHERE ?.Id = ?'''
         if self.database.db_request(req, (table, table, Id)):
@@ -495,7 +455,7 @@ class StructureTable():
         else:
             return False
 
-    def fill_structures_table(self, path, filename, structure_id, measurement_id, dataname):
+    def fill_structures_table(self, path: str, filename: str, structure_id: str, measurement_id: int, dataname: str):
         """
         Fills a structure into the database.
         
@@ -509,7 +469,7 @@ class StructureTable():
         self.database.db_request(req, (structure_id, measurement_id, filename, path, dataname))
         return structure_id
 
-    def fill_measuremnts_table(self, name, structure_id):
+    def fill_measuremnts_table(self, name: str, structure_id):
         """
         Fills a measurements into the database.
 
@@ -529,20 +489,13 @@ class StructureTable():
         req = '''INSERT INTO cell (StructureId, a, b, c, alpha, beta, gamma, 
                                    esda, esdb, esdc, esdalpha, esdbeta, esdgamma, volume) 
                             VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-        aerror = get_error_from_value(a)
-        berror = get_error_from_value(b)
-        cerror = get_error_from_value(c)
-        alphaerror = get_error_from_value(alpha)
-        betaerror = get_error_from_value(beta)
-        gammaerror = get_error_from_value(gamma)
-        vol = ''
-        if isinstance(a, str):
-            a = a.split('(')[0]
-            b = b.split('(')[0]
-            c = c.split('(')[0]
-            alpha = alpha.split('(')[0]
-            beta = beta.split('(')[0]
-            gamma = gamma.split('(')[0]
+        a, aerror = get_error_from_value(a)
+        b, berror = get_error_from_value(b)
+        c, cerror = get_error_from_value(c)
+        alpha, alphaerror = get_error_from_value(alpha)
+        beta, betaerror = get_error_from_value(beta)
+        gamma, gammaerror = get_error_from_value(gamma)
+        vol = volume
         if isinstance(volume, str):
             vol = volume.split('(')[0]
         if self.database.db_request(req, (structure_id, a, b, c, alpha, beta, gamma,
@@ -551,32 +504,32 @@ class StructureTable():
 
     def fill_atoms_table(self, structure_id, name, element, x, y, z, occ, part):
         """
-        fill the atoms into structure(structureId) 
-        :TODO: Add bonds?
+        Fill the atoms into the Atoms table.
         """
         req = '''INSERT INTO Atoms (StructureId, name, element, x, y, z, occupancy, part) 
                                     VALUES(?, ?, ?, ?, ?, ?, ?, ?)'''
         if self.database.db_request(req, (structure_id, name, element, x, y, z, occ, part)):
             return True
 
-    def get_atoms_table(self, structure_id, cell=None, cartesian=False):
+    def get_atoms_table(self, structure_id, cell=None, cartesian=False, as_list=False):
         """
         returns the atoms of structure with structure_id
+        returns: [Name, Element, X, Y, Z, Part, ocuupancy]
         """
         if cell is None:
             cell = []
-        req = """SELECT Name, element, x, y, z FROM Atoms WHERE StructureId = ?"""
+        req = """SELECT Name, element, x, y, z, CAST(part as integer), occupancy FROM Atoms WHERE StructureId = ?"""
+        #req = """SELECT Name, element, x, y, z, part, occupancy FROM Atoms WHERE StructureId = ?"""
         result = self.database.db_request(req, (structure_id,))
-        #print(result, structure_id, '##')
         if cartesian:
             cartesian_coords = []
             a = lattice.A(cell).orthogonal_matrix
             for at in result:
-                coord = np.matrix([at[2], at[3], at[4]])
-                coords = misc.flatten((a * coord.reshape(3, 1)).tolist())
-                cartesian_coords.append(list(at[:2])+coords)
+                cartesian_coords.append(list(at[:2]) + (Array([at[2], at[3], at[4]]) * a).values + list(at[5:]))
             return cartesian_coords
         if result:
+            if as_list:
+                return [list(x) for x in result]
             return result
         else:
             return False
@@ -602,7 +555,7 @@ class StructureTable():
         :param param:
         :return:
         """
-        req = '''INSERT INTO Residuals 
+        residuals = """
                     (
                     StructureId,
                     _cell_formula_units_Z,                  
@@ -661,12 +614,9 @@ class StructureTable():
                     modification_time,
                     file_size
                     ) 
-                VALUES
-                    (
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  
-                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-                    );
-                '''
+                    """
+        req = '''INSERT INTO Residuals {} VALUES ({});'''.format(residuals, self.joined_arglist(residuals.split(',')))
+
         result = self.database.db_request(req, (
                 structure_id,
                 cif.cif_data['_cell_formula_units_Z'],              # Z
@@ -733,14 +683,6 @@ class StructureTable():
             )
         return result
 
-    def clean_name(some_var):
-        """
-        Make sure only alphanumerical characters are in the name
-        :type some_var: str
-        :rtype: str
-        """
-        return ''.join(char for char in some_var if char.isalnum())
-
     def populate_fulltext_search_table(self):
         """
         Populates the fts4 table with data to search for text.
@@ -774,7 +716,7 @@ class StructureTable():
         """
         Returns a database row as dictionary
         """
-        request = """select * from residuals where StructureId = ?"""#.format(structure_id)
+        request = """select * from residuals where StructureId = ?"""
         # setting row_factory to dict for the cif keys:
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
@@ -800,6 +742,16 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return dic
 
+    def joined_arglist(self, items):
+        return ','.join(['?'] * len(items))
+
+    def get_cells_as_list(self, structure_ids):
+        """
+        Returns a list of unit cells from the input ids.
+        """
+        req = 'select * from cell where StructureId IN ({seq})'.format(seq=self.joined_arglist(structure_ids))
+        return self.database.db_request(req, structure_ids)
+
     def find_by_volume(self, volume, threshold=0.03):
         """
         Searches cells with volume between upper and lower limit
@@ -814,7 +766,8 @@ class StructureTable():
         req = '''SELECT StructureId FROM cell WHERE cell.volume >= ? AND cell.volume <= ?'''
         try:
             return [i[0] for i in self.database.db_request(req, (lower_limit, upper_limit))]
-        except TypeError:
+        except(TypeError, KeyError):
+            #print("Wrong volume for cell search.")
             return False
 
     def find_by_strings(self, text: str) -> tuple:
@@ -839,6 +792,26 @@ class StructureTable():
             return tuple([])
         return ids
 
+    def find_by_it_number(self, number: int) -> list:
+        """
+        Find structures by space group number in international tables of
+        crystallography.
+        Returns a list of index numbers.
+        >>> db = StructureTable('../structuredb.sqlite')
+        #>>> db.database.initialize_db()
+        >>> db.find_by_it_number(1)
+        """
+        try:
+            value = int(number)
+        except ValueError:
+            return []
+        req = '''SELECT StructureId from Residuals WHERE _space_group_IT_number IS ?'''
+        result = self.database.db_request(req, (value,))
+        if result and len(result) > 0:
+            return [x[0] for x in result]
+        else:
+            return []
+
     def find_by_elements(self, elements: list, anyresult: bool = False) -> list:
         """
         Find structures where certain elements are included in the sum formula.
@@ -849,26 +822,19 @@ class StructureTable():
         [11, 3, 6, 15]
         """
         import re
-        structures = []
         matches = []
-        req = '''SELECT StructureId, _chemical_formula_sum from ElementSearch WHERE _chemical_formula_sum MATCH ?'''
-        for el in elements:
-            result = self.database.db_request(req, (el+'*',))
-            #for i in result:
-            #    print(i)
-            if result:
-                if isinstance(result, int):
-                    continue
-                else:
-                    structures.extend(result)
-        for el in elements:  # The second search excludes false hits like Ca instead of C
-            regex = re.compile(r'[\s|\d]?'+ el +'[\d|\s]+|[$]+', re.IGNORECASE)
-            res = []
-            for num, form in structures:
-                if regex.search(form):
-                    #print(form)
-                    res.append(num)
-            matches.append(res)
+        # Get all formulas to prevent false negatives with text search in the db:
+        req = '''SELECT StructureId, _chemical_formula_sum from Residuals'''
+        result = self.database.db_request(req)
+        if result:
+            for el in elements:  # The second search excludes false hits like Ca instead of C
+                regex = re.compile(r'[\s|\d]?'+ el +'[\d|\s]*|[$]+', re.IGNORECASE)
+                res = []
+                for num, form in result:
+                    if regex.search(form):
+                        #print(form)
+                        res.append(num)
+                matches.append(res)
         if matches:
             if anyresult:
                 return list(set(misc.flatten(matches)))
@@ -948,13 +914,19 @@ if __name__ == '__main__':
     #out = db.find_by_date(start="2017-08-19")
     #out = db.get_cell_by_id(12)
     #out = db.find_by_strings('dk')
-    all = db.find_by_elements(['Al', 'Au', 'Ag'])
-    tst = []
-    for i in all:
-        out = db.get_sumform_by_id(i)
-        if "Ag" in out[0]:
-            tst.append(out)
-        #print(out)
-    print(len(all))
-    print(len(tst))
-
+    ############################################
+    #elinclude = ['C', 'O', 'N', 'Al', 'F']
+    #elexclude = ['Tm']
+    #inc = db.find_by_elements(elinclude, anyresult=False)
+    #exc = db.find_by_elements(elexclude, anyresult=True)
+    #print('include: {}'.format(sorted(inc)))
+    #print('exclude: {}'.format(sorted(exc)))
+    #combi = set(inc) - set(exc)
+    #print(combi)
+    #print(len(combi))
+    #########################################
+    nums = []
+    for i in range(1, 230):
+        res = db.find_by_it_number(i)
+        nums.append([i, len(res)])
+    print(nums)
