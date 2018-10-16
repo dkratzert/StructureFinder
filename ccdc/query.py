@@ -34,7 +34,10 @@ def get_cccsd_path() -> Path:
     HKEY_CURRENT_USER\SOFTWARE\CCDC\CellCheckCSD
     """
     software = r'SOFTWARE\CCDC\CellCheckCSD\\'
-    csd = OpenKey(HKEY_CURRENT_USER, software)
+    try:
+        csd = OpenKey(HKEY_CURRENT_USER, software)
+    except FileNotFoundError:
+        return None
     num = QueryInfoKey(csd)[0]  # returns the number of subkeys
     csd_path = None
     latest = StrictVersion('0.0')
