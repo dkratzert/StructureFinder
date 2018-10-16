@@ -211,7 +211,7 @@ def distance(x1: float, y1: float, z1: float,
 
 
 def format_sum_formula(sumform: str) -> str:
-    """ 
+    """
     Makes html formated sum formula from dictionary.
     >>> format_sum_formula("C12H6O3Mn7")
     '<html><body>C<sub>12</sub>H<sub>6</sub>O<sub>3</sub>Mn<sub>7</sub></body></html>'

@@ -1413,7 +1413,7 @@ class Ui_stdbMainwindow(object):
         self.CSDtreeWidget.headerItem().setText(6, _translate("stdbMainwindow", "gamma"))
         self.CSDtreeWidget.headerItem().setText(7, _translate("stdbMainwindow", "Space Group"))
         self.CSDtreeWidget.headerItem().setText(8, _translate("stdbMainwindow", "Identifier"))
-        self.MaintabWidget.setTabText(self.MaintabWidget.indexOf(self.CCDCSearchTab), _translate("stdbMainwindow", "CCDC Search"))
+        self.MaintabWidget.setTabText(self.MaintabWidget.indexOf(self.CCDCSearchTab), _translate("stdbMainwindow", "CellCheckCSD"))
         self.actionExit.setText(_translate("stdbMainwindow", "Exit Program"))
         self.actionExit.setShortcut(_translate("stdbMainwindow", "Ctrl+Q"))
         self.actionUser_manual.setText(_translate("stdbMainwindow", "User Manual"))

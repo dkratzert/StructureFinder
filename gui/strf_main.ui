@@ -2765,7 +2765,7 @@ p, li { white-space: pre-wrap; }
         </sizepolicy>
        </property>
        <attribute name="title">
-        <string>CCDC Search</string>
+        <string>CellCheckCSD</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>

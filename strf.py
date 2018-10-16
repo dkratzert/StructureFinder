@@ -19,7 +19,7 @@ import webbrowser
 from os.path import isfile
 from sqlite3 import DatabaseError
 
-from PyQt5.QtCore import QModelIndex
+from PyQt5.QtCore import QModelIndex, QTextCodec
 from PyQt5.QtWidgets import QTreeWidgetItem
 
 from displaymol.sdm import SDM
@@ -123,7 +123,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             # Check for CellCheckCSD:
             if not get_cccsd_path():
                 self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
-                #self.ui.MaintabWidget.removeTab(4)
+                self.ui.cellSearchCSDLineEdit.setDisabled(True)
         else:
             self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
         self.show()
@@ -206,7 +206,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
         self.ui.CSDtreeWidget.itemDoubleClicked.connect(self.show_csdentry)
-        #self.ui.CSDtreeWidget.selectionModel().currentChanged.connect(self.show_csdentry)
         self.ui.ad_elementsIncLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.ad_elementsExclLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.add_res.clicked.connect(self.res_checkbox_clicked)
@@ -225,14 +224,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.MaintabWidget.setCurrentIndex(1)
 
     def show_csdentry(self, item: QModelIndex):
-        print(self.ui.CSDtreeWidget.selectionModel().currentIndex().row())
-        rownumber = self.ui.CSDtreeWidget.selectionModel().currentIndex().row()
-        parent = item.parent()
-        print(parent)
-        #print(item.c.index(rownumber, 8))
-        #print(item.sibling(item.row(), 8).data())
-        #identifier = item.data(8, item.in)
-        #webbrowser.open_new_tab('https://www.ccdc.cam.ac.uk/structures/Search?entry_list=' + identifier)
+        sel = self.ui.CSDtreeWidget.selectionModel().selection()
+        try:
+            identifier = sel.indexes()[8].data()
+        except KeyError:
+            return None
+        webbrowser.open_new_tab('https://www.ccdc.cam.ac.uk/structures/Search?entry_list=' + identifier)
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasText():
@@ -296,6 +293,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def search_csd_and_display_results(self):
         centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
         cell = is_valid_cell(self.ui.cellSearchCSDLineEdit.text())
+        self.ui.CSDtreeWidget.clear()
         if len(cell) < 6:
             return None
         center = centering[self.ui.lattCentComboBox.currentIndex()]
@@ -637,6 +635,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         self.clear_fields()
         cell = self.structures.get_cell_by_id(structure_id)
+        if self.ui.cellSearchCSDLineEdit.isEnabled():
+            self.ui.cellSearchCSDLineEdit.setText("  ".join([str(round(x, 5)) for x in cell[:6]]))
         if not cell:
             return False
         try:

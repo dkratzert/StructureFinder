@@ -20,6 +20,7 @@ files = [
     "searcher",
     "shelxfile",
     "pymatgen",
+    "ccdc",
     "lattice",
     "pg8000",
     "p4pfile",

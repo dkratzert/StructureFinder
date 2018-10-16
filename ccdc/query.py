@@ -48,7 +48,10 @@ def get_cccsd_path() -> Path:
     if csd_path.is_file():
         return csd_path
     else:
-        return Path(which('ccdc_searcher.bat'))
+        try:
+            return Path(which('ccdc_searcher.bat'))
+        except TypeError:
+            return None
 
 
 def read_queryfile():
