@@ -126,6 +126,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 self.ui.cellSearchCSDLineEdit.setDisabled(True)
         else:
             self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
+            self.ui.cellSearchCSDLineEdit.setDisabled(True)
         self.show()
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
