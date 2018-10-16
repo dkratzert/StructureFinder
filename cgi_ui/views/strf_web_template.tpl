@@ -86,6 +86,7 @@ body {
 <a type="button" class="btn btn-primary btn-xs" data-toggle="collapse" data-target="#adv-search"
         id="toggle_advsearch-button">Advanced Search</a>
 <a type="button" class="btn btn-warning btn-xs" id="all_structures">Show All</a>
+<a type="button" class="btn btn-primary btn-xs invisible" id="cellsearchcsd_button">CellCheckCSD</a>
 <!-- ------------  The collapsible for simple search options: -----------------  -->
 <div class="form-group row" id="mainsearch">
     <div class="col-sm-6">

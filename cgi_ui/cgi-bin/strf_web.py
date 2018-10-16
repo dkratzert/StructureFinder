@@ -23,6 +23,8 @@ import math
 import os
 import pathlib
 import sys
+from xml.etree.ElementTree import ParseError
+from ccdc.query import get_cccsd_path, search_csd, parse_results
 
 
 pyver = sys.version_info
@@ -198,6 +200,10 @@ def version():
     from misc.version import VERSION
     return 'version ' + str(VERSION)
 
+@app.route('/cellcheck')
+def cellsearch():
+    if not get_cccsd_path() is None:
+        return 'true'
 
 @app.route('/cgi-bin/strf_web.cgi')
 def redirect_old_path():
@@ -207,6 +213,25 @@ def redirect_old_path():
 @app.route('/favicon.ico')
 def redirect_to_favicon():
     redirect('/static/favicon.ico')
+
+
+@app.post('/csd')
+def search_cellcheck_csd():
+    """
+    Search with CellcheckCSD.
+    """
+    cell = request.POST.cell
+    centering = request.POST.centering
+    if len(cell) < 6:
+        return None
+    xml = search_csd(cell, centering=centering)
+    try:
+        results = parse_results(xml)  # results in a dictionary
+    except ParseError as e:
+        print(e)
+        return
+    print(results)
+    print(len(results), 'Structures found...')
 
 
 @app.error(404)
@@ -602,10 +627,10 @@ if __name__ == "__main__":
         print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
         sys.exit()
     print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
-    # plain python wsgiref server:
-    # app.run(host=host, port=port, reloader=True)
+    # plain python wsgiref server (gunicorn doesnt run on windows):
+    # app.run(host=host, port=port, server='wsgiref', reloader=True)
     # gunicorn server: Best used behind an nginx proxy server: http://docs.gunicorn.org/en/stable/deploy.html
     # you need "pip3 install gunicorn" to run this:
     # The current database interface allows only one worker (have to go to sqlalchemy!)
-    app.run(host=host, port=port, reload=True, server='gunicorn', accesslog='-', errorlog='-', workers=1,
+    app.run(host=host, port=port, reload=True, server='wsgiref', accesslog='-', errorlog='-', workers=1,
             access_log_format='%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s"')

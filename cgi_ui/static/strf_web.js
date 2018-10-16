@@ -9,11 +9,18 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
 
 $(document).ready(function($){
+    
     // The structure ID
     var strid = null;
     
+    $.get(url = cgifile+'/cellcheck', function (result) {
+        if (result === 'true') {
+            $("#cellsearchcsd_button").removeClass('invisible');
+        }
+    });
+    
     $.get(url = cgifile+'/version', function (result) {
-            document.getElementById("version").innerHTML = result;
+        document.getElementById("version").innerHTML = result;
     });
     
     // toggle for cell tooltip
