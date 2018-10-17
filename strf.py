@@ -19,8 +19,7 @@ import webbrowser
 from os.path import isfile
 from sqlite3 import DatabaseError
 
-from PyQt5.QtCore import QModelIndex, QTextCodec
-from PyQt5.QtWidgets import QTreeWidgetItem
+from PyQt5.QtCore import QModelIndex
 
 from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
@@ -55,9 +54,11 @@ is_windows = False
 if platform.system() == 'Windows':
     is_windows = True
 
-if is_windows:
+try:
     from xml.etree.ElementTree import ParseError
     from ccdc.query import get_cccsd_path, search_csd, parse_results
+except ModuleNotFoundError:
+    pass
 
 if py36:
     """Only import this if Python 3.6 is used."""
@@ -67,7 +68,6 @@ if py36:
         print(e, '#')
         if DEBUG:
             raise
-
 
 __metaclass__ = type  # use new-style classes
 
@@ -109,7 +109,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.dbfdesc = None
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
-        #self.ui.centralwidget.setMinimumSize(1000, 500)
+        # self.ui.centralwidget.setMinimumSize(1000, 500)
         self.abort_import_button = QtWidgets.QPushButton("Abort", parent=self.ui.statusbar)
         self.progress = QtWidgets.QProgressBar(self)
         self.progress.setFormat('')
@@ -126,6 +126,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 self.ui.cellSearchCSDLineEdit.setDisabled(True)
         else:
             self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
+            self.ui.cellSearchCSDLineEdit.setDisabled(True)
         self.show()
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
@@ -191,7 +192,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if is_windows:
             self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
             # TODO: search on enter key press
-            #self.ui.cellSearchCSDLineEdit.
+            # self.ui.cellSearchCSDLineEdit.
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
@@ -342,7 +343,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             except Exception as e:
                 print(e)
                 if DEBUG:
-                    raise 
+                    raise
                 return False
             clipboard = QtWidgets.QApplication.clipboard()
             clipboard.setText(cell)
@@ -467,9 +468,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Initializes a QWebengine to view the molecule.
         """
         self.view = QWebEngineView()
-        self.view.load(QtCore.QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
-        #self.view.setMaximumWidth(260)
-        #self.view.setMaximumHeight(290)
+        self.view.load(
+            QtCore.QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
+        # self.view.setMaximumWidth(260)
+        # self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
         # self.view.show()
 
@@ -722,7 +724,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
         self.ui.allCifTreeWidget.clear()
         # This makes selection slow and is not really needed:
-        #atoms_item = QtWidgets.QTreeWidgetItem()
+        # atoms_item = QtWidgets.QTreeWidgetItem()
         for key, value in cif_dic.items():
             if key == "_shelx_res_file":
                 self.ui.SHELXplainTextEdit.setPlainText(cif_dic['_shelx_res_file'])
@@ -743,7 +745,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Creates a html file from a mol file to display the molecule in jsmol-lite
         """
         symmcards = [x.split(',') for x in self.structures.get_row_as_dict(structure_id)
-                    ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+        ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
         blist = None
         if self.ui.growCheckBox.isChecked():
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=False, as_list=True)
@@ -751,8 +753,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 sdm = SDM(atoms, symmcards, cell)
                 needsymm = sdm.calc_sdm()
                 atoms = sdm.packer(sdm, needsymm)
-                #blist = [(x[0]+1, x[1]+1) for x in sdm.bondlist]
-                #print(len(blist))
+                # blist = [(x[0]+1, x[1]+1) for x in sdm.bondlist]
+                # print(len(blist))
         else:
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=True, as_list=False)
             blist = None
@@ -764,8 +766,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             mol = ' '
             if DEBUG:
                 raise
-        #print(self.ui.openglview.width()-30, self.ui.openglview.height()-50)
-        content = write_html.write(mol, self.ui.openglview.width()-30, self.ui.openglview.height()-50)
+        # print(self.ui.openglview.width()-30, self.ui.openglview.height()-50)
+        content = write_html.write(mol, self.ui.openglview.width() - 30, self.ui.openglview.height() - 50)
         p2 = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
         p2.write_text(data=content, encoding="utf-8", errors='ignore')
         self.view.reload()
@@ -868,7 +870,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 if mapping:
                     # pprint.pprint(map[3])
                     idlist2.append(cell_id)
-        #print("After match: ", len(idlist2))
+        # print("After match: ", len(idlist2))
         return idlist2
 
     @QtCore.pyqtSlot('QString', name='search_cell')
@@ -980,7 +982,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         Reads a p4p file to get the included unit cell for a cell search.
         """
-        fname, _ = QtWidgets.QFileDialog.getOpenFileName(self, caption='Open p4p File', directory='./', 
+        fname, _ = QtWidgets.QFileDialog.getOpenFileName(self, caption='Open p4p File', directory='./',
                                                          filter="*.p4p *.cif *.res *.ins")
         _, ending = os.path.splitext(fname)
         if ending == '.p4p':
@@ -1197,7 +1199,7 @@ if __name__ == "__main__":
         uic.compileUiDir(os.path.join(application_path, './gui'))
     except:
         print("Unable to compile UI!")
-        raise 
+        raise
     from gui.strf_main import Ui_stdbMainwindow
     from gui.strf_dbpasswd import Ui_PasswdDialog
 
