@@ -84,21 +84,21 @@ def set_unitcell(cell: list, centering: str):
     return ET.tostring(t)
 
 
-def parse_results(xmlinput: str) -> dict:
+def parse_results(xmlinput: str) -> list:
     """
     Parses the search results into a dictionary.
     """
     root = ET.fromstring(xmlinput)
-    results = {}
+    results = []
     for r in root.findall('match'):
         ident = r.get('identifier')
-        values = {}
+        values = {'recid': ident}
         for p in r.findall('parameters'):
             for item in p.findall('parameter'):
                 type = item.get('type')
                 value = item.text
                 values[type] = value
-        results[ident] = values
+        results.append(values)
     return results
 
 

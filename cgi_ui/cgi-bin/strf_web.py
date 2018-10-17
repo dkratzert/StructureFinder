@@ -55,7 +55,6 @@ TODO:
 
 
 app = application = Bottle()
-# bottle.debug(True)  # Do not enable debug in production systems!
 
 
 @app.route('/all')
@@ -200,10 +199,12 @@ def version():
     from misc.version import VERSION
     return 'version ' + str(VERSION)
 
-@app.route('/cellcheck')
+
+@app.get('/cellcheck')
 def cellsearch():
     if not get_cccsd_path() is None:
         return 'true'
+
 
 @app.route('/cgi-bin/strf_web.cgi')
 def redirect_old_path():
@@ -215,23 +216,39 @@ def redirect_to_favicon():
     redirect('/static/favicon.ico')
 
 
+@app.get('/csd')
+def show_cellcheck():
+    """
+    Shows the CellcheckCSD web page
+    """
+    response.content_type = 'text/html; charset=UTF-8'
+    output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip})
+    if request.POST.cell:
+        return {"total": 0, "records": {}, "status": "success"}
+    return output
+
+
 @app.post('/csd')
 def search_cellcheck_csd():
     """
     Search with CellcheckCSD.
     """
+    cmd = request.POST.cmd
     cell = request.POST.cell
     centering = request.POST.centering
+    print(cell, centering)
     if len(cell) < 6:
         return None
-    xml = search_csd(cell, centering=centering)
-    try:
-        results = parse_results(xml)  # results in a dictionary
-    except ParseError as e:
-        print(e)
-        return
-    print(results)
-    print(len(results), 'Structures found...')
+    if cmd == 'get-records':
+        xml = search_csd(cell, centering=centering)
+        try:
+            results = parse_results(xml)  # results in a dictionary
+        except ParseError as e:
+            print(e)
+            return
+        print(results)
+        print(len(results), 'Structures found...')
+        return results
 
 
 @app.error(404)
@@ -632,5 +649,5 @@ if __name__ == "__main__":
     # gunicorn server: Best used behind an nginx proxy server: http://docs.gunicorn.org/en/stable/deploy.html
     # you need "pip3 install gunicorn" to run this:
     # The current database interface allows only one worker (have to go to sqlalchemy!)
-    app.run(host=host, port=port, reload=True, server='wsgiref', accesslog='-', errorlog='-', workers=1,
+    app.run(host=host, port=port, debug=True, server='wsgiref', accesslog='-', errorlog='-', workers=1,
             access_log_format='%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s"')
