@@ -14,6 +14,10 @@ Created on 09.02.2015
 import os
 from pprint import pprint
 
+from displaymol.sdm import SymmCards
+from shelxfile.dsrmath import SymmetryElement
+
+
 class Cif(object):
     def __init__(self, options=None):
         """
@@ -242,7 +246,46 @@ class Cif(object):
         self.cif_data['_atom'] = atoms
         self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(symmlist)
         self.cif_data['file_length_lines'] = num + 1
-        # pprint(self.cif_data)  # slow
+        self.symmcards = SymmCards()
+        symmcards = [x.replace("'", "").replace(" ", "").split(',') for x in symmlist]
+        for s in symmcards:
+            self.symmcards.append(s)
+        tmp = None
+        for sym in self.symmcards:
+            if sym == SymmetryElement(['X', 'Y', 'Z']):
+                self.cif_data["_space_group_centring_type"] = 'P'
+                continue
+            if sym == SymmetryElement(['0.5', '0.5', '0.5']):
+                self.cif_data["_space_group_centring_type"] = 'I'
+                continue
+            if sym == SymmetryElement(['1/3', '2/3', '2/3']):
+                if not tmp:
+                    tmp = 'R'
+                continue
+            if sym == SymmetryElement(['2/3', '1/3', '1/3']) and tmp == 'R':
+                self.cif_data["_space_group_centring_type"] = 'R'
+                continue
+            if sym == SymmetryElement(['0.0', '0.5', '0.5']):  # F-centered
+                if not tmp:
+                    tmp = 'F'
+                continue
+            if sym == SymmetryElement(['0.5', '0.0', '0.5']):
+                if not tmp:
+                    tmp = 'F'
+                continue
+            if sym == SymmetryElement(['0.5', '0.5', '0.0']):
+                if tmp == 'F':
+                    self.cif_data["_space_group_centring_type"] = 'F'
+                continue
+            if sym == SymmetryElement(['0.0', '0.5', '0.5']):
+                self.cif_data["_space_group_centring_type"] = 'A'
+                continue
+            if sym == SymmetryElement(['0.5', '0.0', '0.5']):
+                self.cif_data["_space_group_centring_type"] = 'B'
+                continue
+            if sym == SymmetryElement(['0.5', '0.5', '0.0']):
+                self.cif_data["_space_group_centring_type"] = 'C'
+                continue
         if not data:
             return False
         # if not atoms:
