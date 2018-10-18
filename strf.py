@@ -73,6 +73,7 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
+- Gett lattice type for CSD from LATT card (Shelx files) or from symmetry element (cif file) 
 - Add search in CellSearchCSD.
   Download  https://www.ccdc.cam.ac.uk/Community/csd-community/cellcheckcsd/
   Open structure via idetifier:
