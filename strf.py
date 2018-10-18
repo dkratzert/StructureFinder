@@ -638,7 +638,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         self.clear_fields()
         cell = self.structures.get_cell_by_id(structure_id)
-        if self.ui.cellSearchCSDLineEdit.isEnabled():
+        if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
             self.ui.cellSearchCSDLineEdit.setText("  ".join([str(round(x, 5)) for x in cell[:6]]))
         if not cell:
             return False
@@ -1020,7 +1020,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             if shx.cell:
                 try:
                     self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
-                                                       '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*shx.cell.cell_list))
+                                                       '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*shx.cell))
                 except TypeError:
                     pass
             else:

@@ -1403,6 +1403,7 @@ class Ui_stdbMainwindow(object):
         self.CSDpushButton.setText(_translate("stdbMainwindow", "Search"))
         self.latticeCenteringLabel.setText(_translate("stdbMainwindow", "Lattice centring"))
         self.cellSearchLabelCSD.setText(_translate("stdbMainwindow", "Cell Search"))
+        self.CSDtreeWidget.setToolTip(_translate("stdbMainwindow", "<html><head/><body><p>Double-click to view structure details in web browser</p></body></html>"))
         self.CSDtreeWidget.setSortingEnabled(False)
         self.CSDtreeWidget.headerItem().setText(0, _translate("stdbMainwindow", "Formula"))
         self.CSDtreeWidget.headerItem().setText(1, _translate("stdbMainwindow", "a"))

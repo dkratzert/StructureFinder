@@ -2873,6 +2873,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QTreeWidget" name="CSDtreeWidget">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Double-click to view structure details in web browser&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="verticalScrollBarPolicy">
              <enum>Qt::ScrollBarAsNeeded</enum>
             </property>
