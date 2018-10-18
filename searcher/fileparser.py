@@ -254,38 +254,28 @@ class Cif(object):
         for sym in self.symmcards:
             if sym == SymmetryElement(['X', 'Y', 'Z']):
                 self.cif_data["_space_group_centring_type"] = 'P'
-                continue
             if sym == SymmetryElement(['0.5', '0.5', '0.5']):
                 self.cif_data["_space_group_centring_type"] = 'I'
-                continue
             if sym == SymmetryElement(['1/3', '2/3', '2/3']):
                 if not tmp:
                     tmp = 'R'
-                continue
             if sym == SymmetryElement(['2/3', '1/3', '1/3']) and tmp == 'R':
                 self.cif_data["_space_group_centring_type"] = 'R'
-                continue
             if sym == SymmetryElement(['0.0', '0.5', '0.5']):  # F-centered
                 if not tmp:
                     tmp = 'F'
-                continue
             if sym == SymmetryElement(['0.5', '0.0', '0.5']):
                 if not tmp:
                     tmp = 'F'
-                continue
             if sym == SymmetryElement(['0.5', '0.5', '0.0']):
                 if tmp == 'F':
                     self.cif_data["_space_group_centring_type"] = 'F'
-                continue
             if sym == SymmetryElement(['0.0', '0.5', '0.5']):
                 self.cif_data["_space_group_centring_type"] = 'A'
-                continue
             if sym == SymmetryElement(['0.5', '0.0', '0.5']):
                 self.cif_data["_space_group_centring_type"] = 'B'
-                continue
             if sym == SymmetryElement(['0.5', '0.5', '0.0']):
                 self.cif_data["_space_group_centring_type"] = 'C'
-                continue
         if not data:
             return False
         # if not atoms:
