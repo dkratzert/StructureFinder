@@ -638,14 +638,14 @@ class StartStructureDB(QtWidgets.QMainWindow):
         _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
         centering = {'P': 0, 'A': 1, 'B': 2, 'C': 3, 'F': 4, 'I': 5, 'R': 6}
-        cstring = cif_dic['_space_group_centring_type']
         self.clear_fields()
         cell = self.structures.get_cell_by_id(structure_id)
         if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
             self.ui.cellSearchCSDLineEdit.setText("  ".join([str(round(x, 5)) for x in cell[:6]]))
             try:
+                cstring = cif_dic['_space_group_centring_type']
                 self.ui.lattCentComboBox.setCurrentIndex(centering[cstring])
-            except KeyError:
+            except (KeyError, TypeError):
                 pass
         if not cell:
             return False
@@ -665,8 +665,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.ui.cellField.setText('            ')
             return False
         # self.ui.cellField.setMinimumWidth(180)
-        self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume,
-                                                           cif_dic['_space_group_centring_type']))
+        try:
+            cent = cif_dic['_space_group_centring_type']
+        except KeyError:
+            cent = ''
+        self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, cent))
         self.ui.cellField.installEventFilter(self)
         self.ui.cellField.setToolTip("Double click on 'Unit Cell' to copy to clipboard.")
         try:
