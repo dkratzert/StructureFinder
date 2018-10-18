@@ -108,6 +108,7 @@ class DatabaseRequest():
                         _cell_formula_units_Z                   INTEGER,
                         _space_group_name_H_M_alt               TEXT,
                         _space_group_name_Hall                  TEXT,
+                        _space_group_centring_type              TEXT,
                         _space_group_IT_number                  INTEGER,
                         _space_group_crystal_system             TEXT,
                         _space_group_symop_operation_xyz        TEXT,
@@ -561,6 +562,7 @@ class StructureTable():
                     _cell_formula_units_Z,                  
                     _space_group_name_H_M_alt,  
                     _space_group_name_Hall,
+                    _space_group_centring_type,
                     _space_group_IT_number,
                     _space_group_crystal_system,
                     _space_group_symop_operation_xyz,
@@ -623,6 +625,7 @@ class StructureTable():
                 cif.cif_data['_space_group_name_H-M_alt'],          # Raumgruppe (Herman-Maugin)
                 cif.cif_data['_space_group_name_Hall'],             # Hall-Symbol
                 cif.cif_data['_space_group_IT_number'],             # Raumgruppen-Nummer aus IT
+                cif.cif_data['_space_group_centring_type'],          # Lattice centering
                 cif.cif_data['_space_group_crystal_system'],        # Kristallsystem
                 cif.cif_data['_space_group_symop_operation_xyz'],   # SYMM cards
                 cif.cif_data['_chemical_formula_sum'],              # Summenformel
