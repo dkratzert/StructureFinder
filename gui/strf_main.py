@@ -1036,7 +1036,7 @@ class Ui_stdbMainwindow(object):
         self.actionGo_to_All_CIF_Tab.setObjectName("actionGo_to_All_CIF_Tab")
 
         self.retranslateUi(stdbMainwindow)
-        self.MaintabWidget.setCurrentIndex(4)
+        self.MaintabWidget.setCurrentIndex(0)
         self.actionExit.triggered.connect(stdbMainwindow.close)
         QtCore.QMetaObject.connectSlotsByName(stdbMainwindow)
         stdbMainwindow.setTabOrder(self.importDirButton, self.importDatabaseButton)

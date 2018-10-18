@@ -42,6 +42,6 @@ celltxt = """
            <td><p align="right">{:>8.3f}° </p></td>
        </tr>
    </table>
-   Volume = {:8.2f} Å<sup>3   
+   Volume = {:8.2f} Å<sup>3</sup>, <b>{}</b>
    </body></html>
    """

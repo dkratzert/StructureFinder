@@ -36,6 +36,7 @@ class Cif(object):
             "_cell_formula_units_Z": '',
             "_space_group_name_H-M_alt": '',
             "_space_group_name_Hall": '',
+            "_space_group_centring_type": '',
             "_space_group_IT_number": '',
             "_space_group_crystal_system": '',
             "_space_group_symop_operation_xyz": '',
