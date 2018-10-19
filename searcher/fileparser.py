@@ -282,6 +282,8 @@ class Cif(object):
             self.cif_data['_diffrn_reflns_av_unetI/netI'] = self.cif_data['_diffrn_reflns_av_sigmaI/netI']
         if self.cif_data["_space_group_name_H-M_alt"]:
             self.cif_data["_space_group_centring_type"] = self.cif_data["_space_group_name_H-M_alt"].split()[0][:1]
+        elif self.cif_data['_space_group_name_Hall']:
+            self.cif_data["_space_group_centring_type"] = self.cif_data["_space_group_name_Hall"].split()[0][:1]
 
     def __iter__(self) -> dict:
         """

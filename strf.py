@@ -74,15 +74,9 @@ __metaclass__ = type  # use new-style classes
 """
 TODO:
 - Add table with Id, Structure.Id, H,  He, Li, Be, usw. -> fill sum formula in it. -> Improve search by formula.
-- Get lattice type for CSD from LATT card (Shelx files) or from symmetry element (cif file) 
-- Add search in CellSearchCSD.
-  Download  https://www.ccdc.cam.ac.uk/Community/csd-community/cellcheckcsd/
-  Open structure via idetifier:
-  https://www.ccdc.cam.ac.uk/structures/Search?entry_list=ASOCES
-  https://www.ccdc.cam.ac.uk/structures/Search?Ccdcid={identifier}&DatabaseToSearch=Published
 - Improve text search (in cif file). Figure out which tokenchars co:nfiguration works best.
 - sort results by G6 distance
-  
+
 Search for:
 - draw structure (with JSME? Acros? Kekule?, https://github.com/ggasoftware/ketcher)
 - compare  molecules https://groups.google.com/forum/#!msg/networkx-discuss/gC_-Wc0bRWw/ISRZYFsPCQAJ
