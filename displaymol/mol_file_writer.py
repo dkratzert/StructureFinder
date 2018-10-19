@@ -56,7 +56,7 @@ class MolFile(object):
             blist.append("{:>4d}{:>4d}  1  0  0  0  0".format(bo[0], bo[1]))
         return '\n'.join(blist)
 
-    def get_conntable_from_atoms(self, extra_param=0.35):
+    def get_conntable_from_atoms(self, extra_param=0.5):
         """
         returns a connectivity table from the atomic coordinates and the covalence
         radii of the atoms.
@@ -77,7 +77,7 @@ class MolFile(object):
                     continue
                 rad2 = get_radius_from_element(at2[1])
                 d = distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
-                if (rad1 + rad2) + extra_param >= d > (rad1 or rad2):
+                if (rad1 + rad2) + extra_param > d:
                     if at1[1] == 'H' and at2[1] == 'H':
                         continue
                     # print(num1, num2, d)
