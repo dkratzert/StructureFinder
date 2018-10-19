@@ -25,6 +25,7 @@ from searcher import atoms, database_handler, fileparser
 from lattice.lattice import vol_unitcell
 from searcher.fileparser import Cif
 from shelxfile.shelx import ShelXFile
+from strf import DEBUG
 
 excluded_names = ['ROOT',
                   '.OLEX',
@@ -180,7 +181,8 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 try:
                     cifok = cif.parsefile(f.readlines())
                     if not cifok:
-                        # print("Could not parse: {}.".format(fullpath.encode('ascii', 'ignore')))
+                        if DEBUG:
+                            print("Could not parse: {}.".format(fullpath.encode('ascii', 'ignore')))
                         continue
                 except IndexError:
                     continue
@@ -216,7 +218,8 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 try:
                     cifok = cif.parsefile(zippedfile)
                     if not cifok:
-                        # print("Could not parse: {}.".format(fullpath.encode('ascii', 'ignore')))
+                        if DEBUG:
+                            print("Could not parse: {}.".format(fullpath.encode('ascii', 'ignore')))
                         continue
                 except IndexError:
                     continue
@@ -224,6 +227,8 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     tst = fill_db_tables(cif, filename=z.cifname, path=fullpath,
                                          structure_id=str(lastid), structures=structures)
                     if not tst:
+                        if DEBUG:
+                            print('cif file not added:', fullpath) 
                         continue
                     if self:
                         self.add_table_row(name=z.cifname, path=fullpath,
@@ -242,14 +247,16 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
             try:
                 res = ShelXFile(fullpath)
             except Exception as e:
-                #print(e)
-                #print('res file not added.')
+                if DEBUG:
+                    print(e)
+                    print("Could not parse: {}.".format(fullpath.encode('ascii', 'ignore')))
                 continue
             if res:
                 tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=lastid,
                                             structures=structures, options=options)
             if not tst:
-                #print('res file not added')
+                if DEBUG:
+                    print('res file not added:', fullpath)
                 continue
             if self:
                 self.add_table_row(name=name, path=fullpath,
