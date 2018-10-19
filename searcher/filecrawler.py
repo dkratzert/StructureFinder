@@ -25,7 +25,7 @@ from searcher import atoms, database_handler, fileparser
 from lattice.lattice import vol_unitcell
 from searcher.fileparser import Cif
 from shelxfile.shelx import ShelXFile
-from strf import DEBUG
+DEBUG = False
 
 excluded_names = ['ROOT',
                   '.OLEX',
