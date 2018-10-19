@@ -14,9 +14,6 @@ Created on 09.02.2015
 import os
 from pprint import pprint
 
-from displaymol.sdm import SymmCards
-from shelxfile.dsrmath import SymmetryElement
-
 
 class Cif(object):
     def __init__(self, options=None):
@@ -246,36 +243,16 @@ class Cif(object):
         self.cif_data['_atom'] = atoms
         self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(symmlist)
         self.cif_data['file_length_lines'] = num + 1
+        # TODO: implement detection of self.cif_data["_space_group_centring_type"] by symmcards.
+        """
         self.symmcards = SymmCards()
         symmcards = [x.replace("'", "").replace(" ", "").split(',') for x in symmlist]
         for s in symmcards:
-            self.symmcards.append(s)
-        tmp = None
-        for sym in self.symmcards:
-            if sym == SymmetryElement(['X', 'Y', 'Z']):
-                self.cif_data["_space_group_centring_type"] = 'P'
-            if sym == SymmetryElement(['0.5', '0.5', '0.5']):
-                self.cif_data["_space_group_centring_type"] = 'I'
-            if sym == SymmetryElement(['1/3', '2/3', '2/3']):
-                if not tmp:
-                    tmp = 'R'
-            if sym == SymmetryElement(['2/3', '1/3', '1/3']) and tmp == 'R':
-                self.cif_data["_space_group_centring_type"] = 'R'
-            if sym == SymmetryElement(['0.0', '0.5', '0.5']):  # F-centered
-                if not tmp:
-                    tmp = 'F'
-            if sym == SymmetryElement(['0.5', '0.0', '0.5']):
-                if not tmp:
-                    tmp = 'F'
-            if sym == SymmetryElement(['0.5', '0.5', '0.0']):
-                if tmp == 'F':
-                    self.cif_data["_space_group_centring_type"] = 'F'
-            if sym == SymmetryElement(['0.0', '0.5', '0.5']):
-                self.cif_data["_space_group_centring_type"] = 'A'
-            if sym == SymmetryElement(['0.5', '0.0', '0.5']):
-                self.cif_data["_space_group_centring_type"] = 'B'
-            if sym == SymmetryElement(['0.5', '0.5', '0.0']):
-                self.cif_data["_space_group_centring_type"] = 'C'
+            try:
+                self.symmcards.append(s)
+            except:
+                pass
+        """
         if not data:
             return False
         # if not atoms:
@@ -303,6 +280,8 @@ class Cif(object):
             self.cif_data['_space_group_IT_number'] = self.cif_data['_symmetry_Int_Tables_number']
         if '_diffrn_reflns_av_sigmaI/netI' in self.cif_data:
             self.cif_data['_diffrn_reflns_av_unetI/netI'] = self.cif_data['_diffrn_reflns_av_sigmaI/netI']
+        if self.cif_data["_space_group_name_H-M_alt"]:
+            self.cif_data["_space_group_centring_type"] = self.cif_data["_space_group_name_H-M_alt"].split()[0][:1]
 
     def __iter__(self) -> dict:
         """
