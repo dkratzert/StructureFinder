@@ -1072,7 +1072,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.start_db()
         self.ui.cifList_treeWidget.show()
         self.abort_import_button.show()
-        n = 1
+        n = 0
         num = 0
         time1 = time.perf_counter()
         conn = self.open_apex_db(user, password, host)
@@ -1093,7 +1093,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 cif.cif_data['_cell_angle_gamma'] = i[6]
                 cif.cif_data["data"] = i[8]
                 cif.cif_data['_diffrn_radiation_wavelength'] = i[13]
-                cif.cif_data['_exptl_crystal_colour'] = i[14]
+                cif.cif_data['_exptl_crystal_colour'] = i[29]
                 cif.cif_data['_exptl_crystal_size_max'] = i[16]
                 cif.cif_data['_exptl_crystal_size_mid'] = i[17]
                 cif.cif_data['_exptl_crystal_size_min'] = i[18]
