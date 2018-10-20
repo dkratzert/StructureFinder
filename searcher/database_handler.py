@@ -567,9 +567,9 @@ class StructureTable():
         """
         Fills data into the sum formula table.
         """
-        req = '''INSERT INTO sum_formula {} VALUES ({});'''.format(formula.keys(),
-                                                                   self.joined_arglist(residuals.split(',')))
-        result = self.database.db_request(req, (formula.values()))
+        req = '''INSERT INTO sum_formula {} VALUES ({});'''.format(' ,'.join(list(formula.keys())),
+                                                                   self.joined_arglist(list(formula.keys())))
+        result = self.database.db_request(req, (list(formula.values())))
         return result
 
     def fill_residuals_table(self, structure_id, cif: dict):
@@ -935,7 +935,8 @@ if __name__ == '__main__':
     #searcher.filecrawler.put_cifs_in_db(searchpath='../')
     db = DatabaseRequest('./test3.sqlite')
     db.initialize_db()
-    #db = StructureTable('./structuredb.sqlite')
+    db = StructureTable('./test3.sqlite')
+    #db.initialize_db()
     #db = StructureTable('../structurefinder.sqlite')
     #db.database.initialize_db()
     #out = db.find_by_date(start="2017-08-19")
@@ -952,4 +953,4 @@ if __name__ == '__main__':
     #print(combi)
     #print(len(combi))
     #########################################
-    db.fi
+    db.fill_formula(1, {'C': 34.0, 'H': 24.0, 'O': 4.0, 'F': 35.99999999999999, 'AL': 1.0, 'GA': 1.0})
