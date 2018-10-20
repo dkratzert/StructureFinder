@@ -106,8 +106,9 @@ class ApexDB():
             host = 'localhost'
         try:
             self.conn = pg8000.connect(user=user, password=password, ssl=False, database="BAXSdb", host=host)
-        except pg8000.core.ProgrammingError:
+        except pg8000.core.ProgrammingError as e:
             self.conn = None
+            print(e)
             return False
         self.cursor = self.conn.cursor()
         return True
@@ -144,7 +145,9 @@ class ApexDB():
                         sol.total_reflections,        --23
                         sol.unique_reflections,       --24
                         sol.form,                      --25
-                        sol.per_cent_in_shell         --26
+                        sol.per_cent_in_shell,         --26
+                        brav.bravais_lattice_type,     --27 Remember to add a comma to add new items!
+                        latt.lattice_type              --28  
                         FROM scd.lsq_refinement AS lsq
                           INNER JOIN scd.samples AS sam 
                         ON lsq.samples_id=sam.samples_id
@@ -156,21 +159,42 @@ class ApexDB():
                         ON lsq.samples_id=ssi.samples_id
                         INNER JOIN scd.struct_soln AS sol 
                         ON lsq.samples_id=sol.samples_id
-                        
+                        INNER JOIN scd.bravais_lattice_types as brav
+                        ON lsq.bravais_lattice_types_id = brav.bravais_lattice_types_id
+                        INNER JOIN scd.lattice_types as latt
+                        ON brav.lattice_types_id = latt.lattice_types_id
                         ;
                 """)
         return self.cursor.fetchall()
 
-
+    def get_some_data(self):
+        self.cursor.execute("""SELECT 
+                                lsq.samples_id,         --0  
+                                lsq.a,                  --1
+                                lsq.b,                  --2
+                                lsq.c,                  --3
+                                lsq.alpha,              --4
+                                brav.bravais_lattice_type,
+                                latt.lattice_type
+                                FROM scd.lsq_refinement AS lsq
+                                INNER JOIN scd.bravais_lattice_types as brav
+                        ON lsq.bravais_lattice_types_id = brav.bravais_lattice_types_id
+                        INNER JOIN scd.lattice_types as latt
+                        ON brav.lattice_types_id = latt.lattice_types_id
+                        ;
+                """)
+        return self.cursor.fetchall()
 
 if __name__ == '__main__':
     apex = ApexDB()
-    conn = apex.initialize_db()
+    conn = apex.initialize_db(host="192.168.2.107")
     if conn:
-        data = apex.get_residuals(2)
-        pprint.pprint(data)
+        #data = apex.get_residuals(2)
+        #pprint.pprint(data)
         print('###############################')
         data = apex.get_all_data()
         pprint.pprint(data)
+        data2 = apex.get_some_data()
+        pprint.pprint(data2)
 
 

@@ -1102,6 +1102,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 cif.cif_data['_diffrn_reflns_av_unetI/netI'] = i[22]  # rsig
                 cif.cif_data['_diffrn_reflns_number'] = i[23]
                 comp = i[26]
+                cif.cif_data["_space_group_centring_type"] = i[28]
                 if comp:
                     cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
                 tst = filecrawler.fill_db_tables(cif=cif, filename=i[8], path=i[12],
