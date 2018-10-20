@@ -617,7 +617,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         try:
             self.display_molecule(cell, str(self.structureId))
         except Exception as e:
-            print(e, "unable to display molecule")
+            print(e, ", unable to display molecule")
             if DEBUG:
                 raise
 
@@ -751,7 +751,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Creates a html file from a mol file to display the molecule in jsmol-lite
         """
         symmcards = [x.split(',') for x in self.structures.get_row_as_dict(structure_id)
-        ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+                        ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+        if symmcards[0] == ['']:
+            print('Cif file has no symmcards, unable to grow structure.')
         blist = None
         if self.ui.growCheckBox.isChecked():
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=False, as_list=True)
