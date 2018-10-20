@@ -21,6 +21,7 @@ from lattice import lattice
 from searcher import misc
 from searcher.misc import get_error_from_value
 from shelxfile.dsrmath import Array
+from searcher.atoms import atoms
 
 __metaclass__ = type  # use new-style classes
 
@@ -212,6 +213,20 @@ class DatabaseRequest():
                                   ON UPDATE NO ACTION);
                     '''
                     )
+
+        self.cur.execute(
+                    '''
+                    CREATE TABLE IF NOT EXISTS sum_formula (
+                            Id             INTEGER NOT NULL,
+                            StructureId    INTEGER NOT NULL,
+                            {}             FLOAT,
+                            PRIMARY KEY(Id),
+                              FOREIGN KEY (StructureId)
+                                REFERENCES Structure(Id)
+                                  ON DELETE CASCADE
+                                  ON UPDATE NO ACTION);
+                    '''.format("   FLOAT, ".join(["'" + at + "'" for at in atoms]))
+        )
 
     def init_textsearch(self):
         """
@@ -548,7 +563,16 @@ class StructureTable():
             res = '?'
         return res
 
-    def fill_residuals_table(self, structure_id, cif):
+    def fill_formula(self, structure_id, formula: dict):
+        """
+        Fills data into the sum formula table.
+        """
+        req = '''INSERT INTO sum_formula {} VALUES ({});'''.format(formula.keys(),
+                                                                   self.joined_arglist(residuals.split(',')))
+        result = self.database.db_request(req, (formula.values()))
+        return result
+
+    def fill_residuals_table(self, structure_id, cif: dict):
         """
         Fill the table with residuals of the refinement.
         :param cif:
@@ -909,10 +933,10 @@ class StructureTable():
             
 if __name__ == '__main__':
     #searcher.filecrawler.put_cifs_in_db(searchpath='../')
-    #db = DatabaseRequest('./structuredb.sqlite')
-    #db.initialize_db()
+    db = DatabaseRequest('./test3.sqlite')
+    db.initialize_db()
     #db = StructureTable('./structuredb.sqlite')
-    db = StructureTable('../structurefinder.sqlite')
+    #db = StructureTable('../structurefinder.sqlite')
     #db.database.initialize_db()
     #out = db.find_by_date(start="2017-08-19")
     #out = db.get_cell_by_id(12)
@@ -928,8 +952,4 @@ if __name__ == '__main__':
     #print(combi)
     #print(len(combi))
     #########################################
-    nums = []
-    for i in range(1, 230):
-        res = db.find_by_it_number(i)
-        nums.append([i, len(res)])
-    print(nums)
+    db.fi

@@ -1029,9 +1029,18 @@ class ShelXFile():
     @property
     def sum_formula_exact(self) -> str:
         """
-        The sum formula of the structure with all atom occupancies summed together.
+        The sum formula of the structure with all atom occupancies summed together as string.
         """
         formstring = ''
+        sumdict = self.sum_formula_ex_dict()
+        for el in sumdict:
+            formstring += "{}{:,g} ".format(el, round(sumdict[el], 2))
+        return formstring.strip()
+
+    def sum_formula_ex_dict(self) -> dict:
+        """
+        The sum formula of the structure with all atom occupancies summed together as dictionary.
+        """
         sumdict = {}
         for el in self.sfac_table.elements_list:
             for atom in self.atoms:
@@ -1042,8 +1051,7 @@ class ShelXFile():
                         sumdict[el] = atom.occupancy
             if el not in sumdict:
                 sumdict[el] = 0.0
-            formstring += "{}{:,g} ".format(el, round(sumdict[el], 2))
-        return formstring.strip()
+        return sumdict
 
     def insert_frag_fend_entry(self, dbatoms: list, cell: list):
         """

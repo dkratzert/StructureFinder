@@ -131,7 +131,6 @@ num2element = {
 }
 
 element2num = {
-    'n': 0,
     'H': 1,
     'He': 2,
     'Li': 3,
@@ -347,7 +346,6 @@ num2covradius = {
 
 
 element2cov = {
-    'n': 0.74,
     'H': 0.50,
     'He': 1.23,
     'Li': 0.9,
