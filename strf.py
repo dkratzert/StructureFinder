@@ -968,7 +968,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.dbfilename = fname[0]
         self.structures = database_handler.StructureTable(self.dbfilename)
         self.show_full_list()
-        if not self.structures:
+        try:
+            if self.structures:
+                pass
+        except TypeError:
             return False
         return True
 
@@ -1147,8 +1150,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         self.ui.cifList_treeWidget.clear()
         structure_id = 0
-        if not self.structures:
-            return
+        try:
+            if self.structures:
+                pass
+        except TypeError:
+            return None
         for i in self.structures.get_all_structure_names():
             structure_id = i[0]
             self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
