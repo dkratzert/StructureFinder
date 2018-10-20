@@ -69,3 +69,5 @@ scripts/Output/*
 test.ins
 venv/
 test2.sqlite
+test3.sqlite
+

@@ -73,14 +73,10 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
-- Add search in CellSearchCSD.
-  Download  https://www.ccdc.cam.ac.uk/Community/csd-community/cellcheckcsd/
-  Open structure via idetifier:
-  https://www.ccdc.cam.ac.uk/structures/Search?entry_list=ASOCES
-  https://www.ccdc.cam.ac.uk/structures/Search?Ccdcid={identifier}&DatabaseToSearch=Published
+- Add table with Id, Structure.Id, H,  He, Li, Be, usw. -> fill sum formula in it. -> Improve search by formula.
 - Improve text search (in cif file). Figure out which tokenchars co:nfiguration works best.
 - sort results by G6 distance
-  
+
 Search for:
 - draw structure (with JSME? Acros? Kekule?, https://github.com/ggasoftware/ketcher)
 - compare  molecules https://groups.google.com/forum/#!msg/networkx-discuss/gC_-Wc0bRWw/ISRZYFsPCQAJ
@@ -126,6 +122,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 self.ui.cellSearchCSDLineEdit.setDisabled(True)
         else:
             self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
+            self.ui.cellSearchCSDLineEdit.setDisabled(True)
         self.show()
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
@@ -620,7 +617,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         try:
             self.display_molecule(cell, str(self.structureId))
         except Exception as e:
-            print(e, "unable to display molecule")
+            print(e, ", unable to display molecule")
             if DEBUG:
                 raise
 
@@ -634,10 +631,16 @@ class StartStructureDB(QtWidgets.QMainWindow):
         _refine_ls_number_reflns -> unique reflect. (Independent reflections)
         _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
+        centering = {'P': 0, 'A': 1, 'B': 2, 'C': 3, 'F': 4, 'I': 5, 'R': 6}
         self.clear_fields()
         cell = self.structures.get_cell_by_id(structure_id)
-        if self.ui.cellSearchCSDLineEdit.isEnabled():
+        if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
             self.ui.cellSearchCSDLineEdit.setText("  ".join([str(round(x, 5)) for x in cell[:6]]))
+            try:
+                cstring = cif_dic['_space_group_centring_type']
+                self.ui.lattCentComboBox.setCurrentIndex(centering[cstring])
+            except (KeyError, TypeError):
+                pass
         if not cell:
             return False
         try:
@@ -656,7 +659,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.ui.cellField.setText('            ')
             return False
         # self.ui.cellField.setMinimumWidth(180)
-        self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, ''))
+        try:
+            cent = cif_dic['_space_group_centring_type']
+        except KeyError:
+            cent = ''
+        self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, cent))
         self.ui.cellField.installEventFilter(self)
         self.ui.cellField.setToolTip("Double click on 'Unit Cell' to copy to clipboard.")
         try:
@@ -744,7 +751,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Creates a html file from a mol file to display the molecule in jsmol-lite
         """
         symmcards = [x.split(',') for x in self.structures.get_row_as_dict(structure_id)
-        ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+                        ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+        if symmcards[0] == ['']:
+            print('Cif file has no symmcards, unable to grow structure.')
         blist = None
         if self.ui.growCheckBox.isChecked():
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=False, as_list=True)
@@ -961,7 +970,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.dbfilename = fname[0]
         self.structures = database_handler.StructureTable(self.dbfilename)
         self.show_full_list()
-        if not self.structures:
+        try:
+            if self.structures:
+                pass
+        except TypeError:
             return False
         return True
 
@@ -1018,7 +1030,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             if shx.cell:
                 try:
                     self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
-                                                       '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*shx.cell.cell_list))
+                                                       '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*shx.cell))
                 except TypeError:
                     pass
             else:
@@ -1062,7 +1074,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.start_db()
         self.ui.cifList_treeWidget.show()
         self.abort_import_button.show()
-        n = 1
+        n = 0
         num = 0
         time1 = time.perf_counter()
         conn = self.open_apex_db(user, password, host)
@@ -1083,7 +1095,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 cif.cif_data['_cell_angle_gamma'] = i[6]
                 cif.cif_data["data"] = i[8]
                 cif.cif_data['_diffrn_radiation_wavelength'] = i[13]
-                cif.cif_data['_exptl_crystal_colour'] = i[14]
+                cif.cif_data['_exptl_crystal_colour'] = i[29]
                 cif.cif_data['_exptl_crystal_size_max'] = i[16]
                 cif.cif_data['_exptl_crystal_size_mid'] = i[17]
                 cif.cif_data['_exptl_crystal_size_min'] = i[18]
@@ -1092,6 +1104,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 cif.cif_data['_diffrn_reflns_av_unetI/netI'] = i[22]  # rsig
                 cif.cif_data['_diffrn_reflns_number'] = i[23]
                 comp = i[26]
+                cif.cif_data["_space_group_centring_type"] = i[28]
                 if comp:
                     cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
                 tst = filecrawler.fill_db_tables(cif=cif, filename=i[8], path=i[12],
@@ -1140,8 +1153,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         self.ui.cifList_treeWidget.clear()
         structure_id = 0
-        if not self.structures:
-            return
+        try:
+            if self.structures:
+                pass
+        except TypeError:
+            return None
         for i in self.structures.get_all_structure_names():
             structure_id = i[0]
             self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
