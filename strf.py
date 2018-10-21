@@ -73,8 +73,7 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
-- Add table with Id, Structure.Id, H,  He, Li, Be, usw. -> fill sum formula in it. -> Improve search by formula.
-- Improve text search (in cif file). Figure out which tokenchars co:nfiguration works best.
+- display also res files with centroids
 - sort results by G6 distance
 
 Search for:
