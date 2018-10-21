@@ -390,6 +390,8 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
     for at in res.atoms:
         if at.qpeak:
             continue
+        if at.element.lower() == 'cnt':  # Do not add Shelxle centroids
+            continue
         structures.fill_atoms_table(structure_id, 
                                     at.name,
                                     at.element.capitalize(),
