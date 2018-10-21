@@ -564,6 +564,8 @@ class StructureTable():
                 #print(out)
         for x in out:
             del formula[x]
+        if not formula:
+            return []
         columns = ', '.join(['Elem_' + x.capitalize() for x  in formula.keys()])
         placeholders = ', '.join('?' * (len(formula) + 1))
         req = '''INSERT INTO sum_formula (StructureId, {}) VALUES ({});'''.format(columns, placeholders)
