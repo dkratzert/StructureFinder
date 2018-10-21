@@ -241,14 +241,15 @@ atoms = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
          'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa',
          'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'D']
 
-sorted_atoms = ['C', 'D', 'H', 'N', 'O', 'B', 'Be', 'F', 'Fe', 'He', 'K', 'Li', 'Ne', 'Na', 'Mg',
-         'Al', 'S', 'Si', 'P', 'Cl', 'Ar', 'Ca', 'Sc', 'Ti', 'V', 'Cr', 'Mn',
-         'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y',
-         'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te',
-         'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb',
-         'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt',
-         'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa',
-         'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf']
+sorted_atoms = ['C', 'D', 'H', 'N', 'O', 'Cl', 'Br', 'I', 'F', 'S', 'P', 'Ac', 'Ag', 'Al',
+                'Am', 'Ar', 'As', 'At', 'Au', 'B', 'Ba', 'Be', 'Bi', 'Bk', 'Ca', 'Cd', 'Ce',
+                'Cf', 'Cm', 'Co', 'Cr', 'Cs', 'Cu', 'Dy', 'Er', 'Eu', 'Fe', 'Fr', 'Ga', 'Gd',
+                'Ge', 'He', 'Hf', 'Hg', 'Ho', 'In', 'Ir', 'K', 'Kr', 'La', 'Li', 'Lu', 'Mg',
+                'Mn', 'Mo', 'Na', 'Nb', 'Nd', 'Ne', 'Ni', 'Np', 'Os', 'Pa', 'Pb', 'Pd', 'Pm',
+                'Po', 'Pr', 'Pt', 'Pu', 'Ra', 'Rb', 'Re', 'Rh', 'Rn', 'Ru', 'Sb', 'Sc', 'Se',
+                'Si', 'Sm', 'Sn', 'Sr', 'Ta', 'Tb', 'Tc', 'Te', 'Th', 'Ti', 'Tl', 'Tm', 'U',
+                'V', 'W', 'Xe', 'Y', 'Yb', 'Zn', 'Zr']
+
 
 num2covradius = {
     0: 0.74,
