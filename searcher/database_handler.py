@@ -556,7 +556,15 @@ class StructureTable():
         """
         Fills data into the sum formula table.
         """
-        columns = ', '.join(['Elem_' + x for x  in formula.keys()])
+        try:
+            del formula['VSC']
+        except KeyError:
+            pass
+        try:  # for centroids
+            del formula['CNT']
+        except KeyError:
+            pass
+        columns = ', '.join(['Elem_' + x.capitalize() for x  in formula.keys()])
         placeholders = ', '.join('?' * (len(formula) + 1))
         req = '''INSERT INTO sum_formula (StructureId, {}) VALUES ({});'''.format(columns, placeholders)
         result = self.database.db_request(req, [structure_id] + list(formula.values()))
@@ -847,9 +855,9 @@ class StructureTable():
         import re
         matches = []
         # Find all structures where these elements are included:
-        el = ' NOT NULL AND '.join(['Elem_' + x for x in elements]) + ' NOT NULL '
+        el = ' NOT NULL AND '.join(['Elem_' + x.capitalize() for x in elements]) + ' NOT NULL '
         # Find all structures where these elements are included and the others not included:
-        exclude = ' IS NULL AND '.join(['Elem_' + x for x in excluding]) + ' IS NULL '
+        exclude = ' IS NULL AND '.join(['Elem_' + x.capitalize() for x in excluding]) + ' IS NULL '
         if not excluding:
             req = '''SELECT StructureId from sum_formula WHERE ({}) '''.format(el)
         else:
