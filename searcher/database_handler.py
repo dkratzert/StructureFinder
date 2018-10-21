@@ -21,7 +21,7 @@ from lattice import lattice
 from searcher import misc
 from searcher.misc import get_error_from_value
 from shelxfile.dsrmath import Array
-from searcher.atoms import atoms
+from searcher.atoms import sorted_atoms
 
 __metaclass__ = type  # use new-style classes
 
@@ -114,6 +114,7 @@ class DatabaseRequest():
                         _space_group_crystal_system             TEXT,
                         _space_group_symop_operation_xyz        TEXT,
                         _audit_creation_method                  TEXT,
+                        _chemical_formula_sum                   TEXT,
                         _chemical_formula_weight                TEXT,
                         _exptl_crystal_description              TEXT,
                         _exptl_crystal_colour                   TEXT,
@@ -224,7 +225,7 @@ class DatabaseRequest():
                                 REFERENCES Structure(Id)
                                   ON DELETE CASCADE
                                   ON UPDATE NO ACTION);
-                    '''.format("   FLOAT, ".join(["'Elem_" + at + "'" for at in atoms]))
+                    '''.format("   FLOAT, ".join(["'Elem_" + at + "'" for at in sorted_atoms]))
         )
 
     def init_textsearch(self):
@@ -570,7 +571,7 @@ class StructureTable():
         result = self.database.db_request(req, [structure_id] + list(formula.values()))
         return result
 
-    def get_sum_formula(self, structure_id):
+    def get_calc_sum_formula(self, structure_id):
         """
         Returns the sum formula of an entry as dictionary.
         """
@@ -585,12 +586,35 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return dic
 
+    def get_cif_sumform_by_id(self, structure_id):
+        """
+        returns the cell of a res file in the db
+
+        >>> db = StructureTable('../structurefinder.sqlite')
+        >>> all = db.find_by_elements(['Al', 'Au', 'Ag'])
+        >>> tst = []
+        >>> for i in all:
+        >>>    out = db.get_cif_sumform_by_id(i)
+        >>>     if "Ag" in out[0]:
+        >>>         tst.append(out)
+        >>> len(all) == len(tst)
+        True
+        """
+        if not structure_id:
+            return False
+        req = '''SELECT _chemical_formula_sum FROM Residuals WHERE StructureId = ?'''
+        cell = self.database.db_request(req, (structure_id,))
+        if cell and len(cell) > 0:
+            return cell[0]
+        else:
+            return cell
+
     def fill_residuals_table(self, structure_id, cif):
         """
         Fill the table with residuals of the refinement.
         """
-        if cif.cif_data['_chemical_formula_sum']:
-            self.fill_formula(structure_id, cif.cif_data['_chemical_formula_sum'])
+        if cif.cif_data['calculated_formula_sum']:
+            self.fill_formula(structure_id, cif.cif_data['calculated_formula_sum'])
         residuals = """
                     (
                     StructureId,
@@ -601,6 +625,7 @@ class StructureTable():
                     _space_group_IT_number,
                     _space_group_crystal_system,
                     _space_group_symop_operation_xyz,
+                    _chemical_formula_sum,
                     _chemical_formula_weight,
                     _exptl_crystal_description,
                     _exptl_crystal_colour,
@@ -662,6 +687,7 @@ class StructureTable():
                 cif.cif_data['_space_group_IT_number'],             # Raumgruppen-Nummer aus IT
                 cif.cif_data['_space_group_crystal_system'],        # Kristallsystem
                 cif.cif_data['_space_group_symop_operation_xyz'],   # SYMM cards
+                cif.cif_data['_chemical_formula_sum'],              # Summenformel
                 cif.cif_data['_chemical_formula_weight'],           # Moyety-Formel
                 cif.cif_data['_exptl_crystal_description'],         # Habitus
                 cif.cif_data['_exptl_crystal_colour'],              # Farbe
@@ -911,28 +937,7 @@ class StructureTable():
             version = 0
         return version
 
-    def get_sumform_by_id(self, structure_id):
-        """
-        returns the cell of a res file in the db
 
-        >>> db = StructureTable('../structurefinder.sqlite')
-        >>> all = db.find_by_elements(['Al', 'Au', 'Ag'])
-        >>> tst = []
-        >>> for i in all:
-        >>>    out = db.get_sumform_by_id(i)
-        >>>     if "Ag" in out[0]:
-        >>>         tst.append(out)
-        >>> len(all) == len(tst)
-        True
-        """
-        if not structure_id:
-            return False
-        req = '''SELECT _chemical_formula_sum FROM Residuals WHERE StructureId = ?'''
-        cell = self.database.db_request(req, (structure_id,))
-        if cell and len(cell) > 0:
-            return cell[0]
-        else:
-            return cell
             
 if __name__ == '__main__':
     #searcher.filecrawler.put_cifs_in_db(searchpath='../')

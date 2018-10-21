@@ -679,10 +679,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
             pass
         self.ui.zLineEdit.setText("{}".format(cif_dic['_cell_formula_units_Z']))
         try:
-            sumform = misc.format_sum_formula(self.structures.get_sum_formula(structure_id),
-                                              cif_dic['_cell_formula_units_Z'])
+            sumform = misc.format_sum_formula(self.structures.get_calc_sum_formula(structure_id),
+                                              cif_dic['_cell_formula_units_Z'])  # I dont need Z here
         except KeyError:
             sumform = ''
+        if sumform == '':
+            # Display this as last resort:
+            sumform = cif_dic['_chemical_formula_sum']
         self.ui.formLabel.setText("{}".format(sumform))
         self.ui.reflTotalLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_number']))
         self.ui.uniqReflLineEdit.setText("{}".format(cif_dic['_refine_ls_number_reflns']))
