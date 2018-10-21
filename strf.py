@@ -1074,7 +1074,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.start_db()
         self.ui.cifList_treeWidget.show()
         self.abort_import_button.show()
-        n = 0
+        n = 1
         num = 0
         time1 = time.perf_counter()
         conn = self.open_apex_db(user, password, host)
@@ -1126,8 +1126,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.progress.hide()
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
+        if n == 0:
+            n += 1
         self.ui.statusbar.showMessage('Added {} APEX entries in: {:>2d} h, {:>2d} m, {:>3.2f} s'
-                                      .format(n, int(h), int(m), s), msecs=0)
+                                      .format(n-1, int(h), int(m), s), msecs=0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.set_columnsize()
         self.structures.database.init_textsearch()

@@ -225,7 +225,7 @@ class DatabaseRequest():
                                 REFERENCES Structure(Id)
                                   ON DELETE CASCADE
                                   ON UPDATE NO ACTION);
-                    '''.format("   FLOAT, ".join(["'" + at + "'" for at in atoms]))
+                    '''.format("   FLOAT, ".join(["'Elem_" + at + "'" for at in atoms]))
         )
 
     def init_textsearch(self):
@@ -567,19 +567,18 @@ class StructureTable():
         """
         Fills data into the sum formula table.
         """
-        req = '''INSERT INTO sum_formula {} VALUES ({});'''.format(' ,'.join(list(formula.keys())),
-                                                                   self.joined_arglist(list(formula.keys())))
-        result = self.database.db_request(req, (list(formula.values())))
+        columns = ', '.join(['Elem_' + x for x  in formula.keys()])
+        placeholders = ', '.join('?' * (len(formula) + 1))
+        req = '''INSERT INTO sum_formula (StructureId, {}) VALUES ({});'''.format(columns, placeholders)
+        result = self.database.db_request(req, [structure_id] + list(formula.values()))
         return result
 
-    def fill_residuals_table(self, structure_id, cif: dict):
+    def fill_residuals_table(self, structure_id, cif):
         """
         Fill the table with residuals of the refinement.
-        :param cif:
-        :param structure_id:
-        :param param:
-        :return:
         """
+        if cif.cif_data['_chemical_formula_sum']:
+            self.fill_formula(structure_id, cif.cif_data['_chemical_formula_sum'])
         residuals = """
                     (
                     StructureId,
@@ -590,7 +589,6 @@ class StructureTable():
                     _space_group_IT_number,
                     _space_group_crystal_system,
                     _space_group_symop_operation_xyz,
-                    _chemical_formula_sum,
                     _chemical_formula_weight,
                     _exptl_crystal_description,
                     _exptl_crystal_colour,
@@ -652,7 +650,6 @@ class StructureTable():
                 cif.cif_data['_space_group_IT_number'],             # Raumgruppen-Nummer aus IT
                 cif.cif_data['_space_group_crystal_system'],        # Kristallsystem
                 cif.cif_data['_space_group_symop_operation_xyz'],   # SYMM cards
-                cif.cif_data['_chemical_formula_sum'],              # Summenformel
                 cif.cif_data['_chemical_formula_weight'],           # Moyety-Formel
                 cif.cif_data['_exptl_crystal_description'],         # Habitus
                 cif.cif_data['_exptl_crystal_colour'],              # Farbe
@@ -953,4 +950,4 @@ if __name__ == '__main__':
     #print(combi)
     #print(len(combi))
     #########################################
-    db.fill_formula(1, {'C': 34.0, 'H': 24.0, 'O': 4.0, 'F': 35.99999999999999, 'AL': 1.0, 'GA': 1.0})
+    db.fill_formula(1, {'StructureId': 1, 'C': 34.0, 'H': 24.0, 'O': 4.0, 'F': 35.99999999999999, 'AL': 1.0, 'GA': 1.0})
