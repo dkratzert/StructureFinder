@@ -684,6 +684,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if sumform == '':
             # Display this as last resort:
             sumform = cif_dic['_chemical_formula_sum']
+        self.ui.formLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         self.ui.formLabel.setText("{}".format(sumform))
         self.ui.reflTotalLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_number']))
         self.ui.uniqReflLineEdit.setText("{}".format(cif_dic['_refine_ls_number_reflns']))

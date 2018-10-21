@@ -596,7 +596,7 @@
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>20</width>
+                 <width>5</width>
                  <height>40</height>
                 </size>
                </property>
@@ -674,7 +674,7 @@
                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                  </property>
                  <property name="wordWrap">
-                  <bool>false</bool>
+                  <bool>true</bool>
                  </property>
                  <property name="margin">
                   <number>1</number>
