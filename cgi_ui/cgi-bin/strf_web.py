@@ -510,7 +510,7 @@ def search_elements(structures: StructureTable, elements: str, anyresult: bool =
         print('Element search error!')
         return []
     try:
-        res = structures.find_by_elements(formula, anyresult=anyresult)
+        res = structures.find_by_elements(formula, excluding=anyresult)
     except AttributeError:
         print('Element search error!')
         pass

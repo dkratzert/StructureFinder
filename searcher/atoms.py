@@ -493,6 +493,8 @@ def get_atomlabel(input_atom: str) -> str:
 
     >>> get_atomlabel('C12')
     'C'
+    >>> get_atomlabel('Te1+')
+    'Te'
     """
     atom = ''
     for x in input_atom:  # iterate over characters in i

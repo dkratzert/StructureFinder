@@ -270,7 +270,7 @@
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>10</width>
+              <width>5</width>
               <height>20</height>
              </size>
             </property>
@@ -296,6 +296,9 @@
             <layout class="QVBoxLayout" name="verticalLayout">
              <item>
               <layout class="QFormLayout" name="formLayout_3">
+               <property name="sizeConstraint">
+                <enum>QLayout::SetDefaultConstraint</enum>
+               </property>
                <item row="0" column="0">
                 <widget class="QLabel" name="SpaceGrouplabel">
                  <property name="font">
@@ -622,9 +625,15 @@
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="minimumSize">
                   <size>
-                   <width>0</width>
+                   <width>110</width>
                    <height>21</height>
                   </size>
                  </property>
@@ -637,11 +646,14 @@
                  <property name="styleSheet">
                   <string notr="true">background-color:  rgba(255, 255, 255, 255);</string>
                  </property>
+                 <property name="inputMethodHints">
+                  <set>Qt::ImhNone</set>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::StyledPanel</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Sunken</enum>
                  </property>
                  <property name="lineWidth">
                   <number>1</number>
@@ -653,10 +665,25 @@
                   <string/>
                  </property>
                  <property name="textFormat">
-                  <enum>Qt::RichText</enum>
+                  <enum>Qt::AutoText</enum>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>false</bool>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                  <property name="margin">
                   <number>1</number>
+                 </property>
+                 <property name="openExternalLinks">
+                  <bool>false</bool>
+                 </property>
+                 <property name="textInteractionFlags">
+                  <set>Qt::TextEditorInteraction</set>
                  </property>
                 </widget>
                </item>
@@ -929,7 +956,7 @@ p, li { white-space: pre-wrap; }
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>10</width>
+              <width>5</width>
               <height>20</height>
              </size>
             </property>
@@ -1148,7 +1175,7 @@ p, li { white-space: pre-wrap; }
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>10</width>
+              <width>5</width>
               <height>20</height>
              </size>
             </property>

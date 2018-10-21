@@ -114,7 +114,6 @@ class DatabaseRequest():
                         _space_group_crystal_system             TEXT,
                         _space_group_symop_operation_xyz        TEXT,
                         _audit_creation_method                  TEXT,
-                        _chemical_formula_sum                   TEXT,
                         _chemical_formula_weight                TEXT,
                         _exptl_crystal_description              TEXT,
                         _exptl_crystal_colour                   TEXT,
@@ -233,7 +232,6 @@ class DatabaseRequest():
         Initializes the full text search (fts) tables.
         """
         self.cur.execute("DROP TABLE IF EXISTS txtsearch")
-        self.cur.execute("DROP TABLE IF EXISTS ElementSearch")
 
         # The simple tokenizer is best for my purposes (A self-written tokenizer would even be better):
         self.cur.execute("""
@@ -245,15 +243,6 @@ class DatabaseRequest():
                          shelx_res_file TEXT,
                             tokenize=simple "tokenchars= .=-_");  
                           """
-        )
-
-        # Now the table for element search:
-        self.cur.execute("""
-            CREATE VIRTUAL TABLE ElementSearch USING
-                    fts4(StructureId        INTEGER,
-                    _chemical_formula_sum   TEXT,
-                        tokenize=simple 'tokenchars= 0123456789');
-                      """
         )
 
     def get_lastrowid(self):
@@ -573,6 +562,21 @@ class StructureTable():
         result = self.database.db_request(req, [structure_id] + list(formula.values()))
         return result
 
+    def get_sum_formula(self, structure_id):
+        """
+        Returns the sum formula of an entry as dictionary.
+        """
+        request = """SELECT * FROM sum_formula WHERE StructureId = ?"""
+        # setting row_factory to dict for the cif keys:
+        self.database.con.row_factory = self.database.dict_factory
+        self.database.cur = self.database.con.cursor()
+        dic = self.database.db_fetchone(request, (structure_id,))
+        self.database.cur.close()
+        # setting row_factory back to regular touple base requests:
+        self.database.con.row_factory = None
+        self.database.cur = self.database.con.cursor()
+        return dic
+
     def fill_residuals_table(self, structure_id, cif):
         """
         Fill the table with residuals of the refinement.
@@ -713,28 +717,23 @@ class StructureTable():
         _publ_contact_author_name
         """
         populate_index = """
-        INSERT INTO txtsearch (
+                    INSERT INTO txtsearch (
                                 StructureId, 
                                 filename, 
                                 dataname, 
                                 path,
                                 shelx_res_file
                                 )
-        SELECT  str.Id, 
-                str.filename, 
-                str.dataname, 
-                str.path,
-                res._shelx_res_file
-                    FROM Structure AS str
-                        INNER JOIN Residuals AS res WHERE str.Id = res.Id; """
+            SELECT  str.Id, 
+                    str.filename, 
+                    str.dataname, 
+                    str.path,
+                    res._shelx_res_file
+                        FROM Structure AS str
+                            INNER JOIN Residuals AS res WHERE str.Id = res.Id; """
         optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize'); """
-        element_search = """
-            INSERT INTO ElementSearch(StructureId,
-                                    _chemical_formula_sum) 
-                  SELECT Id, _chemical_formula_sum FROM residuals; """
         self.database.cur.execute(populate_index)
         self.database.cur.execute(optimize_queries)
-        self.database.cur.execute(element_search)
 
     def get_row_as_dict(self, structure_id):
         """
@@ -836,7 +835,7 @@ class StructureTable():
         else:
             return []
 
-    def find_by_elements(self, elements: list, anyresult: bool = False) -> list:
+    def find_by_elements(self, elements: list, excluding: list = None) -> list:
         """
         Find structures where certain elements are included in the sum formula.
 
@@ -847,11 +846,22 @@ class StructureTable():
         """
         import re
         matches = []
-        el = ' ,'.join(['Elem_' + x for x in elements])
-        req = '''SELECT StructureId from sum_formula WHERE ({}) > 0'''.format(el)
+        # Find all structures where these elements are included:
+        el = ' NOT NULL AND '.join(['Elem_' + x for x in elements]) + ' NOT NULL '
+        # Find all structures where these elements are included and the others not included:
+        exclude = ' IS NULL AND '.join(['Elem_' + x for x in excluding]) + ' IS NULL '
+        if not excluding:
+            req = '''SELECT StructureId from sum_formula WHERE ({}) '''.format(el)
+        else:
+            # With exclude condition
+            if elements:
+                req = '''SELECT StructureId from sum_formula WHERE ({} AND {}) '''.format(el, exclude)
+            else:
+                req = '''SELECT StructureId from sum_formula WHERE ({}) '''.format(exclude)
         result = self.database.db_request(req)
+        #print(req)
         if result:
-            return result
+            return [x[0] for x in result]
         else:
             return []
 
@@ -928,14 +938,16 @@ if __name__ == '__main__':
     #out = db.get_cell_by_id(12)
     #out = db.find_by_strings('dk')
     ############################################
-    elinclude = ['C', 'O', 'N', 'Al', 'F']
+    elinclude = ['C', 'O', 'N', 'F']
     #elexclude = ['Tm']
-    inc = db.find_by_elements(elinclude, anyresult=False)
-    #exc = db.find_by_elements(elexclude, anyresult=True)
-    print('include: {}'.format(sorted(inc)))
+    #inc = db.find_by_elements(elinclude, excluding=False)
+    exc = db.find_by_elements(elinclude, ['Al'])
+    #print('include: {}'.format(sorted(inc)))
     #print('exclude: {}'.format(sorted(exc)))
     #combi = set(inc) - set(exc)
     #print(combi)
     #print(len(combi))
     #########################################
     #db.fill_formula(1, {'StructureId': 1, 'C': 34.0, 'H': 24.0, 'O': 4.0, 'F': 35.99999999999999, 'AL': 1.0, 'GA': 1.0})
+    #form = db.get_sum_formula(5)
+    print(exc)

@@ -351,7 +351,7 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
             except (KeyError, ValueError):
                 occu = 1.0
             try:
-                atom_type_symbol = cif._atom[x]['_atom_site_type_symbol']
+                atom_type_symbol = atoms.get_atomlabel(cif._atom[x]['_atom_site_type_symbol'])
             except KeyError:
                 atom_type_symbol  = atoms.get_atomlabel(x)
             elem = atom_type_symbol.capitalize()

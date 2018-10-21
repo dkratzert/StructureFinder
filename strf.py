@@ -382,8 +382,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if cell:
             cellres = self.search_cell_idlist(cell)
             incl.append(cellres)
-        if elincl:
-            incl.append(self.search_elements(elincl))
+        if elincl and not elexcl:
+            incl.append(self.search_elements(elincl, ''))
+        if elexcl:
+            incl.append(self.search_elements(elincl, elexcl))
         if txt:
             if len(txt) >= 2 and "*" not in txt:
                 txt = '*' + txt + '*'
@@ -392,8 +394,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 incl.append([i[0] for i in idlist])
             except(IndexError, KeyError):
                 incl.append([idlist])  # only one result
-        if elexcl:
-            excl.append(self.search_elements(elexcl, anyresult=True))
         if txt_ex:
             if len(txt_ex) >= 2 and "*" not in txt_ex:
                 txt_ex = '*' + txt_ex + '*'
@@ -679,7 +679,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             pass
         self.ui.zLineEdit.setText("{}".format(cif_dic['_cell_formula_units_Z']))
         try:
-            sumform = misc.format_sum_formula(cif_dic['_chemical_formula_sum'])
+            sumform = misc.format_sum_formula(self.structures.get_sum_formula(structure_id),
+                                              cif_dic['_cell_formula_units_Z'])
         except KeyError:
             sumform = ''
         self.ui.formLabel.setText("{}".format(sumform))
@@ -922,7 +923,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         return True
 
-    def search_elements(self, elements: str, anyresult: bool = False) -> list:
+    def search_elements(self, elements: str, excluding: str) -> list:
         """
         list(set(l).intersection(l2))
         """
@@ -934,7 +935,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
             return []
         try:
-            res = self.structures.find_by_elements(formula, anyresult=anyresult)
+            formula_ex = misc.get_list_of_elements(excluding)
+        except KeyError:
+            self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
+            return []
+        try:
+            res = self.structures.find_by_elements(formula, excluding=formula_ex)
         except AttributeError:
             pass
         return list(res)
