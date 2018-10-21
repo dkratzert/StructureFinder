@@ -3,6 +3,7 @@ import sys
 import argparse
 
 import time
+from sqlite3 import DatabaseError
 
 from misc import update_check
 from searcher import filecrawler, database_handler
@@ -77,7 +78,11 @@ else:
     for p in args.dir:
         # the command line version
         db = database_handler.DatabaseRequest(dbfilename)
-        db.initialize_db()
+        try:
+            db.initialize_db()
+        except DatabaseError:
+            print('Database is corrupt! Delete the file first.')
+            break
         lastid = db.get_lastrowid()
         if not lastid:
             lastid = 1

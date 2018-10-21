@@ -105,7 +105,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         # self.ui.centralwidget.setMinimumSize(1000, 500)
-        self.abort_import_button = QtWidgets.QPushButton("Abort", parent=self.ui.statusbar)
+        self.abort_import_button = QtWidgets.QPushButton("Abort")
         self.progress = QtWidgets.QProgressBar(self)
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
