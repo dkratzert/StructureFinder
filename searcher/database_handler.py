@@ -557,14 +557,13 @@ class StructureTable():
         """
         Fills data into the sum formula table.
         """
-        try:
-            del formula['VSC']
-        except KeyError:
-            pass
-        try:  # for centroids
-            del formula['CNT']
-        except KeyError:
-            pass
+        out = []
+        for x in formula:
+            if not x.capitalize() in sorted_atoms:
+                out.append(x)
+                #print(out)
+        for x in out:
+            del formula[x]
         columns = ', '.join(['Elem_' + x.capitalize() for x  in formula.keys()])
         placeholders = ', '.join('?' * (len(formula) + 1))
         req = '''INSERT INTO sum_formula (StructureId, {}) VALUES ({});'''.format(columns, placeholders)
