@@ -847,23 +847,11 @@ class StructureTable():
         """
         import re
         matches = []
-        # Get all formulas to prevent false negatives with text search in the db:
-        req = '''SELECT StructureId, _chemical_formula_sum from Residuals'''
+        el = ' ,'.join(['Elem_' + x for x in elements])
+        req = '''SELECT StructureId from sum_formula WHERE ({}) > 0'''.format(el)
         result = self.database.db_request(req)
         if result:
-            for el in elements:  # The second search excludes false hits like Ca instead of C
-                regex = re.compile(r'[\s|\d]?'+ el +'[\d|\s]*|[$]+', re.IGNORECASE)
-                res = []
-                for num, form in result:
-                    if regex.search(form):
-                        #print(form)
-                        res.append(num)
-                matches.append(res)
-        if matches:
-            if anyresult:
-                return list(set(misc.flatten(matches)))
-            else:
-                return list(set(matches[0]).intersection(*matches))
+            return result
         else:
             return []
 
@@ -940,14 +928,14 @@ if __name__ == '__main__':
     #out = db.get_cell_by_id(12)
     #out = db.find_by_strings('dk')
     ############################################
-    #elinclude = ['C', 'O', 'N', 'Al', 'F']
+    elinclude = ['C', 'O', 'N', 'Al', 'F']
     #elexclude = ['Tm']
-    #inc = db.find_by_elements(elinclude, anyresult=False)
+    inc = db.find_by_elements(elinclude, anyresult=False)
     #exc = db.find_by_elements(elexclude, anyresult=True)
-    #print('include: {}'.format(sorted(inc)))
+    print('include: {}'.format(sorted(inc)))
     #print('exclude: {}'.format(sorted(exc)))
     #combi = set(inc) - set(exc)
     #print(combi)
     #print(len(combi))
     #########################################
-    db.fill_formula(1, {'StructureId': 1, 'C': 34.0, 'H': 24.0, 'O': 4.0, 'F': 35.99999999999999, 'AL': 1.0, 'GA': 1.0})
+    #db.fill_formula(1, {'StructureId': 1, 'C': 34.0, 'H': 24.0, 'O': 4.0, 'F': 35.99999999999999, 'AL': 1.0, 'GA': 1.0})
