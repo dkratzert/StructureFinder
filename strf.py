@@ -17,7 +17,7 @@ from __future__ import print_function
 import platform
 import webbrowser
 from os.path import isfile
-from sqlite3 import DatabaseError
+from sqlite3 import DatabaseError, ProgrammingError
 
 from PyQt5.QtCore import QModelIndex
 
@@ -976,11 +976,16 @@ class StartStructureDB(QtWidgets.QMainWindow):
         print("Opened {}.".format(fname[0]))
         self.dbfilename = fname[0]
         self.structures = database_handler.StructureTable(self.dbfilename)
-        self.show_full_list()
+        try:
+            self.show_full_list()
+        except DatabaseError:
+            self.moving_message('Database file is corrupt!')
+            self.close_db()
+            return False
         try:
             if self.structures:
                 pass
-        except TypeError:
+        except (TypeError, ProgrammingError):
             return False
         return True
 
