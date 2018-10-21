@@ -221,19 +221,16 @@ def format_sum_formula(sumform: dict, z: float) -> str:
         return ''
     l = ['<html><body>']
     num = 0
-    for num, i in enumerate(sumform):
+    for i in sumform:
         if i == 'Id' or i == 'StructureId':
             continue
         if sumform[i] == 0 or sumform[i] == None:
             continue
         try:
-            if z:
-                times = round(sumform[i] * z, 1)
-            else:
-                times = round(sumform[i] * z, 1)
+            times = round(sumform[i], 1)
         except TypeError:
             times = 1
-        if num > 8 and num % 10 == 0:
+        if num > 3 and num % 4 == 0:
             l.append("<br>")
         l.append("{}<sub>{:g}</sub>".format(i.split('_')[1], times))
         num += 1
