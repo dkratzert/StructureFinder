@@ -303,6 +303,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             print(e)
             return
         print(len(results), 'Structures found...')
+        self.statusBar().showMessage("{} structures found in the CSD".format(len(results), msecs=9000))
         for identifier in results:
             csd_tree_item = QtWidgets.QTreeWidgetItem()
             self.ui.CSDtreeWidget.addTopLevelItem(csd_tree_item)
