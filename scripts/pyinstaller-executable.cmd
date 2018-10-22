@@ -11,3 +11,4 @@ venv\Scripts\pyinstaller.exe --clean ^
                                 -i "icons/strf.ico" ^
                                 --windowed ^
                                 strf.py
+exit
