@@ -304,18 +304,18 @@ class StartStructureDB(QtWidgets.QMainWindow):
             return
         print(len(results), 'Structures found...')
         self.statusBar().showMessage("{} structures found in the CSD".format(len(results), msecs=9000))
-        for identifier in results:
+        for res in results:
             csd_tree_item = QtWidgets.QTreeWidgetItem()
             self.ui.CSDtreeWidget.addTopLevelItem(csd_tree_item)
-            csd_tree_item.setText(0, results[identifier]['chemical_formula'])
-            csd_tree_item.setText(1, results[identifier]['cell_length_a'])
-            csd_tree_item.setText(2, results[identifier]['cell_length_b'])
-            csd_tree_item.setText(3, results[identifier]['cell_length_c'])
-            csd_tree_item.setText(4, results[identifier]['cell_angle_alpha'])
-            csd_tree_item.setText(5, results[identifier]['cell_angle_beta'])
-            csd_tree_item.setText(6, results[identifier]['cell_angle_gamma'])
-            csd_tree_item.setText(7, results[identifier]['space_group'])
-            csd_tree_item.setText(8, identifier)
+            csd_tree_item.setText(0, res['chemical_formula'])
+            csd_tree_item.setText(1, res['cell_length_a'])
+            csd_tree_item.setText(2, res['cell_length_b'])
+            csd_tree_item.setText(3, res['cell_length_c'])
+            csd_tree_item.setText(4, res['cell_angle_alpha'])
+            csd_tree_item.setText(5, res['cell_angle_beta'])
+            csd_tree_item.setText(6, res['cell_angle_gamma'])
+            csd_tree_item.setText(7, res['space_group'])
+            csd_tree_item.setText(8, res['recid'])
         for n in range(8):
             self.ui.CSDtreeWidget.resizeColumnToContents(n)
 

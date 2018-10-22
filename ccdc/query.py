@@ -87,24 +87,24 @@ def set_unitcell(cell: list, centering: str) -> ET:
     return ET.tostring(t)
 
 
-def parse_results(xmlinput: str) -> dict:
+def parse_results(xmlinput: str) -> list:
     """
     Parses the search results into a dictionary.
     """
     root = ET.fromstring(xmlinput)
-    results = {}
+    results = []
     # each hit has a match:
     for r in root.findall('match'):
         # The identifier is the csd entry name:
         ident = r.get('identifier')
-        values = {}
+        values = {'recid': ident}
         # unit cells are listed in parameters:
         for p in r.findall('parameters'):
             for item in p.findall('parameter'):
                 type = item.get('type')
                 value = item.text
                 values[type] = value
-        results[ident] = values
+        results.append(values)
     return results
 
 
