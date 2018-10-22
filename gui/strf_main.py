@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/daniel/GitHub/StructureFinder/./gui/strf_main.ui'
+# Form implementation generated from reading ui file 'D:\GitHub\StructureFinder\./gui\strf_main.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.2
+# Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -274,7 +274,7 @@ class Ui_stdbMainwindow(object):
         self.cellField.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop)
         self.cellField.setObjectName("cellField")
         self.verticalLayout_3.addWidget(self.cellField)
-        spacerItem6 = QtWidgets.QSpacerItem(5, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
+        spacerItem6 = QtWidgets.QSpacerItem(5, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         self.verticalLayout_3.addItem(spacerItem6)
         self.formLayout_2 = QtWidgets.QFormLayout()
         self.formLayout_2.setFieldGrowthPolicy(QtWidgets.QFormLayout.FieldsStayAtSizeHint)

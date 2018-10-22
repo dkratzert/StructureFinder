@@ -119,9 +119,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
             if not get_cccsd_path():
                 self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
                 self.ui.cellSearchCSDLineEdit.setDisabled(True)
+                self.ui.CSDpushButton.setDisabled(True)
         else:
             self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
             self.ui.cellSearchCSDLineEdit.setDisabled(True)
+            self.ui.CSDpushButton.setDisabled(True)
         self.show()
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
@@ -293,6 +295,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if len(cell) < 6:
             return None
         center = centering[self.ui.lattCentComboBox.currentIndex()]
+        # search the csd:
         xml = search_csd(cell, centering=center)
         try:
             results = parse_results(xml)
@@ -891,7 +894,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         cell = is_valid_cell(search_string)
         self.ui.ad_unitCellLineEdit.setText('  '.join([str(x) for x in cell]))
-        self.ui.cellSearchCSDLineEdit.setText('  '.join([str(x) for x in cell]))
+        if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
+            self.ui.cellSearchCSDLineEdit.setText('  '.join([str(x) for x in cell]))
         self.ui.txtSearchEdit.clear()
         if not cell:
             if self.ui.searchCellLineEDit.text():

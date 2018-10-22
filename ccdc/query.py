@@ -65,7 +65,10 @@ def read_queryfile():
     return tree
 
 
-def set_unitcell(cell: list, centering: str):
+def set_unitcell(cell: list, centering: str) -> ET:
+    """
+    Returns an xml query string for the CellCheckcsd -query option.
+    """
     t = read_queryfile()
     cent = t.find('lattice_centring')
     a = t.find('a')
@@ -90,9 +93,12 @@ def parse_results(xmlinput: str) -> dict:
     """
     root = ET.fromstring(xmlinput)
     results = {}
+    # each hit has a match:
     for r in root.findall('match'):
+        # The identifier is the csd entry name:
         ident = r.get('identifier')
         values = {}
+        # unit cells are listed in parameters:
         for p in r.findall('parameters'):
             for item in p.findall('parameter'):
                 type = item.get('type')
@@ -104,20 +110,25 @@ def parse_results(xmlinput: str) -> dict:
 
 def search_csd(cell: list, centering: str) -> str:
     querystring = set_unitcell(cell, centering).decode('utf-8')
+    # prepare the temporary queryfile:
     querydescriptor, queryfile = mkstemp(suffix='xml')
+    # prepare the temporary results file:
     resdescriptor, resultfile = mkstemp(suffix='xml')
+    # write query to file:
     Path(queryfile).write_text(querystring)
     p = get_cccsd_path()
-    rf = '' 
+    rf = ''
     try:
-        subprocess.run([str(p.absolute()), '-query', queryfile, '-results', resultfile])
+        # run the search:
+        # shell=True disables the output window of the process
+        subprocess.run([str(p.absolute()), '-query', queryfile, '-results', resultfile], shell=True)
+        # read the result:
         rf = Path(resultfile).read_text(encoding='utf-8', errors='ignore')
     except Exception as e:
         print('Could not search cell:')
         print(e)
     os.close(resdescriptor)
     os.close(querydescriptor)
-    #print(rf)
     return rf
 
 
