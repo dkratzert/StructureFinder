@@ -33,7 +33,7 @@ from shelxfile.cards import ACTA, FVAR, FVARs, REM, BOND, Restraints, DEFS, NCSY
     RESI, ABIN, ANIS, Residues
 from shelxfile.dsrmath import Matrix
 from shelxfile.misc import DEBUG, ParseOrderError, ParseNumError, ParseUnknownParam, \
-    split_fvar_and_parameter, flatten, time_this_method, multiline_test, dsr_regex, wrap_line, ParseSyntaxError
+     time_this_method, multiline_test, dsr_regex, wrap_line, ParseSyntaxError
 
 __version__ = 3
 """
@@ -736,37 +736,6 @@ class ShelXFile():
                     print(e)
                     raise
 
-    def run_after_parse(self):
-        """
-        Runs all what is left after parsing all lines. E.G. sanity checks.
-        """
-        ## Counts the usage of free variables:
-        # Has to be at the end, because SUMP can be before FVAR
-        if self.sump:
-            for x in self.sump:
-                for y in x.fvars:
-                    self.fvars.set_fvar_usage(y[1])
-        for r in self.restraints:
-            # if r.atoms:
-            # print(r.atoms, r.residue_number, r.residue_class)
-            # Restraints._resolve_atoms(self, r)
-            if r.name == "DFIX" or r.name == "DANG":
-                if abs(r.d) > 4:
-                    fvar, value = split_fvar_and_parameter(r.d)
-                    self.fvars.set_fvar_usage(fvar)
-        # Handles ABIN instructions:
-        if self.abin:
-            pass
-        # Check if basf parameters are consistent:
-        if self.basf:
-            if self.twin:
-                basfs = flatten(self.basf)
-                if int(self.twin.allowed_N) != len(basfs):
-                    if DEBUG:
-                        print('*** Invalid TWIN instruction! BASF with wrong number of parameters. ***')
-        # for a in self.atoms:
-        #    a.resolve_restraints()
-
     def add_atom(self, name: str = None, coordinates: list = None, element='C', uvals: list = None, part: int = 0,
                  sof: float = 11.0):
         """
@@ -1029,9 +998,18 @@ class ShelXFile():
     @property
     def sum_formula_exact(self) -> str:
         """
-        The sum formula of the structure with all atom occupancies summed together.
+        The sum formula of the structure with all atom occupancies summed together as string.
         """
         formstring = ''
+        sumdict = self.sum_formula_ex_dict()
+        for el in sumdict:
+            formstring += "{}{:,g} ".format(el, round(sumdict[el], 2))
+        return formstring.strip()
+
+    def sum_formula_ex_dict(self) -> dict:
+        """
+        The sum formula of the structure with all atom occupancies summed together as dictionary.
+        """
         sumdict = {}
         for el in self.sfac_table.elements_list:
             for atom in self.atoms:
@@ -1042,8 +1020,7 @@ class ShelXFile():
                         sumdict[el] = atom.occupancy
             if el not in sumdict:
                 sumdict[el] = 0.0
-            formstring += "{}{:,g} ".format(el, round(sumdict[el], 2))
-        return formstring.strip()
+        return sumdict
 
     def insert_frag_fend_entry(self, dbatoms: list, cell: list):
         """
@@ -1124,45 +1101,3 @@ if __name__ == "__main__":
     #shx.write_shelx_file('tests/complete_run/test.ins')
     #for at in shx.grow(with_qpeaks=True):
     #    print(wrap_line(str(at)))
-    sys.exit()
-    from shelxfile.misc import walkdir
-
-    files = walkdir(r'D:\GitHub\testresfiles', '.res')
-    print('Indexing...')
-    num = 0
-    ex = ['dsrsaves', '.olex', 'ED', 'shelXlesaves', 'SAVEHIST']
-    ex2 = ['01S8sad', '12UFibca_c', '88Q9ibca_e', 'A506p', 'CW7Spna21_a', 'DWMDp21c', 'p21c_cmdline', 'VH75ibca_d',
-           'YVXZp', 'ZIXCpbcn_a']
-    ex += ex2
-    for f in files:
-        cont = False
-        for e in ex:
-            if e in str(f):
-                cont = True
-        if cont:
-            continue
-        # path = f.parent
-        # file = f.name
-        # print(path.joinpath(file))
-        # id = id_generator(size=4)
-        # copy(str(f), Path(r"d:/Github/testresfiles/").joinpath(id+file))
-        # print('copied', str(f.name))
-
-        # print(f)
-        shx = ShelXFile(f)
-        num += 1
-        # print(f)
-        # print(shx.sum_formula_exact)
-    print(num, 'Files')
-
-    """
-    def get_commands():
-        url = "http://shelx.uni-goettingen.de/shelxl_html.php"
-        response = urlopen('{}/version.txt'.format(url))
-        html = response.read().decode('UTF-8')
-        #res = BeautifulSoup(html, "html5lib")
-        tags = res.findAll("p", {"class": 'instr'})
-        for l in tags:
-            if l:
-                print(str(l).split(">")[1].split("<")[0])
-    """

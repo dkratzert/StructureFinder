@@ -210,20 +210,33 @@ def distance(x1: float, y1: float, z1: float,
     return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
 
 
-def format_sum_formula(sumform: str) -> str:
+def format_sum_formula(sumform: dict, break_after: int = 99) -> str:
     """
     Makes html formated sum formula from dictionary.
     >>> format_sum_formula("C12H6O3Mn7")
     '<html><body>C<sub>12</sub>H<sub>6</sub>O<sub>3</sub>Mn<sub>7</sub></body></html>'
     """
-    atlist = formula_str_to_dict(sumform)
+    #atlist = formula_str_to_dict(sumform)
+    if not sumform:
+        return ''
     l = ['<html><body>']
-    for num, i in enumerate(atlist):
-        if num > 1 and num % 8 == 0:
+    num = 0
+    for i in sumform:
+        if i == 'Id' or i == 'StructureId':
+            continue
+        if sumform[i] == 0 or sumform[i] == None:
+            continue
+        try:
+            times = round(sumform[i], 1)
+        except TypeError:
+            times = 1
+        if num > 3 and num % break_after == 0:
             l.append("<br>")
-        l.append("{}<sub>{}</sub>".format(i, atlist[i]))
+        l.append("{}<sub>{:g} </sub>".format(i.split('_')[1], times))
+        num += 1
     l.append('</body></html>')
     formula = "".join(l)
+    #print(formula)
     return formula
 
 

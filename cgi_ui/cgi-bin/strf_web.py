@@ -17,6 +17,7 @@ names = ['PC9', 'DDT-2.local']
 if socket.gethostname() in names:
     host = '127.0.0.1'
     port = "8080"
+    dbfilename = "./test.sqlite"
 site_ip = host + ':' + port
 
 import math
@@ -44,7 +45,7 @@ from displaymol.sdm import SDM
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher.database_handler import StructureTable
-from searcher.misc import is_valid_cell, get_list_of_elements, flatten, is_a_nonzero_file
+from searcher.misc import is_valid_cell, get_list_of_elements, flatten, is_a_nonzero_file, format_sum_formula
 
 """
 TODO:
@@ -115,8 +116,8 @@ def adv():
     sublattice = (request.GET.supercell == "true")
     it_num = request.GET.it_num
     structures = StructureTable(dbfilename)
-    print("Advanced search:", elincl, elexcl, date1, date2, cell_search, txt_in, txt_out, more_results, sublattice,
-          it_num)
+    print("Advanced search: elin:", elincl, 'elout:', elexcl, date1, '|', date2, '|', cell_search, 'txin:', txt_in,
+          'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num)
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
                           structures=structures, it_num=it_num)
@@ -175,7 +176,7 @@ def post_request():
             print(e)
             return ''
     if str_id and resid1:
-        return get_residuals_table1(cif_dic)
+        return get_residuals_table1(structures, cif_dic, str_id)
     if str_id and resid2:
         return get_residuals_table2(cif_dic)
     if str_id and all_cif:
@@ -310,7 +311,7 @@ def get_cell_parameters(structures: StructureTable, strid: str) -> str:
     return cstr
 
 
-def get_residuals_table1(cif_dic: dict) -> str:
+def get_residuals_table1(structures: StructureTable, cif_dic: dict, structure_id: int) -> str:
     """
     Returns a table with the most important residuals of a structure.
     """
@@ -324,6 +325,13 @@ def get_residuals_table1(cif_dic: dict) -> str:
         peakhole = "{} / {}".format(cif_dic['_refine_diff_density_max'], cif_dic['_refine_diff_density_min'])
     else:
         peakhole = " "
+    try:
+        sumform = format_sum_formula(structures.get_calc_sum_formula(structure_id), break_after=99)
+    except KeyError:
+        sumform = ''
+    if sumform == '':
+        # Display this as last resort:
+        sumform = cif_dic['_chemical_formula_sum']
     table1 = """
     <table class="table table-bordered" id='resitable1'>
         <tbody>
@@ -342,7 +350,7 @@ def get_residuals_table1(cif_dic: dict) -> str:
     </table>
     """.format(cif_dic['_space_group_name_H_M_alt'],
                cif_dic['_cell_formula_units_Z'],
-               cif_dic['_chemical_formula_sum'],
+               sumform,
                cif_dic['_diffrn_ambient_temperature'],
                cif_dic['_refine_ls_wR_factor_ref'],
                cif_dic['_refine_ls_R_factor_gt'],
@@ -541,7 +549,7 @@ def search_text(structures: StructureTable, search_string: str) -> tuple:
     return idlist
 
 
-def search_elements(structures: StructureTable, elements: str, anyresult: bool = False) -> list:
+def search_elements(structures: StructureTable, elements: str, excluding: str = '') -> list:
     """
     list(set(l).intersection(l2))
     """
@@ -549,12 +557,17 @@ def search_elements(structures: StructureTable, elements: str, anyresult: bool =
     try:
         formula = get_list_of_elements(elements)
     except KeyError:
-        print('Element search error!')
+        print('Element search error! Wrong list of elements.')
         return []
     try:
-        res = structures.find_by_elements(formula, anyresult=anyresult)
+        formula_ex = get_list_of_elements(excluding)
+    except KeyError:
+        print('Error: Wrong list of Elements!')
+        return []
+    try:
+        res = structures.find_by_elements(formula, excluding=formula_ex)
     except AttributeError:
-        print('Element search error!')
+        print('Element search error! Wrong list of elements..')
         pass
     return list(res)
 
@@ -589,8 +602,10 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
     if cell:
         cellres = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
         incl.append(cellres)
-    if elincl:
-        incl.append(search_elements(structures, elincl))
+    if elincl and not elexcl:
+        incl.append(search_elements(structures, elincl, ''))
+    if elexcl:
+        incl.append(search_elements(structures, elincl, elexcl))
     if date1 != date2:
         date_results = find_dates(structures, date1, date2)
     if it_num:
@@ -606,8 +621,6 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
             incl.append([i[0] for i in idlist])
         except(IndexError, KeyError):
             incl.append([idlist])  # only one result
-    if elexcl:
-        excl.append(search_elements(structures, elexcl, anyresult=True))
     if txt_out:
         if len(txt_out) >= 2 and "*" not in txt_out:
             txt_out = '*' + txt_out + '*'

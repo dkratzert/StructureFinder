@@ -19,13 +19,15 @@ from sqlite3 import OperationalError
 import searcher
 from lattice import lattice
 from searcher import misc
+from searcher.atoms import sorted_atoms
 from searcher.misc import get_error_from_value
 from shelxfile.dsrmath import Array
 
 __metaclass__ = type  # use new-style classes
 
-#db_enoding = 'ISO-8859-15'
+# db_enoding = 'ISO-8859-15'
 db_enoding = 'utf-8'
+
 
 class DatabaseRequest():
     def __init__(self, dbfile):
@@ -36,9 +38,9 @@ class DatabaseRequest():
         """
         # open the database
         self.con = sqlite3.connect(dbfile)
-        #self.con.execute("PRAGMA foreign_keys = ON")
-        #self.con.text_factory = str
-        #self.con.text_factory = bytes
+        # self.con.execute("PRAGMA foreign_keys = ON")
+        # self.con.text_factory = str
+        # self.con.text_factory = bytes
         with self.con:
             # set the database cursor
             self.cur = self.con.cursor()
@@ -47,14 +49,6 @@ class DatabaseRequest():
         """
         initializtes the db
         """
-        #self.con.execute("PRAGMA foreign_keys = ON")
-        #self.cur.execute("DROP TABLE IF EXISTS structure")
-        ##self.cur.execute("DROP TABLE IF EXISTS measurement")
-        #self.cur.execute("DROP TABLE IF EXISTS cell")
-        #self.cur.execute("DROP TABLE IF EXISTS Atoms")
-        #self.cur.execute("DROP TABLE IF EXISTS niggli_cell")
-        #self.cur.execute("DROP TABLE IF EXISTS Residuals")
-
         self.cur.execute('''
                     CREATE TABLE IF NOT EXISTS database_format (
                         Id                  INTEGER NOT NULL,
@@ -169,56 +163,69 @@ class DatabaseRequest():
                     ''')
 
         self.cur.execute(
-                    '''
-                    CREATE TABLE IF NOT EXISTS cell (
-                        Id        INTEGER NOT NULL,
-                        StructureId    INTEGER NOT NULL,
-                        a    FLOAT,
-                        b    FLOAT,
-                        c    FLOAT,
-                        alpha   FLOAT,
-                        beta    FLOAT,
-                        gamma   FLOAT,
-                        esda    FLOAT,
-                        esdb    FLOAT,
-                        esdc    FLOAT,
-                        esdalpha   FLOAT,
-                        esdbeta    FLOAT,
-                        esdgamma   FLOAT,
-                        volume     FLOAT,
-                    PRIMARY KEY(Id),
-                      FOREIGN KEY(StructureId)
-                        REFERENCES Structure(Id)
-                          ON DELETE CASCADE
-                          ON UPDATE NO ACTION);
-                    '''
-                    )
+                '''
+                CREATE TABLE IF NOT EXISTS cell (
+                    Id        INTEGER NOT NULL,
+                    StructureId    INTEGER NOT NULL,
+                    a    FLOAT,
+                    b    FLOAT,
+                    c    FLOAT,
+                    alpha   FLOAT,
+                    beta    FLOAT,
+                    gamma   FLOAT,
+                    esda    FLOAT,
+                    esdb    FLOAT,
+                    esdc    FLOAT,
+                    esdalpha   FLOAT,
+                    esdbeta    FLOAT,
+                    esdgamma   FLOAT,
+                    volume     FLOAT,
+                PRIMARY KEY(Id),
+                  FOREIGN KEY(StructureId)
+                    REFERENCES Structure(Id)
+                      ON DELETE CASCADE
+                      ON UPDATE NO ACTION);
+                '''
+        )
 
         self.cur.execute(
-                    '''
-                    CREATE TABLE IF NOT EXISTS niggli_cell (
-                                Id        INTEGER NOT NULL,
-                                StructureId    INTEGER NOT NULL,
-                                a    FLOAT,
-                                b    FLOAT,
-                                c    FLOAT,
-                                alpha   FLOAT,
-                                beta    FLOAT,
-                                gamma   FLOAT,
-                            PRIMARY KEY(Id),
-                              FOREIGN KEY(StructureId)
-                                REFERENCES niggli_cell(Id)
-                                  ON DELETE CASCADE
-                                  ON UPDATE NO ACTION);
-                    '''
-                    )
+                '''
+                CREATE TABLE IF NOT EXISTS niggli_cell (
+                            Id        INTEGER NOT NULL,
+                            StructureId    INTEGER NOT NULL,
+                            a    FLOAT,
+                            b    FLOAT,
+                            c    FLOAT,
+                            alpha   FLOAT,
+                            beta    FLOAT,
+                            gamma   FLOAT,
+                        PRIMARY KEY(Id),
+                          FOREIGN KEY(StructureId)
+                            REFERENCES niggli_cell(Id)
+                              ON DELETE CASCADE
+                              ON UPDATE NO ACTION);
+                '''
+        )
+
+        self.cur.execute(
+                '''
+                CREATE TABLE IF NOT EXISTS sum_formula (
+                        Id             INTEGER NOT NULL,
+                        StructureId    INTEGER NOT NULL,
+                        {}             FLOAT,
+                        PRIMARY KEY(Id),
+                          FOREIGN KEY (StructureId)
+                            REFERENCES Structure(Id)
+                              ON DELETE CASCADE
+                              ON UPDATE NO ACTION);
+                '''.format("   FLOAT, ".join(["'Elem_" + at + "'" for at in sorted_atoms]))
+        )
 
     def init_textsearch(self):
         """
         Initializes the full text search (fts) tables.
         """
         self.cur.execute("DROP TABLE IF EXISTS txtsearch")
-        self.cur.execute("DROP TABLE IF EXISTS ElementSearch")
 
         # The simple tokenizer is best for my purposes (A self-written tokenizer would even be better):
         self.cur.execute("""
@@ -230,16 +237,7 @@ class DatabaseRequest():
                          shelx_res_file TEXT,
                             tokenize=simple "tokenchars= .=-_");  
                           """
-        )
-
-        # Now the table for element search:
-        self.cur.execute("""
-            CREATE VIRTUAL TABLE ElementSearch USING
-                    fts4(StructureId        INTEGER,
-                    _chemical_formula_sum   TEXT,
-                        tokenize=simple 'tokenchars= 0123456789');
-                      """
-        )
+                         )
 
     def get_lastrowid(self):
         """
@@ -254,7 +252,6 @@ class DatabaseRequest():
         except TypeError:
             # No database or empty table:
             return 0
-
 
     def db_fetchone(self, request, *args):
         """
@@ -280,10 +277,10 @@ class DatabaseRequest():
         """
         try:
             if many:
-                #print(args)
+                # print(args)
                 self.cur.executemany(request, *args)
             else:
-                #print(request, args)
+                # print(request, args)
                 self.cur.execute(request, *args)
             last_rowid = self.cur.lastrowid
         except OperationalError as e:
@@ -294,7 +291,7 @@ class DatabaseRequest():
         rows = self.cur.fetchall()
         if not rows:
             return tuple()
-            #return last_rowid
+            # return last_rowid
         else:
             return rows
 
@@ -353,13 +350,12 @@ class StructureTable():
             print('Wrong type. Integer expected')
             sys.exit()
         if str_id < 0:
-            str_id = len(self)-abs(str_id)
+            str_id = len(self) - abs(str_id)
         found = self.get_filepath(str_id)
         if found:
             return found
 
-
-    def get_all_structures_as_dict(self, ids: (list, tuple)=None, all_ids: bool=False) -> dict:
+    def get_all_structures_as_dict(self, ids: (list, tuple) = None, all_ids: bool = False) -> dict:
         """
         Returns the list of structures as dictionary.
 
@@ -378,7 +374,7 @@ class StructureTable():
                 # only one id
                 req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
                                                     Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(
-                    ids[0])
+                        ids[0])
         elif all:
             req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
                       Structure.dataname FROM Structure'''
@@ -391,7 +387,7 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return rows
 
-    def get_all_structure_names(self, ids: list=None) -> list:
+    def get_all_structure_names(self, ids: list = None) -> list:
         """
         returns all fragment names in the database, sorted by name
         :returns [id, meas, path, filename, data]
@@ -464,7 +460,7 @@ class StructureTable():
         req = '''
               INSERT INTO Structure (Id, measurement, filename, path, dataname) VALUES(?, ?, ?, ?, ?)
               '''
-        filename = filename.encode(db_enoding, "ignore")#.encode("utf-8", "surrogateescape")
+        filename = filename.encode(db_enoding, "ignore")  # .encode("utf-8", "surrogateescape")
         path = path.encode(db_enoding, "ignore")
         dataname = dataname.encode(db_enoding, "ignore")
         self.database.db_request(req, (structure_id, measurement_id, filename, path, dataname))
@@ -500,7 +496,7 @@ class StructureTable():
         if isinstance(volume, str):
             vol = volume.split('(')[0]
         if self.database.db_request(req, (structure_id, a, b, c, alpha, beta, gamma,
-                                    aerror, berror, cerror, alphaerror, betaerror, gammaerror, vol)):
+                                          aerror, berror, cerror, alphaerror, betaerror, gammaerror, vol)):
             return True
 
     def fill_atoms_table(self, structure_id, name, element, x, y, z, occ, part):
@@ -520,7 +516,6 @@ class StructureTable():
         if cell is None:
             cell = []
         req = """SELECT Name, element, x, y, z, CAST(part as integer), occupancy FROM Atoms WHERE StructureId = ?"""
-        #req = """SELECT Name, element, x, y, z, part, occupancy FROM Atoms WHERE StructureId = ?"""
         result = self.database.db_request(req, (structure_id,))
         if cartesian:
             cartesian_coords = []
@@ -548,14 +543,69 @@ class StructureTable():
             res = '?'
         return res
 
+    def fill_formula(self, structure_id, formula: dict):
+        """
+        Fills data into the sum formula table.
+        """
+        out = []
+        for x in formula:
+            if not x.capitalize() in sorted_atoms:
+                out.append(x)
+        # Delete non-existing atoms from formula:
+        for x in out:
+            del formula[x]
+        if not formula:
+            return []
+        columns = ', '.join(['Elem_' + x.capitalize() for x in formula.keys()])
+        placeholders = ', '.join('?' * (len(formula) + 1))
+        req = '''INSERT INTO sum_formula (StructureId, {}) VALUES ({});'''.format(columns, placeholders)
+        result = self.database.db_request(req, [structure_id] + list(formula.values()))
+        return result
+
+    def get_calc_sum_formula(self, structure_id):
+        """
+        Returns the sum formula of an entry as dictionary.
+        """
+        request = """SELECT * FROM sum_formula WHERE StructureId = ?"""
+        # setting row_factory to dict for the cif keys:
+        self.database.con.row_factory = self.database.dict_factory
+        self.database.cur = self.database.con.cursor()
+        dic = self.database.db_fetchone(request, (structure_id,))
+        self.database.cur.close()
+        # setting row_factory back to regular touple base requests:
+        self.database.con.row_factory = None
+        self.database.cur = self.database.con.cursor()
+        return dic
+
+    def get_cif_sumform_by_id(self, structure_id):
+        """
+        returns the cell of a res file in the db
+
+        >>> db = StructureTable('../structurefinder.sqlite')
+        >>> all = db.find_by_elements(['Al', 'Au', 'Ag'])
+        >>> tst = []
+        >>> for i in all:
+        >>>    out = db.get_cif_sumform_by_id(i)
+        >>>     if "Ag" in out[0]:
+        >>>         tst.append(out)
+        >>> len(all) == len(tst)
+        True
+        """
+        if not structure_id:
+            return False
+        req = '''SELECT _chemical_formula_sum FROM Residuals WHERE StructureId = ?'''
+        cell = self.database.db_request(req, (structure_id,))
+        if cell and len(cell) > 0:
+            return cell[0]
+        else:
+            return cell
+
     def fill_residuals_table(self, structure_id, cif):
         """
         Fill the table with residuals of the refinement.
-        :param cif:
-        :param structure_id:
-        :param param:
-        :return:
         """
+        if cif.cif_data['calculated_formula_sum']:
+            self.fill_formula(structure_id, cif.cif_data['calculated_formula_sum'])
         residuals = """
                     (
                     StructureId,
@@ -620,70 +670,70 @@ class StructureTable():
         req = '''INSERT INTO Residuals {} VALUES ({});'''.format(residuals, self.joined_arglist(residuals.split(',')))
 
         result = self.database.db_request(req, (
-                structure_id,
-                cif.cif_data['_cell_formula_units_Z'],              # Z
-                cif.cif_data['_space_group_name_H-M_alt'],          # Raumgruppe (Herman-Maugin)
-                cif.cif_data['_space_group_name_Hall'],             # Hall-Symbol
-                cif.cif_data['_space_group_centring_type'],         # Lattice centering
-                cif.cif_data['_space_group_IT_number'],             # Raumgruppen-Nummer aus IT
-                cif.cif_data['_space_group_crystal_system'],        # Kristallsystem
-                cif.cif_data['_space_group_symop_operation_xyz'],   # SYMM cards
-                cif.cif_data['_chemical_formula_sum'],              # Summenformel
-                cif.cif_data['_chemical_formula_weight'],           # Moyety-Formel
-                cif.cif_data['_exptl_crystal_description'],         # Habitus
-                cif.cif_data['_exptl_crystal_colour'],              # Farbe
-                cif.cif_data['_exptl_crystal_size_max'],            # Größe
-                cif.cif_data['_exptl_crystal_size_mid'],            # Größe
-                cif.cif_data['_exptl_crystal_size_min'],            # Größe
-                cif.cif_data['_audit_creation_method'],             # how data were entered into the data block.
-                cif.cif_data['_exptl_absorpt_coefficient_mu'],      # Linear absorption coefficient (mm-1)
-                cif.cif_data['_exptl_absorpt_correction_type'],     # Code for absorption correction
-                cif.cif_data['_diffrn_ambient_temperature'],        # The mean temperature in kelvins at which the
-                                                                    # intensities were measured.
-                cif.cif_data['_diffrn_radiation_wavelength'],       # Radiation wavelength (Å)
-                cif.cif_data['_diffrn_radiation_type'],             # Radiation type (e.g. neutron or `Mo Kα')
-                cif.cif_data['_diffrn_source'],                     # Röntgenquelle
-                cif.cif_data['_diffrn_measurement_device_type'],    # Diffractometer make and type
-                cif.cif_data['_diffrn_reflns_number'],              # Total number of reflections measured excluding systematic absences
-                cif.cif_data['_diffrn_reflns_av_R_equivalents'],    # R(int) -> R factor for symmetry-equivalent intensities
-                cif.cif_data['_diffrn_reflns_theta_min'],           # Minimum θ of measured reflections (°)
-                cif.cif_data['_diffrn_reflns_theta_max'],           # Maximum θ of measured reflections (°)
-                cif.cif_data['_diffrn_reflns_theta_full'],          # θ to which available reflections are close to 100% complete (°)
-                cif.cif_data['_diffrn_measured_fraction_theta_max'],   # completeness, Fraction of unique reflections measured to θmax
-                cif.cif_data['_diffrn_measured_fraction_theta_full'],  # Fraction of unique reflections measured to θfull
-                cif.cif_data['_reflns_number_total'],               # Number of symmetry-independent reflections excluding
-                                                                    #   systematic absences.
-                cif.cif_data['_reflns_number_gt'],                  # Number of reflections > σ threshold
-                cif.cif_data['_reflns_threshold_expression'],       # σ expression for F, F2 or I threshold
-                cif.cif_data['_reflns_Friedel_coverage'],           # The proportion of Friedel-related reflections
-                                                                    #   present in the number of reported unique reflections
-                cif.cif_data['_computing_structure_solution'],      # Reference to structure-solution software
-                cif.cif_data['_computing_structure_refinement'],    # Reference to structure-refinement software
-                cif.cif_data['_refine_special_details'],            # Details about the refinement
-                cif.cif_data['_refine_ls_structure_factor_coef'],   # Code for F, F2 or I used in least-squares refinement
-                cif.cif_data['_refine_ls_weighting_details'],       # Weighting expression
-                cif.cif_data['_refine_ls_number_reflns'],           # The number of unique reflections contributing to the
-                                                                    #   least-squares refinement calculation.
-                cif.cif_data['_refine_ls_number_parameters'],       # Number of parameters refined
-                cif.cif_data['_refine_ls_number_restraints'],       # Number of restraints applied during refinement
-                cif.cif_data['_refine_ls_R_factor_all'],
-                cif.cif_data['_refine_ls_R_factor_gt'],             # R1 factor of F for reflections > threshold
-                cif.cif_data['_refine_ls_wR_factor_ref'],           # wR2 factor of coefficient for refinement reflections
-                cif.cif_data['_refine_ls_wR_factor_gt'],
-                cif.cif_data['_refine_ls_goodness_of_fit_ref'],     # Goodness of fit S for refinement reflections
-                cif.cif_data['_refine_ls_restrained_S_all'],        # The least-squares goodness-of-fit parameter S' for
-                                                                    # all reflections after the final cycle of least-squares refinement.
-                cif.cif_data['_refine_ls_shift/su_max'],            # Maximum shift/s.u. ratio after final refinement cycle
-                cif.cif_data['_refine_ls_shift/su_mean'],
-                cif.cif_data['_refine_diff_density_max'],           # Maximum difference density after refinement
-                cif.cif_data['_refine_diff_density_min'],           # Deepest hole
-                cif.cif_data['_diffrn_reflns_av_unetI/netI'],       # R(sigma)
-                cif.cif_data['_database_code_depnum_ccdc_archive'],  # CCDC number
-                cif.cif_data['_shelx_res_file'],                     # The content of the SHELXL res file
-                cif.cif_data['modification_time'],
-                cif.cif_data['file_size']
-                )
-            )
+            structure_id,
+            cif.cif_data['_cell_formula_units_Z'],  # Z
+            cif.cif_data['_space_group_name_H-M_alt'],  # Raumgruppe (Herman-Maugin)
+            cif.cif_data['_space_group_name_Hall'],  # Hall-Symbol
+            cif.cif_data['_space_group_centring_type'],  # Lattice centering
+            cif.cif_data['_space_group_IT_number'],  # Raumgruppen-Nummer aus IT
+            cif.cif_data['_space_group_crystal_system'],  # Kristallsystem
+            cif.cif_data['_space_group_symop_operation_xyz'],  # SYMM cards
+            cif.cif_data['_chemical_formula_sum'],  # Summenformel
+            cif.cif_data['_chemical_formula_weight'],  # Moyety-Formel
+            cif.cif_data['_exptl_crystal_description'],  # Habitus
+            cif.cif_data['_exptl_crystal_colour'],  # Farbe
+            cif.cif_data['_exptl_crystal_size_max'],  # Größe
+            cif.cif_data['_exptl_crystal_size_mid'],  # Größe
+            cif.cif_data['_exptl_crystal_size_min'],  # Größe
+            cif.cif_data['_audit_creation_method'],  # how data were entered into the data block.
+            cif.cif_data['_exptl_absorpt_coefficient_mu'],  # Linear absorption coefficient (mm-1)
+            cif.cif_data['_exptl_absorpt_correction_type'],  # Code for absorption correction
+            cif.cif_data['_diffrn_ambient_temperature'],    # The mean temperature in kelvins at which the
+                                                            # intensities were measured.
+            cif.cif_data['_diffrn_radiation_wavelength'],   # Radiation wavelength (Å)
+            cif.cif_data['_diffrn_radiation_type'],         # Radiation type (e.g. neutron or `Mo Kα')
+            cif.cif_data['_diffrn_source'],                 # Röntgenquelle
+            cif.cif_data['_diffrn_measurement_device_type'],  # Diffractometer make and type
+            cif.cif_data['_diffrn_reflns_number'],          # Total number of reflections measured excluding systematic absences
+            cif.cif_data['_diffrn_reflns_av_R_equivalents'],  # R(int) -> R factor for symmetry-equivalent intensities
+            cif.cif_data['_diffrn_reflns_theta_min'],  # Minimum θ of measured reflections (°)
+            cif.cif_data['_diffrn_reflns_theta_max'],  # Maximum θ of measured reflections (°)
+            cif.cif_data['_diffrn_reflns_theta_full'], # θ to which available reflections are close to 100% complete (°)
+            cif.cif_data['_diffrn_measured_fraction_theta_max'], # completeness, Fraction of unique reflections measured to θmax
+            cif.cif_data['_diffrn_measured_fraction_theta_full'],  # Fraction of unique reflections measured to θfull
+            cif.cif_data['_reflns_number_total'],  # Number of symmetry-independent reflections excluding
+                                                   #   systematic absences.
+            cif.cif_data['_reflns_number_gt'],  # Number of reflections > σ threshold
+            cif.cif_data['_reflns_threshold_expression'],  # σ expression for F, F2 or I threshold
+            cif.cif_data['_reflns_Friedel_coverage'],  # The proportion of Friedel-related reflections
+                                                       #   present in the number of reported unique reflections
+            cif.cif_data['_computing_structure_solution'],  # Reference to structure-solution software
+            cif.cif_data['_computing_structure_refinement'],  # Reference to structure-refinement software
+            cif.cif_data['_refine_special_details'],  # Details about the refinement
+            cif.cif_data['_refine_ls_structure_factor_coef'],  # Code for F, F2 or I used in least-squares refinement
+            cif.cif_data['_refine_ls_weighting_details'],  # Weighting expression
+            cif.cif_data['_refine_ls_number_reflns'],  # The number of unique reflections contributing to the
+                                                        #   least-squares refinement calculation.
+            cif.cif_data['_refine_ls_number_parameters'],  # Number of parameters refined
+            cif.cif_data['_refine_ls_number_restraints'],  # Number of restraints applied during refinement
+            cif.cif_data['_refine_ls_R_factor_all'],
+            cif.cif_data['_refine_ls_R_factor_gt'],  # R1 factor of F for reflections > threshold
+            cif.cif_data['_refine_ls_wR_factor_ref'],  # wR2 factor of coefficient for refinement reflections
+            cif.cif_data['_refine_ls_wR_factor_gt'],
+            cif.cif_data['_refine_ls_goodness_of_fit_ref'],  # Goodness of fit S for refinement reflections
+            cif.cif_data['_refine_ls_restrained_S_all'],  # The least-squares goodness-of-fit parameter S' for
+                                                          # all reflections after the final cycle of least-squares refinement.
+            cif.cif_data['_refine_ls_shift/su_max'],  # Maximum shift/s.u. ratio after final refinement cycle
+            cif.cif_data['_refine_ls_shift/su_mean'],
+            cif.cif_data['_refine_diff_density_max'],  # Maximum difference density after refinement
+            cif.cif_data['_refine_diff_density_min'],  # Deepest hole
+            cif.cif_data['_diffrn_reflns_av_unetI/netI'],  # R(sigma)
+            cif.cif_data['_database_code_depnum_ccdc_archive'],  # CCDC number
+            cif.cif_data['_shelx_res_file'],  # The content of the SHELXL res file
+            cif.cif_data['modification_time'],
+            cif.cif_data['file_size']
+        )
+                                          )
         return result
 
     def populate_fulltext_search_table(self):
@@ -692,28 +742,23 @@ class StructureTable():
         _publ_contact_author_name
         """
         populate_index = """
-        INSERT INTO txtsearch (
+                    INSERT INTO txtsearch (
                                 StructureId, 
                                 filename, 
                                 dataname, 
                                 path,
                                 shelx_res_file
                                 )
-        SELECT  str.Id, 
-                str.filename, 
-                str.dataname, 
-                str.path,
-                res._shelx_res_file
-                    FROM Structure AS str
-                        INNER JOIN Residuals AS res WHERE str.Id = res.Id; """
+            SELECT  str.Id, 
+                    str.filename, 
+                    str.dataname, 
+                    str.path,
+                    res._shelx_res_file
+                        FROM Structure AS str
+                            INNER JOIN Residuals AS res WHERE str.Id = res.Id; """
         optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize'); """
-        element_search = """
-            INSERT INTO ElementSearch(StructureId,
-                                    _chemical_formula_sum) 
-                  SELECT Id, _chemical_formula_sum FROM residuals; """
         self.database.cur.execute(populate_index)
         self.database.cur.execute(optimize_queries)
-        self.database.cur.execute(element_search)
 
     def get_row_as_dict(self, structure_id):
         """
@@ -770,7 +815,7 @@ class StructureTable():
         try:
             return [i[0] for i in self.database.db_request(req, (lower_limit, upper_limit))]
         except(TypeError, KeyError):
-            #print("Wrong volume for cell search.")
+            # print("Wrong volume for cell search.")
             return False
 
     def find_by_strings(self, text: str) -> tuple:
@@ -815,7 +860,7 @@ class StructureTable():
         else:
             return []
 
-    def find_by_elements(self, elements: list, anyresult: bool = False) -> list:
+    def find_by_elements(self, elements: list, excluding: list = None) -> list:
         """
         Find structures where certain elements are included in the sum formula.
 
@@ -824,25 +869,23 @@ class StructureTable():
         >>> db.find_by_elements(['S', 'Sn'])
         [11, 3, 6, 15]
         """
-        import re
         matches = []
-        # Get all formulas to prevent false negatives with text search in the db:
-        req = '''SELECT StructureId, _chemical_formula_sum from Residuals'''
-        result = self.database.db_request(req)
-        if result:
-            for el in elements:  # The second search excludes false hits like Ca instead of C
-                regex = re.compile(r'[\s|\d]?'+ el +'[\d|\s]*|[$]+', re.IGNORECASE)
-                res = []
-                for num, form in result:
-                    if regex.search(form):
-                        #print(form)
-                        res.append(num)
-                matches.append(res)
-        if matches:
-            if anyresult:
-                return list(set(misc.flatten(matches)))
+        # Find all structures where these elements are included:
+        el = ' NOT NULL AND '.join(['Elem_' + x.capitalize() for x in elements]) + ' NOT NULL '
+        # Find all structures where these elements are included and the others not included:
+        exclude = ' IS NULL AND '.join(['Elem_' + x.capitalize() for x in excluding]) + ' IS NULL '
+        if not excluding:
+            req = '''SELECT StructureId from sum_formula WHERE ({}) '''.format(el)
+        else:
+            # With exclude condition
+            if elements:
+                req = '''SELECT StructureId from sum_formula WHERE ({} AND {}) '''.format(el, exclude)
             else:
-                return list(set(matches[0]).intersection(*matches))
+                req = '''SELECT StructureId from sum_formula WHERE ({}) '''.format(exclude)
+        result = self.database.db_request(req)
+        # print(req)
+        if result:
+            return [x[0] for x in result]
         else:
             return []
 
@@ -869,7 +912,7 @@ class StructureTable():
             return result[-1]
         else:
             return False
-                  
+
     def get_database_version(self):
         """
         >>> db = StructureTable('../structuredb.sqlite')
@@ -884,52 +927,29 @@ class StructureTable():
             version = 0
         return version
 
-    def get_sumform_by_id(self, structure_id):
-        """
-        returns the cell of a res file in the db
 
-        >>> db = StructureTable('../structurefinder.sqlite')
-        >>> all = db.find_by_elements(['Al', 'Au', 'Ag'])
-        >>> tst = []
-        >>> for i in all:
-        >>>    out = db.get_sumform_by_id(i)
-        >>>     if "Ag" in out[0]:
-        >>>         tst.append(out)
-        >>> len(all) == len(tst)
-        True
-        """
-        if not structure_id:
-            return False
-        req = '''SELECT _chemical_formula_sum FROM Residuals WHERE StructureId = ?'''
-        cell = self.database.db_request(req, (structure_id,))
-        if cell and len(cell) > 0:
-            return cell[0]
-        else:
-            return cell
-            
 if __name__ == '__main__':
-    #searcher.filecrawler.put_cifs_in_db(searchpath='../')
-    #db = DatabaseRequest('./structuredb.sqlite')
-    #db.initialize_db()
-    #db = StructureTable('./structuredb.sqlite')
-    db = StructureTable('../structurefinder.sqlite')
-    #db.database.initialize_db()
-    #out = db.find_by_date(start="2017-08-19")
-    #out = db.get_cell_by_id(12)
-    #out = db.find_by_strings('dk')
+    # searcher.filecrawler.put_cifs_in_db(searchpath='../')
+    db = DatabaseRequest('./test3.sqlite')
+    db.initialize_db()
+    db = StructureTable('./test3.sqlite')
+    # db.initialize_db()
+    # db = StructureTable('../structurefinder.sqlite')
+    # db.database.initialize_db()
+    # out = db.find_by_date(start="2017-08-19")
+    # out = db.get_cell_by_id(12)
+    # out = db.find_by_strings('dk')
     ############################################
-    #elinclude = ['C', 'O', 'N', 'Al', 'F']
-    #elexclude = ['Tm']
-    #inc = db.find_by_elements(elinclude, anyresult=False)
-    #exc = db.find_by_elements(elexclude, anyresult=True)
-    #print('include: {}'.format(sorted(inc)))
-    #print('exclude: {}'.format(sorted(exc)))
-    #combi = set(inc) - set(exc)
-    #print(combi)
-    #print(len(combi))
+    elinclude = ['C', 'O', 'N', 'F']
+    # elexclude = ['Tm']
+    # inc = db.find_by_elements(elinclude, excluding=False)
+    exc = db.find_by_elements(elinclude, ['Al'])
+    # print('include: {}'.format(sorted(inc)))
+    # print('exclude: {}'.format(sorted(exc)))
+    # combi = set(inc) - set(exc)
+    # print(combi)
+    # print(len(combi))
     #########################################
-    nums = []
-    for i in range(1, 230):
-        res = db.find_by_it_number(i)
-        nums.append([i, len(res)])
-    print(nums)
+    # db.fill_formula(1, {'StructureId': 1, 'C': 34.0, 'H': 24.0, 'O': 4.0, 'F': 35.99999999999999, 'AL': 1.0, 'GA': 1.0})
+    # form = db.get_sum_formula(5)
+    print(exc)
