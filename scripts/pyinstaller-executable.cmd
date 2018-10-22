@@ -12,3 +12,4 @@ venv\Scripts\pyinstaller.exe --clean ^
                                 --windowed ^
                                 strf.py
 exit
+
