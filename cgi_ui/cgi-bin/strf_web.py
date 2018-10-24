@@ -113,13 +113,14 @@ def adv():
     txt_out = request.GET.text_out
     more_results = (request.GET.more == "true")
     sublattice = (request.GET.supercell == "true")
+    onlyelem = (request.GET.onlyelem == "true")
     it_num = request.GET.it_num
     structures = StructureTable(dbfilename)
     print("Advanced search: elin:", elincl, 'elout:', elexcl, date1, '|', date2, '|', cell_search, 'txin:', txt_in,
-          'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num)
+          'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num, 'only:', onlyelem)
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
-                          structures=structures, it_num=it_num)
+                          structures=structures, it_num=it_num, onlyelem=onlyelem)
     print("--> Got {} structures from Advanced search.".format(len(ids)))
     return get_structures_json(structures, ids)
 
@@ -507,7 +508,7 @@ def search_text(structures: StructureTable, search_string: str) -> tuple:
     return idlist
 
 
-def search_elements(structures: StructureTable, elements: str, excluding: str = '') -> list:
+def search_elements(structures: StructureTable, elements: str, excluding: str = '', onlyelem: bool = False) -> list:
     """
     list(set(l).intersection(l2))
     """
@@ -523,7 +524,7 @@ def search_elements(structures: StructureTable, elements: str, excluding: str = 
         print('Error: Wrong list of Elements!')
         return []
     try:
-        res = structures.find_by_elements(formula, excluding=formula_ex)
+        res = structures.find_by_elements(formula, excluding=formula_ex, onlyincluded=onlyelem)
     except AttributeError:
         print('Element search error! Wrong list of elements..')
         pass
@@ -544,7 +545,7 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
 
 def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, more_results,
                     date1: str = None, date2: str = None, structures: StructureTable = None,
-                    it_num: str = None) -> list:
+                    it_num: str = None, onlyelem: bool = False) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
@@ -561,9 +562,9 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
         cellres = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
         incl.append(cellres)
     if elincl and not elexcl:
-        incl.append(search_elements(structures, elincl, ''))
+        incl.append(search_elements(structures, elincl, '', onlyelem))
     if elexcl:
-        incl.append(search_elements(structures, elincl, elexcl))
+        incl.append(search_elements(structures, elincl, elexcl, onlyelem))
     if date1 != date2:
         date_results = find_dates(structures, date1, date2)
     if it_num:
@@ -620,5 +621,5 @@ if __name__ == "__main__":
     # gunicorn server: Best used behind an nginx proxy server: http://docs.gunicorn.org/en/stable/deploy.html
     # you need "pip3 install gunicorn" to run this:
     # The current database interface allows only one worker (have to go to sqlalchemy!)
-    app.run(host=host, port=port, reload=True, server='gunicorn', accesslog='-', errorlog='-', workers=1,
+    app.run(host=host, port=port, reload=True, server='wsgiref', accesslog='-', errorlog='-', workers=1,
             access_log_format='%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s"')

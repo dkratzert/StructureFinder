@@ -386,9 +386,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
             cellres = self.search_cell_idlist(cell)
             incl.append(cellres)
         if elincl and not elexcl:
-            incl.append(self.search_elements(elincl, ''))
+            incl.append(self.search_elements(elincl, '', self.ui.onlyTheseElementsCheckBox.isChecked()))
         if elexcl:
-            incl.append(self.search_elements(elincl, elexcl))
+            incl.append(self.search_elements(elincl, elexcl, self.ui.onlyTheseElementsCheckBox.isChecked()))
         if txt:
             if len(txt) >= 2 and "*" not in txt:
                 txt = '*' + txt + '*'
@@ -930,7 +930,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         return True
 
-    def search_elements(self, elements: str, excluding: str) -> list:
+    def search_elements(self, elements: str, excluding: str, onlythese: bool = False) -> list:
         """
         list(set(l).intersection(l2))
         """
@@ -947,7 +947,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
             return []
         try:
-            res = self.structures.find_by_elements(formula, excluding=formula_ex)
+            res = self.structures.find_by_elements(formula, excluding=formula_ex, onlyincluded=onlythese)
         except AttributeError:
             pass
         return list(res)

@@ -861,7 +861,7 @@ class StructureTable():
         else:
             return []
 
-    def find_by_elements(self, elements: list, excluding: list = None) -> list:
+    def find_by_elements(self, elements: list, excluding: list = None, onlyincluded: bool = False) -> list:
         """
         Find structures where certain elements are included in the sum formula.
 
@@ -883,6 +883,10 @@ class StructureTable():
                 req = '''SELECT StructureId from sum_formula WHERE ({} AND {}) '''.format(el, exclude)
             else:
                 req = '''SELECT StructureId from sum_formula WHERE ({}) '''.format(exclude)
+        if onlyincluded:
+            elex = list(set(sorted_atoms) - set(elements))
+            exclude = ' IS NULL AND '.join(['Elem_' + x.capitalize() for x in elex]) + ' IS NULL '
+            req = '''SELECT StructureId from sum_formula WHERE ({} AND {}) '''.format(el, exclude)
         result = self.database.db_request(req)
         # print(req)
         if result:

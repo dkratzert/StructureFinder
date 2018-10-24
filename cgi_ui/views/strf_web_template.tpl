@@ -120,8 +120,8 @@ body {
         <div class="col-sm-12">
             <div class="btn-group btn-group-sm" role="group">
                 <a href="#" class="badge" id="more_info_badge">info</a> &nbsp;&nbsp;&nbsp;
-                <input title="More cell search results" type="checkbox" value="" id="more_results">More cell search results &nbsp;&nbsp;&nbsp;
-                <input title="Find supercells" type="checkbox" value="" id="supercells">Find supercells &nbsp;&nbsp;&nbsp;
+                <input title="More cell search results" class="checkbox-inline" type="checkbox" value="" id="more_results">More cell search results &nbsp;&nbsp;&nbsp;
+                <input title="Find supercells" type="checkbox" class="checkbox-inline" value="" id="supercells">Find supercells &nbsp;&nbsp;&nbsp;
                 {{!space_groups}} Find by space group
             </div>
         </div>
@@ -183,7 +183,7 @@ body {
 
     <div class="row">
         <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-success advsearchfields">
+            <div class="input-group input-group-sm input-group-prepend has-success advsearchfields">
                 <span class="input-group-addon" data-toggle="tooltip" title="should contain">Elements</span>
                 <input type="text" class="form-control form-sm" placeholder="C H O ... (should contain)"
                        pattern="^[A-z]{1,}$" id="elements_in">
@@ -198,6 +198,15 @@ body {
         </div>
     </div>
 
+    <div class="row">
+        <div class="column col-xs-6">
+            <input class="checkbox-inline" type="checkbox" aria-label="Only these elements" 
+                   title="Only above Elements" id="onlythese_elem">Only above Elements
+        </div>
+        <div class="column col-xs-6">
+        </div>
+    </div>
+    
     <div class="row">
         <div class="column col-xs-6">
             <div class="input-group input-group-sm has-success advsearchfields">
