@@ -192,7 +192,9 @@ def server_static(filepath):
     <filename> wildcard won’t match a path with a slash in it. To serve files in subdirectories, change
     the wildcard to use the path filter:
     """
-    return static_file(filepath, root='./cgi_ui/static/')
+    response = static_file(filepath, root='./cgi_ui/static/')
+    response.set_header("Cache-Control", "public, max-age=240")
+    return response
 
 
 @app.route('/version')
@@ -621,5 +623,5 @@ if __name__ == "__main__":
     # gunicorn server: Best used behind an nginx proxy server: http://docs.gunicorn.org/en/stable/deploy.html
     # you need "pip3 install gunicorn" to run this:
     # The current database interface allows only one worker (have to go to sqlalchemy!)
-    app.run(host=host, port=port, reload=True, server='wsgiref', accesslog='-', errorlog='-', workers=1,
+    app.run(host=host, port=port, reload=True, server='gunicorn', accesslog='-', errorlog='-', workers=1,
             access_log_format='%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s"')
