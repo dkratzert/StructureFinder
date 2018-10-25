@@ -73,7 +73,6 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
-- display also res files with centroids
 - sort results by G6 distance
 
 Search for:
