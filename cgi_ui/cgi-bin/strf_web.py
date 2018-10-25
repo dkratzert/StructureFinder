@@ -90,7 +90,7 @@ def cellsrch():
     if cell:
         ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
         print("--> Got {} structures from cell search.".format(len(ids)))
-        return get_structures_json(structures, ids, show_all=False)
+        return get_structures_json(structures, ids)
 
 
 @app.route("/txtsrch")
@@ -99,7 +99,7 @@ def txtsrch():
     text_search = request.GET.text_search
     print("Text search:", text_search)
     ids = search_text(structures, text_search)
-    return get_structures_json(structures, ids, show_all=False)
+    return get_structures_json(structures, ids)
 
 
 @app.route("/adv_srch")
@@ -234,7 +234,7 @@ def is_ajax():
         return False
 
 
-def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, show_all: bool = False) -> dict:
+def get_structures_json(structures: StructureTable, ids: (list, tuple) = None) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
@@ -242,10 +242,10 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
         "status" : "error",
         "message": "Nothing found."
     }
-    if not ids and not show_all:
+    if not ids:
         # return json.dumps(failure)
         return {}
-    dic = structures.get_all_structures_as_dict(ids, all_ids=show_all)
+    dic = structures.get_all_structures_as_dict(ids)
     number = len(dic)
     print("--> Got {} structures from actual search.".format(number))
     if number == 0:
