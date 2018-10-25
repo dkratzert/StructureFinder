@@ -18,6 +18,7 @@ from sqlite3 import OperationalError
 
 import searcher
 from lattice import lattice
+from pymatgen.core.mat_lattice import Lattice
 from searcher import misc
 from searcher.atoms import sorted_atoms
 from searcher.misc import get_error_from_value
@@ -860,7 +861,7 @@ class StructureTable():
         else:
             return []
 
-    def find_by_elements(self, elements: list, excluding: list = None) -> list:
+    def find_by_elements(self, elements: list, excluding: list = None, onlyincluded: bool = False) -> list:
         """
         Find structures where certain elements are included in the sum formula.
 
@@ -882,6 +883,10 @@ class StructureTable():
                 req = '''SELECT StructureId from sum_formula WHERE ({} AND {}) '''.format(el, exclude)
             else:
                 req = '''SELECT StructureId from sum_formula WHERE ({}) '''.format(exclude)
+        if onlyincluded:
+            elex = list(set(sorted_atoms) - set(elements))
+            exclude = ' IS NULL AND '.join(['Elem_' + x.capitalize() for x in elex]) + ' IS NULL '
+            req = '''SELECT StructureId from sum_formula WHERE ({} AND {}) '''.format(el, exclude)
         result = self.database.db_request(req)
         # print(req)
         if result:
@@ -930,9 +935,9 @@ class StructureTable():
 
 if __name__ == '__main__':
     # searcher.filecrawler.put_cifs_in_db(searchpath='../')
-    db = DatabaseRequest('./test3.sqlite')
-    db.initialize_db()
-    db = StructureTable('./test3.sqlite')
+    #db = DatabaseRequest('./test3.sqlite')
+    #db.initialize_db()
+    db = StructureTable(r'C:\Program Files (x86)\CCDC\CellCheckCSD\cell_check.csdsql')
     # db.initialize_db()
     # db = StructureTable('../structurefinder.sqlite')
     # db.database.initialize_db()
@@ -943,7 +948,7 @@ if __name__ == '__main__':
     elinclude = ['C', 'O', 'N', 'F']
     # elexclude = ['Tm']
     # inc = db.find_by_elements(elinclude, excluding=False)
-    exc = db.find_by_elements(elinclude, ['Al'])
+    #exc = db.find_by_elements(elinclude, ['Al'])
     # print('include: {}'.format(sorted(inc)))
     # print('exclude: {}'.format(sorted(exc)))
     # combi = set(inc) - set(exc)
@@ -952,4 +957,8 @@ if __name__ == '__main__':
     #########################################
     # db.fill_formula(1, {'StructureId': 1, 'C': 34.0, 'H': 24.0, 'O': 4.0, 'F': 35.99999999999999, 'AL': 1.0, 'GA': 1.0})
     # form = db.get_sum_formula(5)
-    print(exc)
+    #print(exc)
+    req = """SELECT Id FROM NORMALISED_REDUCED_CELLS WHERE Volume >= ? AND Volume <= ?"""
+    result = db.database.db_request(req, (1473.46, 1564.76))
+    print(result)
+    lattice1 = Lattice.from_parameters_niggli_reduced(*cell)

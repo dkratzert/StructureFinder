@@ -114,13 +114,14 @@ def adv():
     txt_out = request.GET.text_out
     more_results = (request.GET.more == "true")
     sublattice = (request.GET.supercell == "true")
+    onlyelem = (request.GET.onlyelem == "true")
     it_num = request.GET.it_num
     structures = StructureTable(dbfilename)
     print("Advanced search: elin:", elincl, 'elout:', elexcl, date1, '|', date2, '|', cell_search, 'txin:', txt_in,
-          'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num)
+          'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num, 'only:', onlyelem)
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
-                          structures=structures, it_num=it_num)
+                          structures=structures, it_num=it_num, onlyelem=onlyelem)
     print("--> Got {} structures from Advanced search.".format(len(ids)))
     return get_structures_json(structures, ids)
 
@@ -192,7 +193,9 @@ def server_static(filepath):
     <filename> wildcard won’t match a path with a slash in it. To serve files in subdirectories, change
     the wildcard to use the path filter:
     """
-    return static_file(filepath, root='./cgi_ui/static/')
+    response = static_file(filepath, root='./cgi_ui/static/')
+    response.set_header("Cache-Control", "public, max-age=240")
+    return response
 
 
 @app.route('/version')
@@ -549,7 +552,7 @@ def search_text(structures: StructureTable, search_string: str) -> tuple:
     return idlist
 
 
-def search_elements(structures: StructureTable, elements: str, excluding: str = '') -> list:
+def search_elements(structures: StructureTable, elements: str, excluding: str = '', onlyelem: bool = False) -> list:
     """
     list(set(l).intersection(l2))
     """
@@ -565,7 +568,7 @@ def search_elements(structures: StructureTable, elements: str, excluding: str = 
         print('Error: Wrong list of Elements!')
         return []
     try:
-        res = structures.find_by_elements(formula, excluding=formula_ex)
+        res = structures.find_by_elements(formula, excluding=formula_ex, onlyincluded=onlyelem)
     except AttributeError:
         print('Element search error! Wrong list of elements..')
         pass
@@ -586,7 +589,7 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
 
 def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, more_results,
                     date1: str = None, date2: str = None, structures: StructureTable = None,
-                    it_num: str = None) -> list:
+                    it_num: str = None, onlyelem: bool = False) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
@@ -602,10 +605,10 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
     if cell:
         cellres = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
         incl.append(cellres)
-    if elincl and not elexcl:
-        incl.append(search_elements(structures, elincl, ''))
-    if elexcl:
-        incl.append(search_elements(structures, elincl, elexcl))
+    if elincl: # and onlyelem: <- do not need to add onlyelement, because it is given to search_elements()
+        incl.append(search_elements(structures, elincl, '', onlyelem))
+    if elexcl and not onlyelem:
+        incl.append(search_elements(structures, elincl, elexcl, onlyelem))
     if date1 != date2:
         date_results = find_dates(structures, date1, date2)
     if it_num:
@@ -645,7 +648,9 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
         # excl list should not be in the resukts at all
         try:
             return list(results - set(flatten(excl)))
-        except TypeError:
+        except TypeError as e:
+            print(e)
+            print('can not display result in advanced_search.')
             return []
     return list(results)
 

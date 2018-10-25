@@ -76,11 +76,12 @@ $(document).ready(function($){
         var cell_adv = document.getElementById("cell_adv").value;
         var more_res = $('#more_results').is(':checked');
         var supercell = $('#supercells').is(':checked');
+        var onlyelem = $('#onlythese_elem').is(':checked');
         var datefield1 = document.getElementById("date1").value;
         var datefield2 = document.getElementById("date2").value;
         var itnum = $("#IT_number").val().split(" ")[0];
         advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res,
-                        supercell, datefield1, datefield2, itnum);
+                        supercell, datefield1, datefield2, itnum, onlyelem);
     });
 
     function get_cell_from_p4p(p4pdata) {
@@ -476,7 +477,7 @@ $(document).ready(function($){
     };
 
     function advanced_search(text_in, text_out, elements_in, elements_out, cell_adv, more_res, supercell,
-                             date1, date2, itnum) {
+                             date1, date2, itnum, onlyelem) {
         var cell = cell_adv.replace(/\s+/g, ' ').trim();
         cell = cell.replace(/,/g, '.');  // replace comma with point
         if (!isValidCell(cell)) {
@@ -484,7 +485,7 @@ $(document).ready(function($){
         }
         var gridparams = {cell_search: cell, text_in: text_in, text_out: text_out, elements_in: elements_in,
                           elements_out: elements_out, more: more_res, supercell: supercell, date1: date1, date2: date2
-                          ,it_num: itnum};
+                          ,it_num: itnum, onlyelem: onlyelem};
         //console.log(gridparams);
         var url;
         w2ui['mygrid'].request('get-records', gridparams,

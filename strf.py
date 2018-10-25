@@ -371,6 +371,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         txt = self.ui.ad_textsearch.text().strip(' ')
         txt_ex = self.ui.ad_textsearch_excl.text().strip(' ')
         spgr = self.ui.SpGrcomboBox.currentText()
+        onlythese = self.ui.onlyTheseElementsCheckBox.isChecked()
         try:
             spgr = int(spgr.split()[0])
         except:
@@ -385,10 +386,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if cell:
             cellres = self.search_cell_idlist(cell)
             incl.append(cellres)
-        if elincl and not elexcl:
-            incl.append(self.search_elements(elincl, ''))
-        if elexcl:
-            incl.append(self.search_elements(elincl, elexcl))
+        if elincl:
+            incl.append(self.search_elements(elincl, '', onlythese))
+        if elexcl and not onlythese:
+            incl.append(self.search_elements(elincl, elexcl, onlythese))
         if txt:
             if len(txt) >= 2 and "*" not in txt:
                 txt = '*' + txt + '*'
@@ -422,8 +423,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
             return
         if excl:
             try:
-                self.display_structures_by_idlist(list(results - set(misc.flatten(excl))))
-            except TypeError:
+                self.display_structures_by_idlist(list(results - set(excl)))
+            except TypeError as e:
+                print(e)
+                print('can not display result in advanced_search.')
                 return
         else:
             self.display_structures_by_idlist(list(results))
@@ -930,7 +933,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         return True
 
-    def search_elements(self, elements: str, excluding: str) -> list:
+    def search_elements(self, elements: str, excluding: str, onlythese: bool = False) -> list:
         """
         list(set(l).intersection(l2))
         """
@@ -947,7 +950,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
             return []
         try:
-            res = self.structures.find_by_elements(formula, excluding=formula_ex)
+            res = self.structures.find_by_elements(formula, excluding=formula_ex, onlyincluded=onlythese)
         except AttributeError:
             pass
         return list(res)
