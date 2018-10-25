@@ -563,9 +563,9 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
     if cell:
         cellres = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
         incl.append(cellres)
-    if elincl and not elexcl:
+    if elincl: # and onlyelem: <- do not need to add onlyelement, because it is given to search_elements()
         incl.append(search_elements(structures, elincl, '', onlyelem))
-    if elexcl:
+    if elexcl and not onlyelem:
         incl.append(search_elements(structures, elincl, elexcl, onlyelem))
     if date1 != date2:
         date_results = find_dates(structures, date1, date2)
@@ -606,7 +606,9 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
         # excl list should not be in the resukts at all
         try:
             return list(results - set(flatten(excl)))
-        except TypeError:
+        except TypeError as e:
+            print(e)
+            print('can not display result in advanced_search.')
             return []
     return list(results)
 
