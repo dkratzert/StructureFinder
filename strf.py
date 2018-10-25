@@ -874,13 +874,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             for num, cell_id in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist) - 1)
                 try:
-                    lattice2 = mat_lattice.Lattice.from_parameters(
-                            float(cells[num][0]),
-                            float(cells[num][1]),
-                            float(cells[num][2]),
-                            float(cells[num][3]),
-                            float(cells[num][4]),
-                            float(cells[num][5]))
+                    lattice2 = mat_lattice.Lattice.from_parameters(*cells[num][:6])
                 except ValueError:
                     continue
                 mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)

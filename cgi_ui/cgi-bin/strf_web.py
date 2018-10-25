@@ -234,7 +234,7 @@ def is_ajax():
         return False
 
 
-def get_structures_json(structures: StructureTable, ids: (list, tuple) = None) -> dict:
+def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, show_all: bool = False) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
@@ -242,7 +242,7 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None) -
         "status" : "error",
         "message": "Nothing found."
     }
-    if not ids:
+    if not ids and not show_all:
         # return json.dumps(failure)
         return {}
     dic = structures.get_all_structures_as_dict(ids)
@@ -473,13 +473,7 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
             cells.extend(structures.get_cells_as_list(cids))
         for num, cell_id in enumerate(idlist):
             try:
-                lattice2 = mat_lattice.Lattice.from_parameters(
-                        float(cells[num][0]),
-                        float(cells[num][1]),
-                        float(cells[num][2]),
-                        float(cells[num][3]),
-                        float(cells[num][4]),
-                        float(cells[num][5]))
+                lattice2 = mat_lattice.Lattice.from_parameters(*cells[num][:6])
             except ValueError:
                 continue
             mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
@@ -625,5 +619,5 @@ if __name__ == "__main__":
     # gunicorn server: Best used behind an nginx proxy server: http://docs.gunicorn.org/en/stable/deploy.html
     # you need "pip3 install gunicorn" to run this:
     # The current database interface allows only one worker (have to go to sqlalchemy!)
-    app.run(host=host, port=port, reload=True, server='gunicorn', accesslog='-', errorlog='-', workers=1,
+    app.run(host=host, port=port, reload=True, server='wsgiref', accesslog='-', errorlog='-', workers=1,
             access_log_format='%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s"')
