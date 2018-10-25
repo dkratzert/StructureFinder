@@ -619,5 +619,9 @@ if __name__ == "__main__":
     # gunicorn server: Best used behind an nginx proxy server: http://docs.gunicorn.org/en/stable/deploy.html
     # you need "pip3 install gunicorn" to run this:
     # The current database interface allows only one worker (have to go to sqlalchemy!)
-    app.run(host=host, port=port, reload=True, server='wsgiref', accesslog='-', errorlog='-', workers=1,
+    if sys.platform == 'win32':
+        server = 'wsgiref'
+    else:
+        server = 'gunicorn'
+    app.run(host=host, port=port, reload=True, server=server, accesslog='-', errorlog='-', workers=1,
             access_log_format='%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s"')
