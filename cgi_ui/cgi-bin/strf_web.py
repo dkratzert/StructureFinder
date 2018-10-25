@@ -474,12 +474,12 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
         for num, cell_id in enumerate(idlist):
             try:
                 lattice2 = mat_lattice.Lattice.from_parameters(
+                        float(cells[num][0]),
+                        float(cells[num][1]),
                         float(cells[num][2]),
                         float(cells[num][3]),
                         float(cells[num][4]),
-                        float(cells[num][5]),
-                        float(cells[num][6]),
-                        float(cells[num][7]))
+                        float(cells[num][5]))
             except ValueError:
                 continue
             mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
