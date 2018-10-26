@@ -357,7 +357,7 @@ class StructureTable():
         if found:
             return found
 
-    def get_all_structures_as_dict(self, ids: (list, tuple) = None) -> dict:
+    def get_all_structures_as_dict(self, ids: (list, tuple) = None, all=False) -> dict:
         """
         Returns the list of structures as dictionary.
 
@@ -368,16 +368,17 @@ class StructureTable():
         """
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
+        order = """INNER JOIN Residuals as res ON res.modification_time WHERE recid = res.StructureId
+                      ORDER BY res.modification_time DESC"""
         if ids:
             ids = tuple(ids)
             if len(ids) > 1:
                 req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
-                                             Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
+                             Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
             else:
                 # only one id
                 req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
-                                                    Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(
-                        ids[0])
+                            Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(ids[0])
         elif all:
             req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
                       Structure.dataname FROM Structure'''
@@ -395,6 +396,8 @@ class StructureTable():
         returns all fragment names in the database, sorted by name
         :returns [id, meas, path, filename, data]
         """
+        order = """INNER JOIN Residuals as res ON res.modification_time WHERE Structure.Id = res.StructureId
+                      ORDER BY res.modification_time DESC"""
         if ids:
             if len(ids) > 1:  # a collection of ids
                 ids = tuple(ids)

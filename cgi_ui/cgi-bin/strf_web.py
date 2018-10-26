@@ -245,7 +245,7 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     if not ids and not show_all:
         # return json.dumps(failure)
         return {}
-    dic = structures.get_all_structures_as_dict(ids)
+    dic = structures.get_all_structures_as_dict(ids, show_all)
     number = len(dic)
     print("--> Got {} structures from actual search.".format(number))
     if number == 0:
