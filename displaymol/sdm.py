@@ -150,10 +150,10 @@ class SDM():
                     D = prime_array[n] - at2_plushalf
                     dp = [v - 0.5 for v in D - D.floor]
                     dk = self.vector_length(*dp)
-                    if dk > 5:
-                        continue
                     if n:
                         dk += 0.0001
+                    if dk > 4.0:
+                        continue
                     if (dk > 0.01) and (mind >= dk):
                         mind = min(dk, mind)
                         sdmItem.dist = mind

@@ -776,8 +776,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=True, as_list=False)
             blist = None
         try:
-            tst = mol_file_writer.MolFile(atoms, blist)
-            mol = tst.make_mol()
+            mol = mol_file_writer.MolFile(atoms, blist)
+            mol = mol.make_mol()
         except (TypeError, KeyError):
             print("Error in structure", structure_id, "while writing mol file.")
             mol = ' '
