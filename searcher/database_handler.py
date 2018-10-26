@@ -244,7 +244,7 @@ class DatabaseRequest():
         """
         Retrurns the last rowid of a loaded database.
 
-        >>> db = DatabaseRequest('./test-data/test.sqlite')
+        >>> db = DatabaseRequest('./test-data/test.sql')
         >>> db.get_lastrowid()
         252
         """
@@ -361,7 +361,7 @@ class StructureTable():
         """
         Returns the list of structures as dictionary.
 
-        >>> str = StructureTable('./test-data/test.sqlite')
+        >>> str = StructureTable('./test-data/test.sql')
         >>> str.get_all_structures_as_dict([5])[0] == {'recid': 5, 'measurement': 5, 'path': \
             r'D:\\Github\\StructureFinder\\test-data\\106c.tgz', 'filename': 'P-1.cif', 'dataname': 'p-1'}
         True
@@ -482,7 +482,7 @@ class StructureTable():
         returns the atoms of structure with structure_id
         returns: [Name, Element, X, Y, Z, Part, ocuupancy]
 
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.get_atoms_table(5)[0]
         ('O1', 'O', 0.32157, 0.42645, 0.40201, 0, 1.0)
         """
@@ -526,7 +526,7 @@ class StructureTable():
         """
         Returns the sum formula of an entry as dictionary.
 
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> sum = db.get_calc_sum_formula(5)
         >>> sum['Id'] == 5
         True
@@ -728,7 +728,7 @@ class StructureTable():
     def get_row_as_dict(self, structure_id):
         """
         Returns a database row from residuals table as dictionary.
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> row = db.get_row_as_dict(5)
         """
         request = """select * from residuals where StructureId = ?"""
@@ -745,7 +745,7 @@ class StructureTable():
     def get_cell_as_dict(self, structure_id):
         """
         Returns a database row as dictionary
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> cell = db.get_cell_as_dict(5)
         >>> cell == {'Id': 5, 'StructureId': 5, 'a': 7.9492, 'b': 8.9757, 'c': 11.3745, 'alpha': 106.974, 'beta': 91.963, 'gamma': 103.456, 'esda': 0.0007, 'esdb': 0.0008, 'esdc': 0.001, 'esdalpha': 0.001, 'esdbeta': 0.001, 'esdgamma': 0.001, 'volume': 750.33}
         True
@@ -773,7 +773,7 @@ class StructureTable():
     def get_cells_as_list(self, structure_ids: list):
         """
         Returns a list of unit cells from the list of input ids.
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.get_cells_as_list([5])
         [(7.9492, 8.9757, 11.3745, 106.974, 91.963, 103.456, 750.33)]
         """
@@ -783,7 +783,7 @@ class StructureTable():
     def get_cell_by_id(self, structure_id):
         """
         returns the cell of a res file in the db
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.get_cell_by_id(5)
         (7.9492, 8.9757, 11.3745, 106.974, 91.963, 103.456, 750.33)
         """
@@ -805,7 +805,7 @@ class StructureTable():
         :param volume: the unit cell volume
         :type volume: float
         :return: list
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_volume(3021.9, threshold=0.01)
         [11, 61, 243]
         >>> db.find_by_volume(30021.9, threshold=0.01)
@@ -825,7 +825,7 @@ class StructureTable():
         Searches cells with volume between upper and lower limit
         :param text: Volume uncertaincy where to search
         id, name, data, path
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_strings('NTD51a')
         [(223, b'DK_NTD51a-final.cif', b'p21c', b'D:\\\Github\\\StructureFinder\\\\test-data\\\\051a')]
         >>> db.find_by_strings('ntd51A')
@@ -852,7 +852,7 @@ class StructureTable():
         Find structures by space group number in international tables of
         crystallography.
         Returns a list of index numbers.
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_it_number(1)
         [25]
         >>> db.find_by_it_number(500)
@@ -873,7 +873,7 @@ class StructureTable():
         """
         Find structures where certain elements are included in the sum formula.
 
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_elements(['S', 'Sn'])
         [67]
         >>> db.find_by_elements(['Sn'])
@@ -913,7 +913,7 @@ class StructureTable():
         """
         Find structures between start and end date.
 
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_date(start='2017-08-25', end='2018-05-05')
         [216, 220]
         """
@@ -926,7 +926,7 @@ class StructureTable():
         """
         Finds the structure with the biggest cell in the db. This should be done by volume, but was 
         just for fun...
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_biggest_cell()
         (229, 48.48, 21.72, 10.74)
         """
@@ -939,7 +939,7 @@ class StructureTable():
 
     def get_database_version(self):
         """
-        >>> db = StructureTable('./test-data/test.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.get_database_version()
         0
         """
