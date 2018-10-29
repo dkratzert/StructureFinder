@@ -91,7 +91,7 @@ def cellsrch():
     if cell:
         ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
         print("--> Got {} structures from cell search.".format(len(ids)))
-        return get_structures_json(structures, ids, show_all=False)
+        return get_structures_json(structures, ids)
 
 
 @app.route("/txtsrch")
@@ -100,7 +100,7 @@ def txtsrch():
     text_search = request.GET.text_search
     print("Text search:", text_search)
     ids = search_text(structures, text_search)
-    return get_structures_json(structures, ids, show_all=False)
+    return get_structures_json(structures, ids)
 
 
 @app.route("/adv_srch")
@@ -287,7 +287,7 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     if not ids and not show_all:
         # return json.dumps(failure)
         return {}
-    dic = structures.get_all_structures_as_dict(ids, all_ids=show_all)
+    dic = structures.get_all_structures_as_dict(ids, show_all)
     number = len(dic)
     print("--> Got {} structures from actual search.".format(number))
     if number == 0:
@@ -515,13 +515,7 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
             cells.extend(structures.get_cells_as_list(cids))
         for num, cell_id in enumerate(idlist):
             try:
-                lattice2 = mat_lattice.Lattice.from_parameters(
-                        float(cells[num][2]),
-                        float(cells[num][3]),
-                        float(cells[num][4]),
-                        float(cells[num][5]),
-                        float(cells[num][6]),
-                        float(cells[num][7]))
+                lattice2 = mat_lattice.Lattice.from_parameters(*cells[num][:6])
             except ValueError:
                 continue
             mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
@@ -667,5 +661,9 @@ if __name__ == "__main__":
     # gunicorn server: Best used behind an nginx proxy server: http://docs.gunicorn.org/en/stable/deploy.html
     # you need "pip3 install gunicorn" to run this:
     # The current database interface allows only one worker (have to go to sqlalchemy!)
-    app.run(host=host, port=port, debug=True, server='wsgiref', accesslog='-', errorlog='-', workers=1,
+    if sys.platform == 'win32':
+        server = 'wsgiref'
+    else:
+        server = 'gunicorn'
+    app.run(host=host, port=port, reload=True, server=server, accesslog='-', errorlog='-', workers=1,
             access_log_format='%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s"')

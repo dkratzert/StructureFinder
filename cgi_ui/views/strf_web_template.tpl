@@ -83,10 +83,11 @@
 <h2>StructureFinder</h2>
 
 
-<a type="button" class="btn btn-primary btn-xs" data-toggle="collapse" data-target="#adv-search"
+<a type="button" class="btn btn-primary btn-sm" data-toggle="collapse" data-target="#adv-search"
         id="toggle_advsearch-button">Advanced Search</a>
-<a type="button" class="btn btn-warning btn-xs" id="all_structures">Show All</a>
-<a type="button" class="btn btn-default btn-xs invisible" id="cellsearchcsd_button" href="http://{{my_ip}}/csd">CellCheckCSD</a>
+<a type="button" class="btn btn-warning btn-sm" id="all_structures">Show All</a>
+<a type="button" class="btn btn-default btn-sm" id="cellsearchcsd_button" href="http://{{my_ip}}/csd">CellCheckCSD</a>
+
 <!-- ------------  The collapsible for simple search options: -----------------  -->
 <div class="form-group row" id="mainsearch">
     <div class="col-sm-6">
@@ -151,19 +152,19 @@
 
     <div class="row">
         <div class="column col-xs-6">
-            <div class="input-group input-group-sm advsearchfields">
+            <div class="input-group input-group-sm">
                 <span class="input-group-addon">Uni Cell</span>
                 <input type="text" class="form-control form-sm" style="font-style: italic" placeholder="a b c &alpha; &beta; &gamma;" id="cell_adv">
             </div>
         </div>
         <div class="column col-md-6">
-            <div class="input-group input-group-sm w2ui-field advsearchfields">
+            <div class="input-group input-group-sm w2ui-field">
                 <span class="input-group-addon" data-toggle="tooltip"
                       title="Search for structures that were modified between two dates">Date from</span>
                 <input class="input-sm" title="Date" type="text" id="date1" style="width: 95%">
                 <span class="input-group-addon">to</span>
                 <input class="input-sm" title="Date" type="text" id="date2" style="width: 95%">
-                <a type="button" class="btn btn-sm btn-standard input-group-addon"
+                <a type="button" class="input-group-addon"
                    data-toggle="tooltip" title="Search for structures modified during the last month."
                    id="lastmsearchlink"> From Last Month</a>
             </div>
@@ -184,14 +185,14 @@
 
     <div class="row">
         <div class="column col-xs-6">
-            <div class="input-group input-group-sm input-group-prepend has-success advsearchfields">
+            <div class="input-group input-group-sm input-group-prepend has-success">
                 <span class="input-group-addon" data-toggle="tooltip" title="should contain">Elements</span>
                 <input type="text" class="form-control form-sm" placeholder="C H O ... (should contain)"
                        pattern="^[A-z]{1,}$" id="elements_in">
             </div>
         </div>
         <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-error advsearchfields">
+            <div class="input-group input-group-sm has-error">
                 <span class="input-group-addon" data-toggle="tooltip" title="should not contain">Elements</span>
                 <input type="text" class="form-control form-sm" placeholder="C H O ... (should not contain)"
                        pattern="^[A-z]{1,}$" id="elements_out">
@@ -210,13 +211,13 @@
     
     <div class="row">
         <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-success advsearchfields">
+            <div class="input-group input-group-sm has-success">
                 <span class="input-group-addon" data-toggle="tooltip" title="should contain">Text</span>
                 <input type="text" class="form-control form-sm" placeholder="should contain" id="text_in">
             </div>
         </div>
         <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-error advsearchfields">
+            <div class="input-group input-group-sm has-error">
                 <span class="input-group-addon" data-toggle="tooltip" title="should not contain">Text</span>
                 <input type="text" class="form-control form-sm" placeholder="should not contain" id="text_out">
             </div>

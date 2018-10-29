@@ -73,7 +73,6 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
-- display also res files with centroids
 - sort results by G6 distance
 
 Search for:
@@ -777,8 +776,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=True, as_list=False)
             blist = None
         try:
-            tst = mol_file_writer.MolFile(atoms, blist)
-            mol = tst.make_mol()
+            mol = mol_file_writer.MolFile(atoms, blist)
+            mol = mol.make_mol()
         except (TypeError, KeyError):
             print("Error in structure", structure_id, "while writing mol file.")
             mol = ' '
@@ -875,13 +874,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             for num, cell_id in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist) - 1)
                 try:
-                    lattice2 = mat_lattice.Lattice.from_parameters(
-                            float(cells[num][2]),
-                            float(cells[num][3]),
-                            float(cells[num][4]),
-                            float(cells[num][5]),
-                            float(cells[num][6]),
-                            float(cells[num][7]))
+                    lattice2 = mat_lattice.Lattice.from_parameters(*cells[num][:6])
                 except ValueError:
                     continue
                 mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)

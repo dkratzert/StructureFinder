@@ -244,8 +244,9 @@ class DatabaseRequest():
         """
         Retrurns the last rowid of a loaded database.
 
-        >>> db = DatabaseRequest('test.sqlite')
+        >>> db = DatabaseRequest('./test-data/test.sql')
         >>> db.get_lastrowid()
+        252
         """
         lastid = self.db_fetchone("""SELECT max(id) FROM Structure""")
         try:
@@ -283,7 +284,7 @@ class DatabaseRequest():
             else:
                 # print(request, args)
                 self.cur.execute(request, *args)
-            last_rowid = self.cur.lastrowid
+            #last_rowid = self.cur.lastrowid
         except OperationalError as e:
             print(e, "\nDB execution error")
             print('Request:', request)
@@ -356,26 +357,28 @@ class StructureTable():
         if found:
             return found
 
-    def get_all_structures_as_dict(self, ids: (list, tuple) = None, all_ids: bool = False) -> dict:
+    def get_all_structures_as_dict(self, ids: (list, tuple) = None, all=False) -> dict:
         """
         Returns the list of structures as dictionary.
 
-        >>> dbfilename = "../structuredb.sqlite"
-        >>> structures = StructureTable(dbfilename)
-        >>> structures.get_all_structures_as_dict()
+        >>> str = StructureTable('./test-data/test.sql')
+        >>> str.get_all_structures_as_dict([5])[0] == {'recid': 5, 'measurement': 5, 'path': \
+            r'D:\\Github\\StructureFinder\\test-data\\106c.tgz', 'filename': 'P-1.cif', 'dataname': 'p-1'}
+        True
         """
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
+        order = """INNER JOIN Residuals as res ON res.modification_time WHERE recid = res.StructureId
+                      ORDER BY res.modification_time DESC"""
         if ids:
             ids = tuple(ids)
             if len(ids) > 1:
                 req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
-                                             Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
+                             Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
             else:
                 # only one id
                 req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
-                                                    Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(
-                        ids[0])
+                            Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(ids[0])
         elif all:
             req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
                       Structure.dataname FROM Structure'''
@@ -393,6 +396,8 @@ class StructureTable():
         returns all fragment names in the database, sorted by name
         :returns [id, meas, path, filename, data]
         """
+        order = """INNER JOIN Residuals as res ON res.modification_time WHERE Structure.Id = res.StructureId
+                      ORDER BY res.modification_time DESC"""
         if ids:
             if len(ids) > 1:  # a collection of ids
                 ids = tuple(ids)
@@ -417,46 +422,9 @@ class StructureTable():
         path = self.database.db_request(req_path)[0]
         return path
 
-    def get_cell_by_id(self, structure_id):
-        """
-        returns the cell of a res file in the db
-        """
-        if not structure_id:
-            return False
-        req = '''SELECT a, b, c, alpha, beta, gamma, volume FROM cell WHERE StructureId = ?'''
-        cell = self.database.db_request(req, (structure_id,))
-        if cell and len(cell) > 0:
-            return cell[0]
-        else:
-            return cell
-
-    def __contains__(self, str_id: int):
-        """
-        return if db contains entry of id
-        """
-        try:
-            str_id = int(str_id)
-        except(ValueError, TypeError):
-            print('Wrong type. Expected integer.')
-        if self.has_index(str_id):
-            return True
-        else:
-            return False
-
-    def has_index(self, Id, table='Structure'):
-        """
-        Returns True if db has index Id
-        """
-        req = '''SELECT Id FROM ? WHERE ?.Id = ?'''
-        if self.database.db_request(req, (table, table, Id)):
-            return True
-        else:
-            return False
-
     def fill_structures_table(self, path: str, filename: str, structure_id: str, measurement_id: int, dataname: str):
         """
         Fills a structure into the database.
-        
         """
         req = '''
               INSERT INTO Structure (Id, measurement, filename, path, dataname) VALUES(?, ?, ?, ?, ?)
@@ -513,6 +481,10 @@ class StructureTable():
         """
         returns the atoms of structure with structure_id
         returns: [Name, Element, X, Y, Z, Part, ocuupancy]
+
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> db.get_atoms_table(5)[0]
+        ('O1', 'O', 0.32157, 0.42645, 0.40201, 0, 1.0)
         """
         if cell is None:
             cell = []
@@ -530,19 +502,6 @@ class StructureTable():
             return result
         else:
             return False
-
-    def get_residuals(self, structure_id, residual):
-        """
-        Get the value of a single residual from the residuals table.
-        """
-        if not structure_id:
-            return False
-        req = '''SELECT ? FROM Residuals WHERE StructureId = ?'''
-        try:
-            res = self.database.db_request(req, (residual, structure_id))[0][0]
-        except TypeError:
-            res = '?'
-        return res
 
     def fill_formula(self, structure_id, formula: dict):
         """
@@ -563,9 +522,20 @@ class StructureTable():
         result = self.database.db_request(req, [structure_id] + list(formula.values()))
         return result
 
-    def get_calc_sum_formula(self, structure_id):
+    def get_calc_sum_formula(self, structure_id: int) -> dict:
         """
         Returns the sum formula of an entry as dictionary.
+
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> sum = db.get_calc_sum_formula(5)
+        >>> sum['Id'] == 5
+        True
+        >>> sum['Elem_C'] == 18.0
+        True
+        >>> sum['Elem_D']
+
+        >>> sum['Elem_H'] == 19.0
+        True
         """
         request = """SELECT * FROM sum_formula WHERE StructureId = ?"""
         # setting row_factory to dict for the cif keys:
@@ -583,14 +553,8 @@ class StructureTable():
         returns the cell of a res file in the db
 
         >>> db = StructureTable('../structurefinder.sqlite')
-        >>> all = db.find_by_elements(['Al', 'Au', 'Ag'])
-        >>> tst = []
-        >>> for i in all:
-        >>>    out = db.get_cif_sumform_by_id(i)
-        >>>     if "Ag" in out[0]:
-        >>>         tst.append(out)
-        >>> len(all) == len(tst)
-        True
+        >>> db.get_cif_sumform_by_id(5)
+        ('C32 H24 P2 \\n',)
         """
         if not structure_id:
             return False
@@ -610,8 +574,8 @@ class StructureTable():
         residuals = """
                     (
                     StructureId,
-                    _cell_formula_units_Z,                  
-                    _space_group_name_H_M_alt,  
+                    _cell_formula_units_Z,
+                    _space_group_name_H_M_alt,
                     _space_group_name_Hall,
                     _space_group_centring_type,
                     _space_group_IT_number,
@@ -763,7 +727,9 @@ class StructureTable():
 
     def get_row_as_dict(self, structure_id):
         """
-        Returns a database row as dictionary
+        Returns a database row from residuals table as dictionary.
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> row = db.get_row_as_dict(5)
         """
         request = """select * from residuals where StructureId = ?"""
         # setting row_factory to dict for the cif keys:
@@ -779,6 +745,10 @@ class StructureTable():
     def get_cell_as_dict(self, structure_id):
         """
         Returns a database row as dictionary
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> cell = db.get_cell_as_dict(5)
+        >>> cell == {'Id': 5, 'StructureId': 5, 'a': 7.9492, 'b': 8.9757, 'c': 11.3745, 'alpha': 106.974, 'beta': 91.963, 'gamma': 103.456, 'esda': 0.0007, 'esdb': 0.0008, 'esdc': 0.001, 'esdalpha': 0.001, 'esdbeta': 0.001, 'esdgamma': 0.001, 'volume': 750.33}
+        True
         """
         request = """select * from cell where StructureId = ?"""
         # setting row_factory to dict for the cif keys:
@@ -791,15 +761,41 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return dic
 
-    def joined_arglist(self, items):
-        return ','.join(['?'] * len(items))
+    @staticmethod
+    def joined_arglist(items):
+        """
+        Retruns a string of ?, with the length of the input list.
+        >>> StructureTable.joined_arglist([1, 2, 3, 'abc', 'def'])
+        '?, ?, ?, ?, ?'
+        """
+        return ', '.join(['?'] * len(items))
 
-    def get_cells_as_list(self, structure_ids):
+    def get_cells_as_list(self, structure_ids: list):
         """
-        Returns a list of unit cells from the input ids.
+        Returns a list of unit cells from the list of input ids.
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> db.get_cells_as_list([5])
+        [(7.9492, 8.9757, 11.3745, 106.974, 91.963, 103.456, 750.33)]
         """
-        req = 'select * from cell where StructureId IN ({seq})'.format(seq=self.joined_arglist(structure_ids))
+        req = 'select a, b, c, alpha, beta, gamma, volume from cell where StructureId IN ({seq})'.format(seq=self.joined_arglist(structure_ids))
         return self.database.db_request(req, structure_ids)
+
+    def get_cell_by_id(self, structure_id):
+        """
+        returns the cell of a res file in the db
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> db.get_cell_by_id(5)
+        (7.9492, 8.9757, 11.3745, 106.974, 91.963, 103.456, 750.33)
+        """
+        if not structure_id:
+            return False
+        req = '''SELECT a, b, c, alpha, beta, gamma, volume FROM cell WHERE StructureId = ?'''
+        cell = self.database.db_request(req, (structure_id,))
+        if cell and len(cell) > 0:
+            return cell[0]
+        else:
+            return cell
+
 
     def find_by_volume(self, volume, threshold=0.03):
         """
@@ -809,6 +805,11 @@ class StructureTable():
         :param volume: the unit cell volume
         :type volume: float
         :return: list
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> db.find_by_volume(3021.9, threshold=0.01)
+        [11, 61, 243]
+        >>> db.find_by_volume(30021.9, threshold=0.01)
+        []
         """
         upper_limit = float(volume + volume * threshold)
         lower_limit = float(volume - volume * threshold)
@@ -824,6 +825,11 @@ class StructureTable():
         Searches cells with volume between upper and lower limit
         :param text: Volume uncertaincy where to search
         id, name, data, path
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> db.find_by_strings('NTD51a')
+        [(223, b'DK_NTD51a-final.cif', b'p21c', b'D:\\\Github\\\StructureFinder\\\\test-data\\\\051a')]
+        >>> db.find_by_strings('ntd51A')
+        [(223, b'DK_NTD51a-final.cif', b'p21c', b'D:\\\Github\\\StructureFinder\\\\test-data\\\\051a')]
         """
         req = '''
         SELECT StructureId, filename, dataname, path FROM txtsearch WHERE filename MATCH ?
@@ -846,9 +852,11 @@ class StructureTable():
         Find structures by space group number in international tables of
         crystallography.
         Returns a list of index numbers.
-        >>> db = StructureTable('../structuredb.sqlite')
-        #>>> db.database.initialize_db()
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_it_number(1)
+        [25]
+        >>> db.find_by_it_number(500)
+        []
         """
         try:
             value = int(number)
@@ -865,12 +873,20 @@ class StructureTable():
         """
         Find structures where certain elements are included in the sum formula.
 
-        >>> db = StructureTable('../structuredb.sqlite')
-        >>> db.database.initialize_db()
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_elements(['S', 'Sn'])
-        [11, 3, 6, 15]
+        [67]
+        >>> db.find_by_elements(['Sn'])
+        [67, 179]
+        >>> db.find_by_elements(['Xe'])
+        []
+        >>> db.find_by_elements(['C', 'H', 'O', 'N', 'Cl'], onlyincluded=True)
+        [1, 149, 162, 234]
+        >>> db.find_by_elements(['C', 'H', 'O', 'N', 'Cl'], excluding=['Al', 'B', 'S', 'Si', 'Br', 'P'], onlyincluded=False)
+        [1, 48, 107, 125, 149, 162, 201, 234]
         """
-        matches = []
+        if not excluding:
+            excluding = []
         # Find all structures where these elements are included:
         el = ' NOT NULL AND '.join(['Elem_' + x.capitalize() for x in elements]) + ' NOT NULL '
         # Find all structures where these elements are included and the others not included:
@@ -888,7 +904,6 @@ class StructureTable():
             exclude = ' IS NULL AND '.join(['Elem_' + x.capitalize() for x in elex]) + ' IS NULL '
             req = '''SELECT StructureId from sum_formula WHERE ({} AND {}) '''.format(el, exclude)
         result = self.database.db_request(req)
-        # print(req)
         if result:
             return [x[0] for x in result]
         else:
@@ -898,9 +913,9 @@ class StructureTable():
         """
         Find structures between start and end date.
 
-        >>> db = StructureTable('../structuredb.sqlite')
-        >>> db.database.initialize_db()
-        >>> db.find_by_date()
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> db.find_by_date(start='2017-08-25', end='2018-05-05')
+        [216, 220]
         """
         req = """
               SELECT StructureId FROM Residuals WHERE modification_time between DATE(?) AND DATE(?);
@@ -909,7 +924,11 @@ class StructureTable():
 
     def find_biggest_cell(self):
         """
-        finds the structure with the biggest cell in the db
+        Finds the structure with the biggest cell in the db. This should be done by volume, but was 
+        just for fun...
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> db.find_biggest_cell()
+        (229, 48.48, 21.72, 10.74)
         """
         req = '''SELECT Id, a, b, c FROM cell GROUP BY Id ORDER BY a, b, c ASC'''
         result = self.database.db_request(req)
@@ -920,12 +939,12 @@ class StructureTable():
 
     def get_database_version(self):
         """
-        >>> db = StructureTable('../structuredb.sqlite')
-        >>> db.database.initialize_db()
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.get_database_version()
+        0
         """
         req = """
-              SELECT format_version FROM database_format;
+              SELECT Format FROM database_format;
               """
         version = self.database.db_request(req)
         if not version:
