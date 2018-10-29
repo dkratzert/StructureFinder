@@ -20,7 +20,7 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container"  id="dropZone">
     <h2>CellCheckCSD</h2>
     <div class="row">
         <div class="column col-sm-7">
@@ -33,13 +33,13 @@
         </div>
         <div class="column col-sm-2">
             <select id="centering_drop" class="btn btn-default dropdown-toggle dropdown" data-toggle="dropdown">
-                <option value="1">Primitive (P)</option>
-                <option value="2">A-centered (A)</option>
-                <option value="3">B-centered (B)</option>
-                <option value="4">C-centered (C)</option>
-                <option value="5">Face-centered (F)</option>
-                <option value="6">Body-centered (I)</option>
-                <option value="7">Rhombohedral (R)</option>
+                <option value="0">Primitive (P)</option>
+                <option value="1">A-centered (A)</option>
+                <option value="2">B-centered (B)</option>
+                <option value="3">C-centered (C)</option>
+                <option value="4">Face-centered (F)</option>
+                <option value="5">Body-centered (I)</option>
+                <option value="6">Rhombohedral (R)</option>
             </select>
         </div>
         <div class="column col-sm-2">
@@ -79,8 +79,8 @@ $(document).ready(function($){
     my_ccdc_grid.w2grid({
         name: 'my_ccdc_grid',
         header: 'StructureFinder',
-        url: cgifile+"/csd",
-        method: 'GET',
+        url: cgifile+"/csd-list",
+        method: 'POST',
         show: {
             toolbar: false,
             footer: true
@@ -141,26 +141,21 @@ $(document).ready(function($){
         return isal;
     }
     
-    
-    // Cell search Button clicked:
-    $("#csd_search_btn").click(function(event) {
-        var cell = document.getElementById("cell_csd_inp").value;
-        console.log(cell);
-        csdcellsearch(cell);
-    });
-    
+   
     function csdcellsearch(cell) {
-        var more_res = $('#more_results').is(':checked');
-        var centering = $('#centering_drop').valueOf();
+        //var more_res = $('#more_results').is(':checked');
+        var e = document.getElementById("centering_drop");
+        var centering = e.options[e.selectedIndex].value;
+        //console.log(centering+' #centering##');
         cell = cell.replace(/\s+/g, ' ').trim();  // replace multiple spaces with one
         cell = cell.replace(/,/g, '.');  // replace comma with point
-        //console.log(cell);
+        console.log(cell+'csdcellsrch');
         var params;
         var url;
         if (isValidCell(cell)) {
             w2ui['my_ccdc_grid'].request('get-records',
                 params = {cell: cell, centering: centering},
-                url = cgifile + "/csd",
+                url = cgifile + "/csd-list",
                 function (result) {
                     //displayresultnum(result);
                     console.log(result);
@@ -169,6 +164,16 @@ $(document).ready(function($){
             );
         }
     }
+    
+    
+    // Cell search Button clicked:
+    $("#csd_search_btn").click(function(event) {
+        var cell = document.getElementById("cell_csd_inp").value;
+        console.log(cell+' btnsrch');
+        csdcellsearch(cell);
+    });
+    
+    
 });
 
 </script>

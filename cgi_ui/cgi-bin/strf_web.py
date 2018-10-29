@@ -225,26 +225,31 @@ def show_cellcheck():
     """
     Shows the CellcheckCSD web page
     """
+    print('###csd##')
     response.content_type = 'text/html; charset=UTF-8'
     output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip})
-    if request.POST.cell:
-        return {"total": 0, "records": {}, "status": "success"}
     return output
 
 
-@app.post('/csd')
+@app.post('/csd-list')
 def search_cellcheck_csd():
     """
     Search with CellcheckCSD.
     """
+    print('#csd-list')
     cmd = request.POST.cmd
     cell = request.POST.cell
-    centering = request.POST.centering
-    print(cell, centering)
+    cent = request.POST.centering
+    print(cell, cent, 'fooobar')
+    centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
+    c = centering[int(cent)]
     if len(cell) < 6:
-        return None
-    if cmd == 'get-records':
-        xml = search_csd(cell, centering=centering)
+        print('##no valid cell')
+        print(cell)
+    if cmd == 'get-records' and len(cell.split()) == 6:
+        print('### get-records', cell.split(), c)
+        xml = search_csd(cell.split(), centering=c)
+        print(xml)
         try:
             results = parse_results(xml)  # results in a dictionary
         except ParseError as e:
@@ -253,6 +258,9 @@ def search_cellcheck_csd():
         print(results)
         print(len(results), 'Structures found...')
         return results
+    else:
+        print('#### else records')
+        return {}
 
 
 @app.error(404)
