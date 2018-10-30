@@ -536,6 +536,12 @@ class StructureTable():
 
         >>> sum['Elem_H'] == 19.0
         True
+        >>> sum['Elem_N'] == 1.0
+        True
+        >>> sum['Elem_O'] == 4.0
+        True
+        >>> sum['Elem_O'] == 5.0
+        False
         """
         request = """SELECT * FROM sum_formula WHERE StructureId = ?"""
         # setting row_factory to dict for the cif keys:
@@ -552,9 +558,9 @@ class StructureTable():
         """
         returns the cell of a res file in the db
 
-        >>> db = StructureTable('../structurefinder.sqlite')
+        >>> db = StructureTable('./test-data/test.sql')
         >>> db.get_cif_sumform_by_id(5)
-        ('C32 H24 P2 \\n',)
+        ('C18 H19 N O4 \\n',)
         """
         if not structure_id:
             return False
