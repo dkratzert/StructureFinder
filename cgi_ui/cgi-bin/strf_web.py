@@ -208,6 +208,8 @@ def cellsearch():
     if sys.platform == 'win32': 
         if not get_cccsd_path():
             return 'false'
+        else:
+            return 'true'
     else:
         return 'true'
 

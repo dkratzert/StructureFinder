@@ -120,7 +120,7 @@ def search_csd(cell: list, centering: str) -> str:
     if sys.platform == 'win32':
         p = get_cccsd_path()
     else:
-        p = Path('/opt/CCDC/CellCheckCSD/bin/run_application.sh')
+        p = Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher')
     rf = ''
     try:
         # run the search:

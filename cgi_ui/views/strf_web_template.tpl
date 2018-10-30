@@ -86,7 +86,7 @@
 <a type="button" class="btn btn-primary btn-sm" data-toggle="collapse" data-target="#adv-search"
         id="toggle_advsearch-button">Advanced Search</a>
 <a type="button" class="btn btn-warning btn-sm" id="all_structures">Show All</a>
-<a type="button" class="btn btn-default btn-sm" id="cellsearchcsd_button" href="http://{{my_ip}}/csd">CellCheckCSD</a>
+<a type="button" class="btn btn-default btn-sm invisible" id="cellsearchcsd_button" href="http://{{my_ip}}/csd">CellCheckCSD</a>
 
 <!-- ------------  The collapsible for simple search options: -----------------  -->
 <div class="form-group row" id="mainsearch">
