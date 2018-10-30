@@ -37,11 +37,7 @@ def get_cccsd_path() -> Path:
     try:
         csd = OpenKey(HKEY_CURRENT_USER, software)
     except (FileNotFoundError, NameError):
-        pass
-    try:
-        return Path(which('ccdc_searcher.bat'))
-    except TypeError:
-        pass
+        return None
     num = QueryInfoKey(csd)[0]  # returns the number of subkeys
     csd_path = None
     latest = StrictVersion('0.0')

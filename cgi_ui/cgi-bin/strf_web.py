@@ -4,6 +4,7 @@
 
 ###########################################################
 ###  Configure the web server here:   #####################
+from shutil import which
 
 host = "10.6.13.3"
 port = "80"
@@ -206,8 +207,11 @@ def version():
 
 @app.get('/cellcheck')
 def cellsearch():
-    if not get_cccsd_path() is None:
-        return 'true'
+    try:
+        if pathlib.Path(which('ccdc_searcher.bat')):
+            return 'true'
+    except TypeError:
+        return 'false'
 
 
 @app.route('/cgi-bin/strf_web.cgi')
