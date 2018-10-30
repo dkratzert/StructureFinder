@@ -258,7 +258,7 @@ def search_cellcheck_csd():
         except ParseError as e:
             print(e)
             return
-        print(results)
+        #print(results)
         print(len(results), 'Structures found...')
         return {"total": len(results), "records": results, "status": "success"}
     else:
