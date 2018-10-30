@@ -70,7 +70,7 @@ def find_binary_string(file, string: str, seek, size, return_ascii=False):
                 return result
 
 
-def walkdir(rootdir, include: list = None, exclude: list = None):
+def walkdir(rootdir, include=None, exclude=None):
     """
     Returns a list of files in all subdirectories with full path.
     :param rootdir: base path from which walk should start
@@ -83,9 +83,9 @@ def walkdir(rootdir, include: list = None, exclude: list = None):
     []
     """
     if not include:
-        include = [""]
+        include = ""
     if not exclude:
-        exclude = [""]
+        exclude = ""
     results = []
     if not os.path.isdir(rootdir):
         if os.path.splitext(rootdir)[1] in exclude:

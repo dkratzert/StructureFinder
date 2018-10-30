@@ -135,6 +135,11 @@ def search_csd(cell: list, centering: str) -> str:
         print(e)
     os.close(resdescriptor)
     os.close(querydescriptor)
+    try:
+        os.remove(queryfile)
+        os.remove(resultfile)
+    except:
+        pass
     return rf
 
 
