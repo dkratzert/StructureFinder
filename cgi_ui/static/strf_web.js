@@ -44,11 +44,6 @@ $(document).ready(function($){
             {field: 'dataname', caption: 'dataname',  size: '15%',  sortable: false, resizable: true},
             {field: 'path',     caption: 'directory', size: '65%',  sortable: false, resizable: true}
         ],
-        searches: [
-            {field: 'filename', caption: 'filename', type: 'text'},
-            {field: 'dataname', caption: 'dataname', type: 'text'},
-            {field: 'path', caption: 'directory', type: 'text'}
-        ],
         //sortData: [{field: 'dataname', direction: 'ASC'}],
         onSelect:function(event) {
             strid = event.recid;

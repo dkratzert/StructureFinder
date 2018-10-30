@@ -232,7 +232,7 @@ def format_sum_formula(sumform: dict, break_after: int = 99) -> str:
         if num > 3 and num % break_after == 0:
             l.append("<br>")
         try:
-            el = i.split('_')[1]
+            el = i.split('_')[1]  # split here, because database returns 'Elem_C' for example
         except IndexError:
             el = i
         l.append("{}<sub>{:g} </sub>".format(el, times))
@@ -241,6 +241,29 @@ def format_sum_formula(sumform: dict, break_after: int = 99) -> str:
     formula = "".join(l)
     #print(formula)
     return formula
+
+
+def formula_dict_to_str(formula: dict):
+    """
+    Converts a sum formula from a dictionary like {'C': 12, 'H': 6, 'O': 3} to a
+    string like C12 H6 O3
+
+    >>> formula_dict_to_str({'Elem_C': 12, 'Elem_H': 6.5, 'Elem_O': 3, 'Elem_Mn': 7})
+    'C12 H6.5 O3 Mn7'
+    """
+    formstr = ' '.join([x[5:] + str(formula[x]) for x in formula.keys()])
+    return formstr
+
+
+def formula_dict_to_elements(formula: dict):
+    """
+    Converts a sum formula from a dictionary like {'C': 12, 'H': 6, 'O': 3} to a
+    string like C H O.
+    >>> formula_dict_to_elements({'Elem_C': 12, 'Elem_H': 6.5, 'Elem_O': 3, 'Elem_Mn': 7})
+    'C H O Mn'
+    """
+    formstr = ' '.join([x[5:] for x in formula.keys()])
+    return formstr
 
 
 def formula_str_to_dict(sumform: str or bytes) -> dict:

@@ -300,10 +300,11 @@ class DatabaseRequest():
     def dict_factory(self, cursor, row):
         d = {}
         for idx, col in enumerate(cursor.description):
+            key = col[0]
             if isinstance(row[idx], bytes):
-                d[col[0]] = row[idx].decode('utf-8', 'ignore')
+                d[key] = row[idx].decode('utf-8', 'ignore')
             else:
-                d[col[0]] = row[idx]
+                d[key] = row[idx]
         return d
 
     def __del__(self):
