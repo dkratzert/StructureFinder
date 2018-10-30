@@ -125,7 +125,7 @@ def search_csd(cell: list, centering: str) -> str:
     try:
         # run the search:
         # shell=True disables the output window of the process
-        subprocess.run([str(p.absolute()), '-query', queryfile, '-results', resultfile], shell=True)
+        subprocess.run([str(p.absolute()), '-query', queryfile, '-results', resultfile], shell=False)
         # read the result:
         rf = Path(resultfile).read_text(encoding='utf-8', errors='ignore')
     except Exception as e:
