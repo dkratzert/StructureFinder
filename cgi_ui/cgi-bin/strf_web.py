@@ -58,7 +58,7 @@ TODO:
 app = application = Bottle()
 
 
-@app.post('/all')
+@app.get('/all')
 def structures_list_data():
     """
     The content of the structures list.

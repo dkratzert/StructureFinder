@@ -33,7 +33,7 @@ $(document).ready(function($){
         name: 'mygrid',
         header: 'StructureFinder',
         url: cgifile+"/all",
-        method: 'POST',
+        method: 'GET',
         show: {
             toolbar: false,
             footer: true
