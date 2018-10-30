@@ -8,7 +8,7 @@ $(document).ready(function($){
         name: 'my_ccdc_grid',
         header: 'StructureFinder',
         url: cgifile+"/csd-list",
-        method: 'GET',
+        method: 'POST',
         show: {
             toolbar: false,
             footer: true

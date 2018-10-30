@@ -75,7 +75,6 @@
 
 <script>
 $(document).ready(function($){
-    var formula = {{formula}};
     
     
 });
