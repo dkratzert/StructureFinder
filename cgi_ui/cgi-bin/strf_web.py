@@ -229,7 +229,6 @@ def redirect_to_favicon():
 @app.get('/csd')
 def show_cellcheck():
     """
-    TODO: Integrate cellsearch() into here with POST request and if condition
     Shows the CellcheckCSD web page
     """
     structures = StructureTable(dbfilename)

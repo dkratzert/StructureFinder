@@ -95,10 +95,11 @@ def parse_results(xmlinput: str) -> list:
     root = ET.fromstring(xmlinput)
     results = []
     # each hit has a match:
-    for r in root.findall('match'):
+    for num, r in enumerate(root.findall('match')):
         # The identifier is the csd entry name:
         ident = r.get('identifier')
         values = {'recid': ident}
+        values['order'] = num
         # unit cells are listed in parameters:
         for p in r.findall('parameters'):
             for item in p.findall('parameter'):

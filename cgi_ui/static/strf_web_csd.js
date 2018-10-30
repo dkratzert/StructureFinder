@@ -24,11 +24,6 @@ $(document).ready(function($){
             {field: 'recid',             caption: 'Itentity', size: '10%',  sortable: false, resizable: true},
             {field: 'space_group',     caption: 'Space Grp.', size: '10%',  sortable: false, resizable: true}
         ],
-        searches: [
-            {field: 'filename', caption: 'filename', type: 'text'},
-            {field: 'dataname', caption: 'dataname', type: 'text'},
-            {field: 'path', caption: 'directory', type: 'text'}
-        ],
         //sortData: [{field: 'dataname', direction: 'ASC'}],
         onDblClick:function(event) {
             strid = event.recid;
