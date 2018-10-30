@@ -28,7 +28,7 @@
             <div class="input-group input-group-sm advsearchfields">
                 <span class="input-group-addon">Unit Cell</span>
                 <input type="text" class="form-control form-sm" style="font-style: italic" placeholder="a b c &alpha; &beta; &gamma;" 
-                       id="cell_csd_inp">
+                       id="cell_csd_inp" value="{{str_id}}">
                 <span class="input-group-addon input-group-btn btn-success" id="csd_search_btn">Search</span>
             </div>
         </div>

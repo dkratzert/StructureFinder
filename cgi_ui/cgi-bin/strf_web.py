@@ -13,6 +13,7 @@ dbfilename = "../structurefinder.sqlite"
 ###########################################################
 
 import socket
+
 names = ['PC9', 'DDT-2.local']
 # run on local ip on my PC:
 if socket.gethostname() in names:
@@ -53,7 +54,6 @@ TODO:
 - Maybe http://www.daterangepicker.com
 """
 
-
 app = application = Bottle()
 
 
@@ -71,6 +71,7 @@ def main():
     """
     The main web site with html template and space group listing.
     """
+    response.set_header('Set-Cookie', 'str_id=')
     response.content_type = 'text/html; charset=UTF-8'
     p = pathlib.Path('./cgi_ui/views/spgr.html').open()
     space_groups = p.read().encode(encoding='UTF-8', errors='ignore')
@@ -160,6 +161,7 @@ def post_request():
     """
     cif_dic = {}
     str_id = request.POST.id
+    response.set_header('Set-Cookie', 'str_id=' + str_id)
     resid1 = request.POST.residuals1 == 'true'
     resid2 = request.POST.residuals2 == 'true'
     all_cif = request.POST.all == 'true'
@@ -205,7 +207,7 @@ def version():
 
 @app.get('/cellcheck')
 def cellsearch():
-    if sys.platform == 'win32': 
+    if sys.platform == 'win32':
         if not get_cccsd_path():
             return 'false'
         else:
@@ -230,8 +232,16 @@ def show_cellcheck():
     TODO: Integrate cellsearch() into here with POST request and if condition
     Shows the CellcheckCSD web page
     """
+    structures = StructureTable(dbfilename)
+    str_id = request.get_cookie('str_id')
+    cell = ''
+    if str_id:
+        cell = structures.get_cell_by_id(str_id)
+        cellstr = '{:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f}'.format(*cell)
+    else:
+        cellstr = ''
     response.content_type = 'text/html; charset=UTF-8'
-    output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip})
+    output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip, 'str_id': cellstr})
     return output
 
 
@@ -245,20 +255,20 @@ def search_cellcheck_csd():
     if not cell:
         return {}
     cent = request.POST.centering
-    print(cell, cent, 'fooobar')
+    # print(cell, cent, 'fooobar')
     centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
     c = centering[int(cent)]
     if len(cell) < 6:
         return {}
     if cmd == 'get-records' and len(cell.split()) == 6:
         xml = search_csd(cell.split(), centering=c)
-        #print(xml)
+        # print(xml)
         try:
             results = parse_results(xml)  # results in a dictionary
         except ParseError as e:
             print(e)
             return
-        #print(results)
+        # print(results)
         print(len(results), 'Structures found...')
         return {"total": len(results), "records": results, "status": "success"}
     else:
@@ -609,7 +619,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
     if cell:
         cellres = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
         incl.append(cellres)
-    if elincl: # and onlyelem: <- do not need to add onlyelement, because it is given to search_elements()
+    if elincl:  # and onlyelem: <- do not need to add onlyelement, because it is given to search_elements()
         incl.append(search_elements(structures, elincl, '', onlyelem))
     if elexcl and not onlyelem:
         incl.append(search_elements(structures, elincl, elexcl, onlyelem))
