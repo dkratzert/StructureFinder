@@ -33,7 +33,7 @@ $(document).ready(function($){
         name: 'mygrid',
         header: 'StructureFinder',
         url: cgifile+"/all",
-        method: 'GET',
+        method: 'POST',
         show: {
             toolbar: false,
             footer: true
@@ -405,17 +405,17 @@ $(document).ready(function($){
         //$('#growCheckBox').prop("checked", false);
         
         // Get residuals table 1:
-        $.post(url = cgifile, data = {id: idstr, residuals1: true}, function (result) {
+        $.post(url = cgifile+'/residuals', data = {id: idstr, residuals1: true}, function (result) {
             document.getElementById("residualstable1").innerHTML = result;
         });
 
         // Get residuals table 2:
-        $.post(url = cgifile, data = {id: idstr, residuals2: true}, function (result) {
+        $.post(url = cgifile+'/residuals', data = {id: idstr, residuals2: true}, function (result) {
             document.getElementById("residualstable2").innerHTML = result;
         });
 
         // Get unit cell row:
-        $.post(url = cgifile, data = {id: idstr, unitcell: true}, function (result) {
+        $.post(url = cgifile+'/residuals', data = {id: idstr, unitcell: true}, function (result) {
             $("#cellrow").removeClass('invisible');
             $("#growCheckBoxgroup").removeClass('invisible');
             $("#cell_copy_btn").removeClass('invisible');

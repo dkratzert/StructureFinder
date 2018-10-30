@@ -58,7 +58,7 @@ TODO:
 app = application = Bottle()
 
 
-@app.route('/all')
+@app.post('/all')
 def structures_list_data():
     """
     The content of the structures list.
@@ -67,7 +67,7 @@ def structures_list_data():
     return get_structures_json(structures, show_all=True)
 
 
-@app.route('/', method=['POST', 'GET'])
+@app.get('/')
 def main():
     """
     The main web site with html template and space group listing.
@@ -80,11 +80,11 @@ def main():
     return output
 
 
-@app.route("/cellsrch")
+@app.post("/cellsrch")
 def cellsrch():
-    cell_search = request.GET.cell_search
-    more_results = (request.GET.more == "true")
-    sublattice = (request.GET.supercell == "true")
+    cell_search = request.POST.cell_search
+    more_results = (request.POST.more == "true")
+    sublattice = (request.POST.supercell == "true")
     cell = is_valid_cell(cell_search)
     print("Cell search:", cell)
     structures = StructureTable(dbfilename)
@@ -94,28 +94,28 @@ def cellsrch():
         return get_structures_json(structures, ids)
 
 
-@app.route("/txtsrch")
+@app.post("/txtsrch")
 def txtsrch():
     structures = StructureTable(dbfilename)
-    text_search = request.GET.text_search
+    text_search = request.POST.text_search
     print("Text search:", text_search)
     ids = search_text(structures, text_search)
     return get_structures_json(structures, ids)
 
 
-@app.route("/adv_srch")
+@app.post("/adv_srch")
 def adv():
-    elincl = request.GET.elements_in
-    elexcl = request.GET.elements_out
-    date1 = request.GET.date1
-    date2 = request.GET.date2
-    cell_search = request.GET.cell_search
-    txt_in = request.GET.text_in
-    txt_out = request.GET.text_out
-    more_results = (request.GET.more == "true")
-    sublattice = (request.GET.supercell == "true")
-    onlyelem = (request.GET.onlyelem == "true")
-    it_num = request.GET.it_num
+    elincl = request.POST.elements_in
+    elexcl = request.POST.elements_out
+    date1 = request.POST.date1
+    date2 = request.POST.date2
+    cell_search = request.POST.cell_search
+    txt_in = request.POST.text_in
+    txt_out = request.POST.text_out
+    more_results = (request.POST.more == "true")
+    sublattice = (request.POST.supercell == "true")
+    onlyelem = (request.POST.onlyelem == "true")
+    it_num = request.POST.it_num
     structures = StructureTable(dbfilename)
     print("Advanced search: elin:", elincl, 'elout:', elexcl, date1, '|', date2, '|', cell_search, 'txin:', txt_in,
           'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num, 'only:', onlyelem)
@@ -126,7 +126,7 @@ def adv():
     return get_structures_json(structures, ids)
 
 
-@app.route('/molecule', method='POST')
+@app.post('/molecule')
 def jsmol_request():
     """
     A request for atom data from jsmol.
@@ -154,7 +154,7 @@ def jsmol_request():
             return ''
 
 
-@app.route('/', method='POST')
+@app.post('/residuals')
 def post_request():
     """
     Handle POST requests.
@@ -223,9 +223,10 @@ def redirect_to_favicon():
 @app.get('/csd')
 def show_cellcheck():
     """
+    TODO: Integrate cellsearch() into here with POST request and if condition
     Shows the CellcheckCSD web page
     """
-    print('###csd##')
+    print('###going into csd##')
     response.content_type = 'text/html; charset=UTF-8'
     output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip})
     return output
@@ -239,6 +240,8 @@ def search_cellcheck_csd():
     print('#csd-list')
     cmd = request.POST.cmd
     cell = request.POST.cell
+    if not cell:
+        return {}
     cent = request.POST.centering
     print(cell, cent, 'fooobar')
     centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
