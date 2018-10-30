@@ -25,6 +25,7 @@ import math
 import os
 import pathlib
 import sys
+sys.path.insert(0, os.getcwd())
 from xml.etree.ElementTree import ParseError
 from ccdc.query import get_cccsd_path, search_csd, parse_results
 
