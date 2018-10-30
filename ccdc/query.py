@@ -119,13 +119,15 @@ def search_csd(cell: list, centering: str) -> str:
     Path(queryfile).write_text(querystring)
     if sys.platform == 'win32':
         p = get_cccsd_path()
+        shell = True
     else:
         p = Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher')
+        shell = False
     rf = ''
     try:
         # run the search:
         # shell=True disables the output window of the process
-        subprocess.run([str(p.absolute()), '-query', queryfile, '-results', resultfile], shell=False)
+        subprocess.run([str(p.absolute()), '-query', queryfile, '-results', resultfile], shell=shell)
         # read the result:
         rf = Path(resultfile).read_text(encoding='utf-8', errors='ignore')
     except Exception as e:
