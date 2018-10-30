@@ -237,15 +237,14 @@ def show_cellcheck():
     cell = ''
     if str_id:
         cell = structures.get_cell_by_id(str_id)
-        formula = structures.get_calc_sum_formula(str_id)
-        print(formula)
+        #formula = structures.get_calc_sum_formula(str_id)
+        #print(formula)
         cellstr = '{:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f}'.format(*cell)
     else:
         cellstr = ''
-        formula = ''
+        #formula = ''
     response.content_type = 'text/html; charset=UTF-8'
-    output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip, 'str_id': cellstr,
-                                                      'formula': formula_dict_to_elements(formula)})
+    output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip, 'str_id': cellstr})  # 'formula': formula_dict_to_elements(formula)}
     return output
 
 
