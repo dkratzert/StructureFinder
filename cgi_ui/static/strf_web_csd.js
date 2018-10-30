@@ -1,5 +1,4 @@
 
-
 $(document).ready(function($){
 
     my_ccdc_grid = $('#my_ccdc_grid');
@@ -23,7 +22,7 @@ $(document).ready(function($){
             {field: 'cell_angle_beta',   caption: '<i>&beta;</i>', size: '10%',  sortable: false, resizable: true},
             {field: 'cell_angle_gamma',  caption: '<i>&gamma;</i>', size: '10%',  sortable: false, resizable: true},
             {field: 'recid',             caption: 'Itentity', size: '10%',  sortable: false, resizable: true},
-            {field: 'cell_length_c',     caption: 'Space Grp.', size: '10%',  sortable: false, resizable: true}
+            {field: 'space_group',     caption: 'Space Grp.', size: '10%',  sortable: false, resizable: true}
         ],
         searches: [
             {field: 'filename', caption: 'filename', type: 'text'},
@@ -33,8 +32,8 @@ $(document).ready(function($){
         //sortData: [{field: 'dataname', direction: 'ASC'}],
         onDblClick:function(event) {
             strid = event.recid;
-            showprop(strid);
-            console.log(event);
+            show_csd_entry(strid);
+            //console.log(event);
         }
     });
 
@@ -55,7 +54,7 @@ $(document).ready(function($){
         //console.log(centering+' #centering##');
         cell = cell.replace(/\s+/g, ' ').trim();  // replace multiple spaces with one
         cell = cell.replace(/,/g, '.');  // replace comma with point
-        console.log(cell+'csdcellsrch');
+        //console.log(cell+'csdcellsrch');
         var params;
         var url;
         if (isValidCell(cell)) {
@@ -64,20 +63,58 @@ $(document).ready(function($){
                 url = cgifile + "/csd-list",
                 function (result) {
                     //displayresultnum(result);
-                    console.log(result);
+                    //console.log(result);
                     //console.log(more_res);
                 }
             );
         }
     }
+    
+    
+    function show_csd_entry(identifier) {
+        //console.log(identifier);
+        var win = window.open('https://www.ccdc.cam.ac.uk/structures/Search?entry_list=' + identifier, '_blank');
+        win.focus();
+    }
 
+        // Test if a valid unit cell is in cell:
+    function isValidCell(cell) {
+        var scell = cell.split(" ");
+        //console.log(scell);
+        if (isNumericArray(scell)) {
+            return !(scell.length !== 6); // return True if 6 values
+        } else {
+            return false;
+        }
+    }
 
+    // Test if all values in array are numeric:
+    function isNumericArray(array) {
+        var isal = true;
+        for (var i=0; i<array.length; i++) {
+            if (!$.isNumeric(array[i])) {
+                isal = false;
+            }
+        }
+        return isal;
+    }
+    
+    
     // Cell search Button clicked:
     $("#csd_search_btn").click(function(event) {
         var cell = document.getElementById("cell_csd_inp").value;
-        console.log(cell+' btnsrch');
+        //console.log(cell+' btnsrch');
         csdcellsearch(cell);
     });
 
+    
+    // Enter key pressed in the cell search field:
+    $('#cell_csd_inp').keypress(function(e) {
+        if (e.which === 13) {  // enter key
+            var cell = document.getElementById("cell_csd_inp").value;
+            csdcellsearch(cell);
+            //console.log(txt);
+        }
+    });
 
 });

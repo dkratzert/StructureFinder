@@ -430,7 +430,7 @@ $(document).ready(function($){
         });
 
         // display the big cif data table:
-        $.post(url = cgifile, data = {id: idstr, all: true},
+        $.post(url = cgifile+'/residuals', data = {id: idstr, all: true},
             function (result) {
                 document.getElementById("residuals").innerHTML = result;
             }

@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 import xml.etree.ElementTree as ET
 from distutils.version import StrictVersion
 from pathlib import Path
@@ -116,7 +117,10 @@ def search_csd(cell: list, centering: str) -> str:
     resdescriptor, resultfile = mkstemp(suffix='xml')
     # write query to file:
     Path(queryfile).write_text(querystring)
-    p = get_cccsd_path()
+    if sys.platform == 'win32':
+        p = get_cccsd_path()
+    else:
+        p = Path('/opt/CCDC/CellCheckCSD/bin/run_application.sh')
     rf = ''
     try:
         # run the search:

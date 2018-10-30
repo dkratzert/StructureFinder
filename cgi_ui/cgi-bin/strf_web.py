@@ -25,10 +25,7 @@ import math
 import os
 import pathlib
 import sys
-sys.path.insert(0, os.getcwd())
 from xml.etree.ElementTree import ParseError
-from ccdc.query import get_cccsd_path, search_csd, parse_results
-
 
 pyver = sys.version_info
 if pyver[0] == 3 and pyver[1] < 4:
@@ -41,6 +38,7 @@ try:  # Adding local path to PATH
 except(KeyError, ValueError):
     print('Unable to set PATH properly. strf_web.py might not work.')
 
+from ccdc.query import get_cccsd_path, search_csd, parse_results
 from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response
 from displaymol.mol_file_writer import MolFile
 from displaymol.sdm import SDM
@@ -52,7 +50,6 @@ from searcher.misc import is_valid_cell, get_list_of_elements, flatten, is_a_non
 """
 TODO:
 - Make login infrastructure.
-- Add option: should contain *only* these elements
 - Maybe http://www.daterangepicker.com
 """
 
@@ -165,7 +162,7 @@ def post_request():
     str_id = request.POST.id
     resid1 = request.POST.residuals1 == 'true'
     resid2 = request.POST.residuals2 == 'true'
-    all_cif = (request.POST.all == 'true')
+    all_cif = request.POST.all == 'true'
     unitcell = request.POST.unitcell
     structures = StructureTable(dbfilename)
     print("Structure id:", str_id)
@@ -208,11 +205,11 @@ def version():
 
 @app.get('/cellcheck')
 def cellsearch():
-    try:
-        if pathlib.Path(which('ccdc_searcher.bat')):
-            return 'true'
-    except TypeError:
-        return 'false'
+    if sys.platform == 'win32': 
+        if not get_cccsd_path():
+            return 'false'
+    else:
+        return 'true'
 
 
 @app.route('/cgi-bin/strf_web.cgi')
@@ -231,7 +228,6 @@ def show_cellcheck():
     TODO: Integrate cellsearch() into here with POST request and if condition
     Shows the CellcheckCSD web page
     """
-    print('###going into csd##')
     response.content_type = 'text/html; charset=UTF-8'
     output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip})
     return output
@@ -242,7 +238,6 @@ def search_cellcheck_csd():
     """
     Search with CellcheckCSD.
     """
-    print('#csd-list')
     cmd = request.POST.cmd
     cell = request.POST.cell
     if not cell:
@@ -252,12 +247,10 @@ def search_cellcheck_csd():
     centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
     c = centering[int(cent)]
     if len(cell) < 6:
-        print('##no valid cell')
-        print(cell)
+        return {}
     if cmd == 'get-records' and len(cell.split()) == 6:
-        print('### get-records', cell.split(), c)
         xml = search_csd(cell.split(), centering=c)
-        print(xml)
+        #print(xml)
         try:
             results = parse_results(xml)  # results in a dictionary
         except ParseError as e:
@@ -265,9 +258,8 @@ def search_cellcheck_csd():
             return
         print(results)
         print(len(results), 'Structures found...')
-        return results
+        return {"total": len(results), "records": results, "status": "success"}
     else:
-        print('#### else records')
         return {}
 
 
