@@ -339,6 +339,7 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
     measurement_id = structures.fill_measuremnts_table(filename, structure_id)
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
     structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma, volume)
+    sum_from_dict = {}
     for x in cif._atom:
         try:
             try:
@@ -350,9 +351,10 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
             except (KeyError, ValueError):
                 occu = 1.0
             try:
-                atom_type_symbol = cif._atom[x]['_atom_site_type_symbol']
+                atom_type_symbol = atoms.get_atomlabel(cif._atom[x]['_atom_site_type_symbol'])
             except KeyError:
                 atom_type_symbol  = atoms.get_atomlabel(x)
+            elem = atom_type_symbol.capitalize()
             structures.fill_atoms_table(structure_id, x,
                                          atom_type_symbol,
                                          cif._atom[x]['_atom_site_fract_x'].split('(')[0],
@@ -361,9 +363,14 @@ def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: 
                                          occu,
                                          disord
                                         )
+            if elem in sum_from_dict:
+                sum_from_dict[elem] += occu
+            else:
+                sum_from_dict[elem] = occu
         except KeyError as e:
             #print(x, filename, e)
             pass
+    cif.cif_data['calculated_formula_sum'] = sum_from_dict
     structures.fill_residuals_table(structure_id, cif)
     return True
 
@@ -383,6 +390,8 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
     for at in res.atoms:
         if at.qpeak:
             continue
+        if at.element.lower() == 'cnt':  # Do not add Shelxle centroids
+            continue
         structures.fill_atoms_table(structure_id, 
                                     at.name,
                                     at.element.capitalize(),
@@ -394,6 +403,10 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
     cif = Cif(options=options)
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([repr(x) for x in res.symmcards])
+    try:
+        cif.cif_data["calculated_formula_sum"] = res.sum_formula_ex_dict()
+    except ZeroDivisionError:
+        pass
     try:
         cif.cif_data["_chemical_formula_sum"] = res.sum_formula_exact
     except ZeroDivisionError:

@@ -13,7 +13,6 @@ Created on 09.02.2015
 from math import sqrt
 import os
 import shutil
-
 from searcher import constants
 
 
@@ -49,7 +48,7 @@ def write_file(list: list, name: str) -> None:
             ofile.write("%s" % line)  # write the new file
 
 
-def find_binary_string(file, string, seek, size, return_ascii=False):
+def find_binary_string(file, string: str, seek, size, return_ascii=False):
     """
     finds a string in a binary file
     :rtype: str
@@ -61,7 +60,7 @@ def find_binary_string(file, string, seek, size, return_ascii=False):
     """
     with open(file, 'rb') as f:
         binary = f.read()
-        position = binary.find(b'{0}'.format(string))
+        position = binary.find(bytes(string))
         if position > 0:
             f.seek(position + seek, 0)  # seek to version string
             result = f.read(size)  # read version string
@@ -71,22 +70,22 @@ def find_binary_string(file, string, seek, size, return_ascii=False):
                 return result
 
 
-def walkdir(rootdir, include="", exclude=""):
+def walkdir(rootdir, include=None, exclude=None):
     """
     Returns a list of files in all subdirectories with full path.
     :param rootdir: base path from which walk should start
     :param filter: list of file endings to include only e.g. ['.py', '.res']
     :return: list of files
 
-    >>> walkdir("../docs") #doctest: +REPORT_NDIFF +NORMALIZE_WHITESPACE +ELLIPSIS
-    ['../docs/test.txt']
     >>> walkdir("../setup/modpath.iss")
     ['../setup/modpath.iss']
     >>> walkdir("../setup/modpath.iss", exclude=['.iss'])
     []
-    >>> walkdir("../docs", exclude=['.txt']) #doctest: +REPORT_NDIFF +NORMALIZE_WHITESPACE +ELLIPSIS
-    []
     """
+    if not include:
+        include = ""
+    if not exclude:
+        exclude = ""
     results = []
     if not os.path.isdir(rootdir):
         if os.path.splitext(rootdir)[1] in exclude:
@@ -133,7 +132,7 @@ def is_a_nonzero_file(filename):
     False
     >>> is_a_nonzero_file('../test-data/test_zerofile.cif')
     False
-    >>> is_a_nonzero_file('../strf.spec')
+    >>> is_a_nonzero_file('../strf.py')
     True
     """
     filesize = False
@@ -155,15 +154,15 @@ def get_error_from_value(value: str) -> tuple:
     :type value: str
     :rtype: str
     >>> get_error_from_value("0.0123 (23)")
-    ("0.0123", '0.0023')
+    (0.0123, 0.0023)
     >>> get_error_from_value("0.0123(23)")
-    ("0.0123, '0.0023')
+    (0.0123, 0.0023)
     >>> get_error_from_value('0.0123')
-    ('0.0123', '0.0')
+    (0.0123, 0.0)
     >>> get_error_from_value("250.0123(23)")
-    ("250.0123", '0.0023')
+    (250.0123, 0.0023)
     >>> get_error_from_value("123(25)")
-    ("123", '25')
+    (123.0, 25.0)
     """
     try:
         value = value.replace(" ", "")
@@ -176,7 +175,7 @@ def get_error_from_value(value: str) -> tuple:
         if len(val) > 1:
             return float(vval), int(err) * (10 ** (-1 * len(val[1])))
         else:
-            return float(vval), err
+            return float(vval), float(err)
     else:
         try:
             return float(value), 0.0
@@ -210,21 +209,61 @@ def distance(x1: float, y1: float, z1: float,
     return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
 
 
-def format_sum_formula(sumform: str) -> str:
+def format_sum_formula(sumform: dict, break_after: int = 99) -> str:
     """
     Makes html formated sum formula from dictionary.
-    >>> format_sum_formula("C12H6O3Mn7")
-    '<html><body>C<sub>12</sub>H<sub>6</sub>O<sub>3</sub>Mn<sub>7</sub></body></html>'
+    >>> format_sum_formula({'C': 12, 'H': 6, 'O': 3, 'Mn': 7})
+    '<html><body>C<sub>12 </sub>H<sub>6 </sub>O<sub>3 </sub>Mn<sub>7 </sub></body></html>'
     """
-    atlist = formula_str_to_dict(sumform)
+    #atlist = formula_str_to_dict(sumform)
+    if not sumform:
+        return ''
     l = ['<html><body>']
-    for num, i in enumerate(atlist):
-        if num > 1 and num % 8 == 0:
+    num = 0
+    for i in sumform:
+        if i == 'Id' or i == 'StructureId':
+            continue
+        if sumform[i] == 0 or sumform[i] == None:
+            continue
+        try:
+            times = round(sumform[i], 1)
+        except TypeError:
+            times = 1
+        if num > 3 and num % break_after == 0:
             l.append("<br>")
-        l.append("{}<sub>{}</sub>".format(i, atlist[i]))
+        try:
+            el = i.split('_')[1]  # split here, because database returns 'Elem_C' for example
+        except IndexError:
+            el = i
+        l.append("{}<sub>{:g} </sub>".format(el, times))
+        num += 1
     l.append('</body></html>')
     formula = "".join(l)
+    #print(formula)
     return formula
+
+
+def formula_dict_to_str(formula: dict):
+    """
+    Converts a sum formula from a dictionary like {'C': 12, 'H': 6, 'O': 3} to a
+    string like C12 H6 O3
+
+    >>> formula_dict_to_str({'Elem_C': 12, 'Elem_H': 6.5, 'Elem_O': 3, 'Elem_Mn': 7})
+    'C12 H6.5 O3 Mn7'
+    """
+    formstr = ' '.join([x[5:] + str(formula[x]) for x in formula.keys()])
+    return formstr
+
+
+def formula_dict_to_elements(formula: dict):
+    """
+    Converts a sum formula from a dictionary like {'C': 12, 'H': 6, 'O': 3} to a
+    string like C H O.
+    >>> formula_dict_to_elements({'Elem_C': 12, 'Elem_H': 6.5, 'Elem_O': 3, 'Elem_Mn': 7})
+    'C H O Mn'
+    """
+    formstr = ' '.join([x[5:] for x in formula.keys()])
+    return formstr
 
 
 def formula_str_to_dict(sumform: str or bytes) -> dict:
@@ -326,6 +365,7 @@ def remove_file(filename):
     """
     removes the file "filename" from disk
     >>> remove_file('foobar')
+    True
     """
     if os.path.isfile(filename):
         try:

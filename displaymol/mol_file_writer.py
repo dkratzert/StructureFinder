@@ -64,7 +64,7 @@ class MolFile(object):
         :param extra_param: additional distance to the covalence radius
         :type extra_param: float
         """
-        t1 = perf_counter()
+        #t1 = perf_counter()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
             at1_part = at1[5]
@@ -73,10 +73,12 @@ class MolFile(object):
                 at2_part = at2[5]
                 if at1_part * at2_part != 0 and at1_part != at2_part:
                     continue
-                if at1[0] == at2[0] and at1_part != at2_part:  # name1 = name2
+                if at1[0] == at2[0]:  # name1 = name2
+                    continue
+                d = distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
+                if d > 4.0:  # makes bonding faster (longer bonds do not exist)
                     continue
                 rad2 = get_radius_from_element(at2[1])
-                d = distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
                 if (rad1 + rad2) + extra_param > d:
                     if at1[1] == 'H' and at2[1] == 'H':
                         continue
@@ -85,7 +87,7 @@ class MolFile(object):
                     if [num2, num1] in conlist:
                         continue
                     conlist.append([num1, num2])
-        t2 = perf_counter()
+        #t2 = perf_counter()
         #print('Bondzeit:', round(t2-t1, 3), 's')
         #print('len:', len(conlist))
         return conlist

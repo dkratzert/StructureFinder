@@ -3,11 +3,12 @@ import sys
 import argparse
 
 import time
+from pathlib import Path
+from sqlite3 import DatabaseError
 
 from misc import update_check
 from searcher import filecrawler, database_handler
 
-#from searcher.spinner import Spinner
 from misc.version import VERSION
 
 parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect .cif/.res files to a '
@@ -43,6 +44,11 @@ parser.add_argument("-r",
                     default=False,
                     action='store_true',
                     help='Add SHELX .res files to the database.')
+parser.add_argument("--delete",
+                    dest="delete",
+                    default=False,
+                    action='store_true',
+                    help="Delete and do not append to previous database.")
 
 args = parser.parse_args()
 
@@ -74,10 +80,20 @@ else:
         dbfilename = args.outfile
     else:
         dbfilename = 'structuredb.sqlite'
+    if args.delete:
+        try:
+            dbf = Path(dbfilename)
+            dbf.unlink()
+        except FileNotFoundError:
+            pass
     for p in args.dir:
         # the command line version
         db = database_handler.DatabaseRequest(dbfilename)
-        db.initialize_db()
+        try:
+            db.initialize_db()
+        except DatabaseError:
+            print('Database is corrupt! Delete the file first.')
+            break
         lastid = db.get_lastrowid()
         if not lastid:
             lastid = 1

@@ -12,18 +12,25 @@ dbfilename = "../structurefinder.sqlite"
 ###########################################################
 
 import socket
+
 names = ['PC9', 'DDT-2.local']
 # run on local ip on my PC:
 if socket.gethostname() in names:
     host = '127.0.0.1'
     port = "8080"
+    dbfilename = "./test.sqlite"
 site_ip = host + ':' + port
 
 import math
 import os
 import pathlib
 import sys
+from xml.etree.ElementTree import ParseError
 
+try:  # Adding local path to PATH
+    sys.path.insert(0, os.path.abspath('./'))
+except(KeyError, ValueError):
+    print('Unable to set PATH properly. strf_web.py might not work.')
 
 pyver = sys.version_info
 if pyver[0] == 3 and pyver[1] < 4:
@@ -31,32 +38,27 @@ if pyver[0] == 3 and pyver[1] < 4:
     print("You need Python 3.4 and up in oder to run this proram!")
     sys.exit()
 
-try:  # Adding local path to PATH
-    sys.path.insert(0, os.path.abspath('./'))
-except(KeyError, ValueError):
-    print('Unable to set PATH properly. strf_web.py might not work.')
-
+from shutil import which
+from searcher.constants import centering_letter_2_num
+from ccdc.query import get_cccsd_path, search_csd, parse_results
 from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response
 from displaymol.mol_file_writer import MolFile
 from displaymol.sdm import SDM
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher.database_handler import StructureTable
-from searcher.misc import is_valid_cell, get_list_of_elements, flatten, is_a_nonzero_file
+from searcher.misc import is_valid_cell, get_list_of_elements, flatten, is_a_nonzero_file, format_sum_formula
 
 """
 TODO:
 - Make login infrastructure.
-- Add option: should contain *only* these elements
 - Maybe http://www.daterangepicker.com
 """
 
-
 app = application = Bottle()
-# bottle.debug(True)  # Do not enable debug in production systems!
 
 
-@app.route('/all')
+@app.get('/all')
 def structures_list_data():
     """
     The content of the structures list.
@@ -65,11 +67,12 @@ def structures_list_data():
     return get_structures_json(structures, show_all=True)
 
 
-@app.route('/', method=['POST', 'GET'])
+@app.get('/')
 def main():
     """
     The main web site with html template and space group listing.
     """
+    response.set_header('Set-Cookie', 'str_id=')
     response.content_type = 'text/html; charset=UTF-8'
     p = pathlib.Path('./cgi_ui/views/spgr.html').open()
     space_groups = p.read().encode(encoding='UTF-8', errors='ignore')
@@ -78,7 +81,7 @@ def main():
     return output
 
 
-@app.route("/cellsrch")
+@app.get("/cellsrch")
 def cellsrch():
     cell_search = request.GET.cell_search
     more_results = (request.GET.more == "true")
@@ -89,19 +92,19 @@ def cellsrch():
     if cell:
         ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
         print("--> Got {} structures from cell search.".format(len(ids)))
-        return get_structures_json(structures, ids, show_all=False)
+        return get_structures_json(structures, ids)
 
 
-@app.route("/txtsrch")
+@app.get("/txtsrch")
 def txtsrch():
     structures = StructureTable(dbfilename)
     text_search = request.GET.text_search
     print("Text search:", text_search)
     ids = search_text(structures, text_search)
-    return get_structures_json(structures, ids, show_all=False)
+    return get_structures_json(structures, ids)
 
 
-@app.route("/adv_srch")
+@app.get("/adv_srch")
 def adv():
     elincl = request.GET.elements_in
     elexcl = request.GET.elements_out
@@ -112,18 +115,19 @@ def adv():
     txt_out = request.GET.text_out
     more_results = (request.GET.more == "true")
     sublattice = (request.GET.supercell == "true")
+    onlyelem = (request.GET.onlyelem == "true")
     it_num = request.GET.it_num
     structures = StructureTable(dbfilename)
-    print("Advanced search:", elincl, elexcl, date1, date2, cell_search, txt_in, txt_out, more_results, sublattice,
-          it_num)
+    print("Advanced search: elin:", elincl, 'elout:', elexcl, date1, '|', date2, '|', cell_search, 'txin:', txt_in,
+          'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num, 'only:', onlyelem)
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
-                          structures=structures, it_num=it_num)
+                          structures=structures, it_num=it_num, onlyelem=onlyelem)
     print("--> Got {} structures from Advanced search.".format(len(ids)))
     return get_structures_json(structures, ids)
 
 
-@app.route('/molecule', method='POST')
+@app.post('/molecule')
 def jsmol_request():
     """
     A request for atom data from jsmol.
@@ -151,16 +155,17 @@ def jsmol_request():
             return ''
 
 
-@app.route('/', method='POST')
+@app.post('/residuals')
 def post_request():
     """
     Handle POST requests.
     """
     cif_dic = {}
     str_id = request.POST.id
+    response.set_header('Set-Cookie', 'str_id=' + str_id)
     resid1 = request.POST.residuals1 == 'true'
     resid2 = request.POST.residuals2 == 'true'
-    all_cif = (request.POST.all == 'true')
+    all_cif = request.POST.all == 'true'
     unitcell = request.POST.unitcell
     structures = StructureTable(dbfilename)
     print("Structure id:", str_id)
@@ -174,7 +179,7 @@ def post_request():
             print(e)
             return ''
     if str_id and resid1:
-        return get_residuals_table1(cif_dic)
+        return get_residuals_table1(structures, cif_dic, str_id)
     if str_id and resid2:
         return get_residuals_table2(cif_dic)
     if str_id and all_cif:
@@ -190,13 +195,32 @@ def server_static(filepath):
     <filename> wildcard won’t match a path with a slash in it. To serve files in subdirectories, change
     the wildcard to use the path filter:
     """
-    return static_file(filepath, root='./cgi_ui/static/')
+    response = static_file(filepath, root='./cgi_ui/static/')
+    response.set_header("Cache-Control", "public, max-age=240")
+    return response
 
 
 @app.route('/version')
 def version():
     from misc.version import VERSION
     return 'version ' + str(VERSION)
+
+
+@app.get('/cellcheck')
+def cellsearch():
+    if sys.platform == 'win32':
+        if not get_cccsd_path():
+            return 'false'
+        else:
+            return 'true'
+    else:
+        try:
+            if which('ccdc_searcher') or \
+                    pathlib.Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
+                print('CellCheckCSD found')
+                return 'true'
+        except TypeError:
+            return 'false'
 
 
 @app.route('/cgi-bin/strf_web.cgi')
@@ -207,6 +231,66 @@ def redirect_old_path():
 @app.route('/favicon.ico')
 def redirect_to_favicon():
     redirect('/static/favicon.ico')
+
+
+@app.get('/csd')
+def show_cellcheck():
+    """
+    Shows the CellcheckCSD web page
+    """
+    structures = StructureTable(dbfilename)
+    str_id = request.get_cookie('str_id')
+    centering = ''
+    if str_id:
+        cell = structures.get_cell_by_id(str_id)
+        cif_dic = structures.get_row_as_dict(str_id)
+        try:
+            centering = cif_dic['_space_group_centring_type']
+        except KeyError:
+            centering = ''
+        #formula = structures.get_calc_sum_formula(str_id)
+        #print(formula)
+        cellstr = '{:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f}'.format(*cell)
+    else:
+        cellstr = ''
+        #formula = ''
+    if centering:
+        cent = centering_letter_2_num[centering]
+    else:
+        cent = 0
+    response.content_type = 'text/html; charset=UTF-8'
+    output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip, 'str_id': cellstr, 'cent': cent})
+    # 'formula': formula_dict_to_elements(formula)}
+    return output
+
+
+@app.post('/csd-list')
+def search_cellcheck_csd():
+    """
+    Search with CellcheckCSD.
+    """
+    cmd = request.POST.cmd
+    cell = request.POST.cell
+    if not cell:
+        return {}
+    cent = request.POST.centering
+    centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
+    c = centering[int(cent)]
+    if len(cell) < 6:
+        return {}
+    if cmd == 'get-records' and len(cell.split()) == 6:
+        xml = search_csd(cell.split(), centering=c)
+        # print(xml)
+        try:
+            results = parse_results(xml)  # results in a dictionary
+        except ParseError as e:
+            print(e)
+            return
+        # print(results)
+        print(len(results), 'Structures found...')
+        return {"total": len(results), "records": results, "status": "success"}
+    else:
+        return {}
 
 
 @app.error(404)
@@ -241,7 +325,7 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     if not ids and not show_all:
         # return json.dumps(failure)
         return {}
-    dic = structures.get_all_structures_as_dict(ids, all_ids=show_all)
+    dic = structures.get_all_structures_as_dict(ids, show_all)
     number = len(dic)
     print("--> Got {} structures from actual search.".format(number))
     if number == 0:
@@ -268,7 +352,7 @@ def get_cell_parameters(structures: StructureTable, strid: str) -> str:
     return cstr
 
 
-def get_residuals_table1(cif_dic: dict) -> str:
+def get_residuals_table1(structures: StructureTable, cif_dic: dict, structure_id: int) -> str:
     """
     Returns a table with the most important residuals of a structure.
     """
@@ -282,6 +366,13 @@ def get_residuals_table1(cif_dic: dict) -> str:
         peakhole = "{} / {}".format(cif_dic['_refine_diff_density_max'], cif_dic['_refine_diff_density_min'])
     else:
         peakhole = " "
+    try:
+        sumform = format_sum_formula(structures.get_calc_sum_formula(structure_id), break_after=99)
+    except KeyError:
+        sumform = ''
+    if sumform == '':
+        # Display this as last resort:
+        sumform = cif_dic['_chemical_formula_sum']
     table1 = """
     <table class="table table-bordered" id='resitable1'>
         <tbody>
@@ -300,7 +391,7 @@ def get_residuals_table1(cif_dic: dict) -> str:
     </table>
     """.format(cif_dic['_space_group_name_H_M_alt'],
                cif_dic['_cell_formula_units_Z'],
-               cif_dic['_chemical_formula_sum'],
+               sumform,
                cif_dic['_diffrn_ambient_temperature'],
                cif_dic['_refine_ls_wR_factor_ref'],
                cif_dic['_refine_ls_R_factor_gt'],
@@ -462,13 +553,7 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
             cells.extend(structures.get_cells_as_list(cids))
         for num, cell_id in enumerate(idlist):
             try:
-                lattice2 = mat_lattice.Lattice.from_parameters(
-                        float(cells[num][2]),
-                        float(cells[num][3]),
-                        float(cells[num][4]),
-                        float(cells[num][5]),
-                        float(cells[num][6]),
-                        float(cells[num][7]))
+                lattice2 = mat_lattice.Lattice.from_parameters(*cells[num][:6])
             except ValueError:
                 continue
             mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
@@ -499,7 +584,7 @@ def search_text(structures: StructureTable, search_string: str) -> tuple:
     return idlist
 
 
-def search_elements(structures: StructureTable, elements: str, anyresult: bool = False) -> list:
+def search_elements(structures: StructureTable, elements: str, excluding: str = '', onlyelem: bool = False) -> list:
     """
     list(set(l).intersection(l2))
     """
@@ -507,12 +592,17 @@ def search_elements(structures: StructureTable, elements: str, anyresult: bool =
     try:
         formula = get_list_of_elements(elements)
     except KeyError:
-        print('Element search error!')
+        print('Element search error! Wrong list of elements.')
         return []
     try:
-        res = structures.find_by_elements(formula, anyresult=anyresult)
+        formula_ex = get_list_of_elements(excluding)
+    except KeyError:
+        print('Error: Wrong list of Elements!')
+        return []
+    try:
+        res = structures.find_by_elements(formula, excluding=formula_ex, onlyincluded=onlyelem)
     except AttributeError:
-        print('Element search error!')
+        print('Element search error! Wrong list of elements..')
         pass
     return list(res)
 
@@ -531,7 +621,7 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
 
 def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, more_results,
                     date1: str = None, date2: str = None, structures: StructureTable = None,
-                    it_num: str = None) -> list:
+                    it_num: str = None, onlyelem: bool = False) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
@@ -547,8 +637,10 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
     if cell:
         cellres = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
         incl.append(cellres)
-    if elincl:
-        incl.append(search_elements(structures, elincl))
+    if elincl:  # and onlyelem: <- do not need to add onlyelement, because it is given to search_elements()
+        incl.append(search_elements(structures, elincl, '', onlyelem))
+    if elexcl and not onlyelem:
+        incl.append(search_elements(structures, elincl, elexcl, onlyelem))
     if date1 != date2:
         date_results = find_dates(structures, date1, date2)
     if it_num:
@@ -564,8 +656,6 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
             incl.append([i[0] for i in idlist])
         except(IndexError, KeyError):
             incl.append([idlist])  # only one result
-    if elexcl:
-        excl.append(search_elements(structures, elexcl, anyresult=True))
     if txt_out:
         if len(txt_out) >= 2 and "*" not in txt_out:
             txt_out = '*' + txt_out + '*'
@@ -590,7 +680,9 @@ def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, m
         # excl list should not be in the resukts at all
         try:
             return list(results - set(flatten(excl)))
-        except TypeError:
+        except TypeError as e:
+            print(e)
+            print('can not display result in advanced_search.')
             return []
     return list(results)
 
@@ -602,10 +694,14 @@ if __name__ == "__main__":
         print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
         sys.exit()
     print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
-    # plain python wsgiref server:
-    # app.run(host=host, port=port, reloader=True)
+    # plain python wsgiref server (gunicorn doesnt run on windows):
+    # app.run(host=host, port=port, server='wsgiref', reloader=True)
     # gunicorn server: Best used behind an nginx proxy server: http://docs.gunicorn.org/en/stable/deploy.html
     # you need "pip3 install gunicorn" to run this:
     # The current database interface allows only one worker (have to go to sqlalchemy!)
-    app.run(host=host, port=port, reload=True, server='gunicorn', accesslog='-', errorlog='-', workers=1,
+    if sys.platform == 'win32':
+        server = 'wsgiref'
+    else:
+        server = 'gunicorn'
+    app.run(host=host, port=port, reload=True, server=server, accesslog='-', errorlog='-', workers=1,
             access_log_format='%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s"')

@@ -15,8 +15,7 @@ version = VERSION
 files = [
     "strf.py",
     "strf_cmd.py",
-    "apex/__init__.py",
-    "apex/apeximporter.py",
+    "apex",
     "searcher",
     "shelxfile",
     "pymatgen",
@@ -27,12 +26,7 @@ files = [
     "misc/__init__.py",
     "misc/update_check.py",
     "misc/version.py",
-    "cgi_ui/bottle.py",
-    "cgi_ui/__init__.py",
-    "cgi_ui/cgi-bin/",
-    "cgi_ui/static/",
-    "cgi_ui/static/w2ui",
-    "cgi_ui/views/",
+    "cgi_ui",
     "displaymol",
     "icons"
     ]

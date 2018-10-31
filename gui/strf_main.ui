@@ -248,7 +248,7 @@
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="maintab">
        <attribute name="title">
@@ -270,7 +270,7 @@
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>10</width>
+              <width>5</width>
               <height>20</height>
              </size>
             </property>
@@ -296,6 +296,9 @@
             <layout class="QVBoxLayout" name="verticalLayout">
              <item>
               <layout class="QFormLayout" name="formLayout_3">
+               <property name="sizeConstraint">
+                <enum>QLayout::SetDefaultConstraint</enum>
+               </property>
                <item row="0" column="0">
                 <widget class="QLabel" name="SpaceGrouplabel">
                  <property name="font">
@@ -593,8 +596,8 @@
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>20</width>
-                 <height>40</height>
+                 <width>5</width>
+                 <height>10</height>
                 </size>
                </property>
               </spacer>
@@ -622,10 +625,16 @@
                  <property name="enabled">
                   <bool>true</bool>
                  </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
                  <property name="minimumSize">
                   <size>
-                   <width>0</width>
-                   <height>21</height>
+                   <width>10</width>
+                   <height>42</height>
                   </size>
                  </property>
                  <property name="font">
@@ -637,11 +646,14 @@
                  <property name="styleSheet">
                   <string notr="true">background-color:  rgba(255, 255, 255, 255);</string>
                  </property>
+                 <property name="inputMethodHints">
+                  <set>Qt::ImhNone</set>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::StyledPanel</enum>
                  </property>
                  <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
+                  <enum>QFrame::Sunken</enum>
                  </property>
                  <property name="lineWidth">
                   <number>1</number>
@@ -653,10 +665,25 @@
                   <string/>
                  </property>
                  <property name="textFormat">
-                  <enum>Qt::RichText</enum>
+                  <enum>Qt::AutoText</enum>
+                 </property>
+                 <property name="scaledContents">
+                  <bool>false</bool>
+                 </property>
+                 <property name="alignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
                  </property>
                  <property name="margin">
                   <number>1</number>
+                 </property>
+                 <property name="openExternalLinks">
+                  <bool>false</bool>
+                 </property>
+                 <property name="textInteractionFlags">
+                  <set>Qt::TextEditorInteraction</set>
                  </property>
                 </widget>
                </item>
@@ -929,7 +956,7 @@ p, li { white-space: pre-wrap; }
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>10</width>
+              <width>5</width>
               <height>20</height>
              </size>
             </property>
@@ -1148,7 +1175,7 @@ p, li { white-space: pre-wrap; }
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>10</width>
+              <width>5</width>
               <height>20</height>
              </size>
             </property>
@@ -1231,13 +1258,6 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="wR2Label_2">
-              <property name="text">
-               <string>Any Text</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="0">
              <widget class="QLabel" name="elementsIncludedLabel">
               <property name="text">
@@ -1262,10 +1282,24 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="wR2Label_2">
+              <property name="text">
+               <string>Any Text</string>
+              </property>
+             </widget>
+            </item>
             <item row="3" column="1">
              <widget class="QLineEdit" name="ad_textsearch">
               <property name="placeholderText">
                <string>e.g. TWIN</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QCheckBox" name="onlyTheseElementsCheckBox">
+              <property name="text">
+               <string>Only these</string>
               </property>
              </widget>
             </item>
@@ -2895,6 +2929,9 @@ p, li { white-space: pre-wrap; }
           </item>
           <item>
            <widget class="QTreeWidget" name="CSDtreeWidget">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Double-click to view structure details in web browser&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="verticalScrollBarPolicy">
              <enum>Qt::ScrollBarAsNeeded</enum>
             </property>

@@ -17,7 +17,7 @@ from __future__ import print_function
 import platform
 import webbrowser
 from os.path import isfile
-from sqlite3 import DatabaseError
+from sqlite3 import DatabaseError, ProgrammingError
 
 from PyQt5.QtCore import QModelIndex
 
@@ -46,7 +46,7 @@ from misc import update_check
 from misc.version import VERSION
 from pymatgen.core import mat_lattice
 from searcher import constants, misc, filecrawler, database_handler
-from searcher.constants import py36
+from searcher.constants import py36, centering_num_2_letter, centering_letter_2_num
 from searcher.fileparser import Cif
 from searcher.misc import is_valid_cell, elements
 
@@ -73,8 +73,6 @@ __metaclass__ = type  # use new-style classes
 
 """
 TODO:
-- Add table with Id, Structure.Id, H,  He, Li, Be, usw. -> fill sum formula in it. -> Improve search by formula.
-- Improve text search (in cif file). Figure out which tokenchars co:nfiguration works best.
 - sort results by G6 distance
 
 Search for:
@@ -106,7 +104,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         # self.ui.centralwidget.setMinimumSize(1000, 500)
-        self.abort_import_button = QtWidgets.QPushButton("Abort", parent=self.ui.statusbar)
+        self.abort_import_button = QtWidgets.QPushButton("Abort")
         self.progress = QtWidgets.QProgressBar(self)
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
@@ -120,9 +118,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
             if not get_cccsd_path():
                 self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
                 self.ui.cellSearchCSDLineEdit.setDisabled(True)
+                self.ui.CSDpushButton.setDisabled(True)
         else:
             self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
             self.ui.cellSearchCSDLineEdit.setDisabled(True)
+            self.ui.CSDpushButton.setDisabled(True)
         self.show()
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
@@ -288,12 +288,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
         return ok
 
     def search_csd_and_display_results(self):
-        centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
         cell = is_valid_cell(self.ui.cellSearchCSDLineEdit.text())
         self.ui.CSDtreeWidget.clear()
         if len(cell) < 6:
             return None
-        center = centering[self.ui.lattCentComboBox.currentIndex()]
+        center = centering_num_2_letter[self.ui.lattCentComboBox.currentIndex()]
+        # search the csd:
         xml = search_csd(cell, centering=center)
         try:
             results = parse_results(xml)
@@ -301,18 +301,19 @@ class StartStructureDB(QtWidgets.QMainWindow):
             print(e)
             return
         print(len(results), 'Structures found...')
-        for identifier in results:
+        self.statusBar().showMessage("{} structures found in the CSD".format(len(results), msecs=9000))
+        for res in results:
             csd_tree_item = QtWidgets.QTreeWidgetItem()
             self.ui.CSDtreeWidget.addTopLevelItem(csd_tree_item)
-            csd_tree_item.setText(0, results[identifier]['chemical_formula'])
-            csd_tree_item.setText(1, results[identifier]['cell_length_a'])
-            csd_tree_item.setText(2, results[identifier]['cell_length_b'])
-            csd_tree_item.setText(3, results[identifier]['cell_length_c'])
-            csd_tree_item.setText(4, results[identifier]['cell_angle_alpha'])
-            csd_tree_item.setText(5, results[identifier]['cell_angle_beta'])
-            csd_tree_item.setText(6, results[identifier]['cell_angle_gamma'])
-            csd_tree_item.setText(7, results[identifier]['space_group'])
-            csd_tree_item.setText(8, identifier)
+            csd_tree_item.setText(0, res['chemical_formula'])
+            csd_tree_item.setText(1, res['cell_length_a'])
+            csd_tree_item.setText(2, res['cell_length_b'])
+            csd_tree_item.setText(3, res['cell_length_c'])
+            csd_tree_item.setText(4, res['cell_angle_alpha'])
+            csd_tree_item.setText(5, res['cell_angle_beta'])
+            csd_tree_item.setText(6, res['cell_angle_gamma'])
+            csd_tree_item.setText(7, res['space_group'])
+            csd_tree_item.setText(8, res['recid'])
         for n in range(8):
             self.ui.CSDtreeWidget.resizeColumnToContents(n)
 
@@ -368,6 +369,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         txt = self.ui.ad_textsearch.text().strip(' ')
         txt_ex = self.ui.ad_textsearch_excl.text().strip(' ')
         spgr = self.ui.SpGrcomboBox.currentText()
+        onlythese = self.ui.onlyTheseElementsCheckBox.isChecked()
         try:
             spgr = int(spgr.split()[0])
         except:
@@ -383,7 +385,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
             cellres = self.search_cell_idlist(cell)
             incl.append(cellres)
         if elincl:
-            incl.append(self.search_elements(elincl))
+            incl.append(self.search_elements(elincl, '', onlythese))
+        if elexcl and not onlythese:
+            incl.append(self.search_elements(elincl, elexcl, onlythese))
         if txt:
             if len(txt) >= 2 and "*" not in txt:
                 txt = '*' + txt + '*'
@@ -392,8 +396,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 incl.append([i[0] for i in idlist])
             except(IndexError, KeyError):
                 incl.append([idlist])  # only one result
-        if elexcl:
-            excl.append(self.search_elements(elexcl, anyresult=True))
         if txt_ex:
             if len(txt_ex) >= 2 and "*" not in txt_ex:
                 txt_ex = '*' + txt_ex + '*'
@@ -419,8 +421,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
             return
         if excl:
             try:
-                self.display_structures_by_idlist(list(results - set(misc.flatten(excl))))
-            except TypeError:
+                self.display_structures_by_idlist(list(results - set(excl)))
+            except TypeError as e:
+                print(e)
+                print('can not display result in advanced_search.')
                 return
         else:
             self.display_structures_by_idlist(list(results))
@@ -631,14 +635,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
         _refine_ls_number_reflns -> unique reflect. (Independent reflections)
         _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
-        centering = {'P': 0, 'A': 1, 'B': 2, 'C': 3, 'F': 4, 'I': 5, 'R': 6}
         self.clear_fields()
         cell = self.structures.get_cell_by_id(structure_id)
         if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
             self.ui.cellSearchCSDLineEdit.setText("  ".join([str(round(x, 5)) for x in cell[:6]]))
             try:
                 cstring = cif_dic['_space_group_centring_type']
-                self.ui.lattCentComboBox.setCurrentIndex(centering[cstring])
+                self.ui.lattCentComboBox.setCurrentIndex(centering_letter_2_num[cstring])
             except (KeyError, TypeError):
                 pass
         if not cell:
@@ -679,9 +682,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
             pass
         self.ui.zLineEdit.setText("{}".format(cif_dic['_cell_formula_units_Z']))
         try:
-            sumform = misc.format_sum_formula(cif_dic['_chemical_formula_sum'])
+            sumform = misc.format_sum_formula(self.structures.get_calc_sum_formula(structure_id))
         except KeyError:
             sumform = ''
+        if sumform == '':
+            # Display this as last resort:
+            sumform = cif_dic['_chemical_formula_sum']
+        self.ui.formLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         self.ui.formLabel.setText("{}".format(sumform))
         self.ui.reflTotalLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_number']))
         self.ui.uniqReflLineEdit.setText("{}".format(cif_dic['_refine_ls_number_reflns']))
@@ -767,8 +774,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=True, as_list=False)
             blist = None
         try:
-            tst = mol_file_writer.MolFile(atoms, blist)
-            mol = tst.make_mol()
+            mol = mol_file_writer.MolFile(atoms, blist)
+            mol = mol.make_mol()
         except (TypeError, KeyError):
             print("Error in structure", structure_id, "while writing mol file.")
             mol = ' '
@@ -865,13 +872,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             for num, cell_id in enumerate(idlist):
                 self.progressbar(num, 0, len(idlist) - 1)
                 try:
-                    lattice2 = mat_lattice.Lattice.from_parameters(
-                            float(cells[num][2]),
-                            float(cells[num][3]),
-                            float(cells[num][4]),
-                            float(cells[num][5]),
-                            float(cells[num][6]),
-                            float(cells[num][7]))
+                    lattice2 = mat_lattice.Lattice.from_parameters(*cells[num][:6])
                 except ValueError:
                     continue
                 mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
@@ -888,7 +889,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         cell = is_valid_cell(search_string)
         self.ui.ad_unitCellLineEdit.setText('  '.join([str(x) for x in cell]))
-        self.ui.cellSearchCSDLineEdit.setText('  '.join([str(x) for x in cell]))
+        if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
+            self.ui.cellSearchCSDLineEdit.setText('  '.join([str(x) for x in cell]))
         self.ui.txtSearchEdit.clear()
         if not cell:
             if self.ui.searchCellLineEDit.text():
@@ -922,7 +924,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         return True
 
-    def search_elements(self, elements: str, anyresult: bool = False) -> list:
+    def search_elements(self, elements: str, excluding: str, onlythese: bool = False) -> list:
         """
         list(set(l).intersection(l2))
         """
@@ -934,7 +936,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
             return []
         try:
-            res = self.structures.find_by_elements(formula, anyresult=anyresult)
+            formula_ex = misc.get_list_of_elements(excluding)
+        except KeyError:
+            self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
+            return []
+        try:
+            res = self.structures.find_by_elements(formula, excluding=formula_ex, onlyincluded=onlythese)
         except AttributeError:
             pass
         return list(res)
@@ -969,11 +976,16 @@ class StartStructureDB(QtWidgets.QMainWindow):
         print("Opened {}.".format(fname[0]))
         self.dbfilename = fname[0]
         self.structures = database_handler.StructureTable(self.dbfilename)
-        self.show_full_list()
+        try:
+            self.show_full_list()
+        except DatabaseError:
+            self.moving_message('Database file is corrupt!')
+            self.close_db()
+            return False
         try:
             if self.structures:
                 pass
-        except TypeError:
+        except (TypeError, ProgrammingError):
             return False
         return True
 
@@ -1074,7 +1086,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.start_db()
         self.ui.cifList_treeWidget.show()
         self.abort_import_button.show()
-        n = 0
+        n = 1
         num = 0
         time1 = time.perf_counter()
         conn = self.open_apex_db(user, password, host)
@@ -1126,8 +1138,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.progress.hide()
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
+        if n == 0:
+            n += 1
         self.ui.statusbar.showMessage('Added {} APEX entries in: {:>2d} h, {:>2d} m, {:>3.2f} s'
-                                      .format(n, int(h), int(m), s), msecs=0)
+                                      .format(n-1, int(h), int(m), s), msecs=0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.set_columnsize()
         self.structures.database.init_textsearch()

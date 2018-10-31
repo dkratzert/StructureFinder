@@ -131,7 +131,6 @@ num2element = {
 }
 
 element2num = {
-    'n': 0,
     'H': 1,
     'He': 2,
     'Li': 3,
@@ -242,6 +241,16 @@ atoms = ['H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
          'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa',
          'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'D']
 
+sorted_atoms = ['C', 'D', 'H', 'N', 'O', 'Cl', 'Br', 'I', 'F', 'S', 'P', 'Ac', 'Ag', 'Al',
+                'Am', 'Ar', 'As', 'At', 'Au', 'B', 'Ba', 'Be', 'Bi', 'Bk', 'Ca', 'Cd', 'Ce',
+                'Cf', 'Cm', 'Co', 'Cr', 'Cs', 'Cu', 'Dy', 'Er', 'Eu', 'Fe', 'Fr', 'Ga', 'Gd',
+                'Ge', 'He', 'Hf', 'Hg', 'Ho', 'In', 'Ir', 'K', 'Kr', 'La', 'Li', 'Lu', 'Mg',
+                'Mn', 'Mo', 'Na', 'Nb', 'Nd', 'Ne', 'Ni', 'Np', 'Os', 'Pa', 'Pb', 'Pd', 'Pm',
+                'Po', 'Pr', 'Pt', 'Pu', 'Ra', 'Rb', 'Re', 'Rh', 'Rn', 'Ru', 'Sb', 'Sc', 'Se',
+                'Si', 'Sm', 'Sn', 'Sr', 'Ta', 'Tb', 'Tc', 'Te', 'Th', 'Ti', 'Tl', 'Tm', 'U',
+                'V', 'W', 'Xe', 'Y', 'Yb', 'Zn', 'Zr']
+
+
 num2covradius = {
     0: 0.74,
     1: 0.50,
@@ -347,7 +356,6 @@ num2covradius = {
 
 
 element2cov = {
-    'n': 0.74,
     'H': 0.50,
     'He': 1.23,
     'Li': 0.9,
@@ -495,6 +503,8 @@ def get_atomlabel(input_atom: str) -> str:
 
     >>> get_atomlabel('C12')
     'C'
+    >>> get_atomlabel('Te1+')
+    'Te'
     """
     atom = ''
     for x in input_atom:  # iterate over characters in i

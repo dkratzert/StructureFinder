@@ -9,11 +9,18 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
 
 $(document).ready(function($){
+    
     // The structure ID
     var strid = null;
     
+    $.get(url = cgifile+'/cellcheck', function (result) {
+        if (result === 'true') {
+            $("#cellsearchcsd_button").removeClass('invisible');
+        }
+    });
+    
     $.get(url = cgifile+'/version', function (result) {
-            document.getElementById("version").innerHTML = result;
+        document.getElementById("version").innerHTML = result;
     });
     
     // toggle for cell tooltip
@@ -36,11 +43,6 @@ $(document).ready(function($){
             {field: 'filename', caption: 'filename',  size: '20%',  sortable: false, resizable: true},
             {field: 'dataname', caption: 'dataname',  size: '15%',  sortable: false, resizable: true},
             {field: 'path',     caption: 'directory', size: '65%',  sortable: false, resizable: true}
-        ],
-        searches: [
-            {field: 'filename', caption: 'filename', type: 'text'},
-            {field: 'dataname', caption: 'dataname', type: 'text'},
-            {field: 'path', caption: 'directory', type: 'text'}
         ],
         //sortData: [{field: 'dataname', direction: 'ASC'}],
         onSelect:function(event) {
@@ -69,11 +71,12 @@ $(document).ready(function($){
         var cell_adv = document.getElementById("cell_adv").value;
         var more_res = $('#more_results').is(':checked');
         var supercell = $('#supercells').is(':checked');
+        var onlyelem = $('#onlythese_elem').is(':checked');
         var datefield1 = document.getElementById("date1").value;
         var datefield2 = document.getElementById("date2").value;
         var itnum = $("#IT_number").val().split(" ")[0];
         advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res,
-                        supercell, datefield1, datefield2, itnum);
+                        supercell, datefield1, datefield2, itnum, onlyelem);
     });
 
     function get_cell_from_p4p(p4pdata) {
@@ -397,17 +400,17 @@ $(document).ready(function($){
         //$('#growCheckBox').prop("checked", false);
         
         // Get residuals table 1:
-        $.post(url = cgifile, data = {id: idstr, residuals1: true}, function (result) {
+        $.post(url = cgifile+'/residuals', data = {id: idstr, residuals1: true}, function (result) {
             document.getElementById("residualstable1").innerHTML = result;
         });
 
         // Get residuals table 2:
-        $.post(url = cgifile, data = {id: idstr, residuals2: true}, function (result) {
+        $.post(url = cgifile+'/residuals', data = {id: idstr, residuals2: true}, function (result) {
             document.getElementById("residualstable2").innerHTML = result;
         });
 
         // Get unit cell row:
-        $.post(url = cgifile, data = {id: idstr, unitcell: true}, function (result) {
+        $.post(url = cgifile+'/residuals', data = {id: idstr, unitcell: true}, function (result) {
             $("#cellrow").removeClass('invisible');
             $("#growCheckBoxgroup").removeClass('invisible');
             $("#cell_copy_btn").removeClass('invisible');
@@ -422,7 +425,7 @@ $(document).ready(function($){
         });
 
         // display the big cif data table:
-        $.post(url = cgifile, data = {id: idstr, all: true},
+        $.post(url = cgifile+'/residuals', data = {id: idstr, all: true},
             function (result) {
                 document.getElementById("residuals").innerHTML = result;
             }
@@ -469,7 +472,7 @@ $(document).ready(function($){
     };
 
     function advanced_search(text_in, text_out, elements_in, elements_out, cell_adv, more_res, supercell,
-                             date1, date2, itnum) {
+                             date1, date2, itnum, onlyelem) {
         var cell = cell_adv.replace(/\s+/g, ' ').trim();
         cell = cell.replace(/,/g, '.');  // replace comma with point
         if (!isValidCell(cell)) {
@@ -477,7 +480,7 @@ $(document).ready(function($){
         }
         var gridparams = {cell_search: cell, text_in: text_in, text_out: text_out, elements_in: elements_in,
                           elements_out: elements_out, more: more_res, supercell: supercell, date1: date1, date2: date2
-                          ,it_num: itnum};
+                          ,it_num: itnum, onlyelem: onlyelem};
         //console.log(gridparams);
         var url;
         w2ui['mygrid'].request('get-records', gridparams,
@@ -548,7 +551,7 @@ $(document).ready(function($){
         var advanced = false;
         var params;
         var url;
-        //console.log(text);
+        //console.log(text+' in txtsearch');
         w2ui['mygrid'].request('get-records',
             params = {text_search: text},
             url = cgifile + "/txtsrch",

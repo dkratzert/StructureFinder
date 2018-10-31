@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "31"
+#define MyAppVersion "34"
 #define MyAppPublisher "Daniel Kratzert"
 #define pzipfile "Python3.6.1-32.7z"
 
