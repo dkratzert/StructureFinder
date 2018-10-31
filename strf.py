@@ -46,7 +46,7 @@ from misc import update_check
 from misc.version import VERSION
 from pymatgen.core import mat_lattice
 from searcher import constants, misc, filecrawler, database_handler
-from searcher.constants import py36
+from searcher.constants import py36, centering_num_2_letter, centering_letter_2_num
 from searcher.fileparser import Cif
 from searcher.misc import is_valid_cell, elements
 
@@ -288,12 +288,11 @@ class StartStructureDB(QtWidgets.QMainWindow):
         return ok
 
     def search_csd_and_display_results(self):
-        centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
         cell = is_valid_cell(self.ui.cellSearchCSDLineEdit.text())
         self.ui.CSDtreeWidget.clear()
         if len(cell) < 6:
             return None
-        center = centering[self.ui.lattCentComboBox.currentIndex()]
+        center = centering_num_2_letter[self.ui.lattCentComboBox.currentIndex()]
         # search the csd:
         xml = search_csd(cell, centering=center)
         try:
@@ -636,14 +635,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
         _refine_ls_number_reflns -> unique reflect. (Independent reflections)
         _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
-        centering = {'P': 0, 'A': 1, 'B': 2, 'C': 3, 'F': 4, 'I': 5, 'R': 6}
         self.clear_fields()
         cell = self.structures.get_cell_by_id(structure_id)
         if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
             self.ui.cellSearchCSDLineEdit.setText("  ".join([str(round(x, 5)) for x in cell[:6]]))
             try:
                 cstring = cif_dic['_space_group_centring_type']
-                self.ui.lattCentComboBox.setCurrentIndex(centering[cstring])
+                self.ui.lattCentComboBox.setCurrentIndex(centering_letter_2_num[cstring])
             except (KeyError, TypeError):
                 pass
         if not cell:

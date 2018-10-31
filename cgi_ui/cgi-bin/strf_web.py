@@ -25,7 +25,6 @@ import math
 import os
 import pathlib
 import sys
-import json
 from xml.etree.ElementTree import ParseError
 
 try:  # Adding local path to PATH
@@ -39,6 +38,8 @@ if pyver[0] == 3 and pyver[1] < 4:
     print("You need Python 3.4 and up in oder to run this proram!")
     sys.exit()
 
+from shutil import which
+from searcher.constants import centering_letter_2_num
 from ccdc.query import get_cccsd_path, search_csd, parse_results
 from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response
 from displaymol.mol_file_writer import MolFile
@@ -46,8 +47,7 @@ from displaymol.sdm import SDM
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher.database_handler import StructureTable
-from searcher.misc import is_valid_cell, get_list_of_elements, flatten, is_a_nonzero_file, format_sum_formula, \
-    formula_dict_to_elements
+from searcher.misc import is_valid_cell, get_list_of_elements, flatten, is_a_nonzero_file, format_sum_formula
 
 """
 TODO:
@@ -214,7 +214,12 @@ def cellsearch():
         else:
             return 'true'
     else:
-        return 'true'
+        try:
+            if pathlib.Path(which('ccdc_searcher')).exists() or \
+                    pathlib.Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
+                return 'true'
+        except TypeError:
+            return 'false'
 
 
 @app.route('/cgi-bin/strf_web.cgi')
@@ -234,17 +239,27 @@ def show_cellcheck():
     """
     structures = StructureTable(dbfilename)
     str_id = request.get_cookie('str_id')
-    cell = ''
+    centering = ''
     if str_id:
         cell = structures.get_cell_by_id(str_id)
+        cif_dic = structures.get_row_as_dict(str_id)
+        try:
+            centering = cif_dic['_space_group_centring_type']
+        except KeyError:
+            centering = ''
         #formula = structures.get_calc_sum_formula(str_id)
         #print(formula)
         cellstr = '{:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f}'.format(*cell)
     else:
         cellstr = ''
         #formula = ''
+    if centering:
+        cent = centering_letter_2_num[centering]
+    else:
+        cent = 0
     response.content_type = 'text/html; charset=UTF-8'
-    output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip, 'str_id': cellstr})  # 'formula': formula_dict_to_elements(formula)}
+    output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip, 'str_id': cellstr, 'cent': cent})
+    # 'formula': formula_dict_to_elements(formula)}
     return output
 
 

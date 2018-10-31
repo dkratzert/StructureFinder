@@ -34,13 +34,13 @@
         </div>
         <div class="column col-sm-2">
             <select id="centering_drop" class="dropdown dropdown-toggle btn-md" data-toggle="dropdown">
-                <option value="0">Primitive (P)</option>
-                <option value="1">A-centered (A)</option>
-                <option value="2">B-centered (B)</option>
-                <option value="3">C-centered (C)</option>
-                <option value="4">Face-centered (F)</option>
-                <option value="5">Body-centered (I)</option>
-                <option value="6">Rhombohedral (R)</option>
+                <option value="{{cent}}" {{!'selected="selected"' if cent == 0 else ""}}>Primitive (P)</option>
+                <option value="{{cent}}" {{!'selected="selected"' if cent == 1 else ""}}>A-centered (A)</option>
+                <option value="{{cent}}" {{!'selected="selected"' if cent == 2 else ""}}>B-centered (B)</option>
+                <option value="{{cent}}" {{!'selected="selected"' if cent == 3 else ""}}>C-centered (C)</option>
+                <option value="{{cent}}" {{!'selected="selected"' if cent == 4 else ""}}>Face-centered (F)</option>
+                <option value="{{cent}}" {{!'selected="selected"' if cent == 5 else ""}}>Body-centered (I)</option>
+                <option value="{{cent}}" {{!'selected="selected"' if cent == 6 else ""}}>Rhombohedral (R)</option>
             </select>
         </div>
         <div class="column col-sm-2">
