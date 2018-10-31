@@ -83,9 +83,9 @@ def main():
 
 @app.get("/cellsrch")
 def cellsrch():
-    cell_search = request.POST.cell_search
-    more_results = (request.POST.more == "true")
-    sublattice = (request.POST.supercell == "true")
+    cell_search = request.GET.cell_search
+    more_results = (request.GET.more == "true")
+    sublattice = (request.GET.supercell == "true")
     cell = is_valid_cell(cell_search)
     print("Cell search:", cell)
     structures = StructureTable(dbfilename)
@@ -98,7 +98,7 @@ def cellsrch():
 @app.get("/txtsrch")
 def txtsrch():
     structures = StructureTable(dbfilename)
-    text_search = request.POST.text_search
+    text_search = request.GET.text_search
     print("Text search:", text_search)
     ids = search_text(structures, text_search)
     return get_structures_json(structures, ids)
@@ -106,17 +106,17 @@ def txtsrch():
 
 @app.get("/adv_srch")
 def adv():
-    elincl = request.POST.elements_in
-    elexcl = request.POST.elements_out
-    date1 = request.POST.date1
-    date2 = request.POST.date2
-    cell_search = request.POST.cell_search
-    txt_in = request.POST.text_in
-    txt_out = request.POST.text_out
-    more_results = (request.POST.more == "true")
-    sublattice = (request.POST.supercell == "true")
-    onlyelem = (request.POST.onlyelem == "true")
-    it_num = request.POST.it_num
+    elincl = request.GET.elements_in
+    elexcl = request.GET.elements_out
+    date1 = request.GET.date1
+    date2 = request.GET.date2
+    cell_search = request.GET.cell_search
+    txt_in = request.GET.text_in
+    txt_out = request.GET.text_out
+    more_results = (request.GET.more == "true")
+    sublattice = (request.GET.supercell == "true")
+    onlyelem = (request.GET.onlyelem == "true")
+    it_num = request.GET.it_num
     structures = StructureTable(dbfilename)
     print("Advanced search: elin:", elincl, 'elout:', elexcl, date1, '|', date2, '|', cell_search, 'txin:', txt_in,
           'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num, 'only:', onlyelem)

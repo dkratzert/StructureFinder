@@ -551,7 +551,7 @@ $(document).ready(function($){
         var advanced = false;
         var params;
         var url;
-        //console.log(text);
+        //console.log(text+' in txtsearch');
         w2ui['mygrid'].request('get-records',
             params = {text_search: text},
             url = cgifile + "/txtsrch",
