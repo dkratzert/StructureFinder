@@ -81,7 +81,7 @@ def main():
     return output
 
 
-@app.post("/cellsrch")
+@app.get("/cellsrch")
 def cellsrch():
     cell_search = request.POST.cell_search
     more_results = (request.POST.more == "true")
@@ -95,7 +95,7 @@ def cellsrch():
         return get_structures_json(structures, ids)
 
 
-@app.post("/txtsrch")
+@app.get("/txtsrch")
 def txtsrch():
     structures = StructureTable(dbfilename)
     text_search = request.POST.text_search
@@ -104,7 +104,7 @@ def txtsrch():
     return get_structures_json(structures, ids)
 
 
-@app.post("/adv_srch")
+@app.get("/adv_srch")
 def adv():
     elincl = request.POST.elements_in
     elexcl = request.POST.elements_out
@@ -217,6 +217,7 @@ def cellsearch():
         try:
             if which('ccdc_searcher') or \
                     pathlib.Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
+                print('CellCheckCSD found')
                 return 'true'
         except TypeError:
             return 'false'
