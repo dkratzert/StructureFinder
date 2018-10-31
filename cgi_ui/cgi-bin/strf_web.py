@@ -215,7 +215,7 @@ def cellsearch():
             return 'true'
     else:
         try:
-            if pathlib.Path(which('ccdc_searcher')).exists() or \
+            if which('ccdc_searcher') or \
                     pathlib.Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
                 return 'true'
         except TypeError:
