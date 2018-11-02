@@ -255,7 +255,10 @@ def show_cellcheck():
         cellstr = ''
         #formula = ''
     if centering:
-        cent = centering_letter_2_num[centering]
+        try:
+            cent = centering_letter_2_num[centering]
+        except KeyError:  # mostly value of '?'
+            cent = 0
     else:
         cent = 0
     response.content_type = 'text/html; charset=UTF-8'
