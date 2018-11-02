@@ -430,6 +430,12 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         cif.cif_data['_refine_diff_density_max'] = res.hpeak
     if res.latt:
         cif.cif_data['_space_group_centring_type'] = res.latt.N_str
+    if res.space_group:
+        cif.cif_data["_space_group_name_H-M_alt"] = res.space_group
+    if res.goof:
+        cif.cif_data["_refine_ls_goodness_of_fit_ref"] = res.goof
+    if res.rgoof:
+        cif.cif_data["_refine_ls_restrained_S_all"] = res.rgoof
     try:
         cif.cif_data["_shelx_res_file"] = str(res)
     except IndexError:
