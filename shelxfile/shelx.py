@@ -81,6 +81,8 @@ class ShelXFile():
     _wr2_regex = re.compile(r'^REM\s+wR2\s+=', re.IGNORECASE)
     _parameters_regex = re.compile(r'^REM\s+\d+\s+parameters\s+refined', re.IGNORECASE)
     _diff_peak_regex = re.compile(r'^REM\sHighest\sdifference', re.IGNORECASE)
+    _goof_regex = re.compile(r'^REM\swR2\s=\s.*,\sGooF', re.IGNORECASE)
+    _spgrp_regex = re.compile(r'^REM \S+ in \S+', re.IGNORECASE)
 
     @time_this_method
     def __init__(self: 'ShelXFile', resfile: str):
@@ -124,6 +126,9 @@ class ShelXFile():
         self.unit = None
         self.R1 = None
         self.wR2 = None
+        self.goof = None
+        self.rgoof = None
+        self.space_group = None
         self.data = None
         self.parameters = None
         self.dat_to_param = None
@@ -1084,6 +1089,17 @@ class ShelXFile():
             try:
                 self.hpeak = float(spline[4].split(",")[0])
                 self.dhole = float(spline[7].split(",")[0])
+            except(IndexError, ValueError):
+                pass
+        if ShelXFile._goof_regex.match(line):
+            try:
+                self.goof = float(spline[8].split(',')[0])
+                self.rgoof = float(spline[12].split(',')[0])
+            except(IndexError, ValueError):
+                pass
+        if ShelXFile._spgrp_regex.match(line):
+            try:
+                self.space_group = spline[3]
             except(IndexError, ValueError):
                 pass
 
