@@ -1172,9 +1172,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 pass
         except TypeError:
             return None
-        for i in self.structures.get_all_structure_names():
-            structure_id = i[0]
-            self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
+        if self.structures:
+            for i in self.structures.get_all_structure_names():
+                structure_id = i[0]
+                self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
         mess = "Loaded {} entries.".format(structure_id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.set_columnsize()
