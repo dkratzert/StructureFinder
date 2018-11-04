@@ -2,11 +2,12 @@
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
-    <title>StructureFinder</title>
+    <title>{{title or ''}}</title>
 
     <link rel="stylesheet" href="http://{{my_ip}}/static/w2ui/w2ui-1.4.3.min.css">
     <link rel="stylesheet" href="http://{{my_ip}}/static/bootstrap-3.3.7/css/bootstrap.min.css">
     <link rel="stylesheet" href="http://{{my_ip}}/static/bootstrap-3.3.7/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="http://{{my_ip}}/static//strf_web.css">
     <script src="http://{{my_ip}}/static/jquery/jquery-3.2.1.min.js"></script>
     <script src="http://{{my_ip}}/static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
     <script src="http://{{my_ip}}/static/jsmol/JSmol_dk.nojq.lite.js"></script>
@@ -16,62 +17,6 @@
     <script> 
         var cgifile = 'http://{{my_ip}}';
     </script>
-
-<style type="text/css">
-
-    body {
-        /*background-color: #ffffff;*/
-        font-size: 12px;
-        line-height: inherit;
-    }
-    
-    .border-right {
-        border-right: 1px solid #bcbcbc;
-    }
-    
-    .collapsing {
-        transition: 1ms;
-    }
-    
-    #resitable1 tr td {
-        line-height: 13px;
-        height: 13px;
-        overflow: auto;
-    }
-    
-    #resitable2 tr td {
-        line-height: 13px;
-        height: 13px;
-        overflow: auto;
-    }
-    
-    .btn-group {
-        padding-bottom: 4px;
-        padding-top: 4px;
-    }
-    
-    .input-group {
-        padding-bottom: 2px;
-        padding-top: 2px;
-    }
-    
-    .input-group-addon {
-        min-width:75px;
-        text-align:left;
-    }
-    
-    #resfile {
-        font-family: "Bitstream Vera Sans Mono", Monaco, "Courier New", Courier, monospace;
-    }
-    
-    #jsmolcolumn {
-        margin-right: 15px;
-        margin-left: 15px;
-        width: 360px;
-        height: 320px;
-}
-
-</style>
 
 
 </head>
@@ -86,7 +31,7 @@
 <a type="button" class="btn btn-primary btn-sm" data-toggle="collapse" data-target="#adv-search"
         id="toggle_advsearch-button">Advanced Search</a>
 <a type="button" class="btn btn-warning btn-sm" id="all_structures">Show All</a>
-<a type="button" class="btn btn-default btn-sm invisible" id="cellsearchcsd_button"
+<a type="button" class="btn btn-default btn-sm {{!'' if host == '127.0.0.1' else 'invisible'}}" id="cellsearchcsd_button"
    href="http://{{my_ip}}/csd" target="_blank">CellCheckCSD</a>
 
 <!-- ------------  The collapsible for simple search options: -----------------  -->
@@ -125,7 +70,8 @@
                 <a href="#" class="badge" id="more_info_badge">info</a> &nbsp;&nbsp;&nbsp;
                 <input title="More cell search results" class="checkbox-inline" type="checkbox" value="" id="more_results">More cell search results &nbsp;&nbsp;&nbsp;
                 <input title="Find supercells" type="checkbox" class="checkbox-inline" value="" id="supercells">Find supercells &nbsp;&nbsp;&nbsp;
-                {{!space_groups}} Find by space group
+                %include('cgi_ui/views/spgr.tpl')
+                Find by space group
             </div>
         </div>
     </div>

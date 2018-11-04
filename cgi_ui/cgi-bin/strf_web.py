@@ -74,10 +74,10 @@ def main():
     """
     response.set_header('Set-Cookie', 'str_id=')
     response.content_type = 'text/html; charset=UTF-8'
-    p = pathlib.Path('./cgi_ui/views/spgr.html').open()
-    space_groups = p.read().encode(encoding='UTF-8', errors='ignore')
-    p.close()
-    output = template('./cgi_ui/views/strf_web_template', {"my_ip": site_ip, "space_groups": space_groups})
+    data = {"my_ip": site_ip,
+            "title": 'StructureFinder',
+            'host': host}
+    output = template('./cgi_ui/views/strf_web', data)
     return output
 
 
@@ -262,7 +262,11 @@ def show_cellcheck():
     else:
         cent = 0
     response.content_type = 'text/html; charset=UTF-8'
-    output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip, 'str_id': cellstr, 'cent': cent})
+    data = {"my_ip": site_ip,
+            "title": 'StructureFinder',
+            'str_id': cellstr, 'cent': cent,
+            'host': host}
+    output = template('./cgi_ui/views/cellcheckcsd', data)
     # 'formula': formula_dict_to_elements(formula)}
     return output
 
