@@ -67,6 +67,7 @@ $(document).ready(function($){
 
         // display how many results I got
     function display_csd_resultnum(result) {
+        var numresult;
         if (typeof result === 'undefined') numresult = 0;
         else (numresult = result.total);
         document.getElementById("found_csd").innerHTML = "Found " + numresult + " structures";

@@ -283,7 +283,7 @@ $(document).ready(function($){
         }
         var sumlist = sumform.split(" ");
         //console.log(sumlist);
-        for (i = 0; i < sumlist.length; i++) {
+        for (var i = 0; i < sumlist.length; i++) {
             var el = sumlist[i];
             //console.log(el);
             if ($.inArray(el, elements) === -1) {
@@ -313,15 +313,16 @@ $(document).ready(function($){
     // Switch between grow and fuse:
     $('#growCheckBox').click(function(){
         var jsmolcol = $("#jsmolcolumn");
+        var data;
         if (this.checked) {
             // Get molecule data and display the molecule:
-            $.post(url = cgifile+'/molecule', data = {id: strid, grow: true}, function (result) {
-            display_molecule(result);
+            $.post(url = cgifile + '/molecule', data = {id: strid, grow: true}, function (result) {
+                display_molecule(result);
             });
         } else {
             // Get molecule data and display the molecule:
-            $.post(url = cgifile+'/molecule', data = {id: strid, grow: false}, function (result) {
-            display_molecule(result);
+            $.post(url = cgifile + '/molecule', data = {id: strid, grow: false}, function (result) {
+                display_molecule(result);
             });
         }
     });
@@ -381,6 +382,7 @@ $(document).ready(function($){
 
     // display how many results I got
     function displayresultnum(result) {
+        var numresult;
         if (typeof result === 'undefined') numresult = 0;
         else (numresult = result.total);
         $("#cellrow").removeClass('invisible');
@@ -408,7 +410,7 @@ $(document).ready(function($){
         
         // Uncheck the grow button:
         //$('#growCheckBox').prop("checked", false);
-        
+        var data;
         // Get residuals table 1:
         $.post(url = cgifile+'/residuals', data = {id: idstr, residuals1: true}, function (result) {
             document.getElementById("residualstable1").innerHTML = result;
