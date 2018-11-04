@@ -100,18 +100,6 @@
                    id="lastmsearchlink"> From Last Month</a>
             </div>
         </div>
-
-        <script>
-            var d1 = $('input[id=date1]');
-            d1.w2field('date', {
-                format: 'yyyy-mm-dd',
-                end: d1
-            });
-            $('input[id=date2]').w2field('date', {
-                format: 'yyyy-mm-dd',
-                start: d1
-            });
-        </script>
     </div>
 
     <div class="row">

@@ -9,7 +9,17 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
 
 $(document).ready(function($){
-    
+
+    var d1 = $('input[id=date1]');
+    d1.w2field('date', {
+        format: 'yyyy-mm-dd',
+        end: d1
+    });
+    $('input[id=date2]').w2field('date', {
+        format: 'yyyy-mm-dd',
+        start: d1
+    });
+
     // The structure ID
     var strid = null;
     
