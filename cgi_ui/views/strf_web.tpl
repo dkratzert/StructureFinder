@@ -1,27 +1,5 @@
-<!DOCTYPE HTML>
-<html lang="en" xmlns="http://www.w3.org/1999/html">
-<head>
-    <meta charset="UTF-8">
-    <title>{{title or ''}}</title>
 
-    <link rel="stylesheet" href="http://{{my_ip}}/static/w2ui/w2ui-1.4.3.min.css">
-    <link rel="stylesheet" href="http://{{my_ip}}/static/bootstrap-3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" href="http://{{my_ip}}/static/bootstrap-3.3.7/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="http://{{my_ip}}/static//strf_web.css">
-    <script src="http://{{my_ip}}/static/jquery/jquery-3.2.1.min.js"></script>
-    <script src="http://{{my_ip}}/static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
-    <script src="http://{{my_ip}}/static/jsmol/JSmol_dk.nojq.lite.js"></script>
-    <script src="http://{{my_ip}}/static/w2ui/w2ui-1.4.3.min.js"></script>
-    <script src="http://{{my_ip}}/static/clipboard/clipboard.min.js"></script>
-    <script src="http://{{my_ip}}/static/strf_web.js"></script>
-    <script> 
-        var cgifile = 'http://{{my_ip}}';
-    </script>
-
-
-</head>
-
-<body>
+% rebase('cgi_ui/views/strf_base.tpl', title='StructureFinder')
 
 <!-- "dropZone" adds drag&drop support for the web site -->
 <div class="container" id="dropZone">
@@ -67,11 +45,13 @@
     <div class="row">
         <div class="col-sm-12">
             <div class="btn-group btn-group-sm" role="group">
-                <a href="#" class="badge" id="more_info_badge">info</a> &nbsp;&nbsp;&nbsp;
-                <input title="More cell search results" class="checkbox-inline" type="checkbox" value="" id="more_results">More cell search results &nbsp;&nbsp;&nbsp;
-                <input title="Find supercells" type="checkbox" class="checkbox-inline" value="" id="supercells">Find supercells &nbsp;&nbsp;&nbsp;
+                <a href="#" class="badge" id="more_info_badge">info</a>
+                <input title="More cell search results" class="checkbox-addon" type="checkbox"
+                       value="" id="more_results"> More cell search results
+                <input title="Find supercells" type="checkbox" class="checkbox-addon"
+                       value="" id="supercells"> Find supercells
                 %include('cgi_ui/views/spgr.tpl')
-                Find by space group
+                Find by space group  
             </div>
         </div>
     </div>
@@ -136,6 +116,8 @@
                 <span class="input-group-addon" data-toggle="tooltip" title="should contain">Elements</span>
                 <input type="text" class="form-control form-sm" placeholder="C H O ... (should contain)"
                        pattern="^[A-z]{1,}$" id="elements_in">
+                <input class="checkbox-addon" type="checkbox" aria-label="Only these elements"
+                   title="Only above Elements" id="onlythese_elem"> Only above Elements
             </div>
         </div>
         <div class="column col-xs-6">
@@ -146,16 +128,16 @@
             </div>
         </div>
     </div>
-
+<!--
     <div class="row">
         <div class="column col-xs-6">
-            <input class="checkbox-inline" type="checkbox" aria-label="Only these elements" 
-                   title="Only above Elements" id="onlythese_elem">Only above Elements
+            <input class="checkbox-addon" type="checkbox" aria-label="Only these elements"
+                   title="Only above Elements" id="onlythese_elem"> Only above Elements
         </div>
         <div class="column col-xs-6">
         </div>
     </div>
-    
+    -->
     <div class="row">
         <div class="column col-xs-6">
             <div class="input-group input-group-sm has-success">
@@ -228,8 +210,3 @@
 </div>  <!-- End of the main container div -->
 
 
-</body>
-
-
-
-</html>

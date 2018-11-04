@@ -1,26 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{title}}</title>
-    
-    <link rel="stylesheet" href="http://{{my_ip}}/static/w2ui/w2ui-1.4.3.min.css">
-    <link rel="stylesheet" href="http://{{my_ip}}/static/bootstrap-3.3.7/css/bootstrap.min.css">
-    <link rel="stylesheet" href="http://{{my_ip}}/static/bootstrap-3.3.7/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="http://{{my_ip}}/static//strf_web.css">
-    <script src="http://{{my_ip}}/static/jquery/jquery-3.2.1.min.js"></script>
-    <script src="http://{{my_ip}}/static/bootstrap-3.3.7/js/bootstrap.min.js"></script>
-    <script src="http://{{my_ip}}/static/w2ui/w2ui-1.4.3.min.js"></script>
-    <script src="http://{{my_ip}}/static/clipboard/clipboard.min.js"></script>
-    <script src="http://{{my_ip}}/static/strf_web.js"></script>
-    <script src="http://{{my_ip}}/static/strf_web_csd.js"></script>
-    <script> 
-        var cgifile = 'http://{{my_ip}}';
-    </script>
-    
-    
-</head>
-<body>
+
+% rebase('cgi_ui/views/strf_base.tpl', title='CellCheckCSD')
+
+<script src="http://{{my_ip}}/static/strf_web_csd.js"></script>
 
 <div class="container"  id="dropZone">
     <h2>CellCheckCSD</h2>
@@ -72,15 +53,3 @@
 
 </div>  <!-- End of main container -->
 
-
-
-<script>
-$(document).ready(function($){
-    
-    
-});
-
-</script>
-
-</body>
-</html>
