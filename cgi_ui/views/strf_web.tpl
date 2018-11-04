@@ -13,8 +13,8 @@
    href="http://{{my_ip}}/csd" target="_blank">CellCheckCSD</a>
 
 <!-- ------------  The collapsible for simple search options: -----------------  -->
-<div class="form-group row" id="mainsearch">
-    <div class="col-sm-6">
+<div class="row" id="mainsearch">
+    <div class="column col-sm-6">
         <div class="input-group input-group-sm">
             <span class="input-group-addon" data-toggle="tooltip" title="Search for a Unit Cell">Unit Cell</span>
             <input type="text" class="form-control" placeholder="a  b  c  &alpha;  &beta;  &gamma;    (or drag&drop .p4p, .res, cif file)" style="font-style: italic" id="smpl_cellsrch" name="cell">
@@ -25,7 +25,7 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-6">
+    <div class="column col-sm-6">
         <div class="input-group input-group-sm">
             <span class="input-group-addon" data-toggle="tooltip" title="Search for a Unit Cell">Text</span>
             <input type="text" class="form-control" placeholder="Search Text" id="smpl_textsrch" name="text">
@@ -37,21 +37,25 @@
         </div>
     </div>
 </div>
+
 <!-- ---------------------    End of simple search     ----------------------    -->
 
 
 <!-- The collapsible for Advanced search options: -->
 <div id="adv-search" class="collapse">
     <div class="row">
-        <div class="col-sm-12">
+        <div class="column col-sm-12">
             <div class="btn-group btn-group-sm" role="group">
                 <a href="#" class="badge" id="more_info_badge">info</a>
+                <span>&nbsp;&nbsp;</span>
                 <input title="More cell search results" class="checkbox-addon" type="checkbox"
-                       value="" id="more_results"> More cell search results
-                <input title="Find supercells" type="checkbox" class="checkbox-addon"
-                       value="" id="supercells"> Find supercells
+                       value="" id="more_results">More cell search results
+                <span>&nbsp;&nbsp;</span>
+                <input title="Find supercells" type="checkbox" class="checkbox-addon-sm"
+                       value="" id="supercells">Find supercells
+                <span>&nbsp;&nbsp;</span>
                 %include('cgi_ui/views/spgr.tpl')
-                Find by space group  
+                Find by space group
             </div>
         </div>
     </div>
@@ -78,13 +82,13 @@
     </div>
 
     <div class="row">
-        <div class="column col-xs-6">
+        <div class="column col-sm-6">
             <div class="input-group input-group-sm">
                 <span class="input-group-addon">Uni Cell</span>
                 <input type="text" class="form-control form-sm" style="font-style: italic" placeholder="a b c &alpha; &beta; &gamma;" id="cell_adv">
             </div>
         </div>
-        <div class="column col-md-6">
+        <div class="column col-sm-6">
             <div class="input-group input-group-sm w2ui-field">
                 <span class="input-group-addon" data-toggle="tooltip"
                       title="Search for structures that were modified between two dates">Date from</span>
@@ -128,16 +132,7 @@
             </div>
         </div>
     </div>
-<!--
-    <div class="row">
-        <div class="column col-xs-6">
-            <input class="checkbox-addon" type="checkbox" aria-label="Only these elements"
-                   title="Only above Elements" id="onlythese_elem"> Only above Elements
-        </div>
-        <div class="column col-xs-6">
-        </div>
-    </div>
-    -->
+
     <div class="row">
         <div class="column col-xs-6">
             <div class="input-group input-group-sm has-success">
@@ -164,10 +159,13 @@
 
 <!-- End of collapsible for search options. -->
 <div class="row">
-    <div class="column col-lg-12">
+    <div class="column col-sm-12">
         <div id="mygrid" style="height: 450px"></div>
     </div>
-    <div class="column col-lg-12">
+</div>
+
+<div class="row">
+    <div class="column col-sm-12">
         <div class="panel panel-default">
             <div class="panel-body">
                 <span class="invisible btn-group" id="cellrow" style="font-size: 14px"> </span>

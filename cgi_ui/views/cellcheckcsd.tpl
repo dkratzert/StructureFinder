@@ -29,7 +29,7 @@
             <a type="button" class="btn btn-default btn-sm" id="backtomain_button" href="http://{{my_ip}}">Back to StructureFinder</a>
         </div>
     </div>
-    <div class="row"> <br></div>
+
     <!-- ------------- The main table: ------------ -->
     <div class="row">
         <div class="column col-sm-12">

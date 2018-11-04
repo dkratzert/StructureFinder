@@ -7,9 +7,6 @@ body {
     line-height: inherit;
 }
 
-.border-right {
-    border-right: 1px solid #bcbcbc;
-}
 
 .collapsing {
     transition: 1ms;
@@ -28,8 +25,8 @@ body {
 }
 
 .btn-group {
-    padding-bottom: 4px;
-    padding-top: 4px;
+    padding-bottom: 2px;
+    padding-top: 2px;
 }
 
 .input-group {
