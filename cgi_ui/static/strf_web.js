@@ -371,8 +371,8 @@ $(document).ready(function($){
 
     // display how many results I got
     function displayresultnum(result) {
-        numresult = result.total;
-        if (typeof numresult === 'undefined') numresult = 0;
+        if (typeof result === 'undefined') numresult = 0;
+        else (numresult = result.total);
         $("#cellrow").removeClass('invisible');
         $("#cell_copy_btn").addClass('invisible');
         $("#growCheckBoxgroup").addClass('invisible');
@@ -468,7 +468,8 @@ $(document).ready(function($){
         spin: false,
         infodiv: false,
         debug: false,
-        j2sPath: "."
+        j2sPath: ".",
+        _serverUrl: ''
     };
 
     function advanced_search(text_in, text_out, elements_in, elements_out, cell_adv, more_res, supercell,

@@ -15,6 +15,7 @@ import socket
 
 names = ['PC9', 'DDT-2.local']
 # run on local ip on my PC:
+#print(socket.gethostname())
 if socket.gethostname() in names:
     host = '127.0.0.1'
     port = "8080"
@@ -70,7 +71,7 @@ def structures_list_data():
 @app.get('/')
 def main():
     """
-    The main web site with html template and space group listing.
+    The main web site with html template.
     """
     response.set_header('Set-Cookie', 'str_id=')
     response.content_type = 'text/html; charset=UTF-8'
@@ -221,11 +222,6 @@ def cellsearch():
                 return 'true'
         except TypeError:
             return 'false'
-
-
-@app.route('/cgi-bin/strf_web.cgi')
-def redirect_old_path():
-    redirect('/')
 
 
 @app.route('/favicon.ico')

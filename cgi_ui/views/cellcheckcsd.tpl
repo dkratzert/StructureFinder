@@ -39,8 +39,17 @@
         </div>
     </div>    
 
+<div class="row">
+    <div class="column col-sm-12">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <span id="found_csd"> </span>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <div class="row">
+<div class="row">
     <div class="col-sm-12">
         <address>
             <strong><a href="https://www.xs3.uni-freiburg.de/research/structurefinder">StructureFinder</a> 

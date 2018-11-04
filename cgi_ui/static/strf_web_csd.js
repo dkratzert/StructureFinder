@@ -57,14 +57,20 @@ $(document).ready(function($){
                 params = {cell: cell, centering: centering},
                 url = cgifile + "/csd-list",
                 function (result) {
-                    //displayresultnum(result);
+                    display_csd_resultnum(result);
                     //console.log(result);
                     //console.log(more_res);
                 }
             );
         }
     }
-    
+
+        // display how many results I got
+    function display_csd_resultnum(result) {
+        if (typeof result === 'undefined') numresult = 0;
+        else (numresult = result.total);
+        document.getElementById("found_csd").innerHTML = "Found " + numresult + " structures";
+    }
     
     function show_csd_entry(identifier) {
         //console.log(identifier);
