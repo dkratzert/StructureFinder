@@ -168,7 +168,7 @@
     <div class="column col-sm-12">
         <div class="panel panel-default">
             <div class="panel-body">
-                <span class="invisible btn-group" id="cellrow" style="font-size: 14px"> </span>
+                <span class="invisible btn-group" id="cellrow"> </span>
                 <span class="btn btn-default glyphicon glyphicon-copy invisible" id="cell_copy_btn"
                       data-toggle="tooltip" title="Copy cell to clipboard." data-clipboard-target="#hidden-cell">
                 </span>
