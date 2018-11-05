@@ -40,7 +40,7 @@ if pyver[0] == 3 and pyver[1] < 4:
     sys.exit()
 
 from shutil import which
-from searcher.constants import centering_letter_2_num
+from searcher.constants import centering_letter_2_num, centering_num_2_letter
 from ccdc.query import get_cccsd_path, search_csd, parse_results
 from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response
 from displaymol.mol_file_writer import MolFile
@@ -277,12 +277,10 @@ def search_cellcheck_csd():
     if not cell:
         return {}
     cent = request.POST.centering
-    centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
-    c = centering[int(cent)]
     if len(cell) < 6:
         return {}
     if cmd == 'get-records' and len(cell.split()) == 6:
-        xml = search_csd(cell.split(), centering=c)
+        xml = search_csd(cell.split(), centering=centering_num_2_letter[int(cent)])
         # print(xml)
         try:
             results = parse_results(xml)  # results in a dictionary
