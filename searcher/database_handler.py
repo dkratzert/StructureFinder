@@ -266,24 +266,19 @@ class DatabaseRequest():
         row = self.cur.fetchone()
         return row
 
-    def db_request(self, request, *args, many=False) -> (list, tuple):
+    def db_request(self, request, *args) -> (list, tuple):
         """
         Performs a SQLite3 database request with "request" and optional arguments
         to insert parameters via "?" into the database request.
         A push request will return the last row-Id.
         A pull request will return the requested rows
-        :param many: Use executemany()
         :param request: sqlite database request like:
                     '''SELECT Structure.cell FROM Structure'''
         :type request: str
         """
         try:
-            if many:
-                # print(args)
-                self.cur.executemany(request, *args)
-            else:
-                # print(request, args)
-                self.cur.execute(request, *args)
+            # print(request, args)
+            self.cur.execute(request, *args)
             #last_rowid = self.cur.lastrowid
         except OperationalError as e:
             print(e, "\nDB execution error")
@@ -385,7 +380,7 @@ class StructureTable():
                       Structure.dataname FROM Structure'''
         else:
             return {}
-        rows = self.database.db_request(req, many=False)
+        rows = self.database.db_request(req)
         self.database.cur.close()
         # setting row_factory back to regular touple base requests:
         self.database.con.row_factory = None
