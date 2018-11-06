@@ -12,9 +12,8 @@ Created on 09.02.2015
 @author: daniel
 """
 
-import sqlite3
 import sys
-from sqlite3 import OperationalError
+from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 
 import searcher
 from lattice import lattice
@@ -38,7 +37,7 @@ class DatabaseRequest():
         :type dbfile: str
         """
         # open the database
-        self.con = sqlite3.connect(dbfile)
+        self.con = connect(dbfile)
         # self.con.execute("PRAGMA foreign_keys = ON")
         # self.con.text_factory = str
         # self.con.text_factory = bytes
@@ -230,13 +229,13 @@ class DatabaseRequest():
 
         # The simple tokenizer is best for my purposes (A self-written tokenizer would even be better):
         self.cur.execute("""
-            CREATE VIRTUAL TABLE txtsearch USING 
-                    fts4(StructureId    INTEGER, 
-                         filename       TEXT, 
-                         dataname       TEXT, 
+            CREATE VIRTUAL TABLE txtsearch USING
+                    fts4(StructureId    INTEGER,
+                         filename       TEXT,
+                         dataname       TEXT,
                          path           TEXT,
                          shelx_res_file TEXT,
-                            tokenize=simple "tokenchars= .=-_");  
+                            tokenize=simple "tokenchars= .=-_");
                           """
                          )
 
@@ -306,11 +305,11 @@ class DatabaseRequest():
         # commit is very slow:
         try:
             self.con.commit()
-        except sqlite3.ProgrammingError:
+        except ProgrammingError:
             pass
         try:
             self.con.close()
-        except sqlite3.ProgrammingError:
+        except ProgrammingError:
             pass
 
     def commit_db(self, comment=""):
@@ -521,31 +520,24 @@ class StructureTable():
         Returns the sum formula of an entry as dictionary.
 
         >>> db = StructureTable('./test-data/test.sql')
-        >>> sum = db.get_calc_sum_formula(5)
-        >>> sum['Id'] == 5
+        >>> sumf = db.get_calc_sum_formula(5)
+        >>> sumf['Id'] == 5
         True
-        >>> sum['Elem_C'] == 18.0
+        >>> sumf['Elem_C'] == 18.0
         True
-        >>> sum['Elem_D']
+        >>> sumf['Elem_D']
 
-        >>> sum['Elem_H'] == 19.0
+        >>> sumf['Elem_H'] == 19.0
         True
-        >>> sum['Elem_N'] == 1.0
+        >>> sumf['Elem_N'] == 1.0
         True
-        >>> sum['Elem_O'] == 4.0
+        >>> sumf['Elem_O'] == 4.0
         True
-        >>> sum['Elem_O'] == 5.0
+        >>> sumf['Elem_O'] == 5.0
         False
         """
         request = """SELECT * FROM sum_formula WHERE StructureId = ?"""
-        # setting row_factory to dict for the cif keys:
-        self.database.con.row_factory = self.database.dict_factory
-        self.database.cur = self.database.con.cursor()
-        dic = self.database.db_fetchone(request, (structure_id,))
-        self.database.cur.close()
-        # setting row_factory back to regular touple base requests:
-        self.database.con.row_factory = None
-        self.database.cur = self.database.con.cursor()
+        dic = self.get_dict_from_request(request, structure_id)
         return dic
 
     def get_cif_sumform_by_id(self, structure_id):
@@ -708,15 +700,15 @@ class StructureTable():
         """
         populate_index = """
                     INSERT INTO txtsearch (
-                                StructureId, 
-                                filename, 
-                                dataname, 
+                                StructureId,
+                                filename,
+                                dataname,
                                 path,
                                 shelx_res_file
                                 )
-            SELECT  str.Id, 
-                    str.filename, 
-                    str.dataname, 
+            SELECT  str.Id,
+                    str.filename,
+                    str.dataname,
                     str.path,
                     res._shelx_res_file
                         FROM Structure AS str
@@ -733,9 +725,21 @@ class StructureTable():
         """
         request = """select * from residuals where StructureId = ?"""
         # setting row_factory to dict for the cif keys:
+        dic = self.get_dict_from_request(request, structure_id)
+        return dic
+
+    def get_dict_from_request(self, request, structure_id):
+        """
+        Retruns the result of the given database request as dictionary.
+        """
+        # setting row_factory to dict_factory
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
-        dic = self.database.db_fetchone(request, (structure_id,))
+        dic = {}
+        try:
+            dic = self.database.db_fetchone(request, (structure_id,))
+        except (ValueError, InterfaceError) as e:
+            print(e)
         self.database.cur.close()
         # setting row_factory back to regular touple base requests:
         self.database.con.row_factory = None
@@ -752,13 +756,7 @@ class StructureTable():
         """
         request = """select * from cell where StructureId = ?"""
         # setting row_factory to dict for the cif keys:
-        self.database.con.row_factory = self.database.dict_factory
-        self.database.cur = self.database.con.cursor()
-        dic = self.database.db_fetchone(request, (structure_id,))
-        self.database.cur.close()
-        # setting row_factory back to regular touple base requests:
-        self.database.con.row_factory = None
-        self.database.cur = self.database.con.cursor()
+        dic = self.get_dict_from_request(request, structure_id)
         return dic
 
     @staticmethod
@@ -842,7 +840,7 @@ class StructureTable():
         '''
         try:
             ids = self.database.db_request(req, (text, text, text, text))
-        except (TypeError, sqlite3.ProgrammingError, sqlite3.OperationalError) as e:
+        except (TypeError, ProgrammingError, OperationalError) as e:
             print('DB request error in find_by_strings().', e)
             return tuple([])
         return ids

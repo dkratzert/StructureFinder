@@ -118,3 +118,5 @@ else:
     tmessage = "\nTotal {3} cif/res files in '{4}'. Duration: {0:>2d} h, {1:>2d} m, {2:>3.2f} s"
     print(tmessage.format(int(h), int(m), s, ncifs, dbfilename))
     check_update()
+
+

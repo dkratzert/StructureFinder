@@ -201,7 +201,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                         structures.database.commit_db()
                     prognum += 1
             continue
-        if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2') 
+        if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2')
                 or name.endswith('.tgz')) and fillcif:
             if fullpath.endswith('.zip'):
                 # MyZipReader defines .cif ending:
@@ -259,8 +259,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     print('res file not added:', fullpath)
                 continue
             if self:
-                self.add_table_row(name=name, path=fullpath,
-                               data=name, structure_id=str(lastid))
+                self.add_table_row(name=name, path=fullpath, data=name, structure_id=str(lastid))
             lastid += 1
             num += 1
             rescount += 1
