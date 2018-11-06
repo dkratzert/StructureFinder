@@ -163,15 +163,17 @@ def get_error_from_value(value: str) -> tuple:
     (250.0123, 0.0023)
     >>> get_error_from_value("123(25)")
     (123.0, 25.0)
+    >>> get_error_from_value("123(25")
+    (123.0, 25.0)
     """
     try:
         value = value.replace(" ", "")
     except AttributeError:
         return value, 0.0
-    if "(" in value and ")":
-        vval = value.split("(")[0]
+    if "(" in value:
+        vval, err = value.split("(")
         val = vval.split('.')
-        err = value.split("(")[1].split(")")[0]
+        err = err.split(")")[0]
         if len(val) > 1:
             return float(vval), int(err) * (10 ** (-1 * len(val[1])))
         else:

@@ -56,7 +56,7 @@ class MolFile(object):
             blist.append("{:>4d}{:>4d}  1  0  0  0  0".format(bo[0], bo[1]))
         return '\n'.join(blist)
 
-    def get_conntable_from_atoms(self, extra_param=0.5):
+    def get_conntable_from_atoms(self, extra_param=0.48):
         """
         returns a connectivity table from the atomic coordinates and the covalence
         radii of the atoms.

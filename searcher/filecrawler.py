@@ -21,7 +21,7 @@ import tarfile
 import time
 import zipfile
 
-from searcher import atoms, database_handler, fileparser
+from searcher import atoms, database_handler
 from lattice.lattice import vol_unitcell
 from searcher.fileparser import Cif
 from shelxfile.shelx import ShelXFile
@@ -170,7 +170,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
         fullpath = os.path.join(filepth, name)
         options['modification_time'] = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(fullpath)))
         options['file_size'] = int(os.stat(str(fullpath)).st_size)
-        cif = fileparser.Cif(options=options)
+        cif = Cif(options=options)
         if self:
             if prognum == 20:
                 prognum = 0
@@ -289,7 +289,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
     return lastid-1
 
 
-def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: str,
+def fill_db_tables(cif: Cif, filename: str, path: str, structure_id: str,
                    structures: database_handler.StructureTable):
     """
     Fill all info from cif file into the database tables
