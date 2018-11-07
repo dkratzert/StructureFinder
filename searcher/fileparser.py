@@ -402,8 +402,11 @@ class Cif(object):
 def delimit_line(line: str) -> list:
     """
     Searches for delimiters in a cif line and returns a list of the respective values.
-    >>> line = " 'C'  'C'   0.0033   0.0016   'some text inside' \\"more text\\""
-    >>> delimit_line(line)
+    >>> delimit_line("' x,y,z '")
+    ['x,y,z']
+    >>> delimit_line("'   +x,   +y,   +z'")
+    ['+x, +y, +z']
+    >>> delimit_line(" 'C'  'C'   0.0033   0.0016   'some text inside' \\"more text\\"")
     ['C', 'C', '0.0033', '0.0016', 'some text inside', 'more text']
     >>> delimit_line("123  123 sdf")
     ['123', '123', 'sdf']
@@ -413,8 +416,17 @@ def delimit_line(line: str) -> list:
     ['x, y, z']
     >>> delimit_line("'a dog's life'")
     ["a dog's life"]
+    >>> delimit_line("'+x, +y, +z'")
+    ['+x, +y, +z']
+    >>> delimit_line("'-x, -y, -z'")
+    ['-x, -y, -z']
     """
     data = []
+    # remove space characters in front of characters behind ' or " and at the end
+    line = line.lstrip().rstrip()
+    if line.startswith("'") and line.endswith("'") or line.startswith('"') and line.endswith('"'):
+        line = line[1:-1]
+        line = "'" + line.lstrip().rstrip() + "'"
     line = line.split(' ')
     word = []
     cont = False
@@ -443,7 +455,7 @@ def delimit_line(line: str) -> list:
 
 if __name__ == '__main__':
     cif = Cif()
-    with open(r'D:\Github\pymatgen\test_files\ICSD59959.cif', 'r') as f:
+    with open(r'D:\GitHub\StructureFinder\test-data\2004813.cif', 'r') as f:
         cifok = cif.parsefile(f.readlines())
     pprint(cif.cif_data)
     #pprint(cif._loop)
