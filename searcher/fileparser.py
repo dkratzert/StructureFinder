@@ -330,6 +330,10 @@ class Cif(object):
         """
         for x in self._loop:
             try:
+                name = x['_atom_site_label']
+            except KeyError:
+                continue
+            try:
                 try:
                     part = x['_atom_site_disorder_group']
                 except KeyError:
@@ -345,18 +349,26 @@ class Cif(object):
                             if type_symbol[:n] in sorted_atoms:
                                 type_symbol = type_symbol[:n] 
                 try:
+                    # The occupancy:
                     occu = float(x['_atom_site_occupancy'].split('(')[0])
                 except (KeyError, ValueError):
-                    occu = 1
-                yield [x['_atom_site_label'], 
+                    # Better a wrong one than nothing:
+                    occu = 1.0
+                # The atom has at least a label and coordinates. Otherwise, no atom.
+                xc = x['_atom_site_fract_x']
+                yc = x['_atom_site_fract_y']
+                zc = x['_atom_site_fract_z']
+                yield [name,
                        type_symbol,
-                       x['_atom_site_fract_x'],
-                       x['_atom_site_fract_y'],
-                       x['_atom_site_fract_z'],
+                       float(0 if xc == '.' else xc.split('(')[0]),
+                       float(0 if yc == '.' else yc.split('(')[0]),
+                       float(0 if zc == '.' else zc.split('(')[0]),
                        occu,
                        0 if part == '.' or part == '?' else int(part)]
             except (KeyError, ValueError) as e:
                 #print(e)
+                #print(self.data)
+                #raise 
                 continue
 
     @property
@@ -423,7 +435,7 @@ def delimit_line(line: str) -> list:
 
 if __name__ == '__main__':
     cif = Cif()
-    with open(r'D:\GitHub\StructureFinder\test-data\COD\1000001.cif', 'r') as f:
+    with open(r'D:\Github\pymatgen\test_files\ICSD59959.cif', 'r') as f:
         cifok = cif.parsefile(f.readlines())
     pprint(cif.cif_data)
     #pprint(cif._loop)

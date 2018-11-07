@@ -360,9 +360,12 @@ def fill_db_tables(cif: Cif, filename: str, path: str, structure_id: str,
                 name = x[0]
             except IndexError:
                 continue
-            structures.fill_atoms_table(structure_id, name, atom_type_symbol,
-                                        float(x[2].split('(')[0]), float(x[3].split('(')[0]), float(x[4].split('(')[0]), 
-                                        occu, disord)
+            try:
+                structures.fill_atoms_table(structure_id, name, atom_type_symbol,
+                                        x[2], x[3], x[4], occu, disord)
+            except ValueError:
+                pass
+                #print(cif.cif_data['data'], path, filename)
             if elem in sum_from_dict:
                 sum_from_dict[elem] += occu
             else:
