@@ -1,19 +1,11 @@
-<!--
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
--->
+
 <!--
 &#x0305;  <- bar over character before
 &#x2081;  <- 1 as subscript
 &#x2082;  <- 2 as subscript
 &#x2083;  <- 3 as subscript
 -->
-<select id="IT_number">
+<select id="IT_number" title="Space Group Number">
     <option>  None  </option>
     <option>  1 -> (P1)</option>
     <option>  2 -> (P1&#x0305;)</option>
@@ -246,7 +238,4 @@
     <option>229 -> (I m 3&#x0305; m)</option>
     <option>230 -> (I a 3&#x0305; d)</option>
 </select>
-<!--
-</body>
-</html>
--->
+

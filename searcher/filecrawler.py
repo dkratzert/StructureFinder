@@ -21,7 +21,7 @@ import tarfile
 import time
 import zipfile
 
-from searcher import atoms, database_handler, fileparser
+from searcher import atoms, database_handler
 from lattice.lattice import vol_unitcell
 from searcher.fileparser import Cif
 from shelxfile.shelx import ShelXFile
@@ -170,7 +170,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
         fullpath = os.path.join(filepth, name)
         options['modification_time'] = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(fullpath)))
         options['file_size'] = int(os.stat(str(fullpath)).st_size)
-        cif = fileparser.Cif(options=options)
+        cif = Cif(options=options)
         if self:
             if prognum == 20:
                 prognum = 0
@@ -201,7 +201,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                         structures.database.commit_db()
                     prognum += 1
             continue
-        if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2') 
+        if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2')
                 or name.endswith('.tgz')) and fillcif:
             if fullpath.endswith('.zip'):
                 # MyZipReader defines .cif ending:
@@ -259,8 +259,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     print('res file not added:', fullpath)
                 continue
             if self:
-                self.add_table_row(name=name, path=fullpath,
-                               data=name, structure_id=str(lastid))
+                self.add_table_row(name=name, path=fullpath, data=name, structure_id=str(lastid))
             lastid += 1
             num += 1
             rescount += 1
@@ -289,7 +288,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
     return lastid-1
 
 
-def fill_db_tables(cif: fileparser.Cif, filename: str, path: str, structure_id: str,
+def fill_db_tables(cif: Cif, filename: str, path: str, structure_id: str,
                    structures: database_handler.StructureTable):
     """
     Fill all info from cif file into the database tables
@@ -430,6 +429,12 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         cif.cif_data['_refine_diff_density_max'] = res.hpeak
     if res.latt:
         cif.cif_data['_space_group_centring_type'] = res.latt.N_str
+    if res.space_group:
+        cif.cif_data["_space_group_name_H-M_alt"] = res.space_group
+    if res.goof:
+        cif.cif_data["_refine_ls_goodness_of_fit_ref"] = res.goof
+    if res.rgoof:
+        cif.cif_data["_refine_ls_restrained_S_all"] = res.rgoof
     try:
         cif.cif_data["_shelx_res_file"] = str(res)
     except IndexError:

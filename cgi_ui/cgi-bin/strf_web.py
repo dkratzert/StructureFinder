@@ -15,6 +15,7 @@ import socket
 
 names = ['PC9', 'DDT-2.local']
 # run on local ip on my PC:
+#print(socket.gethostname())
 if socket.gethostname() in names:
     host = '127.0.0.1'
     port = "8080"
@@ -39,7 +40,7 @@ if pyver[0] == 3 and pyver[1] < 4:
     sys.exit()
 
 from shutil import which
-from searcher.constants import centering_letter_2_num
+from searcher.constants import centering_letter_2_num, centering_num_2_letter
 from ccdc.query import get_cccsd_path, search_csd, parse_results
 from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response
 from displaymol.mol_file_writer import MolFile
@@ -70,14 +71,14 @@ def structures_list_data():
 @app.get('/')
 def main():
     """
-    The main web site with html template and space group listing.
+    The main web site with html template.
     """
     response.set_header('Set-Cookie', 'str_id=')
     response.content_type = 'text/html; charset=UTF-8'
-    p = pathlib.Path('./cgi_ui/views/spgr.html').open()
-    space_groups = p.read().encode(encoding='UTF-8', errors='ignore')
-    p.close()
-    output = template('./cgi_ui/views/strf_web_template', {"my_ip": site_ip, "space_groups": space_groups})
+    data = {"my_ip": site_ip,
+            "title": 'StructureFinder',
+            'host': host}
+    output = template('./cgi_ui/views/strf_web', data)
     return output
 
 
@@ -223,11 +224,6 @@ def cellsearch():
             return 'false'
 
 
-@app.route('/cgi-bin/strf_web.cgi')
-def redirect_old_path():
-    redirect('/')
-
-
 @app.route('/favicon.ico')
 def redirect_to_favicon():
     redirect('/static/favicon.ico')
@@ -255,11 +251,18 @@ def show_cellcheck():
         cellstr = ''
         #formula = ''
     if centering:
-        cent = centering_letter_2_num[centering]
+        try:
+            cent = centering_letter_2_num[centering]
+        except KeyError:  # mostly value of '?'
+            cent = 0
     else:
         cent = 0
     response.content_type = 'text/html; charset=UTF-8'
-    output = template('./cgi_ui/views/cellcheckcsd', {"my_ip": site_ip, 'str_id': cellstr, 'cent': cent})
+    data = {"my_ip": site_ip,
+            "title": 'StructureFinder',
+            'str_id': cellstr, 'cent': cent,
+            'host': host}
+    output = template('./cgi_ui/views/cellcheckcsd', data)
     # 'formula': formula_dict_to_elements(formula)}
     return output
 
@@ -274,12 +277,10 @@ def search_cellcheck_csd():
     if not cell:
         return {}
     cent = request.POST.centering
-    centering = {0: 'P', 1: 'A', 2: 'B', 3: 'C', 4: 'F', 5: 'I', 6: 'R'}
-    c = centering[int(cent)]
     if len(cell) < 6:
         return {}
     if cmd == 'get-records' and len(cell.split()) == 6:
-        xml = search_csd(cell.split(), centering=c)
+        xml = search_csd(cell.split(), centering=centering_num_2_letter[int(cent)])
         # print(xml)
         try:
             results = parse_results(xml)  # results in a dictionary

@@ -199,7 +199,7 @@ if (!Jmol._version)
             _persistentMenu: false,
             _getZOrders: getZOrders,
             _z: getZOrders(z),
-            _debugCode: true,  // set false in process of minimization
+            _debugCode: false,  // set false in process of minimization
             _debugCore: false, // set true using URL &debugCore
             db: {
                 _databasePrefixes: "$=:",

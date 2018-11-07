@@ -9,7 +9,17 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
 
 $(document).ready(function($){
-    
+
+    var d1 = $('input[id=date1]');
+    d1.w2field('date', {
+        format: 'yyyy-mm-dd',
+        end: d1
+    });
+    $('input[id=date2]').w2field('date', {
+        format: 'yyyy-mm-dd',
+        start: d1
+    });
+
     // The structure ID
     var strid = null;
     
@@ -273,7 +283,7 @@ $(document).ready(function($){
         }
         var sumlist = sumform.split(" ");
         //console.log(sumlist);
-        for (i = 0; i < sumlist.length; i++) {
+        for (var i = 0; i < sumlist.length; i++) {
             var el = sumlist[i];
             //console.log(el);
             if ($.inArray(el, elements) === -1) {
@@ -303,15 +313,16 @@ $(document).ready(function($){
     // Switch between grow and fuse:
     $('#growCheckBox').click(function(){
         var jsmolcol = $("#jsmolcolumn");
+        var data;
         if (this.checked) {
             // Get molecule data and display the molecule:
-            $.post(url = cgifile+'/molecule', data = {id: strid, grow: true}, function (result) {
-            display_molecule(result);
+            $.post(url = cgifile + '/molecule', data = {id: strid, grow: true}, function (result) {
+                display_molecule(result);
             });
         } else {
             // Get molecule data and display the molecule:
-            $.post(url = cgifile+'/molecule', data = {id: strid, grow: false}, function (result) {
-            display_molecule(result);
+            $.post(url = cgifile + '/molecule', data = {id: strid, grow: false}, function (result) {
+                display_molecule(result);
             });
         }
     });
@@ -371,8 +382,9 @@ $(document).ready(function($){
 
     // display how many results I got
     function displayresultnum(result) {
-        numresult = result.total;
-        if (typeof numresult === 'undefined') numresult = 0;
+        var numresult;
+        if (typeof result === 'undefined') numresult = 0;
+        else (numresult = result.total);
         $("#cellrow").removeClass('invisible');
         $("#cell_copy_btn").addClass('invisible');
         $("#growCheckBoxgroup").addClass('invisible');
@@ -398,7 +410,7 @@ $(document).ready(function($){
         
         // Uncheck the grow button:
         //$('#growCheckBox').prop("checked", false);
-        
+        var data;
         // Get residuals table 1:
         $.post(url = cgifile+'/residuals', data = {id: idstr, residuals1: true}, function (result) {
             document.getElementById("residualstable1").innerHTML = result;
@@ -468,7 +480,8 @@ $(document).ready(function($){
         spin: false,
         infodiv: false,
         debug: false,
-        j2sPath: "."
+        j2sPath: ".",
+        _serverUrl: ''
     };
 
     function advanced_search(text_in, text_out, elements_in, elements_out, cell_adv, more_res, supercell,

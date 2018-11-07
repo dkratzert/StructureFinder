@@ -1,15 +1,13 @@
-
-import sys
 import argparse
-
+import sys
 import time
 from pathlib import Path
 from sqlite3 import DatabaseError
 
 from misc import update_check
-from searcher import filecrawler, database_handler
-
 from misc.version import VERSION
+from searcher.database_handler import DatabaseRequest, StructureTable
+from searcher.filecrawler import put_files_in_db
 
 parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect .cif/.res files to a '
                                              'database.\n'
@@ -88,7 +86,7 @@ else:
             pass
     for p in args.dir:
         # the command line version
-        db = database_handler.DatabaseRequest(dbfilename)
+        db = DatabaseRequest(dbfilename)
         try:
             db.initialize_db()
         except DatabaseError:
@@ -99,11 +97,11 @@ else:
             lastid = 1
         else:
             lastid += 1
-        structures = database_handler.StructureTable(dbfilename)
+        structures = StructureTable(dbfilename)
         try:
-            ncifs = filecrawler.put_files_in_db(searchpath=p, excludes=args.ex,
-                                                structures=structures, lastid=lastid,
-                                                fillres=args.fillres, fillcif=args.fillcif)
+            ncifs = put_files_in_db(searchpath=p, excludes=args.ex,
+                                    structures=structures, lastid=lastid,
+                                    fillres=args.fillres, fillcif=args.fillcif)
         except OSError as e:
             print("Unable to collect files:")
             print(e)

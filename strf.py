@@ -16,7 +16,7 @@ from __future__ import print_function
 
 import platform
 import webbrowser
-from os.path import isfile
+from os.path import isfile, samefile
 from sqlite3 import DatabaseError, ProgrammingError
 
 from PyQt5.QtCore import QModelIndex
@@ -46,7 +46,7 @@ from misc import update_check
 from misc.version import VERSION
 from pymatgen.core import mat_lattice
 from searcher import constants, misc, filecrawler, database_handler
-from searcher.constants import py36, centering_num_2_letter, centering_letter_2_num
+from searcher.constants import centering_num_2_letter, centering_letter_2_num
 from searcher.fileparser import Cif
 from searcher.misc import is_valid_cell, elements
 
@@ -60,14 +60,12 @@ try:
 except ModuleNotFoundError:
     pass
 
-if py36:
-    """Only import this if Python 3.6 is used."""
-    try:
-        from PyQt5.QtWebEngineWidgets import QWebEngineView
-    except Exception as e:
-        print(e, '#')
-        if DEBUG:
-            raise
+try:
+    from PyQt5.QtWebEngineWidgets import QWebEngineView
+except Exception as e:
+    print(e, '# Unable to import QWebEngineView')
+    if DEBUG:
+        raise
 
 __metaclass__ = type  # use new-style classes
 
@@ -131,20 +129,14 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # Set both to today() to distinquish between a modified and unmodified date field.
         self.ui.dateEdit1.setDate(QtCore.QDate(date.today()))
         self.ui.dateEdit2.setDate(QtCore.QDate(date.today()))
-        if py36:
-            try:
-                molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-                molf.write_text(data=' ', encoding="utf-8", errors='ignore')
-                self.init_webview()
-            except Exception as e:
-                # Graphics driver not compatible
-                print(e, '##')
-                raise
-        else:
-            self.ui.MaintabWidget.removeTab(2)
-            self.ui.txtSearchEdit.hide()
-            self.ui.txtSearchLabel.hide()
-            self.ui.openglview.hide()
+        try:
+            molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
+            molf.write_text(data=' ', encoding="utf-8", errors='ignore')
+            self.init_webview()
+        except Exception as e:
+            # Graphics driver not compatible
+            print(e, '##')
+            raise
         self.ui.MaintabWidget.setCurrentIndex(0)
         self.setWindowIcon(QtGui.QIcon(os.path.join(application_path, './icons/strf.png')))
         self.uipass = Ui_PasswdDialog()
@@ -528,10 +520,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.searchCellLineEDit.clear()
         self.ui.txtSearchEdit.clear()
         self.ui.cifList_treeWidget.clear()
-        if py36:
-            molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-            molf.write_text(data=' ', encoding="utf-8", errors='ignore')
-            self.view.reload()
+        molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
+        molf.write_text(data=' ', encoding="utf-8", errors='ignore')
+        self.view.reload()
         try:
             self.structures.database.cur.close()
         except Exception:
@@ -594,9 +585,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         status = False
         save_name, tst = QtWidgets.QFileDialog.getSaveFileName(self, caption='Save File', directory='./',
-                                                               filter="*.sqlite")
+                                                               filter="*.sqlite, *.*")
         if save_name:
-            if shutil._samefile(self.dbfilename, save_name):
+            if samefile(self.dbfilename, save_name):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
                 return False
         if save_name:
@@ -649,7 +640,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         try:
             self.display_molecule(cell, structure_id)
         except Exception as e:
-            print(e, "unable to display molecule")
+            print(e, "unable to display molecule!!")
             if DEBUG:
                 raise
         self.ui.cifList_treeWidget.setFocus()
@@ -1172,9 +1163,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 pass
         except TypeError:
             return None
-        for i in self.structures.get_all_structure_names():
-            structure_id = i[0]
-            self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
+        if self.structures:
+            for i in self.structures.get_all_structure_names():
+                structure_id = i[0]
+                self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
         mess = "Loaded {} entries.".format(structure_id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.set_columnsize()

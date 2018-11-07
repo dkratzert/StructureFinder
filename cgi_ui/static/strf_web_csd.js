@@ -14,7 +14,7 @@ $(document).ready(function($){
             footer: true
         },
         columns: [
-            {field: 'chemical_formula',  caption: 'formula', size: '20%', sortable: false, attr: 'align=left'},
+            {field: 'chemical_formula',  caption: 'Formula', size: '20%', sortable: false, attr: 'align=left'},
             {field: 'cell_length_a',     caption: '<i>a</i>', size: '10%',  sortable: false, resizable: true},
             {field: 'cell_length_b',     caption: '<i>b</i>', size: '10%',  sortable: false, resizable: true},
             {field: 'cell_length_c',     caption: '<i>c</i>', size: '10%',  sortable: false, resizable: true},
@@ -22,7 +22,7 @@ $(document).ready(function($){
             {field: 'cell_angle_beta',   caption: '<i>&beta;</i>', size: '10%',  sortable: false, resizable: true},
             {field: 'cell_angle_gamma',  caption: '<i>&gamma;</i>', size: '10%',  sortable: false, resizable: true},
             {field: 'recid',             caption: 'Itentity', size: '10%',  sortable: false, resizable: true},
-            {field: 'space_group',     caption: 'Space Grp.', size: '10%',  sortable: false, resizable: true}
+            {field: 'space_group',     caption: 'Space Group', size: '10%',  sortable: false, resizable: true}
         ],
         //sortData: [{field: 'dataname', direction: 'ASC'}],
         onDblClick:function(event) {
@@ -57,14 +57,21 @@ $(document).ready(function($){
                 params = {cell: cell, centering: centering},
                 url = cgifile + "/csd-list",
                 function (result) {
-                    //displayresultnum(result);
+                    display_csd_resultnum(result);
                     //console.log(result);
                     //console.log(more_res);
                 }
             );
         }
     }
-    
+
+        // display how many results I got
+    function display_csd_resultnum(result) {
+        var numresult;
+        if (typeof result === 'undefined') numresult = 0;
+        else (numresult = result.total);
+        document.getElementById("found_csd").innerHTML = "Found " + numresult + " structures";
+    }
     
     function show_csd_entry(identifier) {
         //console.log(identifier);
