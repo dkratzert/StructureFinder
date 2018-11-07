@@ -73,6 +73,7 @@ class Cif(object):
             "_computing_structure_solution": '',
             "_computing_structure_refinement": '',
             "_refine_special_details": '',
+            "_refine_ls_abs_structure_Flack": '',
             "_refine_ls_structure_factor_coef": '',
             "_refine_ls_weighting_details": '',
             "_refine_ls_number_reflns": '',
@@ -455,7 +456,7 @@ def delimit_line(line: str) -> list:
 
 if __name__ == '__main__':
     cif = Cif()
-    with open(r'D:\GitHub\StructureFinder\test-data\2004813.cif', 'r') as f:
+    with open(r'/Users/daniel/GitHub/StructureFinder/test-data/breit_tb13_85.cif', 'r') as f:
         cifok = cif.parsefile(f.readlines())
     pprint(cif.cif_data)
     #pprint(cif._loop)
