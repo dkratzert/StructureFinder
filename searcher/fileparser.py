@@ -124,6 +124,8 @@ class Cif(object):
             if line[0] == "_" and loop_body:
                 loop = False
                 loop_body = False
+                loophead_list.clear()
+                loopkey = ''
             if loop:
                 line = line.lstrip()
                 # leave out comments:
@@ -131,8 +133,6 @@ class Cif(object):
                     continue
                 if line != "loop_":
                     loopkey = line
-                    #print(loopkey)
-                    #continue
                 if line[:5] == "loop_":
                     loop = True
                     loop_body = False
@@ -162,15 +162,7 @@ class Cif(object):
                         loopitem[loophead_list[n]] = item
                     if cont:
                         continue
-                    # TODO: make this general. Not only for atoms:
-                    #print(loophead_list, loopkey, loopitem)
                     loops.append(loopitem)
-                    #if loopkey and loopitem[loopkey] in loops:
-                    #    # atom is already there, upating values
-                    #    loops[loopitem[loopkey]].update(loopitem)
-                    #elif loopkey:
-                    #    # atom is not there, creating key
-                    #    loops[loopitem[loopkey]] = loopitem  # loopitem[loopkey] is the atoms name
                 continue
             # Leave out save_ frames:
             if save_frame:
@@ -231,20 +223,10 @@ class Cif(object):
                 # continue  # use continue if data is behind res file
                 semi_colon_text_field = line
                 continue
-        #self.cif_data['_atom'] = atoms
-        #self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(symmlist)
         self.cif_data['_loop'] = loops
+        self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(self.symm)
         self.cif_data['file_length_lines'] = num + 1
         # TODO: implement detection of self.cif_data["_space_group_centring_type"] by symmcards.
-        """
-        self.symmcards = SymmCards()
-        symmcards = [x.replace("'", "").replace(" ", "").split(',') for x in symmlist]
-        for s in symmcards:
-            try:
-                self.symmcards.append(s)
-            except:
-                pass
-        """
         if not data:
             return False
         # if not atoms:
@@ -338,18 +320,53 @@ class Cif(object):
             gamma = float(gamma.split('(')[0])
         return [a, b, c, alpha, beta, gamma]
 
+    @property
     def atoms(self) -> list:
         """
         A convenient way of getting atoms from the cif file
+        [Name type x y z occupancy part]
         """
         for x in self._loop:
             try:
-                part = x['_atom_site_disorder_group']
-                yield [x['_atom_site_label'], x['_atom_site_type_symbol'], x['_atom_site_fract_x'],
-                      x['_atom_site_fract_y'], x['_atom_site_fract_z'], x['_atom_site_occupancy'],
-                      0 if part == '.' or part == '?' else part]
-            except KeyError:
+                try:
+                    part = x['_atom_site_disorder_group']
+                except KeyError:
+                    part = 0
+                try:
+                    occu = float(x['_atom_site_occupancy'].split('(')[0])
+                except (KeyError, ValueError):
+                    occu = 1
+                yield [x['_atom_site_label'], 
+                       x['_atom_site_type_symbol'],
+                       x['_atom_site_fract_x'],
+                       x['_atom_site_fract_y'],
+                       x['_atom_site_fract_z'],
+                       occu,
+                      0 if part == '.' or part == '?' else int(part)]
+            except (KeyError, ValueError) as e:
+                #print(e)
                 continue
+        else:
+            yield ['']
+
+    @property
+    def symm(self) -> list:
+        """
+        Yields symmetry operations.
+        """
+        symm1 = '_space_group_symop_operation_xyz'
+        symm2 = '_symmetry_equiv_pos_as_xyz'
+        symmops = []
+        for x in self._loop:
+            try:
+                symmops.append(x[symm1])
+            except KeyError:
+                pass
+            try:
+                symmops.append(x[symm2])
+            except KeyError:
+                pass
+        return symmops
 
 
 def delimit_line(line: str) -> list:
@@ -396,12 +413,13 @@ def delimit_line(line: str) -> list:
 
 if __name__ == '__main__':
     cif = Cif()
-    with open('test-data/p21c.cif', 'r') as f:
+    with open(r'D:\GitHub\StructureFinder\test-data\COD\1000000.cif', 'r') as f:
         cifok = cif.parsefile(f.readlines())
-    #pprint(cif.cif_data)
+    pprint(cif.cif_data)
     #pprint(cif._loop)
     # TODO: "_space_group_symop_operation_xyz" or '_symmetry_equiv_pos_as_xyz':
-    for x in cif.atoms():
+    for x in cif.atoms:
+        pass
         print(x)
     print(cifok)
     import doctest

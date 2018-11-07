@@ -339,29 +339,30 @@ def fill_db_tables(cif: Cif, filename: str, path: str, structure_id: str,
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
     structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma, volume)
     sum_from_dict = {}
-    for x in cif._atom:
+    for x in cif.atoms:
+        #  0     1   2 3 4    5       6
+        # [Name type x y z occupancy part]
         try:
             try:
-                disord = int(cif._atom[x]['_atom_site_disorder_group'])
-            except (KeyError, ValueError):
+                disord = int(x[6])
+            except (KeyError, ValueError, IndexError):
                 disord = 0
             try:
-                occu = float(cif._atom[x]['_atom_site_occupancy'].split('(')[0])
-            except (KeyError, ValueError):
+                occu = x[5]
+            except (KeyError, ValueError, IndexError):
                 occu = 1.0
             try:
-                atom_type_symbol = atoms.get_atomlabel(cif._atom[x]['_atom_site_type_symbol'])
-            except KeyError:
-                atom_type_symbol  = atoms.get_atomlabel(x)
+                atom_type_symbol = x[1]
+            except (KeyError, IndexError):
+                continue
             elem = atom_type_symbol.capitalize()
-            structures.fill_atoms_table(structure_id, x,
-                                         atom_type_symbol,
-                                         cif._atom[x]['_atom_site_fract_x'].split('(')[0],
-                                         cif._atom[x]['_atom_site_fract_y'].split('(')[0],
-                                         cif._atom[x]['_atom_site_fract_z'].split('(')[0],
-                                         occu,
-                                         disord
-                                        )
+            try:
+                name = x[0]
+            except IndexError:
+                continue
+            structures.fill_atoms_table(structure_id, name, atom_type_symbol,
+                                        float(x[2].split('(')[0]), float(x[3].split('(')[0]), float(x[4].split('(')[0]), 
+                                        occu, disord)
             if elem in sum_from_dict:
                 sum_from_dict[elem] += occu
             else:
