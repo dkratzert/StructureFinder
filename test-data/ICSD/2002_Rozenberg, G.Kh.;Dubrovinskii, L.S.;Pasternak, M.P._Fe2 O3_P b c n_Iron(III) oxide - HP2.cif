@@ -1,0 +1,75 @@
+###############################################################################
+# Rozenberg, G.Kh.Rozenberg, G.Kh.Dubrovinskii, L.S.Rozenberg, G.Kh.Roz\
+#enberg, G.Kh.Dubrovinskii, L.S.Pasternak, M.P.Rozenberg, G.Kh.Rozenberg, G.Kh.Dubrovinskii, L.S.Rozenberg, G.Kh.Rozenberg, G.Kh.Dubrovinskii, L.S.Pa (2002)
+# Physical Review, Serie 3. B - Condensed Matter (18,1978-) 65, 064112-1-064112-8
+# High-pressure structural studies of hematite Fe2 O3
+# 
+# CIF by ICSD-for-WWW,  Copyright 2003 FIZ-Karlsruhe & A.W.Hewat (hewat@ill.fr)
+# NOT TO BE PUBLISHED IN ANY FORM. See http://icsd.ill.fr/icsd/conditions.html
+###############################################################################
+
+data_96077-ICSD
+_database_code_ICSD                96077
+_audit_creation_date               2004-04-01
+_chemical_name_systematic
+'Iron(III) oxide - HP2'
+_chemical_formula_structural       
+'Fe2 O3'
+_chemical_formula_sum              
+'Fe2 O3'
+_publ_section_title                
+'Fe2 O3'
+loop_
+_citation_id
+_citation_journal_abbrev
+_citation_year
+_citation_journal_volume
+_citation_page_first
+_citation_page_last
+_citation_journal_id_ASTM
+primary 'Physical Review, Serie 3. B - Condensed Matter (18,1978-)' 2002 65 064112-1 064112-8 PRBMDO
+loop_
+_publ_author_name
+Rozenberg, G.Kh.Rozenberg, G.Kh.Dubrovinskii, L.S.Rozenberg, G.Kh.Roz\
+enberg, G.Kh.Dubrovinskii, L.S.Pasternak, M.P.Rozenberg, G.Kh.Rozenberg, G.Kh.Dubrovinskii, L.S.Rozenberg, G.Kh.Rozenberg, G.Kh.Dubrovinskii, L.S.Pa
+_cell_length_a                     6.6428(19)
+_cell_length_b                     4.6003(18)
+_cell_length_c                     4.9263(15)
+_cell_angle_alpha                  90
+_cell_angle_beta                   90
+_cell_angle_gamma                  90
+_cell_volume                       150.54
+_cell_formula_units_Z              4
+_symmetry_space_group_name_H-M     'P b c n'
+_symmetry_Int_Tables_number        60
+_refine_ls_R_factor_all            
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+  1     'x, -y, z+1/2'
+  2     '-x+1/2, y+1/2, z'
+  3     'x+1/2, y+1/2, -z+1/2'
+  4     '-x, -y, -z'
+  5     '-x, y, -z+1/2'
+  6     'x+1/2, -y+1/2, -z'
+  7     '-x+1/2, -y+1/2, z+1/2'
+  8     'x, y, z'
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+Fe3+     3.
+O2-     -2.
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_Wyckoff_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_B_iso_or_equiv
+_atom_site_occupancy
+Fe1 Fe3+ 8 d 0.126(3) 0.755(2) 0.030(1) 0. 1.
+O1 O2- 8 d 0.869(8) 0.626(3) 0.089(2) 0. 1.
+O2 O2- 4 c 0. 0.048(4) 0.250 0. 1.
+#End of data_96077-ICSD

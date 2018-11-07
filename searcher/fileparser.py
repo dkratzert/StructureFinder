@@ -341,13 +341,12 @@ class Cif(object):
                 try:
                     # The atom type
                     type_symbol = x['_atom_site_type_symbol']
+                    if not type_symbol in sorted_atoms:
+                        type_symbol = self._atom_from_symbol(type_symbol)
                 except KeyError:
                     type_symbol = x['_atom_site_label'].split('(')[0].capitalize()
                     # As last resort: cut out the atom type from the label
-                    if type_symbol not in sorted_atoms:
-                        for n in [2, 1]:
-                            if type_symbol[:n] in sorted_atoms:
-                                type_symbol = type_symbol[:n] 
+                    type_symbol = self._atom_from_symbol(type_symbol)
                 try:
                     # The occupancy:
                     occu = float(x['_atom_site_occupancy'].split('(')[0])
@@ -370,6 +369,15 @@ class Cif(object):
                 #print(self.data)
                 #raise 
                 continue
+
+    @staticmethod
+    def _atom_from_symbol(type_symbol):
+        if type_symbol not in sorted_atoms:
+            for n in [2, 1]:
+                if type_symbol[:n] in sorted_atoms:
+                    type_symbol = type_symbol[:n]
+                    break
+        return type_symbol
 
     @property
     def symm(self) -> list:
