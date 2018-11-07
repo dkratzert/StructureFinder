@@ -14,6 +14,8 @@ Created on 09.02.2015
 import os
 from pprint import pprint
 
+from searcher.atoms import sorted_atoms
+
 
 class Cif(object):
     def __init__(self, options=None):
@@ -333,21 +335,29 @@ class Cif(object):
                 except KeyError:
                     part = 0
                 try:
+                    # The atom type
+                    type_symbol = x['_atom_site_type_symbol']
+                except KeyError:
+                    type_symbol = x['_atom_site_label'].split('(')[0].capitalize()
+                    # As last resort: cut out the atom type from the label
+                    if type_symbol not in sorted_atoms:
+                        for n in [2, 1]:
+                            if type_symbol[:n] in sorted_atoms:
+                                type_symbol = type_symbol[:n] 
+                try:
                     occu = float(x['_atom_site_occupancy'].split('(')[0])
                 except (KeyError, ValueError):
                     occu = 1
                 yield [x['_atom_site_label'], 
-                       x['_atom_site_type_symbol'],
+                       type_symbol,
                        x['_atom_site_fract_x'],
                        x['_atom_site_fract_y'],
                        x['_atom_site_fract_z'],
                        occu,
-                      0 if part == '.' or part == '?' else int(part)]
+                       0 if part == '.' or part == '?' else int(part)]
             except (KeyError, ValueError) as e:
                 #print(e)
                 continue
-        else:
-            yield ['']
 
     @property
     def symm(self) -> list:
@@ -413,7 +423,7 @@ def delimit_line(line: str) -> list:
 
 if __name__ == '__main__':
     cif = Cif()
-    with open(r'D:\GitHub\StructureFinder\test-data\COD\1000000.cif', 'r') as f:
+    with open(r'D:\GitHub\StructureFinder\test-data\COD\1000001.cif', 'r') as f:
         cifok = cif.parsefile(f.readlines())
     pprint(cif.cif_data)
     #pprint(cif._loop)
