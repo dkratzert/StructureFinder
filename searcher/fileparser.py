@@ -106,12 +106,10 @@ class Cif(object):
         hkl = False
         loophead_list = []
         save_frame = False
-        atoms = {}
-        atkey = ''
+        loops = []
+        loopkey = ''
         loop_body = False
         num = 0
-        symm = False
-        symmlist = []
         semi_colon_text_field = ''
         semi_colon_text_list = []
         cont = False  # continue to next line if True
@@ -121,43 +119,34 @@ class Cif(object):
             if not line:
                 loop = False
                 loophead_list.clear()
-                atkey = ''
-                symm = False
+                loopkey = ''
                 continue
             if line[0] == "_" and loop_body:
                 loop = False
                 loop_body = False
-                symm = False
             if loop:
                 line = line.lstrip()
                 # leave out comments:
                 if line[0] == '#':
                     continue
-                # to collect the two parts of an atom loop (have to do it more general):
-                if line == '_atom_site_label':
-                    atkey = '_atom_site_label'
-                if line == '_atom_site_aniso_label':
-                    atkey = '_atom_site_aniso_label'
-                if line == "_space_group_symop_operation_xyz" or line == '_symmetry_equiv_pos_as_xyz':
-                    symm = '_space_group_symop_operation_xyz'
-                    continue
+                if line != "loop_":
+                    loopkey = line
+                    #print(loopkey)
+                    #continue
                 if line[:5] == "loop_":
                     loop = True
                     loop_body = False
                     loophead_list.clear()
-                    atkey = ''
-                    symm = False
+                    loopkey = ''
                     continue
-                if symm:
-                    symmlist.append(line)
                 if line[0] != "_":
                     loop_body = True
                 # Loop header started, collecting keywords from head:
-                if line[0] == "_" and atkey:
+                if line[0] == "_" and loopkey:
                     loophead_list.append(line)
                     continue
                 # We are in a loop and the header ended, so we collect data:
-                if loop_body and atkey:
+                if loop_body and loopkey:
                     loopitem = {}  # a line from the loop body, e.g. an atom
                     loop_data_line = delimit_line(line)
                     if cont:  # a continuation line
@@ -174,12 +163,14 @@ class Cif(object):
                     if cont:
                         continue
                     # TODO: make this general. Not only for atoms:
-                    if atkey and loopitem[atkey] in atoms:
-                        # atom is already there, upating values
-                        atoms[loopitem[atkey]].update(loopitem)
-                    elif atkey:
-                        # atom is not there, creating key
-                        atoms[loopitem[atkey]] = loopitem  # loopitem[atkey] is the atoms name
+                    #print(loophead_list, loopkey, loopitem)
+                    loops.append(loopitem)
+                    #if loopkey and loopitem[loopkey] in loops:
+                    #    # atom is already there, upating values
+                    #    loops[loopitem[loopkey]].update(loopitem)
+                    #elif loopkey:
+                    #    # atom is not there, creating key
+                    #    loops[loopitem[loopkey]] = loopitem  # loopitem[loopkey] is the atoms name
                 continue
             # Leave out save_ frames:
             if save_frame:
@@ -240,8 +231,9 @@ class Cif(object):
                 # continue  # use continue if data is behind res file
                 semi_colon_text_field = line
                 continue
-        self.cif_data['_atom'] = atoms
-        self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(symmlist)
+        #self.cif_data['_atom'] = atoms
+        #self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(symmlist)
+        self.cif_data['_loop'] = loops
         self.cif_data['file_length_lines'] = num + 1
         # TODO: implement detection of self.cif_data["_space_group_centring_type"] by symmcards.
         """
@@ -346,6 +338,19 @@ class Cif(object):
             gamma = float(gamma.split('(')[0])
         return [a, b, c, alpha, beta, gamma]
 
+    def atoms(self) -> list:
+        """
+        A convenient way of getting atoms from the cif file
+        """
+        for x in self._loop:
+            try:
+                part = x['_atom_site_disorder_group']
+                yield [x['_atom_site_label'], x['_atom_site_type_symbol'], x['_atom_site_fract_x'],
+                      x['_atom_site_fract_y'], x['_atom_site_fract_z'], x['_atom_site_occupancy'],
+                      0 if part == '.' or part == '?' else part]
+            except KeyError:
+                continue
+
 
 def delimit_line(line: str) -> list:
     """
@@ -391,9 +396,13 @@ def delimit_line(line: str) -> list:
 
 if __name__ == '__main__':
     cif = Cif()
-    with open('test-data/p-1_a.cif', 'r') as f:
+    with open('test-data/p21c.cif', 'r') as f:
         cifok = cif.parsefile(f.readlines())
-    pprint(cif.cif_data)
+    #pprint(cif.cif_data)
+    #pprint(cif._loop)
+    # TODO: "_space_group_symop_operation_xyz" or '_symmetry_equiv_pos_as_xyz':
+    for x in cif.atoms():
+        print(x)
     print(cifok)
     import doctest
     failed, attempted = doctest.testmod()  # verbose=True)
