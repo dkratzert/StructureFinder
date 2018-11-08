@@ -135,6 +135,7 @@ class DatabaseRequest():
                         _computing_structure_solution 			TEXT,
                         _computing_structure_refinement 		TEXT,
                         _refine_special_details 				TEXT,
+                        _refine_ls_abs_structure_Flack          TEXT,
                         _refine_ls_structure_factor_coef 		TEXT,
                         _refine_ls_weighting_details 			TEXT,
                         _refine_ls_number_reflns 				INTEGER,
@@ -602,6 +603,7 @@ class StructureTable():
                     _computing_structure_solution,
                     _computing_structure_refinement,
                     _refine_special_details,
+                    _refine_ls_abs_structure_Flack,
                     _refine_ls_structure_factor_coef,
                     _refine_ls_weighting_details,
                     _refine_ls_number_reflns,
@@ -667,6 +669,7 @@ class StructureTable():
             cif.cif_data['_computing_structure_solution'],  # Reference to structure-solution software
             cif.cif_data['_computing_structure_refinement'],  # Reference to structure-refinement software
             cif.cif_data['_refine_special_details'],  # Details about the refinement
+            cif.cif_data['_refine_ls_abs_structure_Flack'],
             cif.cif_data['_refine_ls_structure_factor_coef'],  # Code for F, F2 or I used in least-squares refinement
             cif.cif_data['_refine_ls_weighting_details'],  # Weighting expression
             cif.cif_data['_refine_ls_number_reflns'],  # The number of unique reflections contributing to the
