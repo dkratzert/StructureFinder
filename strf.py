@@ -613,6 +613,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.display_molecule(cell, str(self.structureId))
         except Exception as e:
             print(e, ", unable to display molecule")
+            molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
+            molf.write_text(data=' ', encoding="utf-8", errors='ignore')
+            self.view.reload()
             if DEBUG:
                 raise
 
@@ -641,6 +644,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.display_molecule(cell, structure_id)
         except Exception as e:
             print(e, "unable to display molecule!!")
+            molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
+            molf.write_text(data=' ', encoding="utf-8", errors='ignore')
+            self.view.reload()
             if DEBUG:
                 raise
         self.ui.cifList_treeWidget.setFocus()
