@@ -17,9 +17,15 @@ from __future__ import print_function
 import platform
 import webbrowser
 from os.path import isfile, samefile
-from sqlite3 import DatabaseError, ProgrammingError
+from sqlite3 import DatabaseError, ProgrammingError, OperationalError
+from pathlib import Path
 
 from PyQt5.QtCore import QModelIndex
+from PyQt5.QtWidgets import QApplication, QFileDialog
+from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import QProgressBar
+from PyQt5.QtWidgets import QPushButton
+from PyQt5.QtWidgets import QTreeWidgetItem
 
 from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
@@ -29,7 +35,6 @@ from shelxfile.shelx import ShelXFile
 DEBUG = False
 import math
 import os
-import pathlib
 import shutil
 import sys
 import tempfile
@@ -42,7 +47,6 @@ import misc.update_check
 from apex import apeximporter
 from displaymol import mol_file_writer, write_html
 from lattice import lattice
-from misc import update_check
 from misc.version import VERSION
 from pymatgen.core import mat_lattice
 from searcher import constants, misc, filecrawler, database_handler
@@ -102,8 +106,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         # self.ui.centralwidget.setMinimumSize(1000, 500)
-        self.abort_import_button = QtWidgets.QPushButton("Abort")
-        self.progress = QtWidgets.QProgressBar(self)
+        self.abort_import_button = QPushButton("Abort")
+        self.progress = QProgressBar(self)
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
         self.ui.statusbar.addWidget(self.abort_import_button)
@@ -130,8 +134,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.dateEdit1.setDate(QtCore.QDate(date.today()))
         self.ui.dateEdit2.setDate(QtCore.QDate(date.today()))
         try:
-            molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-            molf.write_text(data=' ', encoding="utf-8", errors='ignore')
+            self.write_empty_molfile(mol_data=' ')
             self.init_webview()
         except Exception as e:
             # Graphics driver not compatible
@@ -154,9 +157,6 @@ class StartStructureDB(QtWidgets.QMainWindow):
                     print(e)
                     if DEBUG:
                         raise
-        if update_check.is_update_needed(VERSION=VERSION):
-            self.statusBar().showMessage('A new Version of StructureFinder is available at '
-                                         'https://www.xs3.uni-freiburg.de/research/structurefinder')
         # select the first item in the list
         item = self.ui.cifList_treeWidget.topLevelItem(0)
         self.ui.cifList_treeWidget.setCurrentItem(item)
@@ -295,7 +295,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         print(len(results), 'Structures found...')
         self.statusBar().showMessage("{} structures found in the CSD".format(len(results), msecs=9000))
         for res in results:
-            csd_tree_item = QtWidgets.QTreeWidgetItem()
+            csd_tree_item = QTreeWidgetItem()
             self.ui.CSDtreeWidget.addTopLevelItem(csd_tree_item)
             csd_tree_item.setText(0, res['chemical_formula'])
             csd_tree_item.setText(1, res['cell_length_a'])
@@ -334,7 +334,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 if DEBUG:
                     raise
                 return False
-            clipboard = QtWidgets.QApplication.clipboard()
+            clipboard = QApplication.clipboard()
             clipboard.setText(cell)
             self.ui.statusbar.showMessage('Copied unit cell {} to clip board.'
                                           .format(cell))
@@ -443,7 +443,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         Manages the QDialog buttons on the password dialog.
         """
-        d = QtWidgets.QDialog()
+        d = QDialog()
         self.passwd = self.uipass.setupUi(d)
         ip_dialog = d.exec()
         if ip_dialog == 1:  # Accepted
@@ -465,7 +465,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # self.view.setMaximumWidth(260)
         # self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
-        # self.view.show()
+        self.view.show()
 
     @QtCore.pyqtSlot(name="cell_state_changed")
     def cell_state_changed(self):
@@ -483,15 +483,23 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.start_db()
         self.progressbar(1, 0, 20)
         self.abort_import_button.show()
-        fname = QtWidgets.QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
         if not fname:
             self.progress.hide()
             self.abort_import_button.hide()
         filecrawler.put_files_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked(),
                                     fillcif=self.ui.add_cif.isChecked())
         self.progress.hide()
-        self.structures.database.init_textsearch()
-        self.structures.populate_fulltext_search_table()
+        try:
+            self.structures.database.init_textsearch()
+        except OperationalError as e:
+            print(e)
+            print('No fulltext search module found.')
+        try:
+            self.structures.populate_fulltext_search_table()
+        except OperationalError as e:
+            print(e)
+            print('No fulltext search compiled into sqlite.')
         self.structures.database.commit_db()
         self.ui.cifList_treeWidget.show()
         self.set_columnsize()
@@ -515,13 +523,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
     def close_db(self, copy_on_close: str = None) -> bool:
         """
         Closed the current database and erases the list.
+        copy_on_close is used to save the databse into a file during close_db().
         :param copy_on_close: Path to where the file should be copied after close()
         """
         self.ui.searchCellLineEDit.clear()
         self.ui.txtSearchEdit.clear()
         self.ui.cifList_treeWidget.clear()
-        molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-        molf.write_text(data=' ', encoding="utf-8", errors='ignore')
+        self.write_empty_molfile(mol_data=' ')
         self.view.reload()
         try:
             self.structures.database.cur.close()
@@ -613,13 +621,17 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.display_molecule(cell, str(self.structureId))
         except Exception as e:
             print(e, ", unable to display molecule")
-            molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-            molf.write_text(data=' ', encoding="utf-8", errors='ignore')
+            self.write_empty_molfile(' ')
             self.view.reload()
             if DEBUG:
                 raise
 
-    def display_properties(self, structure_id: str, cif_dic: dict) -> bool:
+    @staticmethod
+    def write_empty_molfile(mol_data):
+        molf = Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
+        molf.write_text(data=mol_data, encoding="utf-8", errors='ignore')
+
+    def display_properties(self, structure_id, cif_dic):
         """
         Displays the residuals from the cif file
         Measured Refl.
@@ -644,8 +656,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.display_molecule(cell, structure_id)
         except Exception as e:
             print(e, "unable to display molecule!!")
-            molf = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-            molf.write_text(data=' ', encoding="utf-8", errors='ignore')
+            self.write_empty_molfile(mol_data=' ')
             self.view.reload()
             if DEBUG:
                 raise
@@ -739,7 +750,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             if key == "_shelx_res_file":
                 self.ui.SHELXplainTextEdit.setPlainText(cif_dic['_shelx_res_file'])
                 continue
-            cif_tree_item = QtWidgets.QTreeWidgetItem()
+            cif_tree_item = QTreeWidgetItem()
             self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
             cif_tree_item.setText(0, str(key))
             cif_tree_item.setText(1, str(value))
@@ -758,7 +769,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                         ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
         if symmcards[0] == ['']:
             print('Cif file has no symmcards, unable to grow structure.')
-        blist = None
+        blist = []
         if self.ui.growCheckBox.isChecked():
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=False, as_list=True)
             if atoms:
@@ -769,10 +780,12 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 # print(len(blist))
         else:
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=True, as_list=False)
-            blist = None
+            blist = []
         try:
-            mol = mol_file_writer.MolFile(atoms, blist)
-            mol = mol.make_mol()
+            mol = ' '
+            if atoms:
+                mol = mol_file_writer.MolFile(atoms, blist)
+                mol = mol.make_mol()
         except (TypeError, KeyError):
             print("Error in structure", structure_id, "while writing mol file.")
             mol = ' '
@@ -780,7 +793,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 raise
         # print(self.ui.openglview.width()-30, self.ui.openglview.height()-50)
         content = write_html.write(mol, self.ui.openglview.width() - 30, self.ui.openglview.height() - 50)
-        p2 = pathlib.Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
+        p2 = Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
         p2.write_text(data=content, encoding="utf-8", errors='ignore')
         self.view.reload()
 
@@ -890,7 +903,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             self.ui.cellSearchCSDLineEdit.setText('  '.join([str(x) for x in cell]))
         self.ui.txtSearchEdit.clear()
         if not cell:
-            if self.ui.searchCellLineEDit.text():
+            if str(self.ui.searchCellLineEDit.text()):
                 self.statusBar().showMessage('Not a valid unit cell!', msecs=3000)
                 return False
             else:
@@ -953,7 +966,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             path = path.decode("utf-8", "surrogateescape")
         if isinstance(data, bytes):
             data = data.decode("utf-8", "surrogateescape")
-        tree_item = QtWidgets.QTreeWidgetItem()
+        tree_item = QTreeWidgetItem()
         tree_item.setText(0, name)  # name
         tree_item.setText(1, data)  # data
         tree_item.setText(2, path)  # path
@@ -966,7 +979,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         self.tmpfile = False
         self.close_db()
-        fname = QtWidgets.QFileDialog.getOpenFileName(self, caption='Open File', directory='./',
+        fname = QFileDialog.getOpenFileName(self, caption='Open File', directory='./',
                                                       filter="*.sqlite")
         if not fname[0]:
             return False
@@ -1002,8 +1015,9 @@ class StartStructureDB(QtWidgets.QMainWindow):
         """
         Reads a p4p file to get the included unit cell for a cell search.
         """
-        fname, _ = QtWidgets.QFileDialog.getOpenFileName(self, caption='Open p4p File', directory='./',
+        fname, _ = QFileDialog.getOpenFileName(self, caption='Open p4p File', directory='./',
                                                          filter="*.p4p *.cif *.res *.ins")
+        fname = str(fname)
         _, ending = os.path.splitext(fname)
         if ending == '.p4p':
             self.search_for_p4pcell(fname)
@@ -1051,7 +1065,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if fname:
             cif = Cif()
             try:
-                cif.parsefile(pathlib.Path(fname).read_text(encoding='utf-8',
+                cif.parsefile(Path(fname).read_text(encoding='utf-8',
                                                             errors='ignore').splitlines(keepends=True))
             except FileNotFoundError:
                 self.moving_message('File not found.')
@@ -1231,7 +1245,7 @@ if __name__ == "__main__":
     from gui.strf_dbpasswd import Ui_PasswdDialog
 
     # later http://www.pyinstaller.org/
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
     # Has to be without version number, because QWebengine stores data in ApplicationName directory:
     app.setApplicationName('StructureFinder')
