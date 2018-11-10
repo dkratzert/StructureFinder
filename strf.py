@@ -12,20 +12,15 @@ Created on 09.02.2015
 
 @author: Daniel Kratzert
 """
-from __future__ import print_function
-
 import platform
 import webbrowser
 from os.path import isfile, samefile
-from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from pathlib import Path
+from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 
-from PyQt5.QtCore import QModelIndex
-from PyQt5.QtWidgets import QApplication, QFileDialog
-from PyQt5.QtWidgets import QDialog
-from PyQt5.QtWidgets import QProgressBar
-from PyQt5.QtWidgets import QPushButton
-from PyQt5.QtWidgets import QTreeWidgetItem
+from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow
 
 from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
@@ -41,7 +36,7 @@ import tempfile
 import time
 from datetime import date
 
-from PyQt5 import QtWidgets, QtCore, QtGui, uic
+from PyQt5 import uic
 
 import misc.update_check
 from apex import apeximporter
@@ -71,8 +66,6 @@ except Exception as e:
     if DEBUG:
         raise
 
-__metaclass__ = type  # use new-style classes
-
 """
 TODO:
 - sort results by G6 distance
@@ -94,7 +87,7 @@ else:
     application_path = os.path.dirname(os.path.abspath(__file__))
 
 
-class StartStructureDB(QtWidgets.QMainWindow):
+class StartStructureDB(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ui = Ui_stdbMainwindow()
@@ -131,8 +124,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.decide_import = True
         self.connect_signals_and_slots()
         # Set both to today() to distinquish between a modified and unmodified date field.
-        self.ui.dateEdit1.setDate(QtCore.QDate(date.today()))
-        self.ui.dateEdit2.setDate(QtCore.QDate(date.today()))
+        self.ui.dateEdit1.setDate(QDate(date.today()))
+        self.ui.dateEdit2.setDate(QDate(date.today()))
         try:
             self.write_empty_molfile(mol_data=' ')
             self.init_webview()
@@ -141,7 +134,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
             print(e, '##')
             raise
         self.ui.MaintabWidget.setCurrentIndex(0)
-        self.setWindowIcon(QtGui.QIcon(os.path.join(application_path, './icons/strf.png')))
+        self.setWindowIcon(QIcon(os.path.join(application_path, './icons/strf.png')))
         self.uipass = Ui_PasswdDialog()
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         # Actions for certain gui elements:
@@ -256,7 +249,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                 ok = False
         return ok
 
-    @QtCore.pyqtSlot('QString', name="elements_fields_check")
+    @pyqtSlot('QString', name="elements_fields_check")
     def elements_fields_check(self):
         """
         """
@@ -340,7 +333,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                                           .format(cell))
         return True
 
-    @QtCore.pyqtSlot(name="advanced_search")
+    @pyqtSlot(name="advanced_search")
     def advanced_search(self):
         """
         Combines all the search fields. Collects all includes, all excludes ad calculates
@@ -460,14 +453,13 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Initializes a QWebengine to view the molecule.
         """
         self.view = QWebEngineView()
-        self.view.load(
-            QtCore.QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
+        self.view.load(QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
         # self.view.setMaximumWidth(260)
         # self.view.setMaximumHeight(290)
         self.ui.ogllayout.addWidget(self.view)
         self.view.show()
 
-    @QtCore.pyqtSlot(name="cell_state_changed")
+    @pyqtSlot(name="cell_state_changed")
     def cell_state_changed(self):
         """
         Searches a cell but with diffeent loose or strict option.
@@ -519,7 +511,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         if curr == max:
             self.progress.hide()
 
-    @QtCore.pyqtSlot(name="close_db")
+    @pyqtSlot(name="close_db")
     def close_db(self, copy_on_close: str = None) -> bool:
         """
         Closed the current database and erases the list.
@@ -558,7 +550,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
                     return False
         return True
 
-    @QtCore.pyqtSlot(name="abort_import")
+    @pyqtSlot(name="abort_import")
     def abort_import(self):
         """
         This slot means, import was aborted.
@@ -573,7 +565,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.structures = database_handler.StructureTable(self.dbfilename)
         self.structures.database.initialize_db()
 
-    @QtCore.pyqtSlot('QModelIndex', name="get_properties")
+    @pyqtSlot('QModelIndex', name="get_properties")
     def get_properties(self, item):
         """
         This slot shows the properties of a cif file in the properties widget
@@ -592,7 +584,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         Saves the database to a certain file. Therefore I have to close the database.
         """
         status = False
-        save_name, tst = QtWidgets.QFileDialog.getSaveFileName(self, caption='Save File', directory='./',
+        save_name, tst = QFileDialog.getSaveFileName(self, caption='Save File', directory='./',
                                                                filter="*.sqlite, *.*")
         if save_name:
             if samefile(self.dbfilename, save_name):
@@ -605,10 +597,10 @@ class StartStructureDB(QtWidgets.QMainWindow):
 
     def eventFilter(self, object, event):
         """Event filter for mouse clicks."""
-        if event.type() == QtCore.QEvent.MouseButtonDblClick:
+        if event.type() == QEvent.MouseButtonDblClick:
             self.copyUnitCell()
-        elif event.type() == QtCore.QEvent.MouseButtonPress:
-            if event.buttons() == QtCore.Qt.RightButton:
+        elif event.type() == QEvent.MouseButtonPress:
+            if event.buttons() == Qt.RightButton:
                 # print("rightbutton")
                 return True
         return False
@@ -797,7 +789,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         p2.write_text(data=content, encoding="utf-8", errors='ignore')
         self.view.reload()
 
-    @QtCore.pyqtSlot('QString')
+    @pyqtSlot('QString')
     def find_dates(self, date1: str, date2: str) -> list:
         """
         Returns a list if id between date1 and date2
@@ -809,7 +801,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         result = self.structures.find_by_date(date1, date2)
         return result
 
-    @QtCore.pyqtSlot('QString')
+    @pyqtSlot('QString')
     def search_text(self, search_string: str) -> bool:
         """
         searches db for given text
@@ -892,7 +884,7 @@ class StartStructureDB(QtWidgets.QMainWindow):
         # print("After match: ", len(idlist2))
         return idlist2
 
-    @QtCore.pyqtSlot('QString', name='search_cell')
+    @pyqtSlot('QString', name='search_cell')
     def search_cell(self, search_string: str) -> bool:
         """
         searches db for given cell via the cell volume
@@ -1202,8 +1194,8 @@ class StartStructureDB(QtWidgets.QMainWindow):
         self.ui.ad_textsearch.clear()
         self.ui.ad_textsearch_excl.clear()
         self.ui.ad_unitCellLineEdit.clear()
-        self.ui.dateEdit1.setDate(QtCore.QDate(date.today()))
-        self.ui.dateEdit2.setDate(QtCore.QDate(date.today()))
+        self.ui.dateEdit1.setDate(QDate(date.today()))
+        self.ui.dateEdit2.setDate(QDate(date.today()))
 
     def clear_fields(self) -> None:
         """
@@ -1246,7 +1238,7 @@ if __name__ == "__main__":
 
     # later http://www.pyinstaller.org/
     app = QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
+    app.setWindowIcon(QIcon('./icons/strf.png'))
     # Has to be without version number, because QWebengine stores data in ApplicationName directory:
     app.setApplicationName('StructureFinder')
     # app.setApplicationDisplayName("StructureFinder")
