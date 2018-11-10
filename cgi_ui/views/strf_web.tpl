@@ -188,9 +188,12 @@
 </div>
 
 <address>
-    <strong><a href="https://www.xs3.uni-freiburg.de/research/structurefinder">StructureFinder</a> 
-        <span id="version"></span> by Daniel Kratzert</strong><br>
-  <a href="mailto:daniel.kratzert@ac.uni-freiburg.de">daniel.kratzert@ac.uni-freiburg.de</a>
+    <strong>
+        <a href="https://www.xs3.uni-freiburg.de/research/structurefinder">StructureFinder</a>
+        <span id="version"></span> by Daniel Kratzert
+    </strong><br>
+    <a href="mailto:daniel.kratzert@ac.uni-freiburg.de">daniel.kratzert@ac.uni-freiburg.de</a><br>
+    <p><a href="http://{{my_ip}}/dbfile.sqlite" download="structurefinder.sqlite" type="application/*">Download database file</a></p>
 </address>
 
 </div>  <!-- End of the main container div -->

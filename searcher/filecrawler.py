@@ -21,10 +21,11 @@ import tarfile
 import time
 import zipfile
 
-from searcher import atoms, database_handler
 from lattice.lattice import vol_unitcell
+from searcher import database_handler
 from searcher.fileparser import Cif
 from shelxfile.shelx import ShelXFile
+
 DEBUG = False
 
 excluded_names = ['ROOT',

@@ -15,7 +15,7 @@ import socket
 
 names = ['PC9', 'DDT-2.local']
 # run on local ip on my PC:
-#print(socket.gethostname())
+# print(socket.gethostname())
 if socket.gethostname() in names:
     host = '127.0.0.1'
     port = "8080"
@@ -77,9 +77,14 @@ def main():
     response.content_type = 'text/html; charset=UTF-8'
     data = {"my_ip": site_ip,
             "title": 'StructureFinder',
-            'host': host}
+            'host' : host}
     output = template('./cgi_ui/views/strf_web', data)
     return output
+
+
+@app.get('/dbfile.sqlite')
+def get_dbfile():
+    return pathlib.Path(dbfilename).read_bytes()
 
 
 @app.get("/cellsrch")
@@ -244,12 +249,12 @@ def show_cellcheck():
             centering = cif_dic['_space_group_centring_type']
         except KeyError:
             centering = ''
-        #formula = structures.get_calc_sum_formula(str_id)
-        #print(formula)
+        # formula = structures.get_calc_sum_formula(str_id)
+        # print(formula)
         cellstr = '{:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f}'.format(*cell)
     else:
         cellstr = ''
-        #formula = ''
+        # formula = ''
     if centering:
         try:
             cent = centering_letter_2_num[centering]
@@ -258,10 +263,10 @@ def show_cellcheck():
     else:
         cent = 0
     response.content_type = 'text/html; charset=UTF-8'
-    data = {"my_ip": site_ip,
-            "title": 'StructureFinder',
+    data = {"my_ip" : site_ip,
+            "title" : 'StructureFinder',
             'str_id': cellstr, 'cent': cent,
-            'host': host}
+            'host'  : host}
     output = template('./cgi_ui/views/cellcheckcsd', data)
     # 'formula': formula_dict_to_elements(formula)}
     return output
