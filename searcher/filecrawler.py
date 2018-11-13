@@ -210,6 +210,8 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
             else:
                 z = MyTarReader(fullpath)
             for zippedfile in z:              # the list of cif files in the zip file
+                # Important here to re-initialize empty cif dictionary:
+                cif = Cif(options=options)
                 omit = False
                 for ex in excluded_names:          # remove excludes
                     if re.search(ex, z.cifpath, re.I):

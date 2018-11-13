@@ -217,8 +217,8 @@ class Cif(object):
                 continue
             # Leave out hkl frames:
             if hkl:
-                break
-                # continue  # use continue if data is behind hkl
+                #break
+                continue  # use continue if data is behind hkl
             if line.lstrip()[0] == ";" and hkl:
                 hkl = False
                 continue
