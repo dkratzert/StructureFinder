@@ -537,7 +537,7 @@ class StartStructureDB(QMainWindow):
         except:
             pass
         if copy_on_close:
-            if shutil._samefile(self.dbfilename, copy_on_close):
+            if isfile(copy_on_close) and samefile(self.dbfilename, copy_on_close):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
                 return False
             else:
@@ -972,8 +972,7 @@ class StartStructureDB(QMainWindow):
         """
         self.tmpfile = False
         self.close_db()
-        fname = QFileDialog.getOpenFileName(self, caption='Open File', directory='./',
-                                                      filter="*.sqlite")
+        fname = QFileDialog.getOpenFileName(self, caption='Open File', directory='./', filter="*.sqlite")
         if not fname[0]:
             return False
         print("Opened {}.".format(fname[0]))
