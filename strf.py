@@ -338,6 +338,8 @@ class StartStructureDB(QMainWindow):
         """
         Combines all the search fields. Collects all includes, all excludes ad calculates
         the difference.
+        TODO: Pull this method out of this class.
+        TODO: Rethink about the different states.
         """
         if not self.structures:
             return
