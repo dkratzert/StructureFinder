@@ -173,7 +173,6 @@ class StartStructureDB(QMainWindow):
         if is_windows:
             self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
             # TODO: search on enter key press
-            # self.ui.cellSearchCSDLineEdit.
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
@@ -329,8 +328,7 @@ class StartStructureDB(QMainWindow):
                 return False
             clipboard = QApplication.clipboard()
             clipboard.setText(cell)
-            self.ui.statusbar.showMessage('Copied unit cell {} to clip board.'
-                                          .format(cell))
+            self.ui.statusbar.showMessage('Copied unit cell {} to clip board.'.format(cell))
         return True
 
     @pyqtSlot(name="advanced_search")
@@ -586,10 +584,9 @@ class StartStructureDB(QMainWindow):
         Saves the database to a certain file. Therefore I have to close the database.
         """
         status = False
-        save_name, tst = QFileDialog.getSaveFileName(self, caption='Save File', directory='./',
-                                                               filter="*.sqlite, *.*")
+        save_name, tst = QFileDialog.getSaveFileName(self, caption='Save File', directory='./', filter="*.sqlite")
         if save_name:
-            if samefile(self.dbfilename, save_name):
+            if isfile(save_name) and samefile(self.dbfilename, save_name):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
                 return False
         if save_name:
@@ -605,6 +602,8 @@ class StartStructureDB(QMainWindow):
             if event.buttons() == Qt.RightButton:
                 # print("rightbutton")
                 return True
+        #elif event.type() == Qt.Key_Enter:
+        #    print('Enterkey pressed')
         return False
 
     def redraw_molecule(self):
