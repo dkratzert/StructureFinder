@@ -17,7 +17,6 @@ from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 
 import searcher
 from lattice import lattice
-from pymatgen.core.mat_lattice import Lattice
 from searcher import misc
 from searcher.atoms import sorted_atoms
 from searcher.misc import get_error_from_value
@@ -485,6 +484,7 @@ class StructureTable():
         req = """SELECT Name, element, x, y, z, CAST(part as integer), occupancy FROM Atoms WHERE StructureId = ?"""
         result = self.database.db_request(req, (structure_id,))
         if cartesian:
+            from pymatgen.core.mat_lattice import Lattice
             cartesian_coords = []
             a = lattice.A(cell).orthogonal_matrix
             for at in result:
