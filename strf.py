@@ -47,7 +47,7 @@ from pymatgen.core import mat_lattice
 from searcher import constants, misc, filecrawler, database_handler
 from searcher.constants import centering_num_2_letter, centering_letter_2_num
 from searcher.fileparser import Cif
-from searcher.misc import is_valid_cell, elements
+from searcher.misc import is_valid_cell, elements, flatten
 
 is_windows = False
 if platform.system() == 'Windows':
@@ -168,7 +168,7 @@ class StartStructureDB(QMainWindow):
         self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
-        self.ui.ad_SearchPushButton.clicked.connect(self.advanced_search)
+        self.ui.ad_SearchPushButton.clicked.connect(self.advanced_search2)
         self.ui.ad_ClearSearchButton.clicked.connect(self.show_full_list)
         if is_windows:
             self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
@@ -331,88 +331,91 @@ class StartStructureDB(QMainWindow):
             self.ui.statusbar.showMessage('Copied unit cell {} to clip board.'.format(cell))
         return True
 
-    @pyqtSlot(name="advanced_search")
-    def advanced_search(self):
+    def advanced_search2(self):
         """
         Combines all the search fields. Collects all includes, all excludes ad calculates
         the difference.
         TODO: Pull this method out of this class.
-        TODO: Rethink about the different states.
         """
         if not self.structures:
             return
-        excl = []
-        incl = []
-        date_results = []
-        results = []
-        it_results = []
         cell = is_valid_cell(self.ui.ad_unitCellLineEdit.text())
         date1 = self.ui.dateEdit1.text()
         date2 = self.ui.dateEdit2.text()
         elincl = self.ui.ad_elementsIncLineEdit.text().strip(' ')
         elexcl = self.ui.ad_elementsExclLineEdit.text().strip(' ')
         txt = self.ui.ad_textsearch.text().strip(' ')
+        if len(txt) >= 2 and "*" not in txt:
+            txt = '*' + txt + '*'
         txt_ex = self.ui.ad_textsearch_excl.text().strip(' ')
+        if len(txt_ex) >= 2 and "*" not in txt_ex:
+            txt_ex = '*' + txt_ex + '*'
         spgr = self.ui.SpGrcomboBox.currentText()
         onlythese = self.ui.onlyTheseElementsCheckBox.isChecked()
+        # TODO: Interface here:
+        results = []
+        cell_results = []
+        spgr_results = []
+        elincl_results = []
+        txt_results = []
+        txt_ex_results = []
+        date_results = []
         try:
             spgr = int(spgr.split()[0])
         except:
             spgr = 0
+        if cell:
+            cell_results = self.search_cell_idlist(cell)
         if spgr:
-            try:
-                it_results = self.structures.find_by_it_number(spgr)
-            except ValueError:
-                pass
+            spgr_results = self.structures.find_by_it_number(spgr)
+        if elincl or elexcl:
+            elincl_results = self.search_elements(elincl, elexcl, onlythese)
+        if txt:
+            txt_results = [i[0] for i in self.structures.find_by_strings(txt)]
+        if txt_ex:
+            txt_ex_results = [i[0] for i in self.structures.find_by_strings(txt_ex)]
         if date1 != date2:
             date_results = self.find_dates(date1, date2)
-        if cell:
-            cellres = self.search_cell_idlist(cell)
-            incl.append(cellres)
-        if elincl:
-            incl.append(self.search_elements(elincl, '', onlythese))
-        if elexcl and not onlythese:
-            incl.append(self.search_elements(elincl, elexcl, onlythese))
-        if txt:
-            if len(txt) >= 2 and "*" not in txt:
-                txt = '*' + txt + '*'
-            idlist = self.structures.find_by_strings(txt)
-            try:
-                incl.append([i[0] for i in idlist])
-            except(IndexError, KeyError):
-                incl.append([idlist])  # only one result
-        if txt_ex:
-            if len(txt_ex) >= 2 and "*" not in txt_ex:
-                txt_ex = '*' + txt_ex + '*'
-            idlist = self.structures.find_by_strings(txt_ex)
-            try:
-                excl.append([i[0] for i in idlist])
-            except(IndexError, KeyError):
-                excl.append([idlist])  # only one result
-        if incl and incl[0]:
-            results = set(incl[0]).intersection(*incl)
-            if date_results:
-                results = set(date_results).intersection(results)
-            if it_results:
-                results = set(it_results).intersection(results)
-        elif date_results and not it_results:
-            results = set(results).intersection(date_results)
-        elif not date_results and it_results:
-            results = it_results
-        elif it_results and date_results:
-            results = set(it_results).intersection(date_results)
-        if not results:
-            self.statusBar().showMessage('Found 0 structures.')
-            return
-        if excl:
-            try:
-                self.display_structures_by_idlist(list(results - set(excl)))
-            except TypeError as e:
-                print(e)
-                print('can not display result in advanced_search.')
-                return
-        else:
-            self.display_structures_by_idlist(list(results))
+        ####################
+        results = self.combine_results(cell_results, date_results, elincl_results, results, spgr_results,
+                                       txt_ex_results, txt_results)
+        self.display_structures_by_idlist(flatten(list(results)))
+
+    @staticmethod
+    def combine_results(cell_results, date_results, elincl_results, results, spgr_results,
+                        txt_ex_results, txt_results):
+        """
+        Combines all search results together. Returns a list with database ids from found structures.
+        """
+        if cell_results:
+            results.extend(cell_results)
+        if spgr_results:
+            spgr_results = set(spgr_results)
+            if results:
+                results = set(results).intersection(spgr_results)
+            else:
+                results = spgr_results
+        if elincl_results:
+            elincl_results = set(elincl_results)
+            if results:
+                results = set(results).intersection(elincl_results)
+            else:
+                results = elincl_results
+        if txt_results:
+            txt_results = set(txt_results)
+            if results:
+                results = set(results).intersection(txt_results)
+            else:
+                results = txt_results
+        if txt_ex_results:
+            txt_ex_results = set(txt_ex_results)
+            results = set(results) - set(txt_ex_results)
+        if date_results:
+            if results:
+                results = set(results).intersection(date_results)
+            else:
+                results = date_results
+        return results
 
     def display_structures_by_idlist(self, idlist: list or set) -> None:
         """
