@@ -484,7 +484,6 @@ class StructureTable():
         req = """SELECT Name, element, x, y, z, CAST(part as integer), occupancy FROM Atoms WHERE StructureId = ?"""
         result = self.database.db_request(req, (structure_id,))
         if cartesian:
-            from pymatgen.core.mat_lattice import Lattice
             cartesian_coords = []
             a = lattice.A(cell).orthogonal_matrix
             for at in result:
@@ -954,6 +953,7 @@ class StructureTable():
 
 
 if __name__ == '__main__':
+    from pymatgen.core.mat_lattice import Lattice
     # searcher.filecrawler.put_cifs_in_db(searchpath='../')
     #db = DatabaseRequest('./test3.sqlite')
     #db.initialize_db()
@@ -981,4 +981,4 @@ if __name__ == '__main__':
     req = """SELECT Id FROM NORMALISED_REDUCED_CELLS WHERE Volume >= ? AND Volume <= ?"""
     result = db.database.db_request(req, (1473.46, 1564.76))
     print(result)
-    lattice1 = Lattice.from_parameters_niggli_reduced(*cell)
+    #lattice1 = Lattice.from_parameters_niggli_reduced(*cell)
