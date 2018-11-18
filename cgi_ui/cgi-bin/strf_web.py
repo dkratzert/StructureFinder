@@ -24,8 +24,8 @@ site_ip = host + ':' + port
 
 import math
 import os
-import pathlib
 import sys
+from pathlib import Path
 from xml.etree.ElementTree import ParseError
 
 try:  # Adding local path to PATH
@@ -85,7 +85,7 @@ def main():
 
 @app.get('/dbfile.sqlite')
 def get_dbfile():
-    return pathlib.Path(dbfilename).read_bytes()
+    return Path(dbfilename).read_bytes()
 
 
 @app.get("/cellsrch")
@@ -223,7 +223,7 @@ def cellsearch():
     else:
         try:
             if which('ccdc_searcher') or \
-                    pathlib.Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
+                    Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
                 print('CellCheckCSD found')
                 return 'true'
         except TypeError:
