@@ -47,7 +47,7 @@ from pymatgen.core import mat_lattice
 from searcher import constants, misc, filecrawler, database_handler
 from searcher.constants import centering_num_2_letter, centering_letter_2_num
 from searcher.fileparser import Cif
-from searcher.misc import is_valid_cell, elements, flatten
+from searcher.misc import is_valid_cell, elements, flatten, combine_results
 
 is_windows = False
 if platform.system() == 'Windows':
@@ -335,7 +335,6 @@ class StartStructureDB(QMainWindow):
         """
         Combines all the search fields. Collects all includes, all excludes ad calculates
         the difference.
-        TODO: Pull this method out of this class.
         """
         if not self.structures:
             return
@@ -352,7 +351,7 @@ class StartStructureDB(QMainWindow):
             txt_ex = '*' + txt_ex + '*'
         spgr = self.ui.SpGrcomboBox.currentText()
         onlythese = self.ui.onlyTheseElementsCheckBox.isChecked()
-        # TODO: Interface here:
+        #
         results = []
         cell_results = []
         spgr_results = []
@@ -377,45 +376,9 @@ class StartStructureDB(QMainWindow):
         if date1 != date2:
             date_results = self.find_dates(date1, date2)
         ####################
-        results = self.combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                                       txt_ex_results, txt_results)
+        results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
+                                  txt_ex_results, txt_results)
         self.display_structures_by_idlist(flatten(list(results)))
-
-    @staticmethod
-    def combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                        txt_ex_results, txt_results):
-        """
-        Combines all search results together. Returns a list with database ids from found structures.
-        """
-        if cell_results:
-            results.extend(cell_results)
-        if spgr_results:
-            spgr_results = set(spgr_results)
-            if results:
-                results = set(results).intersection(spgr_results)
-            else:
-                results = spgr_results
-        if elincl_results:
-            elincl_results = set(elincl_results)
-            if results:
-                results = set(results).intersection(elincl_results)
-            else:
-                results = elincl_results
-        if txt_results:
-            txt_results = set(txt_results)
-            if results:
-                results = set(results).intersection(txt_results)
-            else:
-                results = txt_results
-        if txt_ex_results:
-            txt_ex_results = set(txt_ex_results)
-            results = set(results) - set(txt_ex_results)
-        if date_results:
-            if results:
-                results = set(results).intersection(date_results)
-            else:
-                results = date_results
-        return results
 
     def display_structures_by_idlist(self, idlist: list or set) -> None:
         """

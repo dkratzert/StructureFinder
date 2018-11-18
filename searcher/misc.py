@@ -430,3 +430,39 @@ def is_valid_cell(cell: str = None) -> list:
 
 if __name__ == '__main__':
     pass
+
+
+def combine_results(cell_results, date_results, elincl_results, results, spgr_results,
+                    txt_ex_results, txt_results):
+    """
+    Combines all search results together. Returns a list with database ids from found structures.
+    """
+    if cell_results:
+        results.extend(cell_results)
+    if spgr_results:
+        spgr_results = set(spgr_results)
+        if results:
+            results = set(results).intersection(spgr_results)
+        else:
+            results = spgr_results
+    if elincl_results:
+        elincl_results = set(elincl_results)
+        if results:
+            results = set(results).intersection(elincl_results)
+        else:
+            results = elincl_results
+    if txt_results:
+        txt_results = set(txt_results)
+        if results:
+            results = set(results).intersection(txt_results)
+        else:
+            results = txt_results
+    if txt_ex_results:
+        txt_ex_results = set(txt_ex_results)
+        results = set(results) - set(txt_ex_results)
+    if date_results:
+        if results:
+            results = set(results).intersection(date_results)
+        else:
+            results = date_results
+    return results

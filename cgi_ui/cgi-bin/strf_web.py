@@ -48,7 +48,8 @@ from displaymol.sdm import SDM
 from lattice import lattice
 from pymatgen.core import mat_lattice
 from searcher.database_handler import StructureTable
-from searcher.misc import is_valid_cell, get_list_of_elements, flatten, is_a_nonzero_file, format_sum_formula
+from searcher.misc import is_valid_cell, get_list_of_elements, flatten, is_a_nonzero_file, format_sum_formula, \
+    combine_results
 
 """
 TODO:
@@ -126,9 +127,9 @@ def adv():
     structures = StructureTable(dbfilename)
     print("Advanced search: elin:", elincl, 'elout:', elexcl, date1, '|', date2, '|', cell_search, 'txin:', txt_in,
           'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num, 'only:', onlyelem)
-    ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
+    ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt=txt_in, txt_ex=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
-                          structures=structures, it_num=it_num, onlyelem=onlyelem)
+                          structures=structures, it_num=it_num, onlythese=onlyelem)
     print("--> Got {} structures from Advanced search.".format(len(ids)))
     return get_structures_json(structures, ids)
 
@@ -625,72 +626,42 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
     return result
 
 
-def advanced_search(cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, more_results,
+def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
                     date1: str = None, date2: str = None, structures: StructureTable = None,
-                    it_num: str = None, onlyelem: bool = False) -> list:
+                    it_num: str = None, onlythese: bool = False) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
     """
-    excl = []
-    incl = []
-    date_results = []
+    #
     results = []
-    it_results = []
-    cell = []
-    if cellstr:
-        cell = is_valid_cell(cellstr)
+    cell_results = []
+    spgr_results = []
+    elincl_results = []
+    txt_results = []
+    txt_ex_results = []
+    date_results = []
+    cell = is_valid_cell(cellstr)
+    try:
+        spgr = int(it_num.split()[0])
+    except:
+        spgr = 0
     if cell:
-        cellres = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
-        incl.append(cellres)
-    if elincl:  # and onlyelem: <- do not need to add onlyelement, because it is given to search_elements()
-        incl.append(search_elements(structures, elincl, '', onlyelem))
-    if elexcl and not onlyelem:
-        incl.append(search_elements(structures, elincl, elexcl, onlyelem))
+        cell_results = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
+    if spgr:
+        spgr_results = structures.find_by_it_number(spgr)
+    if elincl or elexcl:
+        elincl_results = search_elements(structures, elincl, elexcl, onlythese)
+    if txt:
+        txt_results = [i[0] for i in structures.find_by_strings(txt)]
+    if txt_ex:
+        txt_ex_results = [i[0] for i in structures.find_by_strings(txt_ex)]
     if date1 != date2:
         date_results = find_dates(structures, date1, date2)
-    if it_num:
-        try:
-            it_results = structures.find_by_it_number(int(it_num))
-        except ValueError:
-            pass
-    if txt_in:
-        if len(txt_in) >= 2 and "*" not in txt_in:
-            txt_in = '*' + txt_in + '*'
-        idlist = structures.find_by_strings(txt_in)
-        try:
-            incl.append([i[0] for i in idlist])
-        except(IndexError, KeyError):
-            incl.append([idlist])  # only one result
-    if txt_out:
-        if len(txt_out) >= 2 and "*" not in txt_out:
-            txt_out = '*' + txt_out + '*'
-        idlist = structures.find_by_strings(txt_out)
-        try:
-            excl.append([i[0] for i in idlist])
-        except(IndexError, KeyError):
-            excl.append([idlist])  # only one result
-    if incl and incl[0]:
-        results = set(incl[0]).intersection(*incl)
-        if date_results:
-            results = set(date_results).intersection(results)
-        if it_results:
-            results = set(it_results).intersection(results)
-    elif date_results and not it_results:
-        results = set(results).intersection(date_results)
-    elif not date_results and it_results:
-        results = it_results
-    elif it_results and date_results:
-        results = set(it_results).intersection(date_results)
-    if excl:
-        # excl list should not be in the resukts at all
-        try:
-            return list(results - set(flatten(excl)))
-        except TypeError as e:
-            print(e)
-            print('can not display result in advanced_search.')
-            return []
-    return list(results)
+    ####################
+    results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
+                              txt_ex_results, txt_results)
+    return flatten(list(results))
 
 
 if __name__ == "__main__":
