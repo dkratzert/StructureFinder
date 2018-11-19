@@ -10,8 +10,7 @@ from misc.version import VERSION
 """
 This file is for updating the various version number definitions for each STRF release
 """
-isspath = ["./strf-install_win32.iss", "./strf-install_win64.iss"]
-pypath = ["../shelxfile/shelx.py", "../strf.py"]
+
 
 def process_iss(filepath):
     pth = Path(filepath)
@@ -33,11 +32,11 @@ def disable_debug(filepath):
     for num, line in enumerate(file):
         if line.startswith("DEBUG") or line.startswith("PROFILE"):
             l = line.split()
+            print("DEBUG/PROFILE.. {}, {}".format(l[2], filepath))
             l[2] = '{}'.format("False")
             file[num] = " ".join(l)
             continue
     iss_file = "\n".join(file)
-    print("windows... {}, {}".format(VERSION, filepath))
     pth.write_text(iss_file, encoding="UTF-8")
 
 
@@ -46,8 +45,8 @@ if __name__ == "__main__":
 
     for i in isspath:
         process_iss(i)
-    
-    #for i in pypath:
-    #    disable_debug(i)
-    
+
+    for i in pypath:
+        disable_debug(i)
+
     print("Version numbers updated.")

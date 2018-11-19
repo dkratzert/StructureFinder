@@ -38,7 +38,6 @@ from datetime import date
 
 from PyQt5 import uic
 
-import misc.update_check
 from apex import apeximporter
 from displaymol import mol_file_writer, write_html
 from lattice import lattice
