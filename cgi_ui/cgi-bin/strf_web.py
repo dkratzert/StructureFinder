@@ -120,6 +120,10 @@ def adv():
     cell_search = request.GET.cell_search
     txt_in = request.GET.text_in
     txt_out = request.GET.text_out
+    if len(txt_in) >= 2 and "*" not in txt_in:
+        txt_in = '*' + txt_in + '*'
+    if len(txt_out) >= 2 and "*" not in txt_out:
+        txt_out = '*' + txt_out + '*'
     more_results = (request.GET.more == "true")
     sublattice = (request.GET.supercell == "true")
     onlyelem = (request.GET.onlyelem == "true")
