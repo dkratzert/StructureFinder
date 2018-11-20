@@ -373,7 +373,7 @@ $(document).ready(function($){
     });
 
     // Enter key pressed in one of the advanced search fields:
-    $('.advsearchfields').keypress(function(e) {
+    $('#adv-search').keypress(function(e) {
         if (e.which === 13) {  // enter key
             advanced_search_button.click();
             //console.log(cell);
