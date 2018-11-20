@@ -20,7 +20,8 @@ from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow
+from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow, \
+    QWidget
 
 from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
@@ -167,11 +168,10 @@ class StartStructureDB(QMainWindow):
         self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
-        self.ui.ad_SearchPushButton.clicked.connect(self.advanced_search2)
+        self.ui.ad_SearchPushButton.clicked.connect(self.advanced_search)
         self.ui.ad_ClearSearchButton.clicked.connect(self.show_full_list)
         if is_windows:
             self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
-            # TODO: search on enter key press
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
@@ -330,9 +330,9 @@ class StartStructureDB(QMainWindow):
             self.ui.statusbar.showMessage('Copied unit cell {} to clip board.'.format(cell))
         return True
 
-    def advanced_search2(self):
+    def advanced_search(self):
         """
-        Combines all the search fields. Collects all includes, all excludes ad calculates
+        Combines all the search fields. Collects all includes, all excludes and calculates
         the difference.
         """
         if not self.structures:
@@ -567,9 +567,21 @@ class StartStructureDB(QMainWindow):
             if event.buttons() == Qt.RightButton:
                 # print("rightbutton")
                 return True
-        #elif event.type() == Qt.Key_Enter:
-        #    print('Enterkey pressed')
         return False
+
+    def keyPressEvent(self, q_key_event):
+        """
+        Event filter for key presses.
+        Essentially searches for enter key presses in search fields and runs advanced search.
+        """
+        if q_key_event.key() == Qt.Key_Return or q_key_event.key() == Qt.Key_Enter:
+            fields = [self.ui.ad_elementsExclLineEdit, self.ui.ad_elementsIncLineEdit, self.ui.ad_textsearch,
+                      self.ui.ad_textsearch_excl, self.ui.ad_unitCellLineEdit]
+            for x in fields:
+                if x.hasFocus():
+                    self.advanced_search()
+        else:
+            super().keyPressEvent(q_key_event)
 
     def redraw_molecule(self):
         cell = self.structures.get_cell_by_id(self.structureId)
