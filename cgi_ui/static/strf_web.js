@@ -383,11 +383,18 @@ $(document).ready(function($){
     // display how many results I got
     function displayresultnum(result) {
         var numresult;
-        if (typeof result === 'undefined') numresult = 0;
-        else (numresult = result.total);
+        if (typeof result.total === 'undefined') {
+            numresult = 0;
+        } else {
+            numresult = result.total;
+        }
         $("#cellrow").removeClass('invisible');
         $("#cell_copy_btn").addClass('invisible');
         $("#growCheckBoxgroup").addClass('invisible');
+        $("#jsmolcolumn").addClass('invisible');
+        //$("#residualstable1").addClass('invisible');
+        //$("#residualstable2").addClass('invisible');
+        //$("#residuals").addClass('invisible');
         document.getElementById("cellrow").innerHTML = "Found " + numresult + " structures";
     }
     
