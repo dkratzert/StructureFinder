@@ -352,7 +352,7 @@ class StructureTable():
         if found:
             return found
 
-    def get_all_structures_as_dict(self, ids: (list, tuple) = None, all=False) -> dict:
+    def get_all_structures_as_dict(self, ids: (list, tuple) = None, all=False) -> list:
         """
         Returns the list of structures as dictionary.
 
@@ -368,14 +368,14 @@ class StructureTable():
         if ids:
             ids = tuple(ids)
             if len(ids) > 1:
-                req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
+                req = '''SELECT Structure.Id AS recid, Structure.path, Structure.filename, 
                              Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
             else:
                 # only one id
-                req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
+                req = '''SELECT Structure.Id AS recid, Structure.path, Structure.filename, 
                             Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(ids[0])
         elif all:
-            req = '''SELECT Structure.Id AS recid, Structure.measurement, Structure.path, Structure.filename, 
+            req = '''SELECT Structure.Id AS recid, Structure.path, Structure.filename, 
                       Structure.dataname FROM Structure'''
         else:
             return {}
