@@ -69,6 +69,7 @@ except Exception as e:
 """
 TODO:
 - sort results by G6 distance
+- Use QPainter to draw molecule?
 
 Search for:
 - draw structure (with JSME? Acros? Kekule?, https://github.com/ggasoftware/ketcher)
