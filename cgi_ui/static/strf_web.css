@@ -11,7 +11,7 @@ body {
 .collapsing {
     transition: 1ms;
 }
-
+/*
 #resitable1 tr td {
     line-height: 13px;
     height: 13px;
@@ -22,7 +22,7 @@ body {
     line-height: 13px;
     height: 13px;
     overflow: auto;
-}
+}*/
 
 .btn-group {
     padding-bottom: 2px;

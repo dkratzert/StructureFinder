@@ -385,7 +385,7 @@ def get_residuals_table1(structures: StructureTable, cif_dic: dict, structure_id
         # Display this as last resort:
         sumform = cif_dic['_chemical_formula_sum']
     table1 = """
-    <table class="table table-bordered" id='resitable1'>
+    <table class="table table-bordered table-condensed" id='resitable1'>
         <tbody>
         <tr><td style='width: 40%'><b>Space Group</b></td>                 <td>{0}</td></tr>
         <tr><td><b>Z</b></td>                           <td>{1}</td></tr>
@@ -443,7 +443,7 @@ def get_residuals_table2(cif_dic: dict) -> str:
     except TypeError:
         data_to_param = 0
     table2 = """
-    <table class="table table-bordered" id='resitable2'>
+    <table class="table table-bordered table-condensed" id='resitable2'>
         <tbody>
         <tr><td style='width: 40%'><b>Measured Refl.</b></td>       <td>{0}</td></tr>
         <tr><td><b>Independent Refl.</b></td>                       <td>{9}</td></tr>
@@ -481,7 +481,7 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     # style="white-space: pre": preserves white space
     table_string = """<h4>All CIF values</h4>
                         <div id="myresidualtable">
-                        <table class="table table-striped table-bordered" style="white-space: pre">
+                        <table class="table table-striped table-bordered table-condensed" style="white-space: pre">
                             <thead>
                                 <tr>
                                     <th> Item </th>
