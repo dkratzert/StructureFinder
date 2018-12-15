@@ -338,7 +338,8 @@ def fill_db_tables(cif: Cif, filename: str, path: str, structure_id: str,
             volume = str(vol_unitcell(a, b, c, alpha, beta, gamma))
         except ValueError:
             volume = ''
-    measurement_id = structures.fill_measuremnts_table(filename, structure_id)
+    #measurement_id = structures.fill_measuremnts_table(filename, structure_id)
+    measurement_id = 1
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
     structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma, volume)
     sum_from_dict = {}

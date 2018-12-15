@@ -718,6 +718,8 @@ class StructureTable():
         optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize'); """
         self.database.cur.execute(populate_index)
         self.database.cur.execute(optimize_queries)
+        # add an index to find cells faster
+        self.database.cur.execute("""CREATE INDEX idx_volume ON cell (volume)""")
 
     def get_row_as_dict(self, structure_id):
         """
