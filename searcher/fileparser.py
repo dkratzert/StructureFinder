@@ -190,7 +190,7 @@ class Cif(object):
                 if line == "data_global":
                     continue
                 if not data:
-                    name = line.split('_')[1].strip('\n\r')
+                    name = '_'.join(line.split('_')[1:])
                     self.cif_data['data'] = name
                     data = True
                     continue
@@ -217,8 +217,8 @@ class Cif(object):
                 continue
             # Leave out hkl frames:
             if hkl:
-                #break
-                continue  # use continue if data is behind hkl
+                # break
+                continue  # use continue if data should be parsed behind hkl
             if line.lstrip()[0] == ";" and hkl:
                 hkl = False
                 continue
