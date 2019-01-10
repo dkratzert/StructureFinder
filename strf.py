@@ -20,8 +20,7 @@ from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow, \
-    QWidget
+from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow
 
 from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
@@ -737,7 +736,7 @@ class StartStructureDB(QMainWindow):
         Creates a html file from a mol file to display the molecule in jsmol-lite
         """
         symmcards = [x.split(',') for x in self.structures.get_row_as_dict(structure_id)
-                        ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+        ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
         if symmcards[0] == ['']:
             print('Cif file has no symmcards, unable to grow structure.')
         blist = []
@@ -986,7 +985,7 @@ class StartStructureDB(QMainWindow):
         Reads a p4p file to get the included unit cell for a cell search.
         """
         fname, _ = QFileDialog.getOpenFileName(self, caption='Open p4p File', directory='./',
-                                                         filter="*.p4p *.cif *.res *.ins")
+                                               filter="*.p4p *.cif *.res *.ins")
         fname = str(fname)
         _, ending = os.path.splitext(fname)
         if ending == '.p4p':
@@ -1036,7 +1035,7 @@ class StartStructureDB(QMainWindow):
             cif = Cif()
             try:
                 cif.parsefile(Path(fname).read_text(encoding='utf-8',
-                                                            errors='ignore').splitlines(keepends=True))
+                                                    errors='ignore').splitlines(keepends=True))
             except FileNotFoundError:
                 self.moving_message('File not found.')
         else:
@@ -1122,7 +1121,7 @@ class StartStructureDB(QMainWindow):
         if n == 0:
             n += 1
         self.ui.statusbar.showMessage('Added {} APEX entries in: {:>2d} h, {:>2d} m, {:>3.2f} s'
-                                      .format(n-1, int(h), int(m), s), msecs=0)
+                                      .format(n - 1, int(h), int(m), s), msecs=0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         self.set_columnsize()
         self.structures.database.init_textsearch()
