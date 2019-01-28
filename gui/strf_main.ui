@@ -248,7 +248,7 @@
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="maintab">
        <attribute name="title">
@@ -621,7 +621,7 @@
                 </widget>
                </item>
                <item row="0" column="1">
-                <widget class="QLabel" name="formLabel">
+                <widget class="QLabel" name="SumformLabel">
                  <property name="enabled">
                   <bool>true</bool>
                  </property>

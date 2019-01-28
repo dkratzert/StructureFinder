@@ -153,6 +153,7 @@ class StartStructureDB(QMainWindow):
         # select the first item in the list
         item = self.ui.cifList_treeWidget.topLevelItem(0)
         self.ui.cifList_treeWidget.setCurrentItem(item)
+        self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
 
     def connect_signals_and_slots(self):
         """
@@ -219,7 +220,7 @@ class StartStructureDB(QMainWindow):
 
     def dropEvent(self, e):
         """
-        Handles drop events. 
+        Handles drop events.
         """
         from urllib.parse import urlparse
         p = urlparse(e.mimeData().text())
@@ -260,7 +261,7 @@ class StartStructureDB(QMainWindow):
 
     def elements_doubled_check(self, elem1, elem2):
         """
-        Validates if elements of elem1 are not in elem2 and elem1 has purely valid sum formula. 
+        Validates if elements of elem1 are not in elem2 and elem1 has purely valid sum formula.
         """
         ok = True
         for el in elem1:
@@ -666,8 +667,8 @@ class StartStructureDB(QMainWindow):
         if sumform == '':
             # Display this as last resort:
             sumform = cif_dic['_chemical_formula_sum']
-        self.ui.formLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
-        self.ui.formLabel.setText("{}".format(sumform))
+        self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
+        self.ui.SumformLabel.setText("{}".format(sumform))
         self.ui.reflTotalLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_number']))
         self.ui.uniqReflLineEdit.setText("{}".format(cif_dic['_refine_ls_number_reflns']))
         self.ui.refl2sigmaLineEdit.setText("{}".format(cif_dic['_reflns_number_gt']))
@@ -1191,7 +1192,7 @@ class StartStructureDB(QMainWindow):
         self.ui.rintLineEdit.clear()
         self.ui.rsigmaLineEdit.clear()
         self.ui.SpaceGroupLineEdit.clear()
-        self.ui.formLabel.clear()
+        self.ui.SumformLabel.clear()
         self.ui.temperatureLineEdit.clear()
         self.ui.thetaFullLineEdit.clear()
         self.ui.thetaMaxLineEdit.clear()

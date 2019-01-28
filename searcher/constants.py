@@ -1,4 +1,5 @@
 import sys
+
 py36 = False
 py34 = False
 py2 = False
@@ -23,28 +24,30 @@ atoms = ('D', 'H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
          'U')
 
 celltxt = """
-   <html><head/><body>
-   <table border="0" style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px;" 
-          cellspacing="1" cellpadding="1">
-       <tr>
-           <td><p align="left"><span style=" font-style:italic;">a</span> = </p></td>
-           <td><p align="right">{:>8.3f} Å, </p></td>
-           <td><p align="right"><span style="font-style:italic;">&alpha;</span> = </p></td> 
-           <td><p align="right">{:>8.3f}° </p></td>
-       </tr>
-       <tr>
-           <td><p align="left"><span style=" font-style:italic;">b</span> = </p></td>
-           <td><p align="right">{:>8.3f} Å, </p></td>
-           <td><p align="right"><span style=" font-style:italic;">&beta;</span> = </p></td> 
-           <td><p align="right">{:>8.3f}° </p></td>
-       </tr>
-       <tr>
-           <td><p align="left"><span style=" font-style:italic;">c</span> = </p></td>
-           <td><p align="right">{:>8.3f} Å, </p></td>
-           <td><p align="right"><span style=" font-style:italic;">&gamma;</span> = </p></td> 
-           <td><p align="right">{:>8.3f}° </p></td>
-       </tr>
+    <html><head/><body>
+    <table border="0" style=" margin-top:0px; margin-bottom:0px; margin-left:50px; margin-right:0px;" 
+    cellspacing="1" cellpadding="1">
+        <tr>
+            <td><p align="left"><span style=" font-style:italic;">a</span> = </p></td>
+            <td><p align="right">{:>8.3f} Å, </p></td>
+            <td><p align="right"><span style="font-style:italic;">&alpha;</span> = </p></td> 
+            <td><p align="right">{:>8.3f}° </p></td>
+        </tr>
+        <tr>
+            <td><p align="left"><span style=" font-style:italic;">b</span> = </p></td>
+            <td><p align="right">{:>8.3f} Å, </p></td>
+            <td><p align="right"><span style=" font-style:italic;">&beta;</span> = </p></td> 
+            <td><p align="right">{:>8.3f}° </p></td>
+        </tr>
+        <tr>
+            <td><p align="left"><span style=" font-style:italic;">c</span> = </p></td>
+            <td><p align="right">{:>8.3f} Å, </p></td>
+            <td><p align="right"><span style=" font-style:italic;">&gamma;</span> = </p></td> 
+            <td><p align="right">{:>8.3f}° </p></td>
+        </tr>
    </table>
-   Volume = {:8.2f} Å<sup>3</sup>, <b>{}</b>
+   <div style="margin-left:50px">
+    Volume = {:8.2f} Å<sup>3</sup>, <b>{}</b>
+   </div>
    </body></html>
-   """
+    """
