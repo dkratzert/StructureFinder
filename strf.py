@@ -12,22 +12,6 @@ Created on 09.02.2015
 
 @author: Daniel Kratzert
 """
-import platform
-import webbrowser
-from os.path import isfile, samefile
-from pathlib import Path
-from sqlite3 import DatabaseError, ProgrammingError, OperationalError
-
-from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow
-
-from displaymol.sdm import SDM
-from p4pfile.p4p_reader import P4PFile, read_file_to_list
-from shelxfile.misc import chunks
-from shelxfile.shelx import ShelXFile
-
-DEBUG = False
 import math
 import os
 import shutil
@@ -35,8 +19,20 @@ import sys
 import tempfile
 import time
 from datetime import date
+from os.path import isfile, samefile
+from pathlib import Path
+from sqlite3 import DatabaseError, ProgrammingError, OperationalError
+from displaymol.sdm import SDM
 
-from PyQt5 import uic
+from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow
+
+from p4pfile.p4p_reader import P4PFile, read_file_to_list
+from shelxfile.misc import chunks
+from shelxfile.shelx import ShelXFile
+
+DEBUG = False
 
 from apex import apeximporter
 from displaymol import mol_file_writer, write_html
@@ -49,6 +45,7 @@ from searcher.fileparser import Cif
 from searcher.misc import is_valid_cell, elements, flatten, combine_results
 
 is_windows = False
+import platform
 if platform.system() == 'Windows':
     is_windows = True
 
@@ -128,11 +125,15 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit2.setDate(QDate(date.today()))
         try:
             self.write_empty_molfile(mol_data=' ')
-            self.init_webview()
         except Exception as e:
             # Graphics driver not compatible
             print(e, '##')
-            raise
+            #raise
+        try:
+            self.init_webview()
+        except Exception as e:
+            print(e, '###')
+            #raise
         self.ui.MaintabWidget.setCurrentIndex(0)
         self.setWindowIcon(QIcon(os.path.join(application_path, './icons/strf.png')))
         self.uipass = Ui_PasswdDialog()
@@ -154,6 +155,7 @@ class StartStructureDB(QMainWindow):
         item = self.ui.cifList_treeWidget.topLevelItem(0)
         self.ui.cifList_treeWidget.setCurrentItem(item)
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
+
 
     def connect_signals_and_slots(self):
         """
@@ -184,13 +186,13 @@ class StartStructureDB(QMainWindow):
         self.ui.txtSearchEdit.textChanged.connect(self.search_text)
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.p4pCellButton.clicked.connect(self.get_name_from_p4p)
-        self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
         self.ui.CSDtreeWidget.itemDoubleClicked.connect(self.show_csdentry)
         self.ui.ad_elementsIncLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.ad_elementsExclLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.add_res.clicked.connect(self.res_checkbox_clicked)
         self.ui.add_cif.clicked.connect(self.cif_checkbox_clicked)
+        self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.growCheckBox.toggled.connect(self.redraw_molecule)
 
     def res_checkbox_clicked(self, click):
@@ -205,6 +207,7 @@ class StartStructureDB(QMainWindow):
         self.ui.MaintabWidget.setCurrentIndex(1)
 
     def show_csdentry(self, item: QModelIndex):
+        import webbrowser
         sel = self.ui.CSDtreeWidget.selectionModel().selection()
         try:
             identifier = sel.indexes()[8].data()
@@ -422,7 +425,10 @@ class StartStructureDB(QMainWindow):
         self.view.load(QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
         # self.view.setMaximumWidth(260)
         # self.view.setMaximumHeight(290)
+        self.view.loadFinished.connect(self.onWebviewLoadFinished)
         self.ui.ogllayout.addWidget(self.view)
+
+    def onWebviewLoadFinished(self):
         self.view.show()
 
     @pyqtSlot(name="cell_state_changed")
@@ -742,6 +748,7 @@ class StartStructureDB(QMainWindow):
             print('Cif file has no symmcards, unable to grow structure.')
         blist = []
         if self.ui.growCheckBox.isChecked():
+            self.ui.molGroupBox.setTitle('Completed Molecule')
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=False, as_list=True)
             if atoms:
                 sdm = SDM(atoms, symmcards, cell)
@@ -750,6 +757,7 @@ class StartStructureDB(QMainWindow):
                 # blist = [(x[0]+1, x[1]+1) for x in sdm.bondlist]
                 # print(len(blist))
         else:
+            self.ui.molGroupBox.setTitle('Asymmetric Unit')
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=True, as_list=False)
             blist = []
         try:
@@ -1207,6 +1215,7 @@ class StartStructureDB(QMainWindow):
 
 
 if __name__ == "__main__":
+    from PyQt5 import uic
     try:
         uic.compileUiDir(os.path.join(application_path, './gui'))
     except:

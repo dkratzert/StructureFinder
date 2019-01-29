@@ -112,9 +112,12 @@ else:
         except KeyboardInterrupt:
             sys.exit()
         print("---------------------")
-    if db and structures:
-        db.init_textsearch()
-        structures.populate_fulltext_search_table()
+    try:
+        if db and structures:
+            db.init_textsearch()
+            structures.populate_fulltext_search_table()
+    except TypeError:
+        print('No valid files found. They might be in excluded subdirectories.')
     time2 = time.perf_counter()
     diff = time2 - time1
     m, s = divmod(diff, 60)
