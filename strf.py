@@ -426,9 +426,9 @@ class StartStructureDB(QMainWindow):
         # self.view.setMaximumWidth(260)
         # self.view.setMaximumHeight(290)
         self.view.loadFinished.connect(self.onWebviewLoadFinished)
-        self.ui.ogllayout.addWidget(self.view)
 
     def onWebviewLoadFinished(self):
+        self.ui.ogllayout.addWidget(self.view)
         self.view.show()
 
     @pyqtSlot(name="cell_state_changed")

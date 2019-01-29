@@ -35,7 +35,7 @@ def write(moldata: str, width: int = 240, height: int = 240):
           bondWidth: 2,
           zoomScaling: 8,
           pinchScaling: 6.0,
-          mouseDragFactor: 0.5,
+          mouseDragFactor: 0.7,
           touchDragFactor: 0.15,
           multipleBondSpacing: 0,
           spinRateX: -0.08,
