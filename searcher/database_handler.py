@@ -16,11 +16,10 @@ import sys
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 
 import searcher
-from lattice import lattice
 from searcher import misc
 from searcher.atoms import sorted_atoms
 from searcher.misc import get_error_from_value
-from shelxfile.dsrmath import Array
+from shelxfile.dsrmath import frac_to_cart
 
 __metaclass__ = type  # use new-style classes
 
@@ -485,9 +484,12 @@ class StructureTable():
         result = self.database.db_request(req, (structure_id,))
         if cartesian:
             cartesian_coords = []
-            a = lattice.A(cell).orthogonal_matrix
+            # lattice.A calculates wrong coordinates:
+            #a = lattice.A(cell).orthogonal_matrix
             for at in result:
-                cartesian_coords.append(list(at[:2]) + (Array([at[2], at[3], at[4]]) * a).values + list(at[5:]))
+                xyz = frac_to_cart([at[2], at[3], at[4]], cell[:6])
+                #cartesian_coords.append(list(at[:2]) + (Array([at[2], at[3], at[4]]) * a).values + list(at[5:]))
+                cartesian_coords.append(list(at[:2]) + xyz + list(at[5:]))
             return cartesian_coords
         if result:
             if as_list:
@@ -926,7 +928,7 @@ class StructureTable():
 
     def find_biggest_cell(self):
         """
-        Finds the structure with the biggest cell in the db. This should be done by volume, but was 
+        Finds the structure with the biggest cell in the db. This should be done by volume, but was
         just for fun...
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_biggest_cell()

@@ -4,8 +4,8 @@ Created on 03.06.2017
 
  ----------------------------------------------------------------------------
 * "THE BEER-WARE LICENSE" (Revision 42):
-* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this 
-* notice you can do whatever you want with this stuff. If we meet some day, and 
+* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this
+* notice you can do whatever you want with this stuff. If we meet some day, and
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
 
@@ -25,7 +25,7 @@ def vol_unitcell(a, b, c, al, be, ga):
     :type al: float
     :type be: float
     :type ga: float
-    
+
     >>> v = vol_unitcell(2, 2, 2, 90, 90, 90)
     >>> print(v)
     8.0
@@ -39,6 +39,7 @@ def vol_unitcell(a, b, c, al, be, ga):
 
 class A(object):
     """
+    TODO: Something in here calculates wrong!!
     orthogonalization matrix
     e.g. converts fractional coordinates to cartesian coodinates
 

@@ -43,7 +43,7 @@ class SymmCards():
     """
 
     def __init__(self):
-        self._symmcards = [SymmetryElement(['X', 'Y', 'Z'])]
+        self._symmcards = []
 
     def _as_str(self) -> str:
         return "\n".join([str(x) for x in self._symmcards])
@@ -277,6 +277,7 @@ class SDM():
                     new = [atom[0], atom[1]] + list(coords) + [atom[5], atom[6], atom[7], 'symmgen']
                     new_atoms.append(new)
                     isthere = False
+                    # Only add atom if its occupancy (new[5]) is greater zero:
                     if new[5] >= 0:
                         for atom in showatoms:
                             if atom[5] != new[5]:
@@ -300,8 +301,8 @@ class SDM():
 
 
 if __name__ == "__main__":
-    structureId = 32
-    structures = database_handler.StructureTable('../structurefinder.sqlite')
+    structureId = 7
+    structures = database_handler.StructureTable('./test.sqlite')
     cell = structures.get_cell_by_id(structureId)
     atoms = structures.get_atoms_table(structureId, cell, cartesian=False, as_list=True)
     symmcards = [x.split(',') for x in structures.get_row_as_dict(structureId)['_space_group_symop_operation_xyz'] \
