@@ -425,10 +425,10 @@ class StartStructureDB(QMainWindow):
         self.view.load(QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
         # self.view.setMaximumWidth(260)
         # self.view.setMaximumHeight(290)
+        self.ui.ogllayout.addWidget(self.view)
         self.view.loadFinished.connect(self.onWebviewLoadFinished)
 
     def onWebviewLoadFinished(self):
-        self.ui.ogllayout.addWidget(self.view)
         self.view.show()
 
     @pyqtSlot(name="cell_state_changed")
@@ -1216,11 +1216,14 @@ class StartStructureDB(QMainWindow):
 
 if __name__ == "__main__":
     from PyQt5 import uic
-    try:
-        uic.compileUiDir(os.path.join(application_path, './gui'))
-    except:
-        print("Unable to compile UI!")
-        raise
+    if DEBUG:
+        try:
+            uic.compileUiDir(os.path.join(application_path, './gui'))
+        except:
+            print("Unable to compile UI!")
+            raise
+    else:
+        print("Remember, UI is not recompiled without DEBUG.")
     from gui.strf_main import Ui_stdbMainwindow
     from gui.strf_dbpasswd import Ui_PasswdDialog
 
