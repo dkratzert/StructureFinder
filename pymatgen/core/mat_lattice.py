@@ -3,11 +3,12 @@
 # Distributed under the terms of the MIT License.
 
 from __future__ import division, unicode_literals
-import math
+
+from math import pi, radians, acos, sqrt
 
 import numpy as np
-from numpy.linalg import inv
 from numpy import dot, transpose
+from numpy.linalg import inv
 
 
 def abs_cap(val, max_abs_val=1):
@@ -25,10 +26,10 @@ def abs_cap(val, max_abs_val=1):
     """
     return max(min(val, max_abs_val), -max_abs_val)
 
+
 """
 This module defines the classes relating to 3D lattices.
 """
-
 
 __author__ = "Shyue Ping Ong, Michael Kocher"
 __copyright__ = "Copyright 2011, The Materials Project"
@@ -47,7 +48,6 @@ class Lattice(object):
     """
 
     # Properties lazily generated for efficiency.
-
 
     def __init__(self, matrix):
         """
@@ -73,8 +73,9 @@ class Lattice(object):
             j = (i + 1) % 3
             k = (i + 2) % 3
             angles[i] = abs_cap(dot(m[j], m[k]) / (lengths[j] * lengths[k]))
-        self._angles = np.ma.arccos(angles) * 180. / math.pi
+        self._angles = np.ma.arccos(angles) * 180. / pi
         self._lengths = lengths
+        m.setflags(write=False)
         self._matrix = m
         self._inv_matrix = None
         self._metric_tensor = None
@@ -147,7 +148,7 @@ class Lattice(object):
     @property
     def matrix(self):
         """Copy of matrix representing the Lattice"""
-        return np.copy(self._matrix)
+        return self._matrix
 
     @property
     def inv_matrix(self):
@@ -156,6 +157,7 @@ class Lattice(object):
         """
         if self._inv_matrix is None:
             self._inv_matrix = inv(self._matrix)
+            self._inv_matrix.setflags(write=False)
         return self._inv_matrix
 
     @property
@@ -309,8 +311,8 @@ class Lattice(object):
     def from_string(cell):
         """
         :type cell: str
-        :param cell: "a b c alpha beta gamma" 
-        :return: 
+        :param cell: "a b c alpha beta gamma"
+        :return:
         """
         celltmp = cell.split()
         celltmp = [float(i) for i in celltmp]
@@ -332,11 +334,11 @@ class Lattice(object):
         Returns:
             Lattice with the specified lattice parameters.
         """
-        alpha_r = math.radians(alpha)
-        beta_r = math.radians(beta)
-        gamma_r = math.radians(gamma)
-        val = (np.cos(alpha_r) * np.cos(beta_r) - np.cos(gamma_r))\
-            / (np.sin(alpha_r) * np.sin(beta_r))
+        alpha_r = radians(alpha)
+        beta_r = radians(beta)
+        gamma_r = radians(gamma)
+        val = (np.cos(alpha_r) * np.cos(beta_r) - np.cos(gamma_r)) \
+              / (np.sin(alpha_r) * np.sin(beta_r))
         # Sometimes rounding errors result in values slightly > 1.
         val = abs_cap(val)
         gamma_star = np.arccos(val)
@@ -477,11 +479,11 @@ class Lattice(object):
 
         Yields:
             (aligned_lattice, rotation_matrix, scale_matrix) if a mapping is
-            found. 
+            found.
             aligned_lattice is a rotated version of other_lattice that
             has the same lattice parameters, but which is aligned in the
             coordinate system of this lattice so that translational points
-            match up in 3D. 
+            match up in 3D.
             rotation_matrix is the rotation that has to be
             applied to other_lattice to obtain aligned_lattice, i.e.,
             aligned_matrix = np.inner(other_lattice, rotation_matrix) and
@@ -495,8 +497,8 @@ class Lattice(object):
         """
         (lengths, angles) = other_lattice.lengths_and_angles
         (alpha, beta, gamma) = angles
-        frac, dist, _ = self.get_points_in_sphere([[0, 0, 0]], [0, 0, 0], max(lengths) * (1 + ltol),
-                                                  zip_results=False)
+        frac, dist, _, _ = self.get_points_in_sphere([[0, 0, 0]], [0, 0, 0], max(lengths) * (1 + ltol),
+                                                     zip_results=False)
         cart = self.get_cartesian_coords(frac)
         # this can't be broadcast because they're different lengths
         inds = [np.logical_and(dist / l < 1 + ltol, dist / l > 1 / (1 + ltol)) for l in lengths]
@@ -508,7 +510,7 @@ class Lattice(object):
             x = np.inner(v1, v2) / l1[:, None] / l2
             x[x > 1] = 1
             x[x < -1] = -1
-            angles = np.arccos(x) * 180. / math.pi
+            angles = np.arccos(x) * 180. / pi
             return angles
 
         alphab = np.abs(get_angles(c_b, c_c, l_b, l_c) - alpha) < atol
@@ -525,7 +527,7 @@ class Lattice(object):
                     rotation_m = None
                 else:
                     rotation_m = np.linalg.solve(aligned_m, other_lattice.matrix)
-                yield Lattice(aligned_m), rotation_m, scale_m#, dist
+                yield Lattice(aligned_m), rotation_m, scale_m  # , dist
 
     def find_mapping(self, other_lattice, ltol=1e-5, atol=1, skip_rotation_matrix=False):
         """
@@ -542,17 +544,17 @@ class Lattice(object):
 
         Returns:
             (aligned_lattice, rotation_matrix, scale_matrix) if a mapping is
-            found. 
+            found.
             aligned_lattice is a rotated version of other_lattice that
             has the same lattice parameters, but which is aligned in the
             coordinate system of this lattice so that translational points
-            match up in 3D. 
+            match up in 3D.
             rotation_matrix is the rotation that has to be
             applied to other_lattice to obtain aligned_lattice, i.e.,
             aligned_matrix = np.inner(other_lattice, rotation_matrix) and
             op = SymmOp.from_rotation_and_translation(rotation_matrix)
             aligned_matrix = op.operate_multi(latt.matrix)
-            
+
             Finally, scale_matrix is the integer matrix that expresses
             aligned_matrix as a linear combination of this
             lattice, i.e., aligned_matrix = np.dot(scale_matrix, self.matrix)
@@ -605,14 +607,14 @@ class Lattice(object):
                     # Reduce the k-th basis vector.
                     a[:, k - 1] = a[:, k - 1] - q * a[:, i - 1]
                     mapping[:, k - 1] = mapping[:, k - 1] - q * \
-                        mapping[:, i - 1]
+                                        mapping[:, i - 1]
                     uu = list(u[i - 1, 0:(i - 1)])
                     uu.append(1)
                     # Update the GS coefficients.
                     u[k - 1, 0:i] = u[k - 1, 0:i] - q * np.array(uu)
             # Check the Lovasz condition.
-            if dot(b[:, k - 1], b[:, k - 1]) >=\
-                    (delta - abs(u[k - 1, k - 2]) ** 2) *\
+            if dot(b[:, k - 1], b[:, k - 1]) >= \
+                    (delta - abs(u[k - 1, k - 2]) ** 2) * \
                     dot(b[:, (k - 2)], b[:, (k - 2)]):
                 # Increment k if the Lovasz condition holds.
                 k += 1
@@ -648,7 +650,7 @@ class Lattice(object):
         fractional coordinates in the lll basis.
         """
         return np.dot(frac_coords, self.lll_inverse)
-    
+
     def get_frac_coords_from_lll(self, lll_frac_coords):
         """
         Given fractional coordinates in the lll basis, returns corresponding
@@ -723,25 +725,25 @@ class Lattice(object):
             (A, B, C, E, N, Y) = (G[0, 0], G[1, 1], G[2, 2],
                                   2 * G[1, 2], 2 * G[0, 2], 2 * G[0, 1])
             # A5
-            if abs(E) > B + e or (abs(E - B) < e and 2 * N < Y - e) or\
+            if abs(E) > B + e or (abs(E - B) < e and 2 * N < Y - e) or \
                     (abs(E + B) < e and Y < -e):
                 M = [[1, 0, 0], [0, 1, -E / abs(E)], [0, 0, 1]]
                 G = dot(transpose(M), dot(G, M))
                 continue
             # A6
-            if abs(N) > A + e or (abs(A - N) < e and 2 * E < Y - e) or\
+            if abs(N) > A + e or (abs(A - N) < e and 2 * E < Y - e) or \
                     (abs(A + N) < e and Y < -e):
                 M = [[1, 0, -N / abs(N)], [0, 1, 0], [0, 0, 1]]
                 G = dot(transpose(M), dot(G, M))
                 continue
             # A7
-            if abs(Y) > A + e or (abs(A - Y) < e and 2 * E < N - e) or\
+            if abs(Y) > A + e or (abs(A - Y) < e and 2 * E < N - e) or \
                     (abs(A + Y) < e and N < -e):
                 M = [[1, -Y / abs(Y), 0], [0, 1, 0], [0, 0, 1]]
                 G = dot(transpose(M), dot(G, M))
                 continue
             # A8
-            if E + N + Y + A + B < -e or\
+            if E + N + Y + A + B < -e or \
                     (abs(E + N + Y + A + B) < e < Y + (A + N) * 2):
                 M = [[1, 0, 1], [0, 1, 1], [0, 0, 1]]
                 G = dot(transpose(M), dot(G, M))
@@ -753,12 +755,12 @@ class Lattice(object):
         E = 2 * G[1, 2]
         N = 2 * G[0, 2]
         Y = 2 * G[0, 1]
-        a = math.sqrt(A)
-        b = math.sqrt(B)
-        c = math.sqrt(C)
-        alpha = math.acos(E / 2 / b / c) / math.pi * 180
-        beta = math.acos(N / 2 / a / c) / math.pi * 180
-        gamma = math.acos(Y / 2 / a / b) / math.pi * 180
+        a = sqrt(A)
+        b = sqrt(B)
+        c = sqrt(C)
+        alpha = acos(E / 2 / b / c) / pi * 180
+        beta = acos(N / 2 / a / c) / pi * 180
+        gamma = acos(Y / 2 / a / b) / pi * 180
         latt = Lattice.from_parameters(a, b, c, alpha, beta, gamma)
         mapped = self.find_mapping(latt, e, skip_rotation_matrix=True)
         if mapped is not None:
@@ -784,7 +786,7 @@ class Lattice(object):
         versors = self.matrix / self.abc
         geo_factor = abs(np.dot(np.cross(versors[0], versors[1]), versors[2]))
         ratios = self.abc / self.c
-        new_c = (new_volume / (geo_factor * np.prod(ratios))) ** (1/3.)
+        new_c = (new_volume / (geo_factor * np.prod(ratios))) ** (1 / 3.)
         return Lattice(versors * (new_c * ratios))
 
     def dot(self, coords_a, coords_b, frac_coords=False):
@@ -800,7 +802,7 @@ class Lattice(object):
             one-dimensional `numpy` array.
         """
         coords_a, coords_b = np.reshape(coords_a, (-1, 3)), \
-            np.reshape(coords_b, (-1, 3))
+                             np.reshape(coords_b, (-1, 3))
         if len(coords_a) != len(coords_b):
             raise ValueError("")
         if np.iscomplexobj(coords_a) or np.iscomplexobj(coords_b):
@@ -857,40 +859,60 @@ class Lattice(object):
 
         Returns:
             if zip_results:
-                [(fcoord, dist, index) ...] since most of the time, subsequent
-                processing requires the distance.
+                [(fcoord, dist, index, supercell_image) ...] since most of the time, subsequent
+                processing requires the distance, index number of the atom, or index of the image
             else:
-                fcoords, dists, inds
+                fcoords, dists, inds, image
         """
         # TODO: refactor to use lll matrix (nmax will be smaller)
-        recp_len = np.array(self.reciprocal_lattice.abc)
+        # Determine the maximum number of supercells in each direction
+        #  required to contain a sphere of radius n
+        recp_len = np.array(self.reciprocal_lattice.abc) / (2 * pi)
         nmax = float(r) * recp_len + 0.01
+
+        # Get the fractional coordinates of the center of the sphere
         pcoords = self.get_fractional_coords(center)
         center = np.array(center)
+
+        # Prepare the list of output atoms
         n = len(frac_points)
         fcoords = np.array(frac_points) % 1
         indices = np.arange(n)
+
+        # Generate all possible images that could be within `r` of `center`
         mins = np.floor(pcoords - nmax)
         maxes = np.ceil(pcoords + nmax)
-        arange = np.arange(start=mins[0], stop=maxes[0])
-        brange = np.arange(start=mins[1], stop=maxes[1])
-        crange = np.arange(start=mins[2], stop=maxes[2])
-        arange = arange[:, None] * np.array([1, 0, 0])[None, :]
-        brange = brange[:, None] * np.array([0, 1, 0])[None, :]
-        crange = crange[:, None] * np.array([0, 0, 1])[None, :]
+        arange = np.arange(start=mins[0], stop=maxes[0], dtype=np.int)
+        brange = np.arange(start=mins[1], stop=maxes[1], dtype=np.int)
+        crange = np.arange(start=mins[2], stop=maxes[2], dtype=np.int)
+        arange = arange[:, None] * np.array([1, 0, 0], dtype=np.int)[None, :]
+        brange = brange[:, None] * np.array([0, 1, 0], dtype=np.int)[None, :]
+        crange = crange[:, None] * np.array([0, 0, 1], dtype=np.int)[None, :]
         images = arange[:, None, None] + brange[None, :, None] + crange[None, None, :]
+
+        # Generate the coordinates of all atoms within these images
         shifted_coords = fcoords[:, None, None, None, :] + images[None, :, :, :, :]
+
+        # Determine distance from `center`
         cart_coords = self.get_cartesian_coords(fcoords)
         cart_images = self.get_cartesian_coords(images)
         coords = cart_coords[:, None, None, None, :] + cart_images[None, :, :, :, :]
         coords -= center[None, None, None, None, :]
         coords **= 2
         d_2 = np.sum(coords, axis=4)
+
+        # Determine which points are within `r` of `center`
         within_r = np.where(d_2 <= r ** 2)
+        #  `within_r` now contains the coordinates of each image that is
+        #    inside of the cutoff distance. It has 4 coordinates:
+        #   0 - index of the image within `frac_points`
+        #   1,2,3 - index of the supercell which holds the images in the x, y, z directions
         if zip_results:
-            return list(zip(shifted_coords[within_r], np.sqrt(d_2[within_r]), indices[within_r[0]]))
+            return list(zip(shifted_coords[within_r], np.sqrt(d_2[within_r]),
+                            indices[within_r[0]], images[within_r[1:]]))
         else:
-            return shifted_coords[within_r], np.sqrt(d_2[within_r]), indices[within_r[0]]
+            return shifted_coords[within_r], np.sqrt(d_2[within_r]), \
+                   indices[within_r[0]], images[within_r[1:]]
 
     def is_hexagonal(self, hex_angle_tol=5, hex_length_tol=0.01):
         lengths, angles = self.lengths_and_angles
@@ -926,7 +948,7 @@ if __name__ == '__main__':
     # cell 5 and 6 should be same:
     cell5 = "3.1457 3.1457 3.1541 60.089 60.0887 60.104"
     cell6 = "3.1456 3.1458 3.1541 90.089 119.907 119.89"
-    #same:
+    # same:
     cell7 = [80.36, 80.36, 99.44, 90, 90, 120]
     cell8 = [57.104, 57.104, 57.104, 89.750, 89.750, 89.750]
     cell9 = [57.286, 57.286, 57.286, 90.00, 90.00, 90.00]
@@ -935,20 +957,18 @@ if __name__ == '__main__':
 
     c1 = (80.36, 80.36, 99.44, 90, 90, 120)
 
-    #latt5 = Lattice.from_string(cell5)
-    #map = latt5.find_mapping(Lattice.from_string(cell6), ltol=0.0005)
-    #print(map)
+    # latt5 = Lattice.from_string(cell5)
+    # map = latt5.find_mapping(Lattice.from_string(cell6), ltol=0.0005)
+    # print(map)
 
     lattice7 = Lattice.from_parameters(*cell7)
     lattice8 = Lattice.from_parameters(*cell11)
     map = lattice7.find_mapping(lattice8, ltol=1.5, atol=1, skip_rotation_matrix=True)
-    #for i in map:
+    # for i in map:
     #    print(i)
     if map:
         print('gleich')
-        #print(map)
+        # print(map)
     else:
         print('ungleich')
-        #print(map)
-
-
+        # print(map)
