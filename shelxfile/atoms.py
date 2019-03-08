@@ -233,7 +233,7 @@ class Atoms():
 
         From the book of Camelo Giacovazzo:
         For a sequence of four atoms A, B, C, D, the torsion angle w(ABCD) is
-        defined as the angle between the normals to the planes ABC and BCD. 
+        defined as the angle between the normals to the planes ABC and BCD.
         By convention w is positive if the sense of rotation from BA to
         CD, viewed down BC, is clockwise, otherwise it is negative.
 
@@ -477,7 +477,7 @@ class Atom():
         self.x = x
         self.y = y
         self.z = z
-        self.xc, self.yc, self.zc = 0.0, 0.0, 0.0  # frac_to_cart(self.frac_coords, self.cell)
+        self.xc, self.yc, self.zc = frac_to_cart(self.frac_coords, self.cell)
         if len(self.uvals) == 2 and self.shx.hklf:  # qpeaks are always behind hklf
             self.peak_height = uvals.pop()
             self.qpeak = True
@@ -559,7 +559,7 @@ class Atom():
     def resolve_restraints(self):
         """
         This method should generate a list of restraints objects for each restraints involved with this atom.
-        TODO: Make this work 
+        TODO: Make this work
         """
         for num, r in enumerate(self.shx.restraints):
             for at in r.atoms:

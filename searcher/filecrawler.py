@@ -389,7 +389,6 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
             continue
         if at.element.lower() == 'cnt':  # Do not add Shelxle centroids
             continue
-        xc, yc, zc = frac_to_cart([at.x, at.y, at.z], res.cell[:6])
         structures.fill_atoms_table(structure_id,
                                     at.name,
                                     at.element.capitalize(),
@@ -398,7 +397,7 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
                                     at.z,
                                     at.sof,
                                     at.part.n,
-                                    xc, yc, zc)
+                                    at.xc, at.yc, at.zc)
     cif = Cif(options=options)
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([repr(x) for x in res.symmcards])
