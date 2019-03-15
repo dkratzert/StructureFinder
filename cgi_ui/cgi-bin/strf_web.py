@@ -557,7 +557,10 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     idlist2 = []
     # Real lattice comparing in G6:
     if idlist:
-        lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
+        try:
+            lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
+        except ValueError:
+            lattice1 = mat_lattice.Lattice.from_parameters(*cell)
         cells = []
         # SQLite can only handle 999 variables at once:
         for cids in chunks(idlist, 500):

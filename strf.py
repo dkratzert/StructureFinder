@@ -852,7 +852,10 @@ class StartStructureDB(QMainWindow):
         # Real lattice comparing in G6:
         idlist2 = []
         if idlist:
-            lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
+            try:
+                lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
+            except ValueError:
+                lattice1 = mat_lattice.Lattice.from_parameters(*cell)
             self.statusBar().clearMessage()
             cells = []
             # SQLite can only handle 999 variables at once:
