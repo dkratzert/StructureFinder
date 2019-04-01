@@ -18,6 +18,7 @@ from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 import searcher
 from searcher import misc
 from searcher.atoms import sorted_atoms
+DEBUG = True
 
 __metaclass__ = type  # use new-style classes
 
@@ -45,10 +46,12 @@ class DatabaseRequest():
         """
         initializtes the db
         """
+
+        # Format: 1 == APEX
         self.cur.execute('''
                     CREATE TABLE IF NOT EXISTS database_format (
                         Id                  INTEGER NOT NULL,
-                        Format              INTEGER,
+                        Format              INTEGER,              
                         PRIMARY KEY(Id));
                     ''')
 
@@ -270,7 +273,8 @@ class DatabaseRequest():
         :type request: str
         """
         try:
-            # print(request, args)
+            if DEBUG:
+                print('db request:', request, 'args:', args)
             self.cur.execute(request, *args)
             # last_rowid = self.cur.lastrowid
         except OperationalError as e:
@@ -934,10 +938,24 @@ class StructureTable():
         req = """
               SELECT Format FROM database_format;
               """
-        version = self.database.db_request(req)
-        if not version:
+        try:
+            version = self.database.db_request(req)[0][0]
+        except IndexError:
             version = 0
+        print(version, '##version')
         return version
+
+    def set_database_version(self, version=0):
+        """
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> db.get_database_version()
+        0
+        """
+        req = """
+              INSERT or REPLACE into database_format (Id, Format) values (1, ?)
+              """
+        print('## version set to:', version)
+        self.database.db_request(req, (version))
 
 
 if __name__ == '__main__':

@@ -22,17 +22,17 @@ from datetime import date
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
-from displaymol.sdm import SDM
 
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow
 
+from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
 
-DEBUG = False
+DEBUG = True
 
 from apex import apeximporter
 from displaymol import mol_file_writer, write_html
@@ -46,6 +46,7 @@ from searcher.misc import is_valid_cell, elements, flatten, combine_results
 
 is_windows = False
 import platform
+
 if platform.system() == 'Windows':
     is_windows = True
 
@@ -128,12 +129,12 @@ class StartStructureDB(QMainWindow):
         except Exception as e:
             # Graphics driver not compatible
             print(e, '##')
-            #raise
+            # raise
         try:
             self.init_webview()
         except Exception as e:
             print(e, '###')
-            #raise
+            # raise
         self.ui.MaintabWidget.setCurrentIndex(0)
         self.setWindowIcon(QIcon(os.path.join(application_path, './icons/strf.png')))
         self.uipass = Ui_PasswdDialog()
@@ -141,12 +142,14 @@ class StartStructureDB(QMainWindow):
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         self.ui.cifList_treeWidget.addAction(self.ui.actionGo_to_All_CIF_Tab)
+        self.apexdb = 0
         if len(sys.argv) > 1:
             self.dbfilename = sys.argv[1]
             if isfile(self.dbfilename):
                 try:
                     self.structures = database_handler.StructureTable(self.dbfilename)
                     self.show_full_list()
+                    self.apexdb = self.structures.get_database_version()
                 except (IndexError, DatabaseError) as e:
                     print(e)
                     if DEBUG:
@@ -155,7 +158,6 @@ class StartStructureDB(QMainWindow):
         item = self.ui.cifList_treeWidget.topLevelItem(0)
         self.ui.cifList_treeWidget.setCurrentItem(item)
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
-
 
     def connect_signals_and_slots(self):
         """
@@ -555,6 +557,7 @@ class StartStructureDB(QMainWindow):
         """
         Saves the database to a certain file. Therefore I have to close the database.
         """
+        self.structures.set_database_version(self.apexdb)
         status = False
         save_name, tst = QFileDialog.getSaveFileName(self, caption='Save File', directory='./', filter="*.sqlite")
         if save_name:
@@ -1073,6 +1076,7 @@ class StartStructureDB(QMainWindow):
         """
         Imports data from apex into own db
         """
+        self.apexdb = 1
         self.statusBar().showMessage('')
         self.close_db()
         self.start_db()
@@ -1219,6 +1223,7 @@ class StartStructureDB(QMainWindow):
 
 if __name__ == "__main__":
     from PyQt5 import uic
+
     if DEBUG:
         try:
             uic.compileUiDir(os.path.join(application_path, './gui'))

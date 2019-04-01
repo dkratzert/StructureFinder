@@ -19,6 +19,7 @@ from shelxfile.dsrmath import Array, SymmetryElement, Matrix, frac_to_cart
 
 DEBUG = False
 
+
 class Atom():
     def __init__(self, name, element, x, z, y, part):
         self._dict = {'name': name, 'element': element, 'x': x, 'y': y, 'z': z,
@@ -133,7 +134,8 @@ class SDM():
         """
         return Matrix([[self.cell[0], self.cell[1] * cos(self.cell[5]), self.cell[2] * cos(self.cell[4])],
                        [0, self.cell[1] * sin(self.cell[5]),
-                        (self.cell[2] * (cos(self.cell[3]) - cos(self.cell[4]) * cos(self.cell[5])) / sin(self.cell[5]))],
+                        (self.cell[2] * (cos(self.cell[3]) - cos(self.cell[4]) * cos(self.cell[5])) / sin(
+                                self.cell[5]))],
                        [0, 0, self.cell[6] / (self.cell[0] * self.cell[1] * sin(self.cell[5]))]])
 
     def calc_sdm(self) -> list:
@@ -175,14 +177,14 @@ class SDM():
                 if sdmItem.dist < dddd:
                     if hma:
                         sdmItem.covalent = True
-                        #self.bondlist.append((i, j, sdmItem.atom1[0], sdmItem.atom2[0], sdmItem.dist))
+                        # self.bondlist.append((i, j, sdmItem.atom1[0], sdmItem.atom2[0], sdmItem.dist))
                 else:
                     sdmItem.covalent = False
                 if hma:
                     self.sdm_list.append(sdmItem)
         t2 = time.perf_counter()
         self.sdmtime = t2 - t1
-        #if DEBUG:
+        # if DEBUG:
         print('Time for sdm:', round(self.sdmtime, 3), 's')
         self.sdm_list.sort()
         self.calc_molindex(self.atoms)
@@ -215,7 +217,7 @@ class SDM():
                     dk = self.vector_length(*dp)
                     dddd = sdmItem.dist + 0.2
                     # Idea for fast bon list:
-                    #self.bondlist.append((sdmItem.a1, sdmItem.a2, sdmItem.atom1[0] + '<',
+                    # self.bondlist.append((sdmItem.a1, sdmItem.a2, sdmItem.atom1[0] + '<',
                     #                      sdmItem.atom2[0] + '<', sdmItem.dist))
                     if sdmItem.atom1[1] in ['H', 'D'] and sdmItem.atom2[1] in ['H', 'D']:
                         dddd = 1.8
@@ -309,15 +311,15 @@ if __name__ == "__main__":
         .replace("'", "").replace(" ", "").split("\n")]
     sdm = SDM(atoms, symmcards, cell)
     needsymm = sdm.calc_sdm()
-    #print(needsymm)
-    #sys.exit()
+    # print(needsymm)
+    # sys.exit()
     packed_atoms = sdm.packer(sdm, needsymm)
     # print(needsymm)
     # [[8, 5, 5, 5, 1], [16, 5, 5, 5, 1], [7, 4, 5, 5, 3]]
     # print(len(shx.atoms))
     # print(len(packed_atoms))
 
-    #for at in packed_atoms:
+    # for at in packed_atoms:
     #    print(at)
 
     print('Zeit für sdm:', round(sdm.sdmtime, 3), 's')
