@@ -230,7 +230,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     continue
                 if cif:
                     tst = fill_db_tables(cif, filename=z.cifname, path=fullpath,
-                                         structure_id=str(lastid), structures=structures)
+                                         structure_id=lastid, structures=structures)
                     if not tst:
                         if DEBUG:
                             print('cif file not added:', fullpath)
@@ -293,7 +293,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
     return lastid - 1
 
 
-def fill_db_tables(cif: Cif, filename: str, path: str, structure_id: str,
+def fill_db_tables(cif: Cif, filename: str, path: str, structure_id: int,
                    structures: database_handler.StructureTable):
     """
     Fill all info from cif file into the database tables
@@ -372,7 +372,7 @@ def fill_db_tables(cif: Cif, filename: str, path: str, structure_id: str,
     return True
 
 
-def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: str,
+def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: int,
                           structures: database_handler.StructureTable, options: dict):
     if not res.cell:
         return False

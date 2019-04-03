@@ -18,7 +18,7 @@ from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 import searcher
 from searcher import misc
 from searcher.atoms import sorted_atoms
-DEBUG = True
+DEBUG = False
 
 __metaclass__ = type  # use new-style classes
 
@@ -942,20 +942,19 @@ class StructureTable():
             version = self.database.db_request(req)[0][0]
         except IndexError:
             version = 0
-        print(version, '##version')
         return version
 
     def set_database_version(self, version=0):
         """
+        Database version to indicate apex or other formats.
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.get_database_version()
         0
         """
         req = """
-              INSERT or REPLACE into database_format (Id, Format) values (1, ?)
+              INSERT or REPLACE into database_format (Id, Format) values (?, ?)
               """
-        print('## version set to:', version)
-        self.database.db_request(req, (version))
+        self.database.db_request(req, (1, version))
 
 
 if __name__ == '__main__':

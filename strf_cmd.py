@@ -102,6 +102,7 @@ else:
         else:
             lastid += 1
         structures = StructureTable(dbfilename)
+        structures.set_database_version(0)  # not an APEX db
         try:
             ncifs = put_files_in_db(searchpath=p, excludes=args.ex,
                                     structures=structures, lastid=lastid,

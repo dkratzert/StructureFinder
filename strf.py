@@ -444,6 +444,7 @@ class StartStructureDB(QMainWindow):
         # worker = RunIndexerThread(self)
         # worker.start()
         self.tmpfile = True
+        self.apexdb = 0
         self.statusBar().showMessage('')
         self.close_db()
         self.start_db()
@@ -492,6 +493,10 @@ class StartStructureDB(QMainWindow):
         copy_on_close is used to save the databse into a file during close_db().
         :param copy_on_close: Path to where the file should be copied after close()
         """
+        try:
+            self.structures.database.commit_db()
+        except Exception:
+            pass
         self.ui.searchCellLineEDit.clear()
         self.ui.txtSearchEdit.clear()
         self.ui.cifList_treeWidget.clear()
