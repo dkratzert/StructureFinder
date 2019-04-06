@@ -103,7 +103,7 @@ class StartStructureDB(QMainWindow):
         self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
         self.apx = None
-        self.structureId = '0'
+        self.structureId = 0
         self.passwd = ''
         if is_windows:  # Not valid for MacOS
             # Check for CellCheckCSD:

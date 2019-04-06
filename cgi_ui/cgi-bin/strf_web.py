@@ -552,8 +552,8 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
         # regular unit cells, no APEX special:
         if more_results:
             # more results:
-            vol_threshold = 0.05
-            ltol = 0.1
+            vol_threshold = 0.02
+            ltol = 0.03
             atol = 1.8
         else:
             # regular:
