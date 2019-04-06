@@ -8,10 +8,7 @@ import subprocess
 
 from misc.version import VERSION
 from scripts.create_zipfile import make_zip, files
-from scripts.version_numbers import process_iss, disable_debug
-
-isspath = ["./scripts/strf-install_win32.iss", "./scripts/strf-install_win64.iss"]
-pypath = ["./shelxfile/shelx.py", "./strf.py", "./shelxfile/misc.py", "./searcher/database_handler.py"]
+from scripts.version_numbers import process_iss, disable_debug, isspath, pypath
 
 print("Updating version numbers to version {} ...".format(VERSION))
 

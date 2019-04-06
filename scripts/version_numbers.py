@@ -11,6 +11,9 @@ from misc.version import VERSION
 This file is for updating the various version number definitions for each STRF release
 """
 
+isspath = ["./scripts/strf-install_win32.iss", "./scripts/strf-install_win64.iss"]
+pypath = ["./shelxfile/shelx.py", "./strf.py", "./shelxfile/misc.py", "./searcher/database_handler.py"]
+
 
 def process_iss(filepath):
     pth = Path(filepath)
