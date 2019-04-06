@@ -535,44 +535,54 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     """
     Finds unit cells in db. Rsturns hits a a list of ids.
     """
-    if more_results:
-        # more results:
-        vol_threshold = 0.09
-        ltol = 0.2
-        atol = 2
+    dbversion = structures.get_database_version()
+    if dbversion == 1:
+        # Threshold for APEX db unit cells
+        if more_results:
+            # more results:
+            vol_threshold = 0.09
+            ltol = 0.2
+            atol = 2.0
+        else:
+            # regular:
+            vol_threshold = 0.03
+            ltol = 0.06
+            atol = 1.0
     else:
-        # regular:
-        vol_threshold = 0.03
-        ltol = 0.06
-        atol = 1
+        # regular unit cells, no APEX special:
+        if more_results:
+            # more results:
+            vol_threshold = 0.05
+            ltol = 0.1
+            atol = 1.8
+        else:
+            # regular:
+            vol_threshold = 0.02
+            ltol = 0.03
+            atol = 1.0
     volume = lattice.vol_unitcell(*cell)
-    idlist = structures.find_by_volume(volume, vol_threshold)
+    cells = structures.find_by_volume(volume, vol_threshold)
     if sublattice:
         # sub- and superlattices:
         for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
             # First a list of structures where the volume is similar:
-            idlist.extend(structures.find_by_volume(v, vol_threshold))
-        idlist = list(set(idlist))
-        idlist.sort()
+            cells.extend(structures.find_by_volume(v, vol_threshold))
+        cells = list(set(cells))
     idlist2 = []
     # Real lattice comparing in G6:
-    if idlist:
+    if cells:
         try:
             lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
         except ValueError:
             lattice1 = mat_lattice.Lattice.from_parameters(*cell)
-        cells = []
-        # SQLite can only handle 999 variables at once:
-        for cids in chunks(idlist, 500):
-            cells.extend(structures.get_cells_as_list(cids))
-        for num, cell_id in enumerate(idlist):
+        for num, curr_cell in enumerate(cells):
             try:
-                lattice2 = mat_lattice.Lattice.from_parameters(*cells[num][:6])
+                lattice2 = mat_lattice.Lattice.from_parameters(*curr_cell[1:7])
             except ValueError:
                 continue
             mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
             if mapping:
-                idlist2.append(cell_id)
+                idlist2.append(curr_cell[0])
     if idlist2:
         return idlist2
     else:

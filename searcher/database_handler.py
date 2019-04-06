@@ -805,9 +805,9 @@ class StructureTable():
         """
         upper_limit = float(volume + volume * threshold)
         lower_limit = float(volume - volume * threshold)
-        req = '''SELECT StructureId FROM cell WHERE cell.volume >= ? AND cell.volume <= ?'''
+        req = '''SELECT StructureId, a, b, c, alpha, beta, gamma, volume FROM cell WHERE cell.volume >= ? AND cell.volume <= ?'''
         try:
-            return [i[0] for i in self.database.db_request(req, (lower_limit, upper_limit))]
+            return self.database.db_request(req, (lower_limit, upper_limit))
         except(TypeError, KeyError):
             # print("Wrong volume for cell search.")
             return False
@@ -946,7 +946,7 @@ class StructureTable():
 
     def set_database_version(self, version=0):
         """
-        Database version to indicate apex or other formats.
+        Database version to indicate apex or other formats. A value of 1 means the data is from APEX.
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.get_database_version()
         0

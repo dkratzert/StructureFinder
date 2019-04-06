@@ -832,26 +832,37 @@ class StartStructureDB(QMainWindow):
         Searches for a unit cell and resturns a list of found database ids.
         This method does not validate the cell. This has to be done before!
         """
-        if self.ui.moreResultsCheckBox.isChecked() or self.ui.ad_moreResultscheckBox.isChecked():
-            # more results:
-            vol_threshold = 0.09
-            ltol = 0.2
-            atol = 2
-        else:
-            # regular:
-            vol_threshold = 0.03
-            ltol = 0.06
-            atol = 1
+        if self.apexdb == 1:  # needs less accurate search:
+            if self.ui.moreResultsCheckBox.isChecked() or self.ui.ad_moreResultscheckBox.isChecked():
+                # more results:
+                vol_threshold = 0.09
+                ltol = 0.2
+                atol = 2.0
+            else:
+                # regular:
+                vol_threshold = 0.03
+                ltol = 0.06
+                atol = 1.0
+        else:  # regular database:
+            if self.ui.moreResultsCheckBox.isChecked() or self.ui.ad_moreResultscheckBox.isChecked():
+                # more results:
+                vol_threshold = 0.05
+                ltol = 0.1
+                atol = 1.8
+            else:
+                # regular:
+                vol_threshold = 0.02
+                ltol = 0.03
+                atol = 1.0
         try:
             volume = lattice.vol_unitcell(*cell)
-            idlist = self.structures.find_by_volume(volume, vol_threshold)
+            cells = self.structures.find_by_volume(volume, vol_threshold)
             if self.ui.sublattCheckbox.isChecked() or self.ui.ad_superlatticeCheckBox.isChecked():
                 # sub- and superlattices:
                 for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
                     # First a list of structures where the volume is similar:
-                    idlist.extend(self.structures.find_by_volume(v, vol_threshold))
-                idlist = list(set(idlist))
-                idlist.sort()
+                    cells.extend(self.structures.find_by_volume(v, vol_threshold))
+                cells = list(set(cells))
         except (ValueError, AttributeError):
             if not self.full_list:
                 self.ui.cifList_treeWidget.clear()
@@ -859,27 +870,22 @@ class StartStructureDB(QMainWindow):
             return []
         # Real lattice comparing in G6:
         idlist2 = []
-        if idlist:
+        if cells:
             try:
                 lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
             except ValueError:
                 lattice1 = mat_lattice.Lattice.from_parameters(*cell)
             self.statusBar().clearMessage()
-            cells = []
-            # SQLite can only handle 999 variables at once:
-            for cids in chunks(idlist, 500):
-                cells.extend(self.structures.get_cells_as_list(cids))
-            for num, cell_id in enumerate(idlist):
-                self.progressbar(num, 0, len(idlist) - 1)
+            for num, curr_cell in enumerate(cells):
+                self.progressbar(num, 0, len(cells) - 1)
                 try:
-                    lattice2 = mat_lattice.Lattice.from_parameters(*cells[num][:6])
+                    lattice2 = mat_lattice.Lattice.from_parameters(*curr_cell[1:7])
                 except ValueError:
                     continue
                 mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
                 if mapping:
-                    # pprint.pprint(map[3])
-                    idlist2.append(cell_id)
-        # print("After match: ", len(idlist2))
+                    idlist2.append(curr_cell[0])
+        #print("After match: ", len(idlist2), sorted(idlist2))
         return idlist2
 
     @pyqtSlot('QString', name='search_cell')
