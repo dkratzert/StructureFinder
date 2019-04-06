@@ -887,7 +887,7 @@ class StartStructureDB(QMainWindow):
                 mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
                 if mapping:
                     idlist2.append(curr_cell[0])
-        #print("After match: ", len(idlist2), sorted(idlist2))
+        # print("After match: ", len(idlist2), sorted(idlist2))
         return idlist2
 
     @pyqtSlot('QString', name='search_cell')
