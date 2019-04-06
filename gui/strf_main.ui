@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1435</width>
-    <height>841</height>
+    <width>1280</width>
+    <height>715</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -580,6 +580,9 @@
                </property>
                <property name="text">
                 <string/>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::RichText</enum>
                </property>
                <property name="alignment">
                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -2713,6 +2716,13 @@ p, li { white-space: pre-wrap; }
               </item>
               <item row="0" column="2">
                <widget class="QDateEdit" name="dateEdit1">
+                <property name="date">
+                 <date>
+                  <year>1900</year>
+                  <month>1</month>
+                  <day>1</day>
+                 </date>
+                </property>
                 <property name="minimumDate">
                  <date>
                   <year>1900</year>
@@ -2726,19 +2736,19 @@ p, li { white-space: pre-wrap; }
                 <property name="calendarPopup">
                  <bool>true</bool>
                 </property>
-                <property name="date">
-                 <date>
-                  <year>1900</year>
-                  <month>1</month>
-                  <day>1</day>
-                 </date>
-                </property>
                </widget>
               </item>
               <item row="0" column="4">
                <widget class="QDateEdit" name="dateEdit2">
                 <property name="correctionMode">
                  <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
+                </property>
+                <property name="date">
+                 <date>
+                  <year>2099</year>
+                  <month>1</month>
+                  <day>1</day>
+                 </date>
                 </property>
                 <property name="maximumDate">
                  <date>
@@ -2759,13 +2769,6 @@ p, li { white-space: pre-wrap; }
                 </property>
                 <property name="calendarPopup">
                  <bool>true</bool>
-                </property>
-                <property name="date">
-                 <date>
-                  <year>2099</year>
-                  <month>1</month>
-                  <day>1</day>
-                 </date>
                 </property>
                </widget>
               </item>
@@ -2940,9 +2943,6 @@ p, li { white-space: pre-wrap; }
             </property>
             <property name="horizontalScrollBarPolicy">
              <enum>Qt::ScrollBarAsNeeded</enum>
-            </property>
-            <property name="sizeAdjustPolicy">
-             <enum>QAbstractScrollArea::AdjustToContents</enum>
             </property>
             <property name="uniformRowHeights">
              <bool>false</bool>

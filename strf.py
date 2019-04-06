@@ -29,7 +29,6 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QP
 
 from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
-from shelxfile.misc import chunks
 from shelxfile.shelx import ShelXFile
 
 DEBUG = True
@@ -760,8 +759,11 @@ class StartStructureDB(QMainWindow):
             atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=False, as_list=True)
             if atoms:
                 sdm = SDM(atoms, symmcards, cell)
-                needsymm = sdm.calc_sdm()
-                atoms = sdm.packer(sdm, needsymm)
+                try:
+                    needsymm = sdm.calc_sdm()
+                    atoms = sdm.packer(sdm, needsymm)
+                except IndexError:
+                    atoms = []
                 # blist = [(x[0]+1, x[1]+1) for x in sdm.bondlist]
                 # print(len(blist))
         else:
@@ -846,8 +848,8 @@ class StartStructureDB(QMainWindow):
         else:  # regular database:
             if self.ui.moreResultsCheckBox.isChecked() or self.ui.ad_moreResultscheckBox.isChecked():
                 # more results:
-                vol_threshold = 0.05
-                ltol = 0.1
+                vol_threshold = 0.04
+                ltol = 0.08
                 atol = 1.8
             else:
                 # regular:
