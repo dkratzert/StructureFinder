@@ -18,6 +18,7 @@ from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 import searcher
 from searcher import misc
 from searcher.atoms import sorted_atoms
+
 DEBUG = False
 
 __metaclass__ = type  # use new-style classes
@@ -257,7 +258,7 @@ class DatabaseRequest():
         """
         try:
             self.cur.execute(request, *args)
-        except OperationalError:
+        except (OperationalError, ProgrammingError):
             return False
         row = self.cur.fetchone()
         return row
@@ -355,8 +356,7 @@ class StructureTable():
         Returns the list of structures as dictionary.
 
         >>> str = StructureTable('./test-data/test.sql')
-        >>> str.get_all_structures_as_dict([4])[0] == {'recid': 4, 'path':\
-        r'D:\\Github\\Structurefinder\\test-data\\106c.tgz', 'filename': 'ntd106c-P-1-final.cif', 'dataname': 'p-1'}
+        >>> str.get_all_structures_as_dict([16])[0] == {'recid': 16, 'path': '/Users/daniel/GitHub/StructureFinder/test-data/106c.tgz', 'filename': 'ntd106c-P-1-final.cif', 'dataname': 'p-1'}
         True
         """
         self.database.con.row_factory = self.database.dict_factory
@@ -465,7 +465,7 @@ class StructureTable():
         returns: [Name, Element, X, Y, Z, Part, ocuupancy]
 
         >>> db = StructureTable('./test-data/test.sql')
-        >>> db.get_atoms_table(5)[0]
+        >>> db.get_atoms_table(16)[0]
         ('O1', 'O', 0.32157, 0.42645, 0.40201, 0, 1.0)
         """
         if cell is None:
@@ -508,8 +508,8 @@ class StructureTable():
         Returns the sum formula of an entry as dictionary.
 
         >>> db = StructureTable('./test-data/test.sql')
-        >>> sumf = db.get_calc_sum_formula(5)
-        >>> sumf['Id'] == 5
+        >>> sumf = db.get_calc_sum_formula(16)
+        >>> sumf['Id'] == 13
         True
         >>> sumf['Elem_C'] == 18.0
         True
@@ -533,7 +533,7 @@ class StructureTable():
         returns the cell of a res file in the db
 
         >>> db = StructureTable('./test-data/test.sql')
-        >>> db.get_cif_sumform_by_id(5)
+        >>> db.get_cif_sumform_by_id(16)
         ('C18 H19 N O4',)
         """
         if not structure_id:
@@ -715,7 +715,7 @@ class StructureTable():
         """
         Returns a database row from residuals table as dictionary.
         >>> db = StructureTable('./test-data/test.sql')
-        >>> row = db.get_row_as_dict(5)
+        >>> row = db.get_row_as_dict(16)
         """
         request = """select * from residuals where StructureId = ?"""
         # setting row_factory to dict for the cif keys:
@@ -744,8 +744,8 @@ class StructureTable():
         """
         Returns a database row as dictionary
         >>> db = StructureTable('./test-data/test.sql')
-        >>> cell = db.get_cell_as_dict(5)
-        >>> cell == {'Id': 5, 'StructureId': 5, 'a': 7.9492, 'b': 8.9757, 'c': 11.3745, 'alpha': 106.974, 'beta': 91.963, 'gamma': 103.456, 'volume': 750.33}
+        >>> cell = db.get_cell_as_dict(16)
+        >>> cell == {'Id': 16, 'StructureId': 16, 'a': 7.9492, 'b': 8.9757, 'c': 11.3745, 'alpha': 106.974, 'beta': 91.963, 'gamma': 103.456, 'volume': 750.33}
         True
         """
         request = """select * from cell where StructureId = ?"""
@@ -766,7 +766,7 @@ class StructureTable():
         """
         Returns a list of unit cells from the list of input ids.
         >>> db = StructureTable('./test-data/test.sql')
-        >>> db.get_cells_as_list([5])
+        >>> db.get_cells_as_list([16])
         [(7.9492, 8.9757, 11.3745, 106.974, 91.963, 103.456, 750.33)]
         """
         req = 'select a, b, c, alpha, beta, gamma, volume from cell where StructureId IN ({seq})'.format(
@@ -777,7 +777,7 @@ class StructureTable():
         """
         returns the cell of a res file in the db
         >>> db = StructureTable('./test-data/test.sql')
-        >>> db.get_cell_by_id(5)
+        >>> db.get_cell_by_id(16)
         (7.9492, 8.9757, 11.3745, 106.974, 91.963, 103.456, 750.33)
         """
         if not structure_id:
@@ -791,7 +791,7 @@ class StructureTable():
 
     def find_by_volume(self, volume, threshold=0.03):
         """
-        Searches cells with volume between upper and lower limit
+        Searches cells with volume between upper and lower limit. Returns the Id and the unit cell.
         :param threshold: Volume uncertaincy where to search
         :type threshold: float
         :param volume: the unit cell volume
@@ -799,9 +799,9 @@ class StructureTable():
         :return: list
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_volume(3021.9, threshold=0.01)
-        [12, 244, 62]
+        [(9, 9.451, 17.881, 18.285, 90.0, 102.054, 90.0, 3021.9), (252, 9.451, 17.881, 18.285, 90.0, 102.054, 90.0, 3021.9), (69, 12.0939, 15.464, 16.854, 90.0, 105.295, 90.0, 3040.4)]
         >>> db.find_by_volume(30021.9, threshold=0.01)
-        []
+        ()
         """
         upper_limit = float(volume + volume * threshold)
         lower_limit = float(volume - volume * threshold)
@@ -810,7 +810,7 @@ class StructureTable():
             return self.database.db_request(req, (lower_limit, upper_limit))
         except(TypeError, KeyError):
             # print("Wrong volume for cell search.")
-            return False
+            return []
 
     def find_by_strings(self, text: str) -> tuple:
         """
@@ -819,9 +819,9 @@ class StructureTable():
         id, name, data, path
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_strings('NTD51a')
-        [(224, b'DK_NTD51a-final.cif', b'p21c', b'D:\\\Github\\\Structurefinder\\\\test-data\\\\051a')]
+        [(237, b'DK_NTD51a-final.cif', b'p21c', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
         >>> db.find_by_strings('ntd51A')
-        [(224, b'DK_NTD51a-final.cif', b'p21c', b'D:\\\Github\\\Structurefinder\\\\test-data\\\\051a')]
+        [(237, b'DK_NTD51a-final.cif', b'p21c', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
         """
         req = '''
         SELECT StructureId, filename, dataname, path FROM txtsearch WHERE filename MATCH ?
@@ -846,7 +846,7 @@ class StructureTable():
         Returns a list of index numbers.
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_it_number(1)
-        [26]
+        [33]
         >>> db.find_by_it_number(500)
         []
         """
@@ -867,15 +867,15 @@ class StructureTable():
 
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_elements(['S', 'Sn'])
-        [68]
+        [75]
         >>> db.find_by_elements(['Sn'])
-        [68, 180]
+        [75, 187]
         >>> db.find_by_elements(['Xe'])
         []
         >>> db.find_by_elements(['C', 'H', 'O', 'N', 'Cl'], onlyincluded=True)
-        [1, 52, 150, 163, 235]
+        [15, 59, 157, 170, 260]
         >>> db.find_by_elements(['C', 'H', 'O', 'N', 'Cl'], excluding=['Al', 'B', 'S', 'Si', 'Br', 'P'], onlyincluded=False)
-        [1, 49, 52, 108, 126, 150, 163, 202, 235]
+        [15, 56, 59, 115, 133, 157, 170, 209, 260]
         """
         if not excluding:
             excluding = []
@@ -907,7 +907,7 @@ class StructureTable():
 
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_date(start='2017-08-25', end='2018-05-05')
-        [217, 221]
+        [16, 17, 20, 21, 241]
         """
         req = """
               SELECT StructureId FROM Residuals WHERE modification_time between DATE(?) AND DATE(?);
@@ -920,7 +920,7 @@ class StructureTable():
         just for fun...
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_biggest_cell()
-        (230, 48.48, 21.72, 10.74)
+        (250, 48.48, 21.72, 10.74)
         """
         req = '''SELECT Id, a, b, c FROM cell GROUP BY Id ORDER BY a, b, c ASC'''
         result = self.database.db_request(req)

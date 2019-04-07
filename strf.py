@@ -18,6 +18,7 @@ import shutil
 import sys
 import tempfile
 import time
+from contextlib import suppress
 from datetime import date
 from os.path import isfile, samefile
 from pathlib import Path
@@ -120,7 +121,6 @@ class StartStructureDB(QMainWindow):
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
         self.connect_signals_and_slots()
-        # Set both to today() to distinquish between a modified and unmodified date field.
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         try:
@@ -340,6 +340,7 @@ class StartStructureDB(QMainWindow):
         Combines all the search fields. Collects all includes, all excludes and calculates
         the difference.
         """
+        self.clear_fields()
         if not self.structures:
             return
         cell = is_valid_cell(self.ui.ad_unitCellLineEdit.text())
@@ -377,17 +378,20 @@ class StartStructureDB(QMainWindow):
             txt_results = [i[0] for i in self.structures.find_by_strings(txt)]
         if txt_ex:
             txt_ex_results = [i[0] for i in self.structures.find_by_strings(txt_ex)]
+        nodate = True
         if date1 != date2:
+            nodate = False
             date_results = self.find_dates(date1, date2)
         ####################
         results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                                  txt_ex_results, txt_results)
+                                  txt_ex_results, txt_results, nodate)
         self.display_structures_by_idlist(flatten(list(results)))
 
     def display_structures_by_idlist(self, idlist: list or set) -> None:
         """
         Displays the structures with id in results list
         """
+        self.clear_fields()
         if not idlist:
             self.statusBar().showMessage('Found {} structures.'.format(0))
             return
@@ -492,28 +496,20 @@ class StartStructureDB(QMainWindow):
         copy_on_close is used to save the databse into a file during close_db().
         :param copy_on_close: Path to where the file should be copied after close()
         """
-        try:
+        with suppress(Exception):
             self.structures.database.commit_db()
-        except Exception:
-            pass
         self.ui.searchCellLineEDit.clear()
         self.ui.txtSearchEdit.clear()
         self.ui.cifList_treeWidget.clear()
         self.write_empty_molfile(mol_data=' ')
         self.view.reload()
-        try:
+        with suppress(Exception):
             self.structures.database.cur.close()
-        except Exception:
-            pass
-        try:
+        with suppress(Exception):
             self.structures.database.con.close()
-        except Exception:
-            pass
-        try:
+        with suppress(Exception):
             os.close(self.dbfdesc)
             self.dbfdesc = None
-        except:
-            pass
         if copy_on_close:
             if isfile(copy_on_close) and samefile(self.dbfilename, copy_on_close):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
@@ -629,11 +625,9 @@ class StartStructureDB(QMainWindow):
         cell = self.structures.get_cell_by_id(structure_id)
         if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
             self.ui.cellSearchCSDLineEdit.setText("  ".join([str(round(x, 5)) for x in cell[:6]]))
-            try:
+            with suppress(KeyError, TypeError):
                 cstring = cif_dic['_space_group_centring_type']
                 self.ui.lattCentComboBox.setCurrentIndex(centering_letter_2_num[cstring])
-            except (KeyError, TypeError):
-                pass
         if not cell:
             return False
         try:
@@ -661,10 +655,8 @@ class StartStructureDB(QMainWindow):
         self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, cent))
         self.ui.cellField.installEventFilter(self)
         self.ui.cellField.setToolTip("Double click on 'Unit Cell' to copy to clipboard.")
-        try:
+        with suppress(ValueError, TypeError):
             self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
-        except (ValueError, TypeError):
-            pass
         try:  # R1:
             if cif_dic['_refine_ls_R_factor_gt']:
                 self.ui.r1LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_R_factor_gt']))
@@ -786,6 +778,15 @@ class StartStructureDB(QMainWindow):
         p2.write_text(data=content, encoding="utf-8", errors='ignore')
         self.view.reload()
 
+    def clear_molecule(self):
+        """
+        Deletes the current molecule display.
+        :return:
+        """
+        p2 = Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
+        p2.write_text(data='', encoding="utf-8", errors='ignore')
+        self.view.reload()
+
     @pyqtSlot('QString')
     def find_dates(self, date1: str, date2: str) -> list:
         """
@@ -858,6 +859,7 @@ class StartStructureDB(QMainWindow):
                 atol = 1.0
         try:
             volume = lattice.vol_unitcell(*cell)
+            # the fist number in the result is the structureid:
             cells = self.structures.find_by_volume(volume, vol_threshold)
             if self.ui.sublattCheckbox.isChecked() or self.ui.ad_superlatticeCheckBox.isChecked():
                 # sub- and superlattices:
@@ -871,7 +873,7 @@ class StartStructureDB(QMainWindow):
                 self.statusBar().showMessage('Found 0 cells.')
             return []
         # Real lattice comparing in G6:
-        idlist2 = []
+        idlist = []
         if cells:
             try:
                 lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
@@ -886,9 +888,9 @@ class StartStructureDB(QMainWindow):
                     continue
                 mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
                 if mapping:
-                    idlist2.append(curr_cell[0])
-        # print("After match: ", len(idlist2), sorted(idlist2))
-        return idlist2
+                    idlist.append(curr_cell[0])
+        # print("After match: ", len(idlist), sorted(idlist))
+        return idlist
 
     @pyqtSlot('QString', name='search_cell')
     def search_cell(self, search_string: str) -> bool:
@@ -1200,8 +1202,9 @@ class StartStructureDB(QMainWindow):
         self.ui.ad_textsearch.clear()
         self.ui.ad_textsearch_excl.clear()
         self.ui.ad_unitCellLineEdit.clear()
-        self.ui.dateEdit1.setDate(QDate(date.today()))
-        self.ui.dateEdit2.setDate(QDate(date.today()))
+        # No, don't do this:
+        # self.ui.dateEdit1.setDate(QDate(date.today()))
+        # self.ui.dateEdit2.setDate(QDate(date.today()))
 
     def clear_fields(self) -> None:
         """
@@ -1232,6 +1235,8 @@ class StartStructureDB(QMainWindow):
         self.ui.uniqReflLineEdit.clear()
         self.ui.lastModifiedLineEdit.clear()
         self.ui.SHELXplainTextEdit.clear()
+        self.ui.cellField.clear()
+        self.clear_molecule()
 
 
 if __name__ == "__main__":
@@ -1240,6 +1245,7 @@ if __name__ == "__main__":
     if DEBUG:
         try:
             uic.compileUiDir(os.path.join(application_path, './gui'))
+            print('recompiled ui')
         except:
             print("Unable to compile UI!")
             raise

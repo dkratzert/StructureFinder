@@ -2745,14 +2745,14 @@ p, li { white-space: pre-wrap; }
                 </property>
                 <property name="date">
                  <date>
-                  <year>2099</year>
+                  <year>9999</year>
                   <month>1</month>
                   <day>1</day>
                  </date>
                 </property>
                 <property name="maximumDate">
                  <date>
-                  <year>7999</year>
+                  <year>9999</year>
                   <month>12</month>
                   <day>31</day>
                  </date>

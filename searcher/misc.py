@@ -10,9 +10,10 @@ Created on 09.02.2015
 
 @author: daniel
 """
-from math import sqrt
 import os
 import shutil
+from math import sqrt
+
 from searcher import constants
 
 
@@ -217,7 +218,7 @@ def format_sum_formula(sumform: dict, break_after: int = 99) -> str:
     >>> format_sum_formula({'C': 12, 'H': 6, 'O': 3, 'Mn': 7})
     '<html><body>C<sub>12 </sub>H<sub>6 </sub>O<sub>3 </sub>Mn<sub>7 </sub></body></html>'
     """
-    #atlist = formula_str_to_dict(sumform)
+    # atlist = formula_str_to_dict(sumform)
     if not sumform:
         return ''
     l = ['<html><body>']
@@ -241,7 +242,7 @@ def format_sum_formula(sumform: dict, break_after: int = 99) -> str:
         num += 1
     l.append('</body></html>')
     formula = "".join(l)
-    #print(formula)
+    # print(formula)
     return formula
 
 
@@ -428,12 +429,8 @@ def is_valid_cell(cell: str = None) -> list:
     return cell
 
 
-if __name__ == '__main__':
-    pass
-
-
 def combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                    txt_ex_results, txt_results):
+                    txt_ex_results, txt_results, nodate = True):
     """
     Combines all search results together. Returns a list with database ids from found structures.
     """
@@ -461,8 +458,12 @@ def combine_results(cell_results, date_results, elincl_results, results, spgr_re
         txt_ex_results = set(txt_ex_results)
         results = set(results) - set(txt_ex_results)
     if date_results:
-        if results:
+        if results and not nodate:
             results = set(results).intersection(date_results)
         else:
             results = date_results
     return results
+
+
+if __name__ == '__main__':
+    pass
