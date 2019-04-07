@@ -12,7 +12,6 @@ from PyQt5 import uic
 from misc.version import VERSION
 from scripts.create_zipfile import make_zip, files
 from scripts.version_numbers import process_iss, disable_debug, isspath, pypath
-application_path = os.path.dirname(os.path.abspath(__file__))
 
 print("Updating version numbers to version {} ...".format(VERSION))
 
@@ -27,7 +26,8 @@ for i in pypath:
 print("Version numbers updated.")
 
 try:
-    uic.compileUiDir(os.path.join(application_path, './gui'))
+    print(os.path.abspath('./gui'))
+    uic.compileUiDir('./gui')
     print('recompiled ui')
 except:
     print("Unable to compile UI!")
@@ -65,5 +65,3 @@ make_distribs()
 
 # Make a zip file for web interface distribution:
 make_zip(files)
-
-
