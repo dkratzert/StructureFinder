@@ -392,7 +392,7 @@ $(document).ready(function($){
         $("#cell_copy_btn").addClass('invisible');
         $("#growCheckBoxgroup").addClass('invisible');
         $("#jsmolcolumn").addClass('invisible');
-        //$("#residualstable1").addClass('invisible');
+        $("#all_residuals").addClass('invisible');
         //$("#residualstable2").addClass('invisible');
         //$("#residuals").addClass('invisible');
         document.getElementById("cellrow").innerHTML = "Found " + numresult + " structures";
@@ -414,7 +414,7 @@ $(document).ready(function($){
         This function uses AJAX POST calls to get the data of a structure and displays
         them below the main table.
         */
-        
+        $("#all_residuals").removeClass('invisible');
         // Uncheck the grow button:
         //$('#growCheckBox').prop("checked", false);
         var data;

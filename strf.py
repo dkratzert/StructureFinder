@@ -341,6 +341,13 @@ class StartStructureDB(QMainWindow):
         the difference.
         """
         self.clear_fields()
+        states = {'date'  : False,
+                  'cell'  : False,
+                  'elincl': False,
+                  'elexcl': False,
+                  'txt'   : False,
+                  'txt_ex': False,
+                  'spgr'  : False}
         if not self.structures:
             return
         cell = is_valid_cell(self.ui.ad_unitCellLineEdit.text())
@@ -369,22 +376,29 @@ class StartStructureDB(QMainWindow):
         except:
             spgr = 0
         if cell:
+            states['cell'] = True
             cell_results = self.search_cell_idlist(cell)
         if spgr:
+            states['spgr'] = True
             spgr_results = self.structures.find_by_it_number(spgr)
         if elincl or elexcl:
+            if elincl:
+                states['elincl'] = True
+            if elexcl:
+                states['elexcl'] = True
             elincl_results = self.search_elements(elincl, elexcl, onlythese)
         if txt:
+            states['txt'] = True
             txt_results = [i[0] for i in self.structures.find_by_strings(txt)]
         if txt_ex:
+            states['txt_ex'] = True
             txt_ex_results = [i[0] for i in self.structures.find_by_strings(txt_ex)]
-        nodate = True
         if date1 != date2:
-            nodate = False
+            states['date'] = True
             date_results = self.find_dates(date1, date2)
         ####################
         results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                                  txt_ex_results, txt_results, nodate)
+                                  txt_ex_results, txt_results, states)
         self.display_structures_by_idlist(flatten(list(results)))
 
     def display_structures_by_idlist(self, idlist: list or set) -> None:

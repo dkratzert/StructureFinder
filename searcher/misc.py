@@ -430,39 +430,51 @@ def is_valid_cell(cell: str = None) -> list:
 
 
 def combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                    txt_ex_results, txt_results, nodate = True):
+                    txt_ex_results, txt_results, states: dict) -> set:
     """
     Combines all search results together. Returns a list with database ids from found structures.
-    TODO: I need to get also the state if a field has input for search to decide if it counts for the result.
     """
-    if cell_results:
+    if states['cell']:
         results.extend(cell_results)
-    if spgr_results:
+    if states['spgr']:
         spgr_results = set(spgr_results)
         if results:
             results = set(results).intersection(spgr_results)
         else:
-            results = spgr_results
-    if elincl_results:
+            if states['txt'] or states['elincl'] or states['date'] or states['cell']:
+                results = set([])
+            else:
+                results = spgr_results
+    if states['elincl']:
         elincl_results = set(elincl_results)
         if results:
             results = set(results).intersection(elincl_results)
         else:
-            results = elincl_results
-    if txt_results:
+            if states['txt'] or states['date'] or states['spgr'] or states['cell']:
+                results = set([])
+            else:
+                results = elincl_results
+    if states['txt']:
         txt_results = set(txt_results)
         if results:
             results = set(results).intersection(txt_results)
         else:
-            results = txt_results
-    if txt_ex_results:
+            if states['date'] or states['elincl'] or states['spgr'] or states['cell']:
+                results = set([])
+            else:
+                results = txt_results
+    if states['txt_ex']:
         txt_ex_results = set(txt_ex_results)
         results = set(results) - set(txt_ex_results)
-    if date_results:
-        if results and not nodate:
+    if states['date']:
+        date_results = set(date_results)
+        if results:
             results = set(results).intersection(date_results)
-        else:
-            results = date_results
+        else:  # no results from other searches:
+            if states['txt'] or states['elincl'] or states['spgr'] or states['cell']:
+                results = set([])
+            else:
+                results = date_results
     return results
 
 

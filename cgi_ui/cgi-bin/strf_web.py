@@ -658,26 +658,42 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     txt_results = []
     txt_ex_results = []
     date_results = []
+    states = {'date'  : False,
+              'cell'  : False,
+              'elincl': False,
+              'elexcl': False,
+              'txt'   : False,
+              'txt_ex': False,
+              'spgr'  : False}
     cell = is_valid_cell(cellstr)
     try:
         spgr = int(it_num.split()[0])
     except:
         spgr = 0
     if cell:
+        states['cell'] = True
         cell_results = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
     if spgr:
+        states['spgr'] = True
         spgr_results = structures.find_by_it_number(spgr)
     if elincl or elexcl:
+        if elincl:
+            states['elincl'] = True
+        if elexcl:
+            states['elexcl'] = True
         elincl_results = search_elements(structures, elincl, elexcl, onlythese)
     if txt:
+        states['txt'] = True
         txt_results = [i[0] for i in structures.find_by_strings(txt)]
     if txt_ex:
+        states['txt_ex'] = True
         txt_ex_results = [i[0] for i in structures.find_by_strings(txt_ex)]
     if date1 != date2:
+        states['date'] = True
         date_results = find_dates(structures, date1, date2)
     ####################
     results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                              txt_ex_results, txt_results)
+                              txt_ex_results, txt_results, states)
     return flatten(list(results))
 
 
