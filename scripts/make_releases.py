@@ -4,11 +4,15 @@
 """
 This script has to be run from the main dir e.g. D:\GitHub\StructureFinder
 """
+import os
 import subprocess
+
+from PyQt5 import uic
 
 from misc.version import VERSION
 from scripts.create_zipfile import make_zip, files
 from scripts.version_numbers import process_iss, disable_debug, isspath, pypath
+application_path = os.path.dirname(os.path.abspath(__file__))
 
 print("Updating version numbers to version {} ...".format(VERSION))
 
@@ -21,6 +25,13 @@ for i in pypath:
     disable_debug(i)
 
 print("Version numbers updated.")
+
+try:
+    uic.compileUiDir(os.path.join(application_path, './gui'))
+    print('recompiled ui')
+except:
+    print("Unable to compile UI!")
+    raise
 
 
 def make_distribs():
