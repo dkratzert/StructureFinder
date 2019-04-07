@@ -15,7 +15,7 @@ import socket
 
 urlprefix = "https://www.xs3-data.uni-freiburg.de/structurefinder"
 
-from urllib.request import FancyURLopener, urlopen
+from urllib.request import urlopen
 
 
 def get_current_strf_version(silent=True):
@@ -23,7 +23,7 @@ def get_current_strf_version(silent=True):
     determines the current version of DSR on the web server
 
     >>> get_current_strf_version()
-    '40'
+    '41'
 
     Returns
     -------
