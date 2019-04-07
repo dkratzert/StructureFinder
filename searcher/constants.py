@@ -27,24 +27,24 @@ celltxt = """
     <html>
     <body>
     <div align="right">
-        <table border="0" cellspacing="1" cellpadding="1">
+        <table border="0" cellspacing="1" cellpadding="1" style='font-size: 12px'>
             <tr>
-                <td><i>a</i> = </td>
-                <td><pre>{:>7.3f} Å,</pre></td>
-                <td><i>&alpha;</i> = </td> 
-                <td><pre>{:>7.3f}°</pre></td>
+                <td align='right'><i>a</i> = </td>
+                <td align='right'>{:>7.3f} Å,</td>
+                <td align='right'><i>&alpha;</i> = </td> 
+                <td align='right'>{:>7.3f}°</td>
             </tr>
             <tr>
-                <td><i>b</i> = </td>
-                <td><pre>{:>7.3f} Å,</pre></td>
-                <td><i>&beta;</i> = </td> 
-                <td><pre>{:>7.3f}°</pre></td>
+                <td align='right'><i>b</i> = </td>
+                <td align='right'>{:>7.3f} Å,</td>
+                <td align='right'><i>&beta;</i> = </td> 
+                <td align='right'>{:>7.3f}°</td>
             </tr>
             <tr>
-                <td><i>c</i> = </td>
-                <td><pre>{:>7.3f} Å,</pre></td>
-                <td><i>&gamma;</i> = </td> 
-                <td><pre>{:>7.3f}°</pre></td>
+                <td align='right'><i>c</i> = </td>
+                <td align='right'>{:>7.3f} Å,</td>
+                <td align='right'><i>&gamma;</i> = </td> 
+                <td align='right'>{:>7.3f}°</td>
             </tr>
        </table>
    </div>
