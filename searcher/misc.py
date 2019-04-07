@@ -433,6 +433,7 @@ def combine_results(cell_results, date_results, elincl_results, results, spgr_re
                     txt_ex_results, txt_results, nodate = True):
     """
     Combines all search results together. Returns a list with database ids from found structures.
+    TODO: I need to get also the state if a field has input for search to decide if it counts for the result.
     """
     if cell_results:
         results.extend(cell_results)
