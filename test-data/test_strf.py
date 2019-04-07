@@ -5,17 +5,17 @@ import doctest
 import unittest
 
 import searcher
-import shelxfile
 import strf
 from lattice import lattice
 from misc import update_check
 from pymatgen.core import mat_lattice
 from searcher import database_handler, fileparser
+from shelxfile import shelx, elements, misc
 
 
 class doctestsTest(unittest.TestCase):
     def testrun_doctest(self):
-        for name in [strf, shelxfile, searcher, update_check, database_handler, fileparser]:
+        for name in [strf, shelx, elements, misc, searcher, update_check, database_handler, fileparser]:
             failed, attempted = doctest.testmod(name)  # , verbose=True)
             if failed == 0:
                 print('passed all {} tests in {}!'.format(attempted, name.__name__))
