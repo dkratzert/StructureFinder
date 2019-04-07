@@ -14,6 +14,7 @@ Created on 09.02.2015
 
 import sys
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
+from typing import Tuple, List, Union
 
 import searcher
 from searcher import misc
@@ -384,7 +385,7 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return rows
 
-    def get_all_structure_names(self, ids: list = None) -> list:
+    def get_all_structure_names(self, ids: list = None) -> List[Union[int, int, str, str, str]]:
         """
         returns all fragment names in the database, sorted by name
         :returns [id, meas, path, filename, data]
@@ -415,7 +416,7 @@ class StructureTable():
         path = self.database.db_request(req_path)[0]
         return path
 
-    def fill_structures_table(self, path: str, filename: str, structure_id: str, measurement_id: int, dataname: str):
+    def fill_structures_table(self, path: str, filename: str, structure_id: int, measurement_id: int, dataname: str):
         """
         Fills a structure into the database.
         """
@@ -812,7 +813,7 @@ class StructureTable():
             # print("Wrong volume for cell search.")
             return []
 
-    def find_by_strings(self, text: str) -> tuple:
+    def find_by_strings(self, text: str) -> Tuple[int, str, str, str]:
         """
         Searches cells with volume between upper and lower limit
         :param text: Volume uncertaincy where to search
@@ -833,11 +834,11 @@ class StructureTable():
         SELECT StructureId, filename, dataname, path FROM txtsearch WHERE shelx_res_file MATCH ?
         '''
         try:
-            ids = self.database.db_request(req, (text, text, text, text))
+            res = self.database.db_request(req, (text, text, text, text))
         except (TypeError, ProgrammingError, OperationalError) as e:
             print('DB request error in find_by_strings().', e)
             return tuple([])
-        return ids
+        return res
 
     def find_by_it_number(self, number: int) -> list:
         """

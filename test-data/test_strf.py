@@ -5,10 +5,10 @@ import doctest
 import unittest
 
 import searcher
+import searcher.misc
 import strf
-from lattice import lattice
 from misc import update_check
-from pymatgen.core import mat_lattice
+from pymatgen.core import lattice
 from searcher import database_handler, fileparser
 from shelxfile import shelx, elements, misc
 
@@ -47,13 +47,13 @@ class TestSearch(unittest.TestCase):
                    (10, 13.5918, 10.7345, 16.442, 90.0, 113.142, 90.0, 2205.9),
                    (244, 13.5918, 10.7345, 16.442, 90.0, 113.142, 90.0, 2205.9),
                    (207, 16.139, 5.117, 26.887, 90.0, 90.0, 90.0, 2220.4)]
-        volume = lattice.vol_unitcell(*cell)
+        volume = searcher.misc.vol_unitcell(*cell)
         cells = self.structures.find_by_volume(volume, self.vol_threshold)
         self.assertEqual(cells, results)
-        lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
+        lattice1 = lattice.Lattice.from_parameters_niggli_reduced(*cell)
         for curr_cell in cells:
             try:
-                lattice2 = mat_lattice.Lattice.from_parameters(*curr_cell[1:7])
+                lattice2 = lattice.Lattice.from_parameters(*curr_cell[1:7])
             except ValueError:
                 continue
             mapping = lattice1.find_mapping(lattice2, self.ltol, self.atol, skip_rotation_matrix=True)
@@ -76,13 +76,13 @@ class TestSearch(unittest.TestCase):
                    (129, 27.858, 8.094, 9.951, 90.0, 90.0, 90.0, 2243.8),
                    (1, 10.36, 18.037, 25.764, 127.03, 129.81, 90.51, 2260.487670154818),
                    (12, 10.36, 18.037, 25.764, 127.03, 129.81, 90.51, 2260.487670154818)]
-        volume = lattice.vol_unitcell(*cell)
+        volume = searcher.misc.vol_unitcell(*cell)
         cells = self.structures.find_by_volume(volume, self.m_vol_threshold)
         self.assertEqual(cells, results)
-        lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
+        lattice1 = lattice.Lattice.from_parameters_niggli_reduced(*cell)
         for curr_cell in cells:
             try:
-                lattice2 = mat_lattice.Lattice.from_parameters(*curr_cell[1:7])
+                lattice2 = lattice.Lattice.from_parameters(*curr_cell[1:7])
             except ValueError:
                 continue
             mapping = lattice1.find_mapping(lattice2, self.m_ltol, self.m_atol, skip_rotation_matrix=True)

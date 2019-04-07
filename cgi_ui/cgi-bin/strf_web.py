@@ -45,10 +45,9 @@ from ccdc.query import get_cccsd_path, search_csd, parse_results
 from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response
 from displaymol.mol_file_writer import MolFile
 from displaymol.sdm import SDM
-from lattice import lattice
-from pymatgen.core import mat_lattice
+from pymatgen.core import lattice
 from searcher.database_handler import StructureTable
-from searcher.misc import is_valid_cell, get_list_of_elements, flatten, is_a_nonzero_file, format_sum_formula, \
+from searcher.misc import is_valid_cell, get_list_of_elements, vol_unitcell, is_a_nonzero_file, format_sum_formula, \
     combine_results
 
 """
@@ -560,7 +559,7 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
             vol_threshold = 0.02
             ltol = 0.03
             atol = 1.0
-    volume = lattice.vol_unitcell(*cell)
+    volume = vol_unitcell(*cell)
     cells = structures.find_by_volume(volume, vol_threshold)
     if sublattice:
         # sub- and superlattices:
@@ -572,12 +571,12 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     # Real lattice comparing in G6:
     if cells:
         try:
-            lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
+            lattice1 = lattice.Lattice.from_parameters_niggli_reduced(*cell)
         except ValueError:
-            lattice1 = mat_lattice.Lattice.from_parameters(*cell)
+            lattice1 = lattice.Lattice.from_parameters(*cell)
         for num, curr_cell in enumerate(cells):
             try:
-                lattice2 = mat_lattice.Lattice.from_parameters(*curr_cell[1:7])
+                lattice2 = lattice.Lattice.from_parameters(*curr_cell[1:7])
             except ValueError:
                 continue
             mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)

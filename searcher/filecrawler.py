@@ -21,10 +21,9 @@ import tarfile
 import time
 import zipfile
 
-from lattice.lattice import vol_unitcell
 from searcher import database_handler
 from searcher.fileparser import Cif
-from searcher.misc import get_error_from_value
+from searcher.misc import get_error_from_value, vol_unitcell
 from shelxfile.dsrmath import frac_to_cart
 from shelxfile.shelx import ShelXFile
 
@@ -147,6 +146,11 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     structures=None, fillcif=True, fillres=True) -> int:
     """
     Imports files from a certain directory
+    :param self: self
+    :param structures: database instance
+    :param searchpath: where to search for files.
+    :param lastid: id of last dbentry.
+    :param excludes: list of excluded directory names.
     :param fillres: Should it index res files or not.
     :param fillcif: Should it index cif files or not.
     """
@@ -236,7 +240,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                             print('cif file not added:', fullpath)
                         continue
                     if self:
-                        self.add_table_row(name=z.cifname, path=fullpath,
+                        self.add_table_row(filename=z.cifname, path=fullpath,
                                            data=cif.cif_data['data'], structure_id=str(lastid))
                     zipcifs += 1
                     cifcount += 1
@@ -264,7 +268,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     print('res file not added:', fullpath)
                 continue
             if self:
-                self.add_table_row(name=name, path=fullpath, data=name, structure_id=str(lastid))
+                self.add_table_row(filename=name, path=fullpath, data=name, structure_id=str(lastid))
             lastid += 1
             num += 1
             rescount += 1
@@ -380,7 +384,7 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         return False
     if not res.cell.volume:
         return False
-    measurement_id = structures.fill_measuremnts_table(filename, structure_id)
+    measurement_id = 1  # structures.fill_measuremnts_table(filename, structure_id)
     structures.fill_structures_table(path, filename, structure_id, measurement_id, res.titl)
     structures.fill_cell_table(structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.al,
                                res.cell.be, res.cell.ga, res.cell.volume)

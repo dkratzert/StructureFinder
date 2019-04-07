@@ -36,9 +36,8 @@ DEBUG = False
 
 from apex import apeximporter
 from displaymol import mol_file_writer, write_html
-from lattice import lattice
 from misc.version import VERSION
-from pymatgen.core import mat_lattice
+from pymatgen.core import lattice
 from searcher import constants, misc, filecrawler, database_handler
 from searcher.constants import centering_num_2_letter, centering_letter_2_num
 from searcher.fileparser import Cif
@@ -413,8 +412,8 @@ class StartStructureDB(QMainWindow):
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
-        for i in searchresult:
-            self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
+        for structure_id, _, path, filename, data  in searchresult:
+            self.add_table_row(filename, path, data, structure_id)
         self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         if idlist:
@@ -751,7 +750,7 @@ class StartStructureDB(QMainWindow):
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
         return True
 
-    def display_molecule(self, cell: list, structure_id: str) -> None:
+    def display_molecule(self, cell: [list, tuple], structure_id: str) -> None:
         """
         Creates a html file from a mol file to display the molecule in jsmol-lite
         """
@@ -823,24 +822,23 @@ class StartStructureDB(QMainWindow):
         try:
             if not self.structures:
                 return False  # Empty database
-        except:
+        except Exception:
             return False  # No database cursor
-        idlist = []
+        searchresult = []
         if len(search_string) == 0:
             self.show_full_list()
             return False
         if len(search_string) >= 2 and "*" not in search_string:
             search_string = "{}{}{}".format('*', search_string, '*')
         try:
-            idlist = self.structures.find_by_strings(search_string)
+            searchresult = self.structures.find_by_strings(search_string)
         except AttributeError as e:
             print(e)
         try:
-            self.statusBar().showMessage("Found {} entries.".format(len(idlist)))
-            for i in idlist:
-                self.add_table_row(name=i[1], path=i[3], structure_id=i[0], data=i[2])
+            self.statusBar().showMessage("Found {} entries.".format(len(searchresult)))
+            for structure_id, filename, dataname, path in searchresult:
+                self.add_table_row(filename, path, dataname, structure_id)
             self.set_columnsize()
-            # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         except Exception:
             self.statusBar().showMessage("Nothing found.")
 
@@ -872,7 +870,7 @@ class StartStructureDB(QMainWindow):
                 ltol = 0.03
                 atol = 1.0
         try:
-            volume = lattice.vol_unitcell(*cell)
+            volume = misc.vol_unitcell(*cell)
             # the fist number in the result is the structureid:
             cells = self.structures.find_by_volume(volume, vol_threshold)
             if self.ui.sublattCheckbox.isChecked() or self.ui.ad_superlatticeCheckBox.isChecked():
@@ -890,14 +888,14 @@ class StartStructureDB(QMainWindow):
         idlist = []
         if cells:
             try:
-                lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
+                lattice1 = lattice.Lattice.from_parameters_niggli_reduced(*cell)
             except ValueError:
-                lattice1 = mat_lattice.Lattice.from_parameters(*cell)
+                lattice1 = lattice.Lattice.from_parameters(*cell)
             self.statusBar().clearMessage()
             for num, curr_cell in enumerate(cells):
                 self.progressbar(num, 0, len(cells) - 1)
                 try:
-                    lattice2 = mat_lattice.Lattice.from_parameters(*curr_cell[1:7])
+                    lattice2 = lattice.Lattice.from_parameters(*curr_cell[1:7])
                 except ValueError:
                     continue
                 mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
@@ -940,9 +938,8 @@ class StartStructureDB(QMainWindow):
         self.statusBar().showMessage('Found {} cells.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
-        for i in searchresult:
-            self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
-            # self.add_table_row(name, path, id)
+        for structure_id, _, path, name, data in searchresult:
+            self.add_table_row(name, path, data, structure_id)
         self.set_columnsize()
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
@@ -970,18 +967,18 @@ class StartStructureDB(QMainWindow):
             pass
         return list(res)
 
-    def add_table_row(self, name: str, path: str, data: bytes, structure_id: str) -> None:
+    def add_table_row(self, filename: str, path: str, data: bytes, structure_id: str) -> None:
         """
         Adds a line to the search results table.
         """
-        if isinstance(name, bytes):
-            name = name.decode("utf-8", "surrogateescape")
+        if isinstance(filename, bytes):
+            filename = filename.decode("utf-8", "surrogateescape")
         if isinstance(path, bytes):
             path = path.decode("utf-8", "surrogateescape")
         if isinstance(data, bytes):
             data = data.decode("utf-8", "surrogateescape")
         tree_item = QTreeWidgetItem()
-        tree_item.setText(0, name)  # name
+        tree_item.setText(0, filename)  # name
         tree_item.setText(1, data)  # data
         tree_item.setText(2, path)  # path
         tree_item.setData(3, 0, structure_id)  # id
@@ -1148,7 +1145,7 @@ class StartStructureDB(QMainWindow):
                                                  structure_id=n, structures=self.structures)
                 if not tst:
                     continue
-                self.add_table_row(name=i[8], data=i[8], path=i[12], structure_id=str(n))
+                self.add_table_row(filename=i[8], data=i[8], path=i[12], structure_id=str(n))
                 n += 1
                 if n % 300 == 0:
                     self.structures.database.commit_db()
@@ -1198,9 +1195,8 @@ class StartStructureDB(QMainWindow):
         except TypeError:
             return None
         if self.structures:
-            for i in self.structures.get_all_structure_names():
-                structure_id = i[0]
-                self.add_table_row(name=i[3], path=i[2], structure_id=i[0], data=i[4])
+            for structure_id, _, path, filename, data in self.structures.get_all_structure_names():
+                self.add_table_row(filename, path, data, structure_id)
         mess = "Loaded {} entries.".format(structure_id)
         self.statusBar().showMessage(mess, msecs=5000)
         self.set_columnsize()

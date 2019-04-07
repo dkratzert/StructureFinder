@@ -12,7 +12,7 @@ Created on 09.02.2015
 """
 import os
 import shutil
-from math import sqrt
+from math import sqrt, cos, radians
 
 from searcher import constants
 
@@ -476,6 +476,27 @@ def combine_results(cell_results, date_results, elincl_results, results, spgr_re
             else:
                 results = date_results
     return results
+
+
+def vol_unitcell(a, b, c, al, be, ga):
+    """
+    calculates the volume of a unit cell
+    :type a: float
+    :type b: float
+    :type c: float
+    :type al: float
+    :type be: float
+    :type ga: float
+
+    >>> v = vol_unitcell(2, 2, 2, 90, 90, 90)
+    >>> print(v)
+    8.0
+
+    """
+    # ca, cb, cg = cos(radians(al)), cos(radians(be)), cos(radians(ga))
+    v = a * b * c * sqrt(1 + 2 * cos(radians(al)) * cos(radians(be)) * cos(radians(ga))
+                         - cos(radians(al)) ** 2 - cos(radians(be)) ** 2 - cos(radians(ga)) ** 2)
+    return v
 
 
 if __name__ == '__main__':
