@@ -694,7 +694,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     ####################
     results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
                               txt_ex_results, txt_results, states)
-    return flatten(list(results))
+    return list(results)
 
 
 if __name__ == "__main__":
