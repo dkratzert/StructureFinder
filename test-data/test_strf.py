@@ -6,6 +6,7 @@ import sys
 import unittest
 
 from PyQt5 import uic
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import QApplication
@@ -20,7 +21,7 @@ from searcher import database_handler, fileparser
 from shelxfile import shelx, elements, misc
 
 
-class doctestsTest(unittest.TestCase):
+class DoctestsTest(unittest.TestCase):
     def testrun_doctest(self):
         for name in [strf, shelx, elements, misc, searcher, update_check, database_handler, fileparser]:
             failed, attempted = doctest.testmod(name)  # , verbose=True)
@@ -48,12 +49,10 @@ class TestApplication(unittest.TestCase):
 
     def tearDown(self) -> None:
         super(TestApplication, self).tearDown()
-        #sys.exit(self.app.exec_())
 
-
+    #@unittest.skip("foo")
     def test_search_cell_simpl(self):
         # Number of items in main list
-        #QTest.qSleep(100)
         self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
         # structureId
         self.assertEqual('241', self.myapp.ui.cifList_treeWidget.topLevelItem(1).text(3))
@@ -62,9 +61,23 @@ class TestApplication(unittest.TestCase):
 
     # @unittest.skip('skipping unfinished')
     def test_search_text_simpl(self):
+        """
+        Testing simple unit cell search.
+        """
         self.myapp.ui.searchCellLineEDit.setText('7.878 10.469 16.068 90.000 95.147 90.000')
         #QTest.qSleep(100)
         self.assertEqual(3, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+
+    @unittest.skip("foo")
+    def test_clicks(self):
+        """
+        Testing copy to clip board with double click on unit cell
+        """
+        item = self.myapp.ui.cifList_treeWidget.topLevelItem(0)
+        self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
+        QTest.mouseDClick(self.myapp.ui.cellField, Qt.LeftButton, delay=5)
+        clp = QApplication.clipboard().text()
+        self.assertEqual(" 7.878 10.469 16.068 90.000 95.147 90.000", clp)
 
 
 class TestSearch(unittest.TestCase):

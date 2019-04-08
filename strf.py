@@ -12,7 +12,6 @@ Created on 09.02.2015
 
 @author: Daniel Kratzert
 """
-import math
 import os
 import shutil
 import sys
@@ -24,6 +23,7 @@ from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 
+import math
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow
@@ -414,7 +414,7 @@ class StartStructureDB(QMainWindow):
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
-        for structure_id, _, path, filename, data  in searchresult:
+        for structure_id, _, path, filename, data in searchresult:
             self.add_table_row(filename, path, data, structure_id)
         self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
@@ -1256,6 +1256,7 @@ if __name__ == "__main__":
     if DEBUG:
         try:
             from PyQt5 import uic
+
             uic.compileUiDir(os.path.join(application_path, './gui'))
             print('recompiled ui')
         except:
