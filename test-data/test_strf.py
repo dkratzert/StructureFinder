@@ -2,12 +2,19 @@
 Unit tests for StructureFinder
 """
 import doctest
+import sys
 import unittest
+
+from PyQt5 import uic
+from PyQt5.QtGui import QIcon
+from PyQt5.QtTest import QTest
+from PyQt5.QtWidgets import QApplication
 
 import searcher
 import searcher.misc
 import strf
 from misc import update_check
+from misc.version import VERSION
 from pymatgen.core import lattice
 from searcher import database_handler, fileparser
 from shelxfile import shelx, elements, misc
@@ -24,6 +31,39 @@ class doctestsTest(unittest.TestCase):
                                                                                                          attempted,
                                                                                                          name.__name__)
                 self.assertFalse(failed, msg)
+
+
+class TestApplication(unittest.TestCase):
+
+    def setUp(self) -> None:
+        uic.compileUiDir('./gui')
+        self.app = QApplication(sys.argv)
+        self.app.setWindowIcon(QIcon('./icons/strf.png'))
+        # Has to be without version number, because QWebengine stores data in ApplicationName directory:
+        self.app.setApplicationName('StructureFinder')
+        # app.setApplicationDisplayName("StructureFinder")
+        self.myapp = strf.StartStructureDB()
+        self.myapp.show()
+        self.myapp.raise_()
+        self.myapp.setWindowTitle('StructureFinder v{}'.format(VERSION))
+        self.myapp.structures = database_handler.StructureTable('./test-data/test.sql')
+        self.myapp.show_full_list()
+
+    def tearDown(self) -> None:
+        super(TestApplication, self).tearDown()
+        sys.exit(self.app.exec_())
+
+
+    def test_search_cell_simpl(self):
+        # Number of items in main list
+        QTest.qSleep(100)
+        self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+
+    # @unittest.skip('skipping unfinished')
+    def test_search_text_simpl(self):
+        self.myapp.ui.searchCellLineEDit.setText('7.878 10.469 16.068 90.000 95.147 90.000')
+        QTest.qSleep(100)
+        self.assertEqual(3, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
 
 class TestSearch(unittest.TestCase):

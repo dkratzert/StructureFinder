@@ -87,6 +87,8 @@ else:
 class StartStructureDB(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        from gui.strf_main import Ui_stdbMainwindow
+        from gui.strf_dbpasswd import Ui_PasswdDialog
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
         self.statusBar().showMessage('StructureFinder version {}'.format(VERSION))
@@ -1250,10 +1252,10 @@ class StartStructureDB(QMainWindow):
 
 
 if __name__ == "__main__":
-    from PyQt5 import uic
 
     if DEBUG:
         try:
+            from PyQt5 import uic
             uic.compileUiDir(os.path.join(application_path, './gui'))
             print('recompiled ui')
         except:
@@ -1261,8 +1263,6 @@ if __name__ == "__main__":
             raise
     else:
         print("Remember, UI is not recompiled without DEBUG.")
-    from gui.strf_main import Ui_stdbMainwindow
-    from gui.strf_dbpasswd import Ui_PasswdDialog
 
     # later http://www.pyinstaller.org/
     app = QApplication(sys.argv)
