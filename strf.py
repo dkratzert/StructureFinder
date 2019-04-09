@@ -19,7 +19,6 @@ import tempfile
 import time
 from contextlib import suppress
 from datetime import date
-from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
@@ -27,6 +26,7 @@ from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow
+from math import sin, radians
 
 from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
@@ -165,9 +165,9 @@ class StartStructureDB(QMainWindow):
         The actionExit signal is connected in the ui file.
         """
         # Buttons:
-        self.ui.importDatabaseButton.clicked.connect(self.import_cif_database)
+        self.ui.importDatabaseButton.clicked.connect(self.import_database_file)
         self.ui.saveDatabaseButton.clicked.connect(self.save_database)
-        self.ui.importDirButton.clicked.connect(self.import_cif_dirs)
+        self.ui.importDirButton.clicked.connect(self.import_file_dirs)
         self.ui.openApexDBButton.clicked.connect(self.import_apex_db)
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
         self.abort_import_button.clicked.connect(self.abort_import)
@@ -179,8 +179,8 @@ class StartStructureDB(QMainWindow):
             self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
-        self.ui.actionImport_directory.triggered.connect(self.import_cif_dirs)
-        self.ui.actionImport_file.triggered.connect(self.import_cif_database)
+        self.ui.actionImport_directory.triggered.connect(self.import_file_dirs)
+        self.ui.actionImport_file.triggered.connect(self.import_database_file)
         self.ui.actionSave_Database.triggered.connect(self.save_database)
         self.ui.actionCopy_Unit_Cell.triggered.connect(self.copyUnitCell)
         self.ui.actionGo_to_All_CIF_Tab.triggered.connect(self.on_click_item)
@@ -458,7 +458,7 @@ class StartStructureDB(QMainWindow):
         """
         self.search_cell(self.ui.searchCellLineEDit.text())
 
-    def import_cif_dirs(self):
+    def import_file_dirs(self):
         # worker = RunIndexerThread(self)
         # worker.start()
         self.tmpfile = True
@@ -572,7 +572,9 @@ class StartStructureDB(QMainWindow):
         """
         Saves the database to a certain file. Therefore I have to close the database.
         """
-        self.structures.set_database_version(self.apexdb)
+        self.structures.database.commit_db()
+        if self.structures.database.con.total_changes > 0:
+            self.structures.set_database_version(self.apexdb)
         status = False
         save_name, tst = QFileDialog.getSaveFileName(self, caption='Save File', directory='./', filter="*.sqlite")
         if save_name:
@@ -986,7 +988,7 @@ class StartStructureDB(QMainWindow):
         tree_item.setData(3, 0, structure_id)  # id
         self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
 
-    def import_cif_database(self) -> bool:
+    def import_database_file(self) -> bool:
         """
         Import a new database.
         """

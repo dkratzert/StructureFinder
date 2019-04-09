@@ -3,8 +3,8 @@ Created on 09.02.2015
 
  ----------------------------------------------------------------------------
 * "THE BEER-WARE LICENSE" (Revision 42):
-* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this 
-* notice you can do whatever you want with this stuff. If we meet some day, and 
+* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this
+* notice you can do whatever you want with this stuff. If we meet some day, and
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
 
@@ -127,13 +127,13 @@ def is_a_nonzero_file(filename):
     """
     Check if a file exists and has some content.
 
-    >>> is_a_nonzero_file('misc.py')
+    >>> is_a_nonzero_file('./searcher/misc.py')
     True
     >>> is_a_nonzero_file('foo.bar')
     False
-    >>> is_a_nonzero_file('../test-data/test_zerofile.cif')
+    >>> is_a_nonzero_file('./test-data/test_zerofile.cif')
     False
-    >>> is_a_nonzero_file('../strf.py')
+    >>> is_a_nonzero_file('./strf.py')
     True
     """
     filesize = False
@@ -150,7 +150,7 @@ def is_a_nonzero_file(filename):
 
 
 def get_error_from_value(value: str) -> tuple:
-    """ 
+    """
     Returns the error value from a number string.
     :type value: str
     :rtype: str

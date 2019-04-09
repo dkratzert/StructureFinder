@@ -332,6 +332,7 @@ class StructureTable():
         :param dbfile: database file path
         :type dbfile: str
         """
+        self.dbfilename = dbfile
         self.database = DatabaseRequest(dbfile)
 
     def __len__(self):

@@ -4,6 +4,8 @@ Unit tests for StructureFinder
 import doctest
 import sys
 import unittest
+from contextlib import suppress
+from pathlib import Path
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
@@ -22,7 +24,8 @@ from shelxfile import shelx, elements, misc
 
 class DoctestsTest(unittest.TestCase):
     def testrun_doctest(self):
-        for name in [strf, shelx, elements, misc, searcher, update_check, database_handler, fileparser]:
+        for name in [strf, shelx, elements, misc, searcher, update_check, database_handler,
+                     fileparser, searcher.misc]:
             failed, attempted = doctest.testmod(name)  # , verbose=True)
             if failed == 0:
                 print('passed all {} tests in {}!'.format(attempted, name.__name__))
@@ -104,6 +107,27 @@ class TestApplication(unittest.TestCase):
         QTest.mouseDClick(self.myapp.ui.cellField, Qt.LeftButton, delay=5)
         clp = QApplication.clipboard().text()
         self.assertEqual(" 7.878 10.469 16.068 90.000 95.147 90.000", clp)
+
+    def test_save_db(self):
+        """
+        Saves the current database to a file.
+        """
+        testfile = Path('./tst.sql')
+        with suppress(Exception):
+            Path.unlink(testfile)
+        self.myapp.dbfilename = self.myapp.structures.dbfilename
+        status = self.myapp.close_db(testfile)
+        self.assertEqual(True, status)
+        self.assertEqual(True, testfile.is_file())
+        self.assertEqual(True, testfile.exists())
+        Path.unlink(testfile)
+        self.assertEqual(False, testfile.exists())
+
+    def test_index_db(self):
+        """
+        Test index and save
+        """
+        pass
 
 
 ######################################################
