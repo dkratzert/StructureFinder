@@ -19,11 +19,11 @@ import tempfile
 import time
 from contextlib import suppress
 from datetime import date
+from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 
-import math
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow
@@ -32,7 +32,7 @@ from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
 
-DEBUG = False
+DEBUG = True
 
 from apex import apeximporter
 from displaymol import mol_file_writer, write_html
@@ -53,7 +53,7 @@ try:
     from xml.etree.ElementTree import ParseError
     from ccdc.query import get_cccsd_path, search_csd, parse_results
 except ModuleNotFoundError:
-    pass
+    print('Non xml parser found.')
 
 try:
     from PyQt5.QtWebEngineWidgets import QWebEngineView
@@ -61,6 +61,8 @@ except Exception as e:
     print(e, '# Unable to import QWebEngineView')
     if DEBUG:
         raise
+from gui.strf_main import Ui_stdbMainwindow
+from gui.strf_dbpasswd import Ui_PasswdDialog
 
 """
 TODO:
@@ -87,8 +89,6 @@ else:
 class StartStructureDB(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        from gui.strf_main import Ui_stdbMainwindow
-        from gui.strf_dbpasswd import Ui_PasswdDialog
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
         self.statusBar().showMessage('StructureFinder version {}'.format(VERSION))
@@ -715,7 +715,7 @@ class StartStructureDB(QMainWindow):
         thetamax = cif_dic['_diffrn_reflns_theta_max']
         # d = lambda/2sin(theta):
         try:
-            d = wavelen / (2 * math.sin(math.radians(thetamax)))
+            d = wavelen / (2 * sin(radians(thetamax)))
         except(ZeroDivisionError, TypeError):
             d = 0.0
         self.ui.numRestraintsLineEdit.setText("{}".format(cif_dic['_refine_ls_number_restraints']))

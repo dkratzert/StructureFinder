@@ -5,7 +5,6 @@ import doctest
 import sys
 import unittest
 
-from PyQt5 import uic
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtTest import QTest
@@ -37,7 +36,7 @@ class DoctestsTest(unittest.TestCase):
 class TestApplication(unittest.TestCase):
 
     def setUp(self) -> None:
-        #uic.compileUiDir('./gui')
+        # uic.compileUiDir('./gui')
         self.app = QApplication(sys.argv)
         self.app.setWindowIcon(QIcon('./icons/strf.png'))
         # Has to be without version number, because QWebengine stores data in ApplicationName directory:
@@ -50,7 +49,7 @@ class TestApplication(unittest.TestCase):
     def tearDown(self) -> None:
         super(TestApplication, self).tearDown()
 
-    #@unittest.skip("foo")
+    # @unittest.skip("foo")
     def test_search_cell_simpl(self):
         # Number of items in main list
         self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
@@ -65,10 +64,10 @@ class TestApplication(unittest.TestCase):
         Testing simple unit cell search.
         """
         self.myapp.ui.searchCellLineEDit.setText('7.878 10.469 16.068 90.000 95.147 90.000')
-        #QTest.qSleep(100)
+        # QTest.qSleep(100)
         self.assertEqual(3, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
-    @unittest.skip("foo")
+    #@unittest.skip("foo")
     def test_clicks(self):
         """
         Testing copy to clip board with double click on unit cell
@@ -78,6 +77,11 @@ class TestApplication(unittest.TestCase):
         QTest.mouseDClick(self.myapp.ui.cellField, Qt.LeftButton, delay=5)
         clp = QApplication.clipboard().text()
         self.assertEqual(" 7.878 10.469 16.068 90.000 95.147 90.000", clp)
+
+
+######################################################
+##  Database testing:
+######################################################
 
 
 class TestSearch(unittest.TestCase):
