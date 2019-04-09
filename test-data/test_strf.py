@@ -112,16 +112,16 @@ class TestApplication(unittest.TestCase):
         """
         Saves the current database to a file.
         """
+        self.myapp.import_file_dirs('test-data/COD')
         testfile = Path('./tst.sql')
         with suppress(Exception):
             Path.unlink(testfile)
-        self.myapp.dbfilename = self.myapp.structures.dbfilename
-        status = self.myapp.close_db(testfile)
-        self.assertEqual(True, status)
+        self.myapp.save_database(testfile.absolute())
         self.assertEqual(True, testfile.is_file())
         self.assertEqual(True, testfile.exists())
         Path.unlink(testfile)
         self.assertEqual(False, testfile.exists())
+        self.assertEqual('Database saved.', self.myapp.statusBar().currentMessage())
 
     def test_index_db(self):
         """
@@ -137,6 +137,25 @@ class TestApplication(unittest.TestCase):
         self.myapp.ui.add_res.setChecked(True)
         self.myapp.import_file_dirs('test-data/tst')
         self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+
+    def test_open_database_file(self):
+        """
+        Testing the opening of a database.
+        """
+        # self.myapp.close_db()  # not needed here!
+        status = self.myapp.import_database_file('test-data/test.sql')
+        self.assertEqual(True, status)
+        self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+
+    def test_p4p_parser(self):
+        self.myapp.search_for_p4pcell('test-data/test2.p4p')
+        self.assertEqual('14.637 9.221  15.094 90.000 107.186 90.000', self.myapp.ui.searchCellLineEDit.text())
+        #self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+
+    def test_res_parser(self):
+        self.myapp.search_for_res_cell('test-data/p21c.res')
+        self.assertEqual('10.509 20.904 20.507 90.000 94.130 90.000', self.myapp.ui.searchCellLineEDit.text())
+        self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
 ######################################################
 ##  Database testing:

@@ -475,7 +475,7 @@ class StartStructureDB(QMainWindow):
         self.progressbar(1, 0, 20)
         self.abort_import_button.show()
         if not startdir:
-            self.get_startdir_from_dialog()
+            startdir = self.get_startdir_from_dialog()
         if not startdir:
             self.progress.hide()
             self.abort_import_button.hide()
@@ -575,7 +575,10 @@ class StartStructureDB(QMainWindow):
         self.structureId = structure_id
         return True
 
-    def save_database(self) -> bool:
+    def get_save_name_from_dialog(self):
+        return QFileDialog.getSaveFileName(self, caption='Save File', directory='./', filter="*.sqlite")
+
+    def save_database(self, save_name=None) -> bool:
         """
         Saves the database to a certain file. Therefore I have to close the database.
         """
@@ -583,12 +586,12 @@ class StartStructureDB(QMainWindow):
         if self.structures.database.con.total_changes > 0:
             self.structures.set_database_version(self.apexdb)
         status = False
-        save_name, tst = QFileDialog.getSaveFileName(self, caption='Save File', directory='./', filter="*.sqlite")
+        if not save_name:
+            save_name, _ = self.get_save_name_from_dialog()
         if save_name:
             if isfile(save_name) and samefile(self.dbfilename, save_name):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
                 return False
-        if save_name:
             status = self.close_db(save_name)
         if status:
             self.statusBar().showMessage("Database saved.", msecs=5000)
@@ -995,17 +998,21 @@ class StartStructureDB(QMainWindow):
         tree_item.setData(3, 0, structure_id)  # id
         self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
 
-    def import_database_file(self) -> bool:
+    def get_import_filename_from_dialog(self):
+        return QFileDialog.getOpenFileName(self, caption='Open File', directory='./', filter="*.sqlite")[0]
+
+    def import_database_file(self, fname=None) -> bool:
         """
         Import a new database.
         """
         self.tmpfile = False
         self.close_db()
-        fname = QFileDialog.getOpenFileName(self, caption='Open File', directory='./', filter="*.sqlite")
-        if not fname[0]:
+        if not fname:
+            fname = self.get_import_filename_from_dialog()
+        if not fname:
             return False
-        print("Opened {}.".format(fname[0]))
-        self.dbfilename = fname[0]
+        print("Opened {}.".format(fname))
+        self.dbfilename = fname
         self.structures = database_handler.StructureTable(self.dbfilename)
         try:
             self.show_full_list()
