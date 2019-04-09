@@ -33,14 +33,16 @@ class DoctestsTest(unittest.TestCase):
                 self.assertFalse(failed, msg)
 
 
+app = QApplication(sys.argv)
+
+
 class TestApplication(unittest.TestCase):
 
     def setUp(self) -> None:
         # uic.compileUiDir('./gui')
-        self.app = QApplication(sys.argv)
-        self.app.setWindowIcon(QIcon('./icons/strf.png'))
+        app.setWindowIcon(QIcon('./icons/strf.png'))
         # Has to be without version number, because QWebengine stores data in ApplicationName directory:
-        self.app.setApplicationName('StructureFinder')
+        app.setApplicationName('StructureFinder')
         self.myapp = strf.StartStructureDB()
         self.myapp.setWindowTitle('StructureFinder v{}'.format(VERSION))
         self.myapp.structures = database_handler.StructureTable('./test-data/test.sql')
@@ -50,7 +52,7 @@ class TestApplication(unittest.TestCase):
         super(TestApplication, self).tearDown()
 
     # @unittest.skip("foo")
-    def test_search_cell_simpl(self):
+    def test_gui_simpl(self):
         # Number of items in main list
         self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
         # structureId
@@ -59,15 +61,40 @@ class TestApplication(unittest.TestCase):
         self.assertEqual('1000000.cif', self.myapp.ui.cifList_treeWidget.topLevelItem(1).text(0))
 
     # @unittest.skip('skipping unfinished')
-    def test_search_text_simpl(self):
+    def test_search_cell_simpl(self):
         """
         Testing simple unit cell search.
         """
+        # correct cell:
         self.myapp.ui.searchCellLineEDit.setText('7.878 10.469 16.068 90.000 95.147 90.000')
-        # QTest.qSleep(100)
         self.assertEqual(3, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.myapp.show_full_list()
+        # incomplete unit cell:
+        self.myapp.ui.searchCellLineEDit.setText('7.878 10.469 16.068 90.000 95.147')
+        self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.myapp.show_full_list()
+        # invalid unit cell:
+        self.myapp.ui.searchCellLineEDit.setText('7.878 10.469 16.068 90.000 95.147 abc')
+        self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Not a valid unit cell!", self.myapp.statusBar().currentMessage())
 
-    #@unittest.skip("foo")
+    def test_search_text_simpl(self):
+        """
+        Testing simple text search.
+        """
+        self.myapp.ui.txtSearchEdit.setText('SADI')
+        self.assertEqual(4, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 4 entries.", self.myapp.statusBar().currentMessage())
+        self.myapp.show_full_list()
+        self.myapp.ui.txtSearchEdit.setText('sadi')
+        self.assertEqual(4, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.myapp.show_full_list()
+        # should give no result
+        self.myapp.ui.txtSearchEdit.setText('foobar')
+        self.assertEqual(0, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 0 entries.", self.myapp.statusBar().currentMessage())
+
+    # @unittest.skip("foo")
     def test_clicks(self):
         """
         Testing copy to clip board with double click on unit cell
