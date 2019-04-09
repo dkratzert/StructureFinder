@@ -458,7 +458,13 @@ class StartStructureDB(QMainWindow):
         """
         self.search_cell(self.ui.searchCellLineEDit.text())
 
-    def import_file_dirs(self):
+    def get_startdir_from_dialog(self):
+        return QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+
+    def import_file_dirs(self, startdir=None):
+        """
+        Method to import res and cif files into the DB. "startdir" defines the directorz where to start indexing.
+        """
         # worker = RunIndexerThread(self)
         # worker.start()
         self.tmpfile = True
@@ -468,11 +474,12 @@ class StartStructureDB(QMainWindow):
         self.start_db()
         self.progressbar(1, 0, 20)
         self.abort_import_button.show()
-        fname = QFileDialog.getExistingDirectory(self, 'Open Directory', '')
-        if not fname:
+        if not startdir:
+            self.get_startdir_from_dialog()
+        if not startdir:
             self.progress.hide()
             self.abort_import_button.hide()
-        filecrawler.put_files_in_db(self, searchpath=fname, fillres=self.ui.add_res.isChecked(),
+        filecrawler.put_files_in_db(self, searchpath=startdir, fillres=self.ui.add_res.isChecked(),
                                     fillcif=self.ui.add_cif.isChecked())
         self.progress.hide()
         try:

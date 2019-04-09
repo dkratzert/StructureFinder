@@ -127,8 +127,16 @@ class TestApplication(unittest.TestCase):
         """
         Test index and save
         """
-        pass
-
+        self.myapp.import_file_dirs('test-data/COD')
+        self.assertEqual(22, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.myapp.import_file_dirs('gui')
+        self.assertEqual(0, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.myapp.import_file_dirs('test-data/tst')
+        self.assertEqual(3, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.myapp.ui.add_cif.setChecked(False)
+        self.myapp.ui.add_res.setChecked(True)
+        self.myapp.import_file_dirs('test-data/tst')
+        self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
 ######################################################
 ##  Database testing:

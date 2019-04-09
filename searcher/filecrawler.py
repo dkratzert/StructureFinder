@@ -167,7 +167,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
     zipcifs = 0
     rescount = 0
     cifcount = 0
-    time1 = time.clock()
+    time1 = time.process_time()
     patterns = ['*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '*.res']
     filelist = filewalker_walk(str(searchpath), patterns)
     options = {}
@@ -284,7 +284,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 self.decide_import = True
                 break
     structures.database.commit_db()
-    time2 = time.clock()
+    time2 = time.process_time()
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
