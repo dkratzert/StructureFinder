@@ -157,6 +157,31 @@ class TestApplication(unittest.TestCase):
         self.assertEqual('10.509 20.904 20.507 90.000 94.130 90.000', self.myapp.ui.searchCellLineEDit.text())
         self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
+    def test_all_cif_values(self):
+        item = self.myapp.ui.cifList_treeWidget.topLevelItem(3)
+        self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
+        QTest.mouseClick(self.myapp.ui.allEntrysTab, Qt.LeftButton)
+        self.assertEqual('Id', self.myapp.ui.allCifTreeWidget.topLevelItem(0).text(0))
+        self.assertEqual('250', self.myapp.ui.allCifTreeWidget.topLevelItem(0).text(1))
+        self.assertEqual('C107 H142 N14 O26', self.myapp.ui.allCifTreeWidget.topLevelItem(10).text(1))
+
+    def test_res_file_tab(self):
+        item = self.myapp.ui.cifList_treeWidget.topLevelItem(262)
+        self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
+        QTest.mouseClick(self.myapp.ui.SHELXtab, Qt.LeftButton)
+        self.assertEqual('REM Solution', self.myapp.ui.SHELXplainTextEdit.toPlainText()[:12])
+        ###############
+        item = self.myapp.ui.cifList_treeWidget.topLevelItem(260)
+        self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
+        QTest.mouseClick(self.myapp.ui.SHELXtab, Qt.LeftButton)
+        self.assertEqual('TITL p21c in', self.myapp.ui.SHELXplainTextEdit.toPlainText()[:12])
+        ###############
+        item = self.myapp.ui.cifList_treeWidget.topLevelItem(250)
+        self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
+        QTest.mouseClick(self.myapp.ui.SHELXtab, Qt.LeftButton)
+        self.assertEqual('No SHELXL res file in cif found.', self.myapp.ui.SHELXplainTextEdit.toPlainText())
+
+
 ######################################################
 ##  Database testing:
 ######################################################
