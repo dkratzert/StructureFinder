@@ -182,6 +182,9 @@ class TestApplication(unittest.TestCase):
         self.assertEqual('No SHELXL res file in cif found.', self.myapp.ui.SHELXplainTextEdit.toPlainText())
 
 
+    def test_cellchekcsd(self):
+        pass
+
 ######################################################
 ##  Database testing:
 ######################################################

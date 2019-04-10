@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/daniel/GitHub/StructureFinder/./gui/strf_main.ui'
+# Form implementation generated from reading ui file 'D:\GitHub\StructureFinder\./gui\strf_main.ui'
 #
 # Created by: PyQt5 UI code generator 5.12.1
 #
@@ -264,6 +264,11 @@ class Ui_stdbMainwindow(object):
         self.CellLabel.setObjectName("CellLabel")
         self.verticalLayout_3.addWidget(self.CellLabel)
         self.cellField = QtWidgets.QLabel(self.groupBox_5)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.cellField.sizePolicy().hasHeightForWidth())
+        self.cellField.setSizePolicy(sizePolicy)
         self.cellField.setMinimumSize(QtCore.QSize(0, 75))
         self.cellField.setBaseSize(QtCore.QSize(0, 75))
         self.cellField.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -279,7 +284,7 @@ class Ui_stdbMainwindow(object):
         spacerItem6 = QtWidgets.QSpacerItem(5, 10, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         self.verticalLayout_3.addItem(spacerItem6)
         self.formLayout_2 = QtWidgets.QFormLayout()
-        self.formLayout_2.setFieldGrowthPolicy(QtWidgets.QFormLayout.FieldsStayAtSizeHint)
+        self.formLayout_2.setFieldGrowthPolicy(QtWidgets.QFormLayout.AllNonFixedFieldsGrow)
         self.formLayout_2.setObjectName("formLayout_2")
         self.label = QtWidgets.QLabel(self.groupBox_5)
         font = QtGui.QFont()
@@ -290,7 +295,7 @@ class Ui_stdbMainwindow(object):
         self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
         self.SumformLabel = QtWidgets.QLabel(self.groupBox_5)
         self.SumformLabel.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.SumformLabel.sizePolicy().hasHeightForWidth())
@@ -923,17 +928,17 @@ class Ui_stdbMainwindow(object):
         spacerItem14 = QtWidgets.QSpacerItem(1, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.gridLayout_8.addItem(spacerItem14, 0, 5, 1, 1)
         self.dateEdit1 = QtWidgets.QDateEdit(self.searchtab)
-        self.dateEdit1.setDate(QtCore.QDate(1900, 1, 1))
         self.dateEdit1.setMinimumDate(QtCore.QDate(1900, 1, 1))
         self.dateEdit1.setCalendarPopup(True)
+        self.dateEdit1.setDate(QtCore.QDate(1900, 1, 1))
         self.dateEdit1.setObjectName("dateEdit1")
         self.gridLayout_8.addWidget(self.dateEdit1, 0, 2, 1, 1)
         self.dateEdit2 = QtWidgets.QDateEdit(self.searchtab)
         self.dateEdit2.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectToNearestValue)
-        self.dateEdit2.setDate(QtCore.QDate(9999, 1, 1))
         self.dateEdit2.setMaximumDate(QtCore.QDate(9999, 12, 31))
         self.dateEdit2.setMinimumDate(QtCore.QDate(1752, 9, 14))
         self.dateEdit2.setCalendarPopup(True)
+        self.dateEdit2.setDate(QtCore.QDate(9999, 1, 1))
         self.dateEdit2.setObjectName("dateEdit2")
         self.gridLayout_8.addWidget(self.dateEdit2, 0, 4, 1, 1)
         self.wR2Label_5 = QtWidgets.QLabel(self.searchtab)
