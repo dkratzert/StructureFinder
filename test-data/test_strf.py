@@ -2,6 +2,7 @@
 Unit tests for StructureFinder
 """
 import doctest
+import platform
 import sys
 import unittest
 from contextlib import suppress
@@ -150,7 +151,7 @@ class TestApplication(unittest.TestCase):
     def test_p4p_parser(self):
         self.myapp.search_for_p4pcell('test-data/test2.p4p')
         self.assertEqual('14.637 9.221  15.094 90.000 107.186 90.000', self.myapp.ui.searchCellLineEDit.text())
-        #self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        # self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
     def test_res_parser(self):
         self.myapp.search_for_res_cell('test-data/p21c.res')
@@ -181,8 +182,14 @@ class TestApplication(unittest.TestCase):
         QTest.mouseClick(self.myapp.ui.SHELXtab, Qt.LeftButton)
         self.assertEqual('No SHELXL res file in cif found.', self.myapp.ui.SHELXplainTextEdit.toPlainText())
 
-
     def test_cellchekcsd(self):
+        item = self.myapp.ui.cifList_treeWidget.topLevelItem(2)
+        self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
+        QTest.mouseClick(self.myapp.ui.CCDCSearchTab, Qt.LeftButton)
+        if platform.system() == 'Windows':
+            self.assertEqual(' 7.878 10.469 16.068 90.000 95.147 90.000', self.myapp.ui.cellSearchLabelCSD.text())
+
+    def test_adv(self):
         pass
 
 ######################################################
