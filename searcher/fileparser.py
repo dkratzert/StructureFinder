@@ -177,25 +177,6 @@ class Cif(object):
                         continue
                     loops.append(loopitem)
                 continue
-            # Leave out save_ frames:
-            if save_frame:
-                continue
-            if line[:5] == "save_":
-                save_frame = True
-                continue
-            elif line[:5] == "save_" and save_frame:
-                save_frame = False
-            # First find the start of the cif (the data tag)
-            if line[:5] == 'data_':
-                if line == "data_global":
-                    continue
-                if not data:
-                    name = '_'.join(line.split('_')[1:])
-                    self.cif_data['data'] = name
-                    data = True
-                    continue
-                else:  # break in occurence of a second data_
-                    break
             # Find the loop positions:
             if line[:5] == "loop_":
                 loop = True
@@ -236,6 +217,25 @@ class Cif(object):
                 # continue  # use continue if data is behind res file
                 semi_colon_text_field = line
                 continue
+            # First find the start of the cif (the data tag)
+            if line[:5] == 'data_':
+                if line == "data_global":
+                    continue
+                if not data:
+                    name = '_'.join(line.split('_')[1:])
+                    self.cif_data['data'] = name
+                    data = True
+                    continue
+                else:  # break in occurence of a second data_
+                    break
+            # Leave out save_ frames:
+            if save_frame:
+                continue
+            if line[:5] == "save_":
+                save_frame = True
+                continue
+            elif line[:5] == "save_" and save_frame:
+                save_frame = False
         self.cif_data['_loop'] = loops
         self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(self.symm)
         self.cif_data['file_length_lines'] = num + 1
