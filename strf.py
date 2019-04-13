@@ -1231,9 +1231,9 @@ class StartStructureDB(QMainWindow):
         self.ui.adv_textsearch.clear()
         self.ui.adv_textsearch_excl.clear()
         self.ui.adv_unitCellLineEdit.clear()
-        # No, don't do this:
-        # self.ui.dateEdit1.setDate(QDate(date.today()))
-        # self.ui.dateEdit2.setDate(QDate(date.today()))
+        # I need this to reset the date after clearing the search values in advanced search:
+        self.ui.dateEdit1.setDate(QDate(date.today()))
+        self.ui.dateEdit2.setDate(QDate(date.today()))
 
     def clear_fields(self) -> None:
         """

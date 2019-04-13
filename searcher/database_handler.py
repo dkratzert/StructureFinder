@@ -920,16 +920,17 @@ class StructureTable():
 
     def find_by_rvalue(self, rvalue: float):
         """
-        Finds structures with R1 value better than rvalue.
+        Finds structures with R1 value better than rvalue. I search both R1 values, because often one or even both
+        are missing.
 
         >>> db = StructureTable('./test-data/test.sql')
-        >>> db.find_by_rvalue(0.04)
-        [13, 18, 236, 237, 243, 254]
+        >>> db.find_by_rvalue(0.035)
+        [18, 64, 75, 128, 131, 135, 151, 164, 236, 237, 243]
         """
         req = """
-                SELECT StructureId FROM Residuals WHERE _refine_ls_R_factor_gt <= ?;
+                SELECT StructureId FROM Residuals WHERE _refine_ls_R_factor_gt <= ? OR _refine_ls_R_factor_all <= ?
                 """
-        return self.result_to_list(self.database.db_request(req, (rvalue,)))
+        return self.result_to_list(self.database.db_request(req, (rvalue, rvalue)))
 
 
     def find_biggest_cell(self):
