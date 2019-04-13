@@ -175,12 +175,14 @@ class TestApplication(unittest.TestCase):
         self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
         QTest.mouseClick(self.myapp.ui.SHELXtab, Qt.LeftButton)
         self.assertEqual('REM Solution', self.myapp.ui.SHELXplainTextEdit.toPlainText()[:12])
-        ###############
+
+    def test_res_file2(self):
         item = self.myapp.ui.cifList_treeWidget.topLevelItem(260)
         self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
         QTest.mouseClick(self.myapp.ui.SHELXtab, Qt.LeftButton)
         self.assertEqual('TITL p21c in', self.myapp.ui.SHELXplainTextEdit.toPlainText()[:12])
-        ###############
+
+    def test_res_file3(self):
         item = self.myapp.ui.cifList_treeWidget.topLevelItem(250)
         self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
         QTest.mouseClick(self.myapp.ui.SHELXtab, Qt.LeftButton)
@@ -194,7 +196,7 @@ class TestApplication(unittest.TestCase):
         self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
         QTest.mouseClick(self.myapp.ui.CCDCSearchTab, Qt.LeftButton)
         if platform.system() == 'Windows':
-            self.assertEqual(' 7.878 10.469 16.068 90.000 95.147 90.000', self.myapp.ui.cellSearchLabelCSD.text())
+            self.assertEqual('7.8783  10.4689  16.068  90.0  95.147  90.0', self.myapp.ui.cellSearchCSDLineEdit.text())
 
     def test_adv_search_cell(self):
         """
