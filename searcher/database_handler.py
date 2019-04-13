@@ -862,10 +862,9 @@ class StructureTable():
 
     def result_to_list(self, result):
         if result and len(result) > 0:
-            res = [x[0] for x in result]
+            return [x[0] for x in result]
         else:
-            res = []
-        return res
+            return []
 
     def find_by_elements(self, elements: list, excluding: list = None, onlyincluded: bool = False) -> list:
         """
@@ -915,7 +914,23 @@ class StructureTable():
         req = """
               SELECT StructureId FROM Residuals WHERE modification_time between DATE(?) AND DATE(?);
               """
-        return searcher.misc.flatten([list(x) for x in self.database.db_request(req, (start, end))])
+        result = self.database.db_request(req, (start, end))
+        return self.result_to_list(result)
+
+
+    def find_by_rvalue(self, rvalue: float):
+        """
+        Finds structures with R1 value better than rvalue.
+
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> db.find_by_rvalue(0.04)
+        [13, 18, 236, 237, 243, 254]
+        """
+        req = """
+                SELECT StructureId FROM Residuals WHERE _refine_ls_R_factor_gt <= ?;
+                """
+        return self.result_to_list(self.database.db_request(req, (rvalue,)))
+
 
     def find_biggest_cell(self):
         """
