@@ -374,7 +374,7 @@ class StartStructureDB(QMainWindow):
         date_results = []
         try:
             spgr = int(spgr.split()[0])
-        except:
+        except Exception:
             spgr = 0
         if cell:
             states['cell'] = True

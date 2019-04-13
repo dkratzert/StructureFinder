@@ -263,7 +263,46 @@ class TestApplication(unittest.TestCase):
         self.assertEqual('p21c.cif', self.myapp.ui.cifList_treeWidget.topLevelItem(2).text(0))
         self.assertEqual(True, self.myapp.ui.MaintabWidget.isVisible())
 
+        # now exclude some:
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        self.myapp.ui.adv_textsearch.setText('SADI')
+        self.myapp.ui.adv_textsearch_excl.setText('breit')
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        self.myapp.ui.adv_textsearch.setText('SADI')
+        self.myapp.ui.adv_textsearch_excl.setText('breit')
+        # additionally include only spgrp 14:
+        self.myapp.ui.SpGrpComboBox.setCurrentIndex(14)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        self.myapp.ui.adv_textsearch_excl.clear()
+        self.myapp.ui.adv_textsearch.setText('Breit')
+        self.myapp.ui.adv_elementsIncLineEdit.setText('C H O')
+        self.myapp.ui.adv_elementsExclLineEdit.setText('N')
+        # additionally include only spgrp 14:
+        self.myapp.ui.SpGrpComboBox.setCurrentIndex(5)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+
+    # TODO: Fix this test. It results in 263 instead of 2!!
+    @unittest.skip
+    def test_txt_elex_elin(self):
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        self.myapp.ui.adv_searchtab.show()
+        self.assertEqual(True, self.myapp.ui.adv_searchtab.isVisible())
+        self.assertEqual(True, self.myapp.ui.cifList_treeWidget.isVisible())
+        #self.myapp.ui.adv_unitCellLineEdit.clear()
+        self.myapp.ui.adv_textsearch.setText('Breit')
+        self.myapp.ui.adv_elementsIncLineEdit.setText('C H O')
+        self.myapp.ui.adv_elementsExclLineEdit.setText('N F')
+        # additionally include only spgrp 14:
+        self.myapp.ui.SpGrpComboBox.setCurrentIndex(5)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
 ######################################################
 ##  Database testing:

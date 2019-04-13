@@ -441,7 +441,7 @@ def combine_results(cell_results, date_results, elincl_results, results, spgr_re
         if results:
             results = set(results).intersection(spgr_results)
         else:
-            if states['txt'] or states['elincl'] or states['date'] or states['cell']:
+            if states['cell']:
                 results = set([])
             else:
                 results = spgr_results
@@ -450,7 +450,7 @@ def combine_results(cell_results, date_results, elincl_results, results, spgr_re
         if results:
             results = set(results).intersection(elincl_results)
         else:
-            if states['txt'] or states['date'] or states['spgr'] or states['cell']:
+            if states['spgr'] or states['cell']:
                 results = set([])
             else:
                 results = elincl_results
@@ -459,7 +459,7 @@ def combine_results(cell_results, date_results, elincl_results, results, spgr_re
         if results:
             results = set(results).intersection(txt_results)
         else:
-            if states['date'] or states['elincl'] or states['spgr'] or states['cell']:
+            if states['elincl'] or states['spgr'] or states['cell']:
                 results = set([])
             else:
                 results = txt_results

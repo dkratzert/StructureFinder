@@ -841,7 +841,7 @@ class StructureTable():
             return tuple([])
         return res
 
-    def find_by_it_number(self, number: int) -> list:
+    def find_by_it_number(self, number: int) -> List[int]:
         """
         Find structures by space group number in international tables of
         crystallography.
@@ -858,10 +858,14 @@ class StructureTable():
             return []
         req = '''SELECT StructureId from Residuals WHERE _space_group_IT_number IS ?'''
         result = self.database.db_request(req, (value,))
+        return self.result_to_list(result)
+
+    def result_to_list(self, result):
         if result and len(result) > 0:
-            return [x[0] for x in result]
+            res = [x[0] for x in result]
         else:
-            return []
+            res = []
+        return res
 
     def find_by_elements(self, elements: list, excluding: list = None, onlyincluded: bool = False) -> list:
         """
@@ -898,10 +902,7 @@ class StructureTable():
             exclude = ' IS NULL AND '.join(['Elem_' + x.capitalize() for x in elex]) + ' IS NULL '
             req = '''SELECT StructureId from sum_formula WHERE ({} AND {}) '''.format(el, exclude)
         result = self.database.db_request(req)
-        if result:
-            return [x[0] for x in result]
-        else:
-            return []
+        return self.result_to_list(result)
 
     def find_by_date(self, start='0000-01-01', end='NOW'):
         """
