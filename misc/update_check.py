@@ -22,8 +22,8 @@ def get_current_strf_version(silent=True):
     """
     determines the current version of DSR on the web server
 
-    >>> get_current_strf_version()
-    '41'
+    #>>> get_current_strf_version()
+    #'41'
 
     Returns
     -------
