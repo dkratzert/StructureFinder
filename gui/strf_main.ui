@@ -248,7 +248,7 @@
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="maintab">
        <attribute name="title">
@@ -1248,7 +1248,7 @@ p, li { white-space: pre-wrap; }
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="searchtab">
+      <widget class="QWidget" name="adv_searchtab">
        <attribute name="title">
         <string>Advanced Search</string>
        </attribute>
@@ -1258,7 +1258,7 @@ p, li { white-space: pre-wrap; }
           <item row="1" column="0">
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="0" column="1">
-             <widget class="QLineEdit" name="ad_unitCellLineEdit">
+             <widget class="QLineEdit" name="adv_unitCellLineEdit">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -1278,7 +1278,7 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QLineEdit" name="ad_elementsIncLineEdit">
+             <widget class="QLineEdit" name="adv_elementsIncLineEdit">
               <property name="text">
                <string/>
               </property>
@@ -1302,7 +1302,7 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
             <item row="3" column="1">
-             <widget class="QLineEdit" name="ad_textsearch">
+             <widget class="QLineEdit" name="adv_textsearch">
               <property name="placeholderText">
                <string>e.g. TWIN</string>
               </property>
@@ -1345,7 +1345,7 @@ p, li { white-space: pre-wrap; }
           <item row="1" column="2">
            <layout class="QGridLayout" name="gridLayout_7">
             <item row="1" column="1">
-             <widget class="QLineEdit" name="ad_elementsExclLineEdit">
+             <widget class="QLineEdit" name="adv_elementsExclLineEdit">
               <property name="placeholderText">
                <string>e.g. Pt Au Al</string>
               </property>
@@ -1373,7 +1373,7 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QLineEdit" name="ad_textsearch_excl">
+             <widget class="QLineEdit" name="adv_textsearch_excl">
               <property name="placeholderText">
                <string>e.g. test</string>
               </property>
@@ -1443,7 +1443,7 @@ p, li { white-space: pre-wrap; }
           <item row="5" column="0" colspan="3">
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
-             <widget class="QPushButton" name="ad_SearchPushButton">
+             <widget class="QPushButton" name="adv_SearchPushButton">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -1462,7 +1462,7 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="ad_ClearSearchButton">
+             <widget class="QPushButton" name="adv_ClearSearchButton">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -1534,7 +1534,7 @@ p, li { white-space: pre-wrap; }
              </spacer>
             </item>
             <item row="2" column="1">
-             <widget class="QComboBox" name="SpGrcomboBox">
+             <widget class="QComboBox" name="SpGrpComboBox">
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Menlo'; color:#000000; background-color:#ffffff;&quot;&gt;Be aware that not every cif file before SHELXL-2013 has a space group number. These will not be found.&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
@@ -2722,6 +2722,13 @@ p, li { white-space: pre-wrap; }
               </item>
               <item row="0" column="2">
                <widget class="QDateEdit" name="dateEdit1">
+                <property name="date">
+                 <date>
+                  <year>1900</year>
+                  <month>1</month>
+                  <day>1</day>
+                 </date>
+                </property>
                 <property name="minimumDate">
                  <date>
                   <year>1900</year>
@@ -2735,13 +2742,6 @@ p, li { white-space: pre-wrap; }
                 <property name="calendarPopup">
                  <bool>true</bool>
                 </property>
-                <property name="date">
-                 <date>
-                  <year>1900</year>
-                  <month>1</month>
-                  <day>1</day>
-                 </date>
-                </property>
                </widget>
               </item>
               <item row="0" column="4">
@@ -2749,9 +2749,16 @@ p, li { white-space: pre-wrap; }
                 <property name="correctionMode">
                  <enum>QAbstractSpinBox::CorrectToNearestValue</enum>
                 </property>
+                <property name="date">
+                 <date>
+                  <year>7999</year>
+                  <month>12</month>
+                  <day>31</day>
+                 </date>
+                </property>
                 <property name="maximumDate">
                  <date>
-                  <year>9999</year>
+                  <year>7999</year>
                   <month>12</month>
                   <day>31</day>
                  </date>
@@ -2768,13 +2775,6 @@ p, li { white-space: pre-wrap; }
                 </property>
                 <property name="calendarPopup">
                  <bool>true</bool>
-                </property>
-                <property name="date">
-                 <date>
-                  <year>9999</year>
-                  <month>1</month>
-                  <day>1</day>
-                 </date>
                 </property>
                </widget>
               </item>
@@ -2806,14 +2806,14 @@ p, li { white-space: pre-wrap; }
              </layout>
             </item>
             <item row="1" column="0" colspan="2">
-             <widget class="QCheckBox" name="ad_moreResultscheckBox">
+             <widget class="QCheckBox" name="adv_superlatticeCheckBox">
               <property name="text">
                <string>Sub- or Superlattice</string>
               </property>
              </widget>
             </item>
             <item row="0" column="0" colspan="2">
-             <widget class="QCheckBox" name="ad_superlatticeCheckBox">
+             <widget class="QCheckBox" name="adv_moreResultscheckBox">
               <property name="text">
                <string>More Results</string>
               </property>
@@ -3126,11 +3126,11 @@ p, li { white-space: pre-wrap; }
   <tabstop>completeLineEdit</tabstop>
   <tabstop>cCDCNumberLineEdit</tabstop>
   <tabstop>allCifTreeWidget</tabstop>
-  <tabstop>ad_unitCellLineEdit</tabstop>
-  <tabstop>ad_elementsIncLineEdit</tabstop>
-  <tabstop>ad_textsearch</tabstop>
-  <tabstop>ad_elementsExclLineEdit</tabstop>
-  <tabstop>ad_textsearch_excl</tabstop>
+  <tabstop>adv_unitCellLineEdit</tabstop>
+  <tabstop>adv_elementsIncLineEdit</tabstop>
+  <tabstop>adv_textsearch</tabstop>
+  <tabstop>adv_elementsExclLineEdit</tabstop>
+  <tabstop>adv_textsearch_excl</tabstop>
  </tabstops>
  <resources/>
  <connections>

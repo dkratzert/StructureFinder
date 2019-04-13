@@ -88,7 +88,9 @@ class TestApplication(unittest.TestCase):
         """
         self.myapp.ui.txtSearchEdit.setText('SADI')
         self.assertEqual(4, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
-        self.assertEqual("Found 4 entries.", self.myapp.statusBar().currentMessage())
+        self.assertEqual("Found 4 structures.", self.myapp.statusBar().currentMessage())
+        self.assertEqual('breit_tb13_85.cif', self.myapp.ui.cifList_treeWidget.topLevelItem(0).text(0))
+        self.assertEqual('p21c.cif', self.myapp.ui.cifList_treeWidget.topLevelItem(2).text(0))
         self.myapp.show_full_list()
         self.myapp.ui.txtSearchEdit.setText('sadi')
         self.assertEqual(4, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
@@ -96,7 +98,7 @@ class TestApplication(unittest.TestCase):
         # should give no result
         self.myapp.ui.txtSearchEdit.setText('foobar')
         self.assertEqual(0, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
-        self.assertEqual("Found 0 entries.", self.myapp.statusBar().currentMessage())
+        self.assertEqual("Found 0 structures.", self.myapp.statusBar().currentMessage())
 
     # @unittest.skip("foo")
     def test_clicks(self):
@@ -183,14 +185,85 @@ class TestApplication(unittest.TestCase):
         self.assertEqual('No SHELXL res file in cif found.', self.myapp.ui.SHELXplainTextEdit.toPlainText())
 
     def test_cellchekcsd(self):
+        """
+        Test if the unit cell of the current structure gets into the cellcheckcsd tab.
+        """
         item = self.myapp.ui.cifList_treeWidget.topLevelItem(2)
         self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
         QTest.mouseClick(self.myapp.ui.CCDCSearchTab, Qt.LeftButton)
         if platform.system() == 'Windows':
             self.assertEqual(' 7.878 10.469 16.068 90.000 95.147 90.000', self.myapp.ui.cellSearchLabelCSD.text())
 
-    def test_adv(self):
-        pass
+    def test_adv_search_cell(self):
+        """
+        Tests for unit cells in advanced search mode.
+        """
+        # click on advanced search tab:
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        # fill in unit cell:
+        self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
+        # click on search button:
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        # check number of results:
+        self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+
+        # back to adv search tab:
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        self.myapp.ui.adv_unitCellLineEdit.clear()
+        # fill in unit cell:
+        self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
+        # avtivate more results checkbox:
+        #QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, Qt.LeftButton, delay=10)
+        self.myapp.ui.adv_moreResultscheckBox.setChecked(True)
+        self.myapp.ui.adv_superlatticeCheckBox.setChecked(False)
+        # click on search button:
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        # check results
+        self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+
+        # back to adv search tab:
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        self.myapp.ui.adv_unitCellLineEdit.clear()
+        # fill in unit cell:
+        self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
+        # avtivate more results checkbox:
+        #QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, Qt.LeftButton, delay=10)
+        self.myapp.ui.adv_moreResultscheckBox.setChecked(True)
+        self.myapp.ui.adv_superlatticeCheckBox.setChecked(True)
+        # click on search button:
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        # check results
+        self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+
+        # back to adv search tab:
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        self.myapp.ui.adv_unitCellLineEdit.clear()
+        # fill in unit cell:
+        self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
+        # avtivate superlattice checkbox:
+        self.myapp.ui.adv_moreResultscheckBox.setChecked(False)
+        self.myapp.ui.adv_superlatticeCheckBox.setChecked(True)
+        # click on search button:
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        # check results
+        self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+
+
+    def test_adv_search_text(self):
+        """
+        Searching for text advanced.
+        """
+        # click on advanced search tab:
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        self.myapp.ui.adv_textsearch.setText('SADI')
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        self.assertEqual(4, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 4 structures.", self.myapp.statusBar().currentMessage())
+        self.assertEqual('breit_tb13_85.cif', self.myapp.ui.cifList_treeWidget.topLevelItem(0).text(0))
+        self.assertEqual('p21c.cif', self.myapp.ui.cifList_treeWidget.topLevelItem(2).text(0))
+        self.assertEqual(True, self.myapp.ui.MaintabWidget.isVisible())
+
+
 
 ######################################################
 ##  Database testing:

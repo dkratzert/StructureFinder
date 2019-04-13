@@ -32,7 +32,7 @@ from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
 
-DEBUG = False
+DEBUG = True
 
 from apex import apeximporter
 from displaymol import mol_file_writer, write_html
@@ -41,7 +41,7 @@ from pymatgen.core import lattice
 from searcher import constants, misc, filecrawler, database_handler
 from searcher.constants import centering_num_2_letter, centering_letter_2_num
 from searcher.fileparser import Cif
-from searcher.misc import is_valid_cell, elements, flatten, combine_results
+from searcher.misc import is_valid_cell, elements, combine_results
 
 is_windows = False
 import platform
@@ -173,8 +173,8 @@ class StartStructureDB(QMainWindow):
         self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
-        self.ui.ad_SearchPushButton.clicked.connect(self.advanced_search)
-        self.ui.ad_ClearSearchButton.clicked.connect(self.show_full_list)
+        self.ui.adv_SearchPushButton.clicked.connect(self.advanced_search)
+        self.ui.adv_ClearSearchButton.clicked.connect(self.show_full_list)
         if is_windows:
             self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
         # Actions:
@@ -190,8 +190,8 @@ class StartStructureDB(QMainWindow):
         self.ui.p4pCellButton.clicked.connect(self.get_name_from_p4p)
         self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
         self.ui.CSDtreeWidget.itemDoubleClicked.connect(self.show_csdentry)
-        self.ui.ad_elementsIncLineEdit.textChanged.connect(self.elements_fields_check)
-        self.ui.ad_elementsExclLineEdit.textChanged.connect(self.elements_fields_check)
+        self.ui.adv_elementsIncLineEdit.textChanged.connect(self.elements_fields_check)
+        self.ui.adv_elementsExclLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.add_res.clicked.connect(self.res_checkbox_clicked)
         self.ui.add_cif.clicked.connect(self.cif_checkbox_clicked)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
@@ -257,8 +257,8 @@ class StartStructureDB(QMainWindow):
     def elements_fields_check(self):
         """
         """
-        elem1 = self.ui.ad_elementsIncLineEdit.text().split()
-        elem2 = self.ui.ad_elementsExclLineEdit.text().split()
+        elem1 = self.ui.adv_elementsIncLineEdit.text().split()
+        elem2 = self.ui.adv_elementsExclLineEdit.text().split()
         if (not self.elements_doubled_check(elem1, elem2)) or (not self.elements_doubled_check(elem2, elem1)):
             self.elements_invalid()
         else:
@@ -308,17 +308,17 @@ class StartStructureDB(QMainWindow):
 
     def elements_invalid(self):
         # Elements not valid:
-        self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(255, 0, 0); font: bold 12px;")
-        self.ui.ad_SearchPushButton.setDisabled(True)
-        self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(255, 0, 0); font: bold 12px;")
-        self.ui.ad_SearchPushButton.setDisabled(True)
+        self.ui.adv_elementsIncLineEdit.setStyleSheet("color: rgb(255, 0, 0); font: bold 12px;")
+        self.ui.adv_SearchPushButton.setDisabled(True)
+        self.ui.adv_elementsExclLineEdit.setStyleSheet("color: rgb(255, 0, 0); font: bold 12px;")
+        self.ui.adv_SearchPushButton.setDisabled(True)
 
     def elements_regular(self):
         # Elements valid:
-        self.ui.ad_elementsIncLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
-        self.ui.ad_SearchPushButton.setEnabled(True)
-        self.ui.ad_elementsExclLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
-        self.ui.ad_SearchPushButton.setEnabled(True)
+        self.ui.adv_elementsIncLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
+        self.ui.adv_SearchPushButton.setEnabled(True)
+        self.ui.adv_elementsExclLineEdit.setStyleSheet("color: rgb(0, 0, 0);")
+        self.ui.adv_SearchPushButton.setEnabled(True)
 
     def copyUnitCell(self):
         if self.structureId:
@@ -351,18 +351,18 @@ class StartStructureDB(QMainWindow):
                   'spgr'  : False}
         if not self.structures:
             return
-        cell = is_valid_cell(self.ui.ad_unitCellLineEdit.text())
+        cell = is_valid_cell(self.ui.adv_unitCellLineEdit.text())
         date1 = self.ui.dateEdit1.text()
         date2 = self.ui.dateEdit2.text()
-        elincl = self.ui.ad_elementsIncLineEdit.text().strip(' ')
-        elexcl = self.ui.ad_elementsExclLineEdit.text().strip(' ')
-        txt = self.ui.ad_textsearch.text().strip(' ')
+        elincl = self.ui.adv_elementsIncLineEdit.text().strip(' ')
+        elexcl = self.ui.adv_elementsExclLineEdit.text().strip(' ')
+        txt = self.ui.adv_textsearch.text().strip(' ')
         if len(txt) >= 2 and "*" not in txt:
             txt = '*' + txt + '*'
-        txt_ex = self.ui.ad_textsearch_excl.text().strip(' ')
+        txt_ex = self.ui.adv_textsearch_excl.text().strip(' ')
         if len(txt_ex) >= 2 and "*" not in txt_ex:
             txt_ex = '*' + txt_ex + '*'
-        spgr = self.ui.SpGrcomboBox.currentText()
+        spgr = self.ui.SpGrpComboBox.currentText()
         onlythese = self.ui.onlyTheseElementsCheckBox.isChecked()
         #
         results = []
@@ -400,7 +400,7 @@ class StartStructureDB(QMainWindow):
         ####################
         results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
                                   txt_ex_results, txt_results, states)
-        self.display_structures_by_idlist(flatten(list(results)))
+        self.display_structures_by_idlist(list(results))
 
     def display_structures_by_idlist(self, idlist: list or set) -> None:
         """
@@ -612,8 +612,8 @@ class StartStructureDB(QMainWindow):
         Essentially searches for enter key presses in search fields and runs advanced search.
         """
         if q_key_event.key() == Qt.Key_Return or q_key_event.key() == Qt.Key_Enter:
-            fields = [self.ui.ad_elementsExclLineEdit, self.ui.ad_elementsIncLineEdit, self.ui.ad_textsearch,
-                      self.ui.ad_textsearch_excl, self.ui.ad_unitCellLineEdit]
+            fields = [self.ui.adv_elementsExclLineEdit, self.ui.adv_elementsIncLineEdit, self.ui.adv_textsearch,
+                      self.ui.adv_textsearch_excl, self.ui.adv_unitCellLineEdit]
             for x in fields:
                 if x.hasFocus():
                     self.advanced_search()
@@ -849,7 +849,7 @@ class StartStructureDB(QMainWindow):
         except AttributeError as e:
             print(e)
         try:
-            self.statusBar().showMessage("Found {} entries.".format(len(searchresult)))
+            self.statusBar().showMessage("Found {} structures.".format(len(searchresult)))
             for structure_id, filename, dataname, path in searchresult:
                 self.add_table_row(filename, path, dataname, structure_id)
             self.set_columnsize()
@@ -862,7 +862,7 @@ class StartStructureDB(QMainWindow):
         This method does not validate the cell. This has to be done before!
         """
         if self.apexdb == 1:  # needs less accurate search:
-            if self.ui.moreResultsCheckBox.isChecked() or self.ui.ad_moreResultscheckBox.isChecked():
+            if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
                 # more results:
                 vol_threshold = 0.09
                 ltol = 0.2
@@ -873,8 +873,9 @@ class StartStructureDB(QMainWindow):
                 ltol = 0.06
                 atol = 1.0
         else:  # regular database:
-            if self.ui.moreResultsCheckBox.isChecked() or self.ui.ad_moreResultscheckBox.isChecked():
+            if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
                 # more results:
+                print('more results on')
                 vol_threshold = 0.04
                 ltol = 0.08
                 atol = 1.8
@@ -887,7 +888,7 @@ class StartStructureDB(QMainWindow):
             volume = misc.vol_unitcell(*cell)
             # the fist number in the result is the structureid:
             cells = self.structures.find_by_volume(volume, vol_threshold)
-            if self.ui.sublattCheckbox.isChecked() or self.ui.ad_superlatticeCheckBox.isChecked():
+            if self.ui.sublattCheckbox.isChecked() or self.ui.adv_superlatticeCheckBox.isChecked():
                 # sub- and superlattices:
                 for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
                     # First a list of structures where the volume is similar:
@@ -924,7 +925,7 @@ class StartStructureDB(QMainWindow):
         searches db for given cell via the cell volume
         """
         cell = is_valid_cell(search_string)
-        self.ui.ad_unitCellLineEdit.setText('  '.join([str(x) for x in cell]))
+        self.ui.adv_unitCellLineEdit.setText('  '.join([str(x) for x in cell]))
         if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
             self.ui.cellSearchCSDLineEdit.setText('  '.join([str(x) for x in cell]))
         self.ui.txtSearchEdit.clear()
@@ -949,7 +950,7 @@ class StartStructureDB(QMainWindow):
             self.statusBar().showMessage('Found 0 cells.', msecs=0)
             return False
         searchresult = self.structures.get_all_structure_names(idlist)
-        self.statusBar().showMessage('Found {} cells.'.format(len(idlist)))
+        self.statusBar().showMessage('Found cell in {} structures.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for structure_id, _, path, name, data in searchresult:
@@ -1222,14 +1223,14 @@ class StartStructureDB(QMainWindow):
         # self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
         self.ui.MaintabWidget.setCurrentIndex(0)
-        self.ui.SpGrcomboBox.setCurrentIndex(0)
-        self.ui.ad_elementsIncLineEdit.clear()
-        self.ui.ad_elementsExclLineEdit.clear()
-        self.ui.ad_moreResultscheckBox.setChecked(False)
-        self.ui.ad_superlatticeCheckBox.setChecked(False)
-        self.ui.ad_textsearch.clear()
-        self.ui.ad_textsearch_excl.clear()
-        self.ui.ad_unitCellLineEdit.clear()
+        self.ui.SpGrpComboBox.setCurrentIndex(0)
+        self.ui.adv_elementsIncLineEdit.clear()
+        self.ui.adv_elementsExclLineEdit.clear()
+        self.ui.adv_moreResultscheckBox.setChecked(False)
+        self.ui.adv_superlatticeCheckBox.setChecked(False)
+        self.ui.adv_textsearch.clear()
+        self.ui.adv_textsearch_excl.clear()
+        self.ui.adv_unitCellLineEdit.clear()
         # No, don't do this:
         # self.ui.dateEdit1.setDate(QDate(date.today()))
         # self.ui.dateEdit2.setDate(QDate(date.today()))
