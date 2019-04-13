@@ -8,7 +8,7 @@ import unittest
 from contextlib import suppress
 from pathlib import Path
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtGui import QIcon
 from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import QApplication
@@ -153,12 +153,13 @@ class TestApplication(unittest.TestCase):
     def test_p4p_parser(self):
         self.myapp.search_for_p4pcell('test-data/test2.p4p')
         self.assertEqual('14.637 9.221  15.094 90.000 107.186 90.000', self.myapp.ui.searchCellLineEDit.text())
-        # self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual(0, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
     def test_res_parser(self):
         self.myapp.search_for_res_cell('test-data/p21c.res')
         self.assertEqual('10.509 20.904 20.507 90.000 94.130 90.000', self.myapp.ui.searchCellLineEDit.text())
         self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 2 structures.", self.myapp.statusBar().currentMessage())
 
     def test_all_cif_values(self):
         item = self.myapp.ui.cifList_treeWidget.topLevelItem(3)
@@ -167,6 +168,7 @@ class TestApplication(unittest.TestCase):
         self.assertEqual('Id', self.myapp.ui.allCifTreeWidget.topLevelItem(0).text(0))
         self.assertEqual('250', self.myapp.ui.allCifTreeWidget.topLevelItem(0).text(1))
         self.assertEqual('C107 H142 N14 O26', self.myapp.ui.allCifTreeWidget.topLevelItem(10).text(1))
+        self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
     def test_res_file_tab(self):
         item = self.myapp.ui.cifList_treeWidget.topLevelItem(262)
@@ -206,6 +208,7 @@ class TestApplication(unittest.TestCase):
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check number of results:
         self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
 
         # back to adv search tab:
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
@@ -213,13 +216,14 @@ class TestApplication(unittest.TestCase):
         # fill in unit cell:
         self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
         # avtivate more results checkbox:
-        #QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, Qt.LeftButton, delay=10)
+        # QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, Qt.LeftButton, delay=10)
         self.myapp.ui.adv_moreResultscheckBox.setChecked(True)
         self.myapp.ui.adv_superlatticeCheckBox.setChecked(False)
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check results
         self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 2 structures.", self.myapp.statusBar().currentMessage())
 
         # back to adv search tab:
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
@@ -227,13 +231,14 @@ class TestApplication(unittest.TestCase):
         # fill in unit cell:
         self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
         # avtivate more results checkbox:
-        #QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, Qt.LeftButton, delay=10)
+        # QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, Qt.LeftButton, delay=10)
         self.myapp.ui.adv_moreResultscheckBox.setChecked(True)
         self.myapp.ui.adv_superlatticeCheckBox.setChecked(True)
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check results
         self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 2 structures.", self.myapp.statusBar().currentMessage())
 
         # back to adv search tab:
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
@@ -247,12 +252,13 @@ class TestApplication(unittest.TestCase):
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check results
         self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
-
+        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
 
     def test_adv_search_text(self):
         """
         Searching for text advanced.
         """
+        # self.myapp.ui.MaintabWidget.setCurrentIndex(3)
         # click on advanced search tab:
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
         self.myapp.ui.adv_textsearch.setText('SADI')
@@ -277,6 +283,7 @@ class TestApplication(unittest.TestCase):
         self.myapp.ui.SpGrpComboBox.setCurrentIndex(14)
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
 
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
         self.myapp.ui.adv_textsearch_excl.clear()
@@ -287,22 +294,96 @@ class TestApplication(unittest.TestCase):
         self.myapp.ui.SpGrpComboBox.setCurrentIndex(5)
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 2 structures.", self.myapp.statusBar().currentMessage())
 
-    # TODO: Fix this test. It results in 263 instead of 2!!
-    @unittest.skip
+    # @unittest.skip
     def test_txt_elex_elin(self):
+        self.myapp.ui.MaintabWidget.setCurrentIndex(3)
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
-        self.myapp.ui.adv_searchtab.show()
         self.assertEqual(True, self.myapp.ui.adv_searchtab.isVisible())
-        self.assertEqual(True, self.myapp.ui.cifList_treeWidget.isVisible())
-        #self.myapp.ui.adv_unitCellLineEdit.clear()
+        self.assertEqual(False, self.myapp.ui.cifList_treeWidget.isVisible())
         self.myapp.ui.adv_textsearch.setText('Breit')
         self.myapp.ui.adv_elementsIncLineEdit.setText('C H O')
-        self.myapp.ui.adv_elementsExclLineEdit.setText('N F')
-        # additionally include only spgrp 14:
+        self.myapp.ui.adv_elementsExclLineEdit.setText('N')
         self.myapp.ui.SpGrpComboBox.setCurrentIndex(5)
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 2 structures.", self.myapp.statusBar().currentMessage())
+
+    def test_zero_results_elexcl(self):
+        # self.myapp.ui.MaintabWidget.setCurrentIndex(3)
+        self.myapp.ui.adv_textsearch.setText('Breit')
+        self.myapp.ui.adv_elementsIncLineEdit.setText('C H O')
+        self.myapp.ui.adv_elementsExclLineEdit.setText('N F')
+        self.myapp.advanced_search()
+        # In this case (zero results), the cifList_treeWidget will not be updated!!!
+        self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 0 structures.", self.myapp.statusBar().currentMessage())
+
+    def test_one_result_date1(self):
+        self.myapp.ui.adv_textsearch.setText('Breit')
+        self.myapp.ui.adv_elementsIncLineEdit.setText('C H O')
+        self.myapp.ui.adv_elementsExclLineEdit.setText('N')
+        self.myapp.ui.dateEdit1.setDate(QDate(2017, 7, 22))  # two days after the older structure was edited
+        self.myapp.advanced_search()
+        # In this case (zero results), the cifList_treeWidget will not be updated!!!
+        self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
+
+    def test_zero_result_date1_sadi_excl(self):
+        self.myapp.ui.adv_textsearch.setText('Breit')
+        self.myapp.ui.adv_textsearch_excl.setText('sadi')
+        self.myapp.ui.adv_elementsIncLineEdit.setText('C H O')
+        self.myapp.ui.adv_elementsExclLineEdit.setText('N')
+        self.myapp.ui.dateEdit1.setDate(QDate(2017, 7, 22))  # two days after the older structure was edited
+        self.myapp.advanced_search()
+        # In this case (zero results), the cifList_treeWidget will not be updated!!!
+        self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 0 structures.", self.myapp.statusBar().currentMessage())
+        self.myapp.ui.adv_textsearch_excl.setText('foobar')
+        self.myapp.advanced_search()
+        self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
+
+    def test_superlatice_exclelements(self):
+        # back to adv search tab:
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        self.myapp.ui.MaintabWidget.setCurrentIndex(3)
+        # fill in unit cell:
+        self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
+        self.myapp.ui.adv_elementsExclLineEdit.setText('Cl')
+        # avtivate more results checkbox:
+        self.assertEqual(True, self.myapp.ui.adv_moreResultscheckBox.isVisible())
+        self.assertEqual(False, self.myapp.ui.adv_moreResultscheckBox.isChecked())
+        self.myapp.ui.adv_moreResultscheckBox.setChecked(True)
+        self.myapp.ui.adv_superlatticeCheckBox.setChecked(True)
+        self.assertEqual(True, self.myapp.ui.adv_moreResultscheckBox.isChecked())
+        self.assertEqual(True, self.myapp.ui.adv_superlatticeCheckBox.isChecked())
+        # click on search button:
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        # check results
+        self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
+
+    def test_superlatice_onlythese(self):
+        # back to adv search tab:
+        self.myapp.ui.MaintabWidget.setCurrentIndex(3)
+        # fill in unit cell:
+        self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
+        self.myapp.ui.adv_elementsIncLineEdit.setText('C H Cl N O')
+        self.myapp.ui.onlyTheseElementsCheckBox.setChecked(True)
+        # avtivate more results checkbox:
+        self.assertEqual(True, self.myapp.ui.adv_moreResultscheckBox.isVisible())
+        self.assertEqual(False, self.myapp.ui.adv_moreResultscheckBox.isChecked())
+        self.myapp.ui.adv_moreResultscheckBox.setChecked(True)
+        self.myapp.ui.adv_superlatticeCheckBox.setChecked(True)
+        self.assertEqual(True, self.myapp.ui.adv_moreResultscheckBox.isChecked())
+        self.assertEqual(True, self.myapp.ui.adv_superlatticeCheckBox.isChecked())
+        # click on search button:
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        # check results
+        self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
 
 ######################################################
 ##  Database testing:

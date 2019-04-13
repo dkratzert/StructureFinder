@@ -897,7 +897,7 @@ class StartStructureDB(QMainWindow):
         except (ValueError, AttributeError):
             if not self.full_list:
                 self.ui.cifList_treeWidget.clear()
-                self.statusBar().showMessage('Found 0 cells.')
+                self.statusBar().showMessage('Found 0 structures.')
             return []
         # Real lattice comparing in G6:
         idlist = []
@@ -947,10 +947,10 @@ class StartStructureDB(QMainWindow):
         idlist = self.search_cell_idlist(cell)
         if not idlist:
             self.ui.cifList_treeWidget.clear()
-            self.statusBar().showMessage('Found 0 cells.', msecs=0)
+            self.statusBar().showMessage('Found 0 structures.', msecs=0)
             return False
         searchresult = self.structures.get_all_structure_names(idlist)
-        self.statusBar().showMessage('Found cell in {} structures.'.format(len(idlist)))
+        self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for structure_id, _, path, name, data in searchresult:

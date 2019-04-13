@@ -445,7 +445,7 @@ def combine_results(cell_results, date_results, elincl_results, results, spgr_re
                 results = set([])
             else:
                 results = spgr_results
-    if states['elincl']:
+    if states['elincl'] or states['elexcl']:
         elincl_results = set(elincl_results)
         if results:
             results = set(results).intersection(elincl_results)
