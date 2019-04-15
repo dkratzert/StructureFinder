@@ -70,11 +70,10 @@ Source: "..\searcher\*"; DestDir: "{app}\searcher"; Flags: ignoreversion createa
 Source: "..\ccdc\*"; DestDir: "{app}\ccdc"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\shelxfile\*"; DestDir: "{app}\shelxfile"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\p4pfile\*"; DestDir: "{app}\p4pfile"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\gui\*"; DestDir: "{app}\gui"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\strf.py"; DestDir: "{app}"; 
 Source: "..\six.py"; DestDir: "{app}";
 Source: "..\strf_cmd.py"; DestDir: "{app}"; 
-Source: "..\gui\strf_main.ui"; DestDir: "{app}\gui"; 
-Source: "..\gui\strf_dbpasswd.ui"; DestDir: "{app}\gui"; 
 Source: "win\strf_win_32.bat"; DestDir: "{app}"; DestName: "strf.bat"
 ; Caution change accordingly:
 ;Source: "F:\Programmieren\StructureFinder_distrib\{#PzipFile}"; DestDir: "{app}"; Flags: deleteafterinstall;
