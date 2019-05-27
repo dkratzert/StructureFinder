@@ -68,6 +68,8 @@ from gui.strf_dbpasswd import Ui_PasswdDialog
 TODO:
 - sort results by G6 distance
 - Use QPainter to draw molecule?
+- Use PyQt3D
+- Use spellfix for text search: https://www.sqlite.org/spellfix1.html
 
 Search for:
 - draw structure (with JSME? Acros? Kekule?, https://github.com/ggasoftware/ketcher)
