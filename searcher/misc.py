@@ -430,7 +430,7 @@ def is_valid_cell(cell: str = None) -> list:
 
 
 def combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                    txt_ex_results, txt_results, states: dict) -> set:
+                    txt_ex_results, txt_results, rval_results: float, states: dict) -> set:
     """
     Combines all search results together. Returns a list with database ids from found structures.
     """
@@ -475,6 +475,15 @@ def combine_results(cell_results, date_results, elincl_results, results, spgr_re
                 results = set([])
             else:
                 results = date_results
+    if states['rval']:
+        rval_results = set(rval_results)
+        if results:
+            results = set(results).intersection(rval_results)
+        else:
+            if states['txt'] or states['elincl'] or states['spgr'] or states['cell'] or states['date']:
+                results = set([])
+            else:
+                results = rval_results
     return results
 
 

@@ -32,7 +32,7 @@ from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
 
-DEBUG = False
+DEBUG = True
 
 from apex import apeximporter
 from displaymol import mol_file_writer, write_html
@@ -61,8 +61,7 @@ except Exception as e:
     print(e, '# Unable to import QWebEngineView')
     if DEBUG:
         raise
-from gui.strf_main import Ui_stdbMainwindow
-from gui.strf_dbpasswd import Ui_PasswdDialog
+
 
 """
 TODO:
@@ -86,6 +85,21 @@ if getattr(sys, 'frozen', False):
     application_path = sys._MEIPASS
 else:
     application_path = os.path.dirname(os.path.abspath(__file__))
+
+if DEBUG:
+    try:
+        from PyQt5 import uic
+
+        uic.compileUiDir(os.path.join(application_path, './gui'))
+        print('recompiled ui')
+    except:
+        print("Unable to compile UI!")
+        raise
+else:
+    print("Remember, UI is not recompiled without DEBUG.")
+
+from gui.strf_main import Ui_stdbMainwindow
+from gui.strf_dbpasswd import Ui_PasswdDialog
 
 
 class StartStructureDB(QMainWindow):
@@ -350,7 +364,8 @@ class StartStructureDB(QMainWindow):
                   'elexcl': False,
                   'txt'   : False,
                   'txt_ex': False,
-                  'spgr'  : False}
+                  'spgr'  : False,
+                  'rval'  : False}
         if not self.structures:
             return
         cell = is_valid_cell(self.ui.adv_unitCellLineEdit.text())
@@ -359,6 +374,11 @@ class StartStructureDB(QMainWindow):
         elincl = self.ui.adv_elementsIncLineEdit.text().strip(' ')
         elexcl = self.ui.adv_elementsExclLineEdit.text().strip(' ')
         txt = self.ui.adv_textsearch.text().strip(' ')
+        try:
+            rval = float(self.ui.adv_R1_search_line.text().strip(' '))
+            states['rval'] = True
+        except ValueError:
+            rval = 0
         if len(txt) >= 2 and "*" not in txt:
             txt = '*' + txt + '*'
         txt_ex = self.ui.adv_textsearch_excl.text().strip(' ')
@@ -399,9 +419,11 @@ class StartStructureDB(QMainWindow):
         if date1 != date2:
             states['date'] = True
             date_results = self.find_dates(date1, date2)
+        if rval > 0:
+            rval_results = self.structures.find_by_rvalue(rval/100)
         ####################
         results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                                  txt_ex_results, txt_results, states)
+                                  txt_ex_results, txt_results, rval_results, states)
         self.display_structures_by_idlist(list(results))
 
     def display_structures_by_idlist(self, idlist: list or set) -> None:
@@ -1271,18 +1293,6 @@ class StartStructureDB(QMainWindow):
 
 
 if __name__ == "__main__":
-
-    if DEBUG:
-        try:
-            from PyQt5 import uic
-
-            uic.compileUiDir(os.path.join(application_path, './gui'))
-            print('recompiled ui')
-        except:
-            print("Unable to compile UI!")
-            raise
-    else:
-        print("Remember, UI is not recompiled without DEBUG.")
 
     # later http://www.pyinstaller.org/
     app = QApplication(sys.argv)

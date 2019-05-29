@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file './gui\strf_dbpasswd.ui'
+# Form implementation generated from reading ui file 'D:\GitHub\StructureFinder\./gui\strf_dbpasswd.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.1
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
