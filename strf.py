@@ -707,8 +707,12 @@ class StartStructureDB(QMainWindow):
         self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, cent))
         self.ui.cellField.installEventFilter(self)
         self.ui.cellField.setToolTip("Double click on 'Unit Cell' to copy to clipboard.")
+        # wR2:
         with suppress(ValueError, TypeError):
-            self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
+            if cif_dic['_refine_ls_wR_factor_ref']:
+                self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
+            else:
+                self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_gt']))
         try:  # R1:
             if cif_dic['_refine_ls_R_factor_gt']:
                 self.ui.r1LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_R_factor_gt']))

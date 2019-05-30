@@ -127,12 +127,13 @@ def adv():
     sublattice = (request.GET.supercell == "true")
     onlyelem = (request.GET.onlyelem == "true")
     it_num = request.GET.it_num
+    r1val = request.GET.r1val
     structures = StructureTable(dbfilename)
     print("Advanced search: elin:", elincl, 'elout:', elexcl, date1, '|', date2, '|', cell_search, 'txin:', txt_in,
           'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num, 'only:', onlyelem)
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt=txt_in, txt_ex=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
-                          structures=structures, it_num=it_num, onlythese=onlyelem)
+                          structures=structures, it_num=it_num, onlythese=onlyelem, r1val=r1val)
     print("--> Got {} structures from Advanced search.".format(len(ids)))
     return get_structures_json(structures, ids)
 
@@ -403,8 +404,8 @@ def get_residuals_table1(structures: StructureTable, cif_dic: dict, structure_id
                cif_dic['_cell_formula_units_Z'],
                sumform,
                cif_dic['_diffrn_ambient_temperature'],
-               cif_dic['_refine_ls_wR_factor_ref'],
-               cif_dic['_refine_ls_R_factor_gt'],
+               cif_dic['_refine_ls_wR_factor_ref'] if cif_dic['_refine_ls_wR_factor_ref'] else cif_dic['_refine_ls_wR_factor_gt'],
+               cif_dic['_refine_ls_R_factor_gt'] if cif_dic['_refine_ls_R_factor_gt'] else cif_dic['_refine_ls_R_factor_all'],
                cif_dic['_refine_ls_goodness_of_fit_ref'],
                cif_dic['_refine_ls_shift_su_max'],
                peakhole,
@@ -644,7 +645,7 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
 
 def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
                     date1: str = None, date2: str = None, structures: StructureTable = None,
-                    it_num: str = None, onlythese: bool = False, rval: float = 0.0) -> list:
+                    it_num: str = None, onlythese: bool = False, r1val: float = 0.0) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
@@ -671,7 +672,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     except:
         spgr = 0
     try:
-        rval = float(rval)
+        rval = float(r1val)
         states['rval'] = True
     except ValueError:
         rval = 0.0

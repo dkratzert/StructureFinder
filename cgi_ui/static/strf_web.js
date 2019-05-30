@@ -85,8 +85,9 @@ $(document).ready(function($){
         var datefield1 = document.getElementById("date1").value;
         var datefield2 = document.getElementById("date2").value;
         var itnum = $("#IT_number").val().split(" ")[0];
+        var r1val = document.getElementById("r1_val_adv").value;
         advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res,
-                        supercell, datefield1, datefield2, itnum, onlyelem);
+                        supercell, datefield1, datefield2, itnum, onlyelem, r1val);
     });
 
     function get_cell_from_p4p(p4pdata) {
@@ -492,7 +493,7 @@ $(document).ready(function($){
     };
 
     function advanced_search(text_in, text_out, elements_in, elements_out, cell_adv, more_res, supercell,
-                             date1, date2, itnum, onlyelem) {
+                             date1, date2, itnum, onlyelem, r1val) {
         var cell = cell_adv.replace(/\s+/g, ' ').trim();
         cell = cell.replace(/,/g, '.');  // replace comma with point
         if (!isValidCell(cell)) {
@@ -500,7 +501,7 @@ $(document).ready(function($){
         }
         var gridparams = {cell_search: cell, text_in: text_in, text_out: text_out, elements_in: elements_in,
                           elements_out: elements_out, more: more_res, supercell: supercell, date1: date1, date2: date2
-                          ,it_num: itnum, onlyelem: onlyelem};
+                          ,it_num: itnum, onlyelem: onlyelem, r1val: r1val};
         //console.log(gridparams);
         var url;
         w2ui['mygrid'].request('get-records', gridparams,
