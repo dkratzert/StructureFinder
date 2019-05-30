@@ -419,6 +419,7 @@ class StartStructureDB(QMainWindow):
         if date1 != date2:
             states['date'] = True
             date_results = self.find_dates(date1, date2)
+        rval_results = []
         if rval > 0:
             rval_results = self.structures.find_by_rvalue(rval/100)
         ####################

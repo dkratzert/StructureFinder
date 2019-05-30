@@ -13,7 +13,7 @@ dbfilename = "../structurefinder.sqlite"
 
 import socket
 
-names = ['PC9', 'DDT-2.local']
+names = ['PC9', 'DDT-2.local', 'DDT']
 # run on local ip on my PC:
 # print(socket.gethostname())
 if socket.gethostname() in names:
@@ -644,7 +644,7 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
 
 def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
                     date1: str = None, date2: str = None, structures: StructureTable = None,
-                    it_num: str = None, onlythese: bool = False) -> list:
+                    it_num: str = None, onlythese: bool = False, rval: float = 0.0) -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
@@ -663,12 +663,18 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
               'elexcl': False,
               'txt'   : False,
               'txt_ex': False,
-              'spgr'  : False}
+              'spgr'  : False,
+              'rval'  : False}
     cell = is_valid_cell(cellstr)
     try:
         spgr = int(it_num.split()[0])
     except:
         spgr = 0
+    try:
+        rval = float(rval)
+        states['rval'] = True
+    except ValueError:
+        rval = 0.0
     if cell:
         states['cell'] = True
         cell_results = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
@@ -690,9 +696,12 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     if date1 != date2:
         states['date'] = True
         date_results = find_dates(structures, date1, date2)
+    rval_results = []
+    if rval > 0.0:
+        rval_results = structures.find_by_rvalue(rval / 100)
     ####################
     results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                              txt_ex_results, txt_results, states)
+                              txt_ex_results, txt_results, rval_results, states)
     return list(results)
 
 

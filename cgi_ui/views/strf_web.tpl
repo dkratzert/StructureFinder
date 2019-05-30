@@ -92,6 +92,16 @@
                            placeholder="a b c &alpha; &beta; &gamma;" id="cell_adv">
                 </div>
             </div>
+
+            <div class="column col-sm-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-addon">R1 <=</span>
+                    <input type="text" class="form-control form-sm" style="font-style: italic"
+                           id="r1_val_adv">
+                    <span class="input-group-addon">%</span>
+                </div>
+            </div>
+
             <div class="column col-sm-6">
                 <div class="input-group input-group-sm w2ui-field">
                 <span class="input-group-addon" data-toggle="tooltip"
