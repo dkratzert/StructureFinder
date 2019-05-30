@@ -387,6 +387,21 @@ class TestApplication(unittest.TestCase):
         self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
         self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
 
+    def test_r1_val_find(self):
+        self.myapp.ui.MaintabWidget.setCurrentIndex(3)
+        self.myapp.ui.adv_R1_search_line.setText('2.5')
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 2 structures.", self.myapp.statusBar().currentMessage())
+
+    def test_r1_val_nofind(self):
+        self.myapp.ui.MaintabWidget.setCurrentIndex(3)
+        self.myapp.ui.adv_R1_search_line.setText('0')
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        # returns full list:
+        self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual("Found 0 structures.", self.myapp.statusBar().currentMessage())
+
 ######################################################
 ##  Database testing:
 ######################################################

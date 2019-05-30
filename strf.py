@@ -638,7 +638,7 @@ class StartStructureDB(QMainWindow):
         """
         if q_key_event.key() == Qt.Key_Return or q_key_event.key() == Qt.Key_Enter:
             fields = [self.ui.adv_elementsExclLineEdit, self.ui.adv_elementsIncLineEdit, self.ui.adv_textsearch,
-                      self.ui.adv_textsearch_excl, self.ui.adv_unitCellLineEdit]
+                      self.ui.adv_textsearch_excl, self.ui.adv_unitCellLineEdit, self.ui.adv_R1_search_line]
             for x in fields:
                 if x.hasFocus():
                     self.advanced_search()
