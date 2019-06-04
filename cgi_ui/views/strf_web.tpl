@@ -95,7 +95,7 @@
 
             <div class="column col-sm-6">
                 <div class="input-group input-group-sm">
-                    <span class="input-group-addon">R1 <=</span>
+                    <span class="input-group-addon"><i>R</i><sub>1</sub> <=</span>
                     <input type="text" class="form-control form-sm" style="font-style: italic"
                            id="r1_val_adv">
                     <span class="input-group-addon">%</span>
