@@ -12,6 +12,7 @@ Created on 09.02.2015
 
 @author: Daniel Kratzert
 """
+from __future__ import annotations
 import os
 import shutil
 import sys
@@ -32,7 +33,7 @@ from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
 
-DEBUG = True
+DEBUG = False
 
 from apex import apeximporter
 from displaymol import mol_file_writer, write_html

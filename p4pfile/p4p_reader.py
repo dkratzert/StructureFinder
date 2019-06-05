@@ -9,7 +9,7 @@
 # Daniel Kratzert
 # ----------------------------------------------------------------------------
 #
-
+from __future__ import annotations
 """
 This file reads Bruker p4p files into a data structure.
 """

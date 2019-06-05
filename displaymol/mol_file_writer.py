@@ -1,6 +1,7 @@
 """
 MOl V3000 format
 """
+from __future__ import annotations
 import os
 from time import perf_counter
 

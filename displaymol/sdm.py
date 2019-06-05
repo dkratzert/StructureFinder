@@ -9,6 +9,7 @@
 # Daniel Kratzert
 # ----------------------------------------------------------------------------
 #
+from __future__ import annotations
 
 import time
 from math import sqrt, cos, radians, sin
