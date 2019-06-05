@@ -12,7 +12,7 @@ Created on 09.02.2015
 
 @author: Daniel Kratzert
 """
-from __future__ import annotations
+
 import fnmatch
 import os
 import pathlib

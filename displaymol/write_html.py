@@ -1,4 +1,4 @@
-from __future__ import annotations
+
 
 def write(moldata: str, width: int = 240, height: int = 240):
     m = """

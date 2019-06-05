@@ -1,4 +1,4 @@
-from __future__ import annotations
+
 
 import re
 from math import cos, radians, sqrt

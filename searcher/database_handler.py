@@ -11,7 +11,7 @@ Created on 09.02.2015
 
 @author: daniel
 """
-from __future__ import annotations
+
 import sys
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 from typing import Tuple, List, Union

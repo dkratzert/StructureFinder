@@ -9,7 +9,7 @@
 # Daniel Kratzert
 # ----------------------------------------------------------------------------
 #
-from __future__ import annotations
+
 from operator import sub, add
 import random
 import string

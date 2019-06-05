@@ -9,7 +9,7 @@
 # Daniel Kratzert
 # ----------------------------------------------------------------------------
 #
-from __future__ import annotations
+
 
 __doc__ = """
 This is a full implementation of the SHELXL file syntax. Additionally it is able to edit SHELX properties with Python.
