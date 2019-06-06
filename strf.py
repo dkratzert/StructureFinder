@@ -32,7 +32,8 @@ from displaymol.sdm import SDM
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
 
-DEBUG = True
+print(sys.version)
+DEBUG = False
 
 from apex import apeximporter
 from displaymol import mol_file_writer, write_html
@@ -61,7 +62,6 @@ except Exception as e:
     print(e, '# Unable to import QWebEngineView')
     if DEBUG:
         raise
-
 
 """
 TODO:
@@ -421,7 +421,7 @@ class StartStructureDB(QMainWindow):
             date_results = self.find_dates(date1, date2)
         rval_results = []
         if rval > 0:
-            rval_results = self.structures.find_by_rvalue(rval/100)
+            rval_results = self.structures.find_by_rvalue(rval / 100)
         ####################
         results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
                                   txt_ex_results, txt_results, rval_results, states)
