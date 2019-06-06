@@ -10,6 +10,7 @@ Created on 09.02.2015
 
 @author: daniel
 """
+
 import os
 import shutil
 from math import sqrt, cos, radians

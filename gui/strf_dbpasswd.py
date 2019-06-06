@@ -82,5 +82,3 @@ class Ui_PasswdDialog(object):
         self.PasswordLineEdit.setText(_translate("PasswdDialog", "Bruker-PostgreSQL"))
         self.IPLabel.setText(_translate("PasswdDialog", "IP Adress"))
         self.IPlineEdit.setText(_translate("PasswdDialog", "localhost"))
-
-

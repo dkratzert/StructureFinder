@@ -10,6 +10,7 @@
 # ----------------------------------------------------------------------------
 #
 
+
 __doc__ = """
 This is a full implementation of the SHELXL file syntax. Additionally it is able to edit SHELX properties with Python.
 The implementation is Python3-only and supports SHELXL after 2017 (You should not use old versions anyway).
@@ -18,7 +19,6 @@ The parser is quiet about the most errors unless you enable DEBUG in misc.py. Th
 SHELX file even if it has syntax errors, but if for example, the SFAC and UNIT instruction is not consistent 
 it will fail. 
 """
-
 import os
 import re
 import sys
