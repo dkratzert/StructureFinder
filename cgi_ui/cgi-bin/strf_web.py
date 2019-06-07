@@ -287,10 +287,6 @@ def search_cellcheck_csd():
     cell = request.POST.cell
     elements = []
     str_id = request.POST.str_id
-    if str_id:
-        structures = StructureTable(dbfilename)
-        elements = formula_dict_to_elements(structures.get_calc_sum_formula(str_id)).split()
-        # TODO: filter by above elements
     if not cell:
         return {}
     cent = request.POST.centering
@@ -304,7 +300,20 @@ def search_cellcheck_csd():
         except ParseError as e:
             print(e)
             return
-        # print(results)
+        print(results)
+        if str_id:
+            structures = StructureTable(dbfilename)
+            elements = formula_dict_to_elements(structures.get_calc_sum_formula(str_id)).split()
+            # TODO: filter by above elements
+            # something like this:
+            """for r in results:
+                formula = r['formula']
+                for e in formula:
+                    if e not in elements:
+                        continue
+                    else
+                        filtered.append(r)
+                        """
         print(len(results), 'Structures found...')
         return {"total": len(results), "records": results, "status": "success"}
     else:
