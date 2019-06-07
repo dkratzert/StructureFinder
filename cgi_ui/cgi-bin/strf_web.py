@@ -247,11 +247,9 @@ def show_cellcheck():
     structures = StructureTable(dbfilename)
     str_id = request.get_cookie('str_id')
     centering = ''
-    elements = []
     if str_id:
         cell = structures.get_cell_by_id(str_id)
         cif_dic = structures.get_row_as_dict(str_id)
-        elements = formula_dict_to_elements(structures.get_calc_sum_formula(str_id)).split()
         try:
             centering = cif_dic['_space_group_centring_type']
         except KeyError:
@@ -272,11 +270,11 @@ def show_cellcheck():
     response.content_type = 'text/html; charset=UTF-8'
     data = {"my_ip" : site_ip,
             "title" : 'StructureFinder',
-            'str_id': cellstr, 'cent': cent,
-            'host'  : host,
-            'elements': elements}
+            'cellstr': cellstr,
+            'strid' : str_id,
+            'cent': cent,
+            'host'  : host,}
     output = template('./cgi_ui/views/cellcheckcsd', data)
-    # 'formula': formula_dict_to_elements(formula)}
     return output
 
 
@@ -287,6 +285,12 @@ def search_cellcheck_csd():
     """
     cmd = request.POST.cmd
     cell = request.POST.cell
+    elements = []
+    str_id = request.POST.str_id
+    if str_id:
+        structures = StructureTable(dbfilename)
+        elements = formula_dict_to_elements(structures.get_calc_sum_formula(str_id)).split()
+        # TODO: filter by above elements
     if not cell:
         return {}
     cent = request.POST.centering

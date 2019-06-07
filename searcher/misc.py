@@ -268,7 +268,7 @@ def formula_dict_to_elements(formula: dict):
     >>> formula_dict_to_elements({'Elem_C': 12, 'Elem_H': 6.5, 'Elem_O': 3, 'Elem_Mn': 7, 'Elem_N': 0})
     'C H O Mn'
     """
-    formstr = ' '.join([x[5:] for x in formula.keys() if formula[x] > 0.000001])
+    formstr = ' '.join([x[5:] for x in formula.keys() if formula[x]])
     return formstr
 
 

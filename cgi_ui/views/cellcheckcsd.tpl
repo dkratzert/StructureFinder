@@ -10,7 +10,7 @@
             <div class="input-group input-group-sm advsearchfields">
                 <span class="input-group-addon">Unit Cell</span>
                 <input type="text" class="form-control form-sm" style="font-style: italic" placeholder="a b c &alpha; &beta; &gamma;" 
-                       id="cell_csd_inp" value="{{str_id}}">
+                       id="cell_csd_inp" value="{{cellstr}}">
                 <span class="input-group-addon input-group-btn btn-success" id="csd_search_btn">Search</span>
             </div>
         </div>
@@ -25,16 +25,18 @@
                 <option value="{{cent}}" {{!'selected="selected"' if cent == 6 else ""}}>Rhombohedral (R)</option>
             </select>
         </div>
+        <!-- 
         <div class="column col-sm-2">
-            <a type="button" class="btn btn-default btn-sm" id="backtomain_button" href="http://{{my_ip}}">Back to StructureFinder</a>
+            <a type="button" class="btn btn-default btn-sm" id="filter_button">Filter by Elements</a>
         </div>
+        -->
     </div>
 
     <!-- ------------- The main table: ------------ -->
     <div class="row">
         <div class="column col-sm-12">
             <div class="w2ui-grid" id="my_ccdc_grid" style="height: 450px">
-                
+                <script>strid = {{strid}};</script>
             </div>
         </div>
     </div>    
