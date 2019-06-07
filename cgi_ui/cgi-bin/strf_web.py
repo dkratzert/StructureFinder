@@ -48,7 +48,7 @@ from displaymol.sdm import SDM
 from pymatgen.core import lattice
 from searcher.database_handler import StructureTable
 from searcher.misc import is_valid_cell, get_list_of_elements, vol_unitcell, is_a_nonzero_file, format_sum_formula, \
-    combine_results
+    combine_results, formula_dict_to_elements
 
 """
 TODO:
@@ -247,9 +247,11 @@ def show_cellcheck():
     structures = StructureTable(dbfilename)
     str_id = request.get_cookie('str_id')
     centering = ''
+    elements = []
     if str_id:
         cell = structures.get_cell_by_id(str_id)
         cif_dic = structures.get_row_as_dict(str_id)
+        elements = formula_dict_to_elements(structures.get_calc_sum_formula(str_id)).split()
         try:
             centering = cif_dic['_space_group_centring_type']
         except KeyError:
@@ -271,7 +273,8 @@ def show_cellcheck():
     data = {"my_ip" : site_ip,
             "title" : 'StructureFinder',
             'str_id': cellstr, 'cent': cent,
-            'host'  : host}
+            'host'  : host,
+            'elements': elements}
     output = template('./cgi_ui/views/cellcheckcsd', data)
     # 'formula': formula_dict_to_elements(formula)}
     return output
