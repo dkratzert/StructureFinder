@@ -441,6 +441,7 @@ def get_residuals_table2(cif_dic: dict) -> str:
         return ""
     wavelen = cif_dic['_diffrn_radiation_wavelength']
     thetamax = cif_dic['_diffrn_reflns_theta_max']
+    thetafull = cif_dic['_diffrn_reflns_theta_full']
     # d = lambda/2sin(theta):
     try:
         d = wavelen / (2 * math.sin(math.radians(thetamax)))
@@ -479,8 +480,8 @@ def get_residuals_table2(cif_dic: dict) -> str:
                cif_dic['_refine_ls_number_parameters'],
                data_to_param,
                cif_dic['_refine_ls_number_restraints'],
-               thetamax,
-               cif_dic['_diffrn_reflns_theta_full'],
+               thetamax if thetamax else '?',
+               thetafull if thetafull else '?',
                d,
                compl,
                cif_dic['_refine_ls_abs_structure_Flack'],
