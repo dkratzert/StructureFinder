@@ -300,7 +300,7 @@ def search_cellcheck_csd():
         except ParseError as e:
             print(e)
             return
-        print(results)
+        # print(results)
         if str_id:
             structures = StructureTable(dbfilename)
             elements = formula_dict_to_elements(structures.get_calc_sum_formula(str_id)).split()
