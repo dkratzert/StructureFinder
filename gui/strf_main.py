@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\GitHub\StructureFinder\./gui\strf_main.ui'
+# Form implementation generated from reading ui file '/Users/daniel/GitHub/StructureFinder/./gui/strf_main.ui'
 #
 # Created by: PyQt5 UI code generator 5.12.2
 #
@@ -484,6 +484,12 @@ class Ui_stdbMainwindow(object):
         self.lastModifiedLineEdit.setReadOnly(True)
         self.lastModifiedLineEdit.setObjectName("lastModifiedLineEdit")
         self.formLayout.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.lastModifiedLineEdit)
+        self.flackXLabel = QtWidgets.QLabel(self.groupBox_3)
+        self.flackXLabel.setObjectName("flackXLabel")
+        self.formLayout.setWidget(9, QtWidgets.QFormLayout.LabelRole, self.flackXLabel)
+        self.flackXLineEdit = QtWidgets.QLineEdit(self.groupBox_3)
+        self.flackXLineEdit.setObjectName("flackXLineEdit")
+        self.formLayout.setWidget(9, QtWidgets.QFormLayout.FieldRole, self.flackXLineEdit)
         self.verticalLayout_2.addLayout(self.formLayout)
         self.importResults.addWidget(self.groupBox_3, 2, 4, 1, 1)
         spacerItem8 = QtWidgets.QSpacerItem(5, 20, QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
@@ -714,9 +720,9 @@ class Ui_stdbMainwindow(object):
         sizePolicy.setHeightForWidth(self.dateEdit1.sizePolicy().hasHeightForWidth())
         self.dateEdit1.setSizePolicy(sizePolicy)
         self.dateEdit1.setAlignment(QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
-        self.dateEdit1.setDate(QtCore.QDate(1900, 1, 1))
         self.dateEdit1.setMinimumDate(QtCore.QDate(1900, 1, 1))
         self.dateEdit1.setCalendarPopup(True)
+        self.dateEdit1.setDate(QtCore.QDate(1900, 1, 1))
         self.dateEdit1.setObjectName("dateEdit1")
         self.horizontalLayout_3.addWidget(self.dateEdit1)
         self.wR2Label_5 = QtWidgets.QLabel(self.adv_searchtab)
@@ -737,10 +743,10 @@ class Ui_stdbMainwindow(object):
         sizePolicy.setHeightForWidth(self.dateEdit2.sizePolicy().hasHeightForWidth())
         self.dateEdit2.setSizePolicy(sizePolicy)
         self.dateEdit2.setCorrectionMode(QtWidgets.QAbstractSpinBox.CorrectToNearestValue)
-        self.dateEdit2.setDate(QtCore.QDate(7999, 12, 31))
         self.dateEdit2.setMaximumDate(QtCore.QDate(7999, 12, 31))
         self.dateEdit2.setMinimumDate(QtCore.QDate(1752, 9, 14))
         self.dateEdit2.setCalendarPopup(True)
+        self.dateEdit2.setDate(QtCore.QDate(7999, 12, 31))
         self.dateEdit2.setObjectName("dateEdit2")
         self.horizontalLayout_3.addWidget(self.dateEdit2)
         self.gridLayout_2.addLayout(self.horizontalLayout_3, 3, 1, 1, 3)
@@ -1103,7 +1109,7 @@ class Ui_stdbMainwindow(object):
         self.actionGo_to_All_CIF_Tab.setObjectName("actionGo_to_All_CIF_Tab")
 
         self.retranslateUi(stdbMainwindow)
-        self.MaintabWidget.setCurrentIndex(3)
+        self.MaintabWidget.setCurrentIndex(0)
         self.actionExit.triggered.connect(stdbMainwindow.close)
         QtCore.QMetaObject.connectSlotsByName(stdbMainwindow)
         stdbMainwindow.setTabOrder(self.importDirButton, self.importDatabaseButton)
@@ -1186,6 +1192,7 @@ class Ui_stdbMainwindow(object):
         self.completeLabel.setText(_translate("stdbMainwindow", "complete [%]"))
         self.cCDCNumberLabel.setText(_translate("stdbMainwindow", "CCDC Num."))
         self.lastModifiedLabel.setText(_translate("stdbMainwindow", "Last Modified"))
+        self.flackXLabel.setText(_translate("stdbMainwindow", "Flack x"))
         self.searchLabel.setText(_translate("stdbMainwindow", "Cell Search:"))
         self.searchCellLineEDit.setToolTip(_translate("stdbMainwindow", "<html><head/><body><p>Insert unit cell as space separated <br/>numbers: <span style=\" font-style:italic;\">a b c α β γ</span></p></body></html>"))
         self.searchCellLineEDit.setPlaceholderText(_translate("stdbMainwindow", "a b c alpha beta gamma"))
@@ -1498,3 +1505,5 @@ class Ui_stdbMainwindow(object):
         self.actionCopy_Unit_Cell.setText(_translate("stdbMainwindow", "Copy Unit Cell"))
         self.actionGo_to_All_CIF_Tab.setText(_translate("stdbMainwindow", "Go to All CIF Tab"))
         self.actionGo_to_All_CIF_Tab.setShortcut(_translate("stdbMainwindow", "Meta+A"))
+
+
