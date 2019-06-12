@@ -467,11 +467,12 @@ def get_residuals_table2(cif_dic: dict) -> str:
         <tr><td><b>Parameters</b></td>                              <td>{1}</td></tr>
         <tr><td><b>data/param</b></td>                              <td>{2:<5.1f}</td></tr>
         <tr><td><b>Restraints</b></td>                              <td>{3}</td></tr>
-        <tr><td><b>&theta;<sub>max</sub> [&deg;]</b></td>                    <td>{4}</td></tr>
-        <tr><td><b>&theta;<sub>full</sub> [&deg;]</b></td>                   <td>{5}</td></tr>
+        <tr><td><b>&theta;<sub>full</sub> [&deg;]</b> / 
+        <b>&theta;<sub>max</sub> [&deg;]</b></td>                    <td>{4} / {5}</td></tr>
         <tr><td><b>d [&angst;]</b></td>                             <td>{6:5.3f}</td></tr>
         <tr><td><b>completeness [%]</b></td>                            <td>{7:<5.1f}</td></tr>
-        <tr><td><b>CCDC Number</b></td>                             <td>{8}</td></tr>
+        <tr><td><b>Flack X parameter</b></td>                             <td>{8}</td></tr>
+        <tr><td><b>CCDC Number</b></td>                             <td>{9}</td></tr>
         </tbody>
     </table>
     """.format(cif_dic['_diffrn_reflns_number'],
@@ -482,6 +483,7 @@ def get_residuals_table2(cif_dic: dict) -> str:
                cif_dic['_diffrn_reflns_theta_full'],
                d,
                compl,
+               cif_dic['_refine_ls_abs_structure_Flack'],
                cif_dic['_database_code_depnum_ccdc_archive'],
                cif_dic['_refine_ls_number_reflns'],
                cif_dic['_reflns_number_gt']
