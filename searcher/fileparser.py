@@ -23,8 +23,6 @@ class Cif(object):
         """
         A cif file parsing object optimized for speed and simplicity.
         It can not handle multi cif files.
-        :param file: input filename object
-        :type file: Path
         """
         if options is None:
             options = {'modification_time': "", 'file_size': ""}
@@ -97,11 +95,10 @@ class Cif(object):
             "file_size"                           : options['file_size']
         }
 
-    def parsefile(self, txt):
+    def parsefile(self, txt: list):
         """
         This method parses the cif file. Currently, only single items and atoms are supported.
-        :param file: Cif file name
-        :type file: Path
+        :param txt: cif file as list without line endings
         :return: cif file content
         :rtype: dict
         >>> cif = Cif()
