@@ -26,8 +26,10 @@ class Cif(object):
         """
         if options is None:
             options = {'modification_time': "", 'file_size': ""}
+        # This is a set of key that are already there:
         self.cif_data = {
             "data"                                : '',
+            "_audit_contact_author_name"          : '',
             "_cell_length_a"                      : '',
             '_cell_length_b'                      : '',
             '_cell_length_c'                      : '',
@@ -52,6 +54,7 @@ class Cif(object):
             "_exptl_crystal_size_min"             : '',
             "_exptl_absorpt_coefficient_mu"       : '',
             "_exptl_absorpt_correction_type"      : '',
+            "_exptl_special_details"              : '',
             "_diffrn_ambient_temperature"         : '',
             "_diffrn_radiation_wavelength"        : '',
             "_diffrn_radiation_type"              : '',
@@ -74,6 +77,7 @@ class Cif(object):
             "_refine_special_details"             : '',
             "_refine_ls_abs_structure_Flack"      : '',
             "_refine_ls_structure_factor_coef"    : '',
+            "'_refine_ls_hydrogen_treatment'"     : '',
             "_refine_ls_weighting_details"        : '',
             "_refine_ls_number_reflns"            : '',
             "_refine_ls_number_parameters"        : '',
@@ -204,7 +208,10 @@ class Cif(object):
             if semi_colon_text_field:
                 if not line.lstrip().startswith(";"):
                     semi_colon_text_list.append(line)
-                if (textlen - 1 > num) and txt[num + 1][0] == ";":
+                    continue  # otherwise, the next line would end the text field 
+                if line.startswith(";") or line.startswith('_') or line.startswith('loop_'):
+                    if not semi_colon_text_list:
+                        continue
                     self.cif_data[semi_colon_text_field] = "{}".format(os.linesep).join(semi_colon_text_list)
                     semi_colon_text_list.clear()
                     semi_colon_text_field = ''
