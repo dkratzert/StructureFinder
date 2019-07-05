@@ -65,7 +65,7 @@ except Exception as e:
 
 """
 TODO:
-- sort results by G6 distance
+- fix bug with gemmi written files and ;
 - Use QPainter to draw molecule?
 - Use PyQt3D
 - Use spellfix for text search: https://www.sqlite.org/spellfix1.html
