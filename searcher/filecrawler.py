@@ -119,7 +119,7 @@ def filewalker_walk(startdir: str, patterns: list):
     Since os.walk() uses scandir, it is as fast as pathlib.
     """
     filelist = []
-    print('collecting files below ' + startdir)
+    print('collecting {} files below '.format(', '.join(patterns)) + startdir)
     for root, _, files in os.walk(startdir):
         for filen in files:
             omit = False
