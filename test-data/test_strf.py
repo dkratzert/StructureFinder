@@ -171,16 +171,10 @@ class TestApplication(unittest.TestCase):
         self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
     def test_res_file_tab(self):
-        item = self.myapp.ui.cifList_treeWidget.topLevelItem(262)
+        item = self.myapp.ui.cifList_treeWidget.topLevelItem(261)
         self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
         QTest.mouseClick(self.myapp.ui.SHELXtab, Qt.LeftButton)
         self.assertEqual('REM Solution', self.myapp.ui.SHELXplainTextEdit.toPlainText()[:12])
-
-    def test_res_file2(self):
-        item = self.myapp.ui.cifList_treeWidget.topLevelItem(260)
-        self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
-        QTest.mouseClick(self.myapp.ui.SHELXtab, Qt.LeftButton)
-        self.assertEqual('TITL p21c in', self.myapp.ui.SHELXplainTextEdit.toPlainText()[:12])
 
     def test_res_file3(self):
         item = self.myapp.ui.cifList_treeWidget.topLevelItem(250)

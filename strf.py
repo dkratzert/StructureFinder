@@ -805,7 +805,7 @@ class StartStructureDB(QMainWindow):
         blist = []
         if self.ui.growCheckBox.isChecked():
             self.ui.molGroupBox.setTitle('Completed Molecule')
-            atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=False, as_list=True)
+            atoms = self.structures.get_atoms_table(structure_id, cartesian=False, as_list=True)
             if atoms:
                 sdm = SDM(atoms, symmcards, cell)
                 try:
@@ -817,7 +817,7 @@ class StartStructureDB(QMainWindow):
                 # print(len(blist))
         else:
             self.ui.molGroupBox.setTitle('Asymmetric Unit')
-            atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=True, as_list=False)
+            atoms = self.structures.get_atoms_table(structure_id, cartesian=True, as_list=False)
             blist = []
         try:
             mol = ' '

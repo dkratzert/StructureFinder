@@ -307,7 +307,7 @@ if __name__ == "__main__":
     structureId = 7
     structures = database_handler.StructureTable('./test.sqlite')
     cell = structures.get_cell_by_id(structureId)
-    atoms = structures.get_atoms_table(structureId, cell, cartesian=False, as_list=True)
+    atoms = structures.get_atoms_table(structureId, cartesian=False, as_list=True)
     symmcards = [x.split(',') for x in structures.get_row_as_dict(structureId)['_space_group_symop_operation_xyz'] \
         .replace("'", "").replace(" ", "").split("\n")]
     sdm = SDM(atoms, symmcards, cell)

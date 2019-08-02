@@ -461,7 +461,7 @@ class StructureTable():
         if self.database.db_request(req, (structure_id, name, element, x, y, z, occ, part, xc, yc, zc)):
             return True
 
-    def get_atoms_table(self, structure_id, cell=None, cartesian=False, as_list=False):
+    def get_atoms_table(self, structure_id, cartesian=False, as_list=False):
         """
         returns the atoms of structure with structure_id
         returns: [Name, Element, X, Y, Z, Part, ocuupancy]
@@ -470,8 +470,6 @@ class StructureTable():
         >>> db.get_atoms_table(16)[0]
         ('O1', 'O', 0.32157, 0.42645, 0.40201, 0, 1.0)
         """
-        if cell is None:
-            cell = []
         req = """SELECT Name, element, x, y, z, CAST(part as integer), occupancy FROM Atoms WHERE StructureId = ?"""
         req_cartesian = """SELECT Name, element, xc, yc, zc, CAST(part as integer), occupancy 
                             FROM Atoms WHERE StructureId = ?"""

@@ -151,13 +151,13 @@ def jsmol_request():
         if request.POST.grow == 'true':
             symmcards = [x.split(',') for x in structures.get_row_as_dict(str_id)
             ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
-            atoms = structures.get_atoms_table(str_id, cell[:6], cartesian=False, as_list=True)
+            atoms = structures.get_atoms_table(str_id, cartesian=False, as_list=True)
             if atoms:
                 sdm = SDM(atoms, symmcards, cell)
                 needsymm = sdm.calc_sdm()
                 atoms = sdm.packer(sdm, needsymm)
         else:
-            atoms = structures.get_atoms_table(str_id, cell[:6], cartesian=True, as_list=False)
+            atoms = structures.get_atoms_table(str_id, cartesian=True, as_list=False)
         try:
             m = MolFile(atoms)
             return m.make_mol()
