@@ -11,9 +11,10 @@ Created on 09.02.2015
 
 @author: daniel
 """
-
 import os
+from pathlib import Path
 from pprint import pprint
+from typing import List
 
 from searcher.atoms import sorted_atoms
 
@@ -26,7 +27,7 @@ class Cif(object):
         """
         if options is None:
             options = {'modification_time': "", 'file_size': ""}
-        # This is a set of key that are already there:
+        # This is a set of keys that are already there:
         self.cif_data = {
             "data"                                : '',
             "_audit_contact_author_name"          : '',
@@ -272,12 +273,18 @@ class Cif(object):
             self.cif_data['_space_group_IT_number'] = self.cif_data['_symmetry_Int_Tables_number']
         if '_diffrn_reflns_av_sigmaI/netI' in self.cif_data:
             self.cif_data['_diffrn_reflns_av_unetI/netI'] = self.cif_data['_diffrn_reflns_av_sigmaI/netI']
-        if "_space_group_name_H-M_alt" in self.cif_data:
-            self.cif_data["_space_group_centring_type"] = self.cif_data["_space_group_name_H-M_alt"].split()[0][:1]
-        if '_symmetry_cell_setting' in self.cif_data:
+        if self.cif_data["_space_group_name_H-M_alt"] and not self._space_group_centring_type:
+            try:
+                self.cif_data["_space_group_centring_type"] = self.cif_data["_space_group_name_H-M_alt"].split()[0][0]
+            except IndexError:
+                pass
+        elif self._space_group_name_Hall and not self._space_group_centring_type:
+            try:
+                self.cif_data["_space_group_centring_type"] = self._space_group_name_Hall.split()[0].lstrip('-')[0]
+            except IndexError:
+                pass
+        if self._symmetry_cell_setting:
             self.cif_data['_space_group_crystal_system'] = self.cif_data['_symmetry_cell_setting']
-        elif '_space_group_name_Hall' in self.cif_data:
-            self.cif_data["_space_group_centring_type"] = self.cif_data["_space_group_name_Hall"].split()[0][:1]
 
     def __iter__(self) -> dict:
         """
@@ -292,16 +299,13 @@ class Cif(object):
     def __hash__(self):
         return hash(self.cif_data)
 
-    def __getattr__(self, item, item_alt=''):
+    def __getattr__(self, item: str) -> str:
         """
         Returns an attribute of the cif data dictionary.
         """
-        if item in self.cif_data or item_alt in self.cif_data:
-            try:
-                return self.cif_data[item]
-            except KeyError:
-                return self.cif_data[item_alt]
-        else:
+        try:
+            return self.cif_data[item]
+        except KeyError:
             return ''
 
     def __str__(self) -> str:
@@ -317,7 +321,21 @@ class Cif(object):
         return out
 
     @property
-    def cell(self):
+    def cell(self) -> List:
+        """
+        >>> cif = Cif()
+        >>> ok = cif.parsefile(Cif.readfile(r'./test-data/COD/4060314.cif'))
+        >>> cif.cell
+        [12.092, 28.5736, 15.4221, 90.0, 107.365, 90.0]
+
+        _cell_angle_alpha                90.0
+        _cell_angle_beta                 107.365(1)
+        _cell_angle_gamma                90.00
+        _cell_formula_units_Z            4
+        _cell_length_a                   12.0920(1)
+        _cell_length_b                   28.5736(3)
+        _cell_length_c                   15.4221(2)
+        """
         a = self.cif_data['_cell_length_a']
         b = self.cif_data['_cell_length_b']
         c = self.cif_data['_cell_length_c']
@@ -325,7 +343,7 @@ class Cif(object):
         beta = self.cif_data['_cell_angle_beta']
         gamma = self.cif_data['_cell_angle_gamma']
         if not all((a, b, c, alpha, beta, gamma)):
-            return False
+            return []
         if isinstance(a, str):
             a = float(a.split('(')[0])
         if isinstance(b, str):
@@ -341,7 +359,7 @@ class Cif(object):
         return [a, b, c, alpha, beta, gamma]
 
     @property
-    def loops(self):
+    def loops(self) -> list:
         return self.cif_data['_loop']
 
     def loop_items(self, item):
@@ -362,40 +380,40 @@ class Cif(object):
         A convenient way of getting atoms from the cif file
         [Name type x y z occupancy part]
         """
-        for x in self._loop:
+        for item in self._loop:
             try:
-                name = x['_atom_site_label']
+                name = item['_atom_site_label']
             except KeyError:
                 continue
             try:
                 try:
-                    part = x['_atom_site_disorder_group']
+                    part = item['_atom_site_disorder_group']
                 except KeyError:
                     part = 0
                 try:
                     # The atom type
-                    type_symbol = x['_atom_site_type_symbol']
+                    type_symbol = item['_atom_site_type_symbol']
                     if not type_symbol in sorted_atoms:
                         type_symbol = self._atom_from_symbol(type_symbol)
                 except KeyError:
-                    type_symbol = x['_atom_site_label'].split('(')[0].capitalize()
+                    type_symbol = item['_atom_site_label'].split('(')[0].capitalize()
                     # As last resort: cut out the atom type from the label
                     type_symbol = self._atom_from_symbol(type_symbol)
                 try:
                     # The occupancy:
-                    occu = float(x['_atom_site_occupancy'].split('(')[0])
+                    occu = float(item['_atom_site_occupancy'].split('(')[0])
                 except (KeyError, ValueError):
                     # Better a wrong one than nothing:
                     occu = 1.0
                 # The atom has at least a label and coordinates. Otherwise, no atom.
-                xc = x['_atom_site_fract_x']
-                yc = x['_atom_site_fract_y']
-                zc = x['_atom_site_fract_z']
+                x = item['_atom_site_fract_x']
+                y = item['_atom_site_fract_y']
+                z = item['_atom_site_fract_z']
                 yield [name,
                        type_symbol,
-                       float(0 if xc == '.' else xc.split('(')[0]),
-                       float(0 if yc == '.' else yc.split('(')[0]),
-                       float(0 if zc == '.' else zc.split('(')[0]),
+                       float(0 if x == '.' else x.split('(')[0]),
+                       float(0 if y == '.' else y.split('(')[0]),
+                       float(0 if z == '.' else z.split('(')[0]),
                        occu,
                        0 if part == '.' or part == '?' else int(part)]
             except (KeyError, ValueError) as e:
@@ -490,10 +508,10 @@ class Cif(object):
 
 if __name__ == '__main__':
     cif = Cif()
-    with open(r'./test-data/ICSD/1923_Aminoff, G._Ni As_P 63.m m c_Nickel arsenide.cif', 'r') as f:
-        cifok = cif.parsefile(f.readlines())
-    pprint(cif.cif_data)
-    # pprint(cif._loop)
+    cifok = cif.parsefile(Path(r'test-data/p21c.cif').read_text().splitlines(keepends=True))
+    # pprint(cif.cif_data)
+    pprint(cif._space_group_centring_type)
+    # sys.exit()
     # TODO: "_space_group_symop_operation_xyz" or '_symmetry_equiv_pos_as_xyz':
     for x in cif.atoms:
         pass
