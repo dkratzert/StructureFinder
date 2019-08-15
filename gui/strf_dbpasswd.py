@@ -2,10 +2,9 @@
 
 # Form implementation generated from reading ui file './gui\strf_dbpasswd.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.0
+# Created by: PyQt5 UI code generator 5.12.1
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -83,3 +82,5 @@ class Ui_PasswdDialog(object):
         self.PasswordLineEdit.setText(_translate("PasswdDialog", "Bruker-PostgreSQL"))
         self.IPLabel.setText(_translate("PasswdDialog", "IP Adress"))
         self.IPlineEdit.setText(_translate("PasswdDialog", "localhost"))
+
+
