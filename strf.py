@@ -89,7 +89,6 @@ else:
 if DEBUG:
     try:
         from PyQt5 import uic
-
         uic.compileUiDir(os.path.join(application_path, './gui'))
         print('recompiled ui')
     except:
