@@ -25,7 +25,9 @@ from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow
+from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
+from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow, \
+    QMessageBox
 from math import sin, radians
 
 from displaymol.sdm import SDM
@@ -173,6 +175,9 @@ class StartStructureDB(QMainWindow):
         item = self.ui.cifList_treeWidget.topLevelItem(0)
         self.ui.cifList_treeWidget.setCurrentItem(item)
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
+        self.netman = QNetworkAccessManager()
+        self.netman.finished.connect(self.show_update_warning)
+        self.checkfor_version()
 
     def connect_signals_and_slots(self):
         """
@@ -211,6 +216,35 @@ class StartStructureDB(QMainWindow):
         self.ui.add_cif.clicked.connect(self.cif_checkbox_clicked)
         self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.growCheckBox.toggled.connect(self.redraw_molecule)
+
+    def checkfor_version(self):
+        url = QUrl('https://xs3-data.uni-freiburg.de/structurefinder/version.txt')
+        req = QNetworkRequest(url)
+        self.netman.get(req)
+
+    def show_update_warning(self, reply: QNetworkReply):
+        """
+        Reads the reply from the server and displays a warning in case of an old version.
+        """
+        version = 0
+        try:
+            version = int(bytes(reply.readAll()).decode('ascii', 'ignore'))
+        except Exception:
+            pass
+        if version > VERSION:
+            print('Version {} is outdated (actual is {}).'.format(version, VERSION))
+            self.show_general_warning(
+                r"A newer version of StructureFinder is available under "
+                r"<a href='https://www.xs3.uni-freiburg.de/research/structurefinder'>"
+                r"https://www.xs3.uni-freiburg.de/research/structurefinder</a>")
+
+    def show_general_warning(self, warn_text=''):
+        """
+        A message box to display if the checksums do not agree.
+        """
+        if not warn_text:
+            return
+        info = QMessageBox(self).warning(self, ' ', warn_text)
 
     def res_checkbox_clicked(self, click):
         if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
