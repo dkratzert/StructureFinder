@@ -508,7 +508,7 @@ class Cif(object):
 
 if __name__ == '__main__':
     cif = Cif()
-    cifok = cif.parsefile(Path(r'test-data/p21c.cif').read_text().splitlines(keepends=True))
+    cifok = cif.parsefile(Path(r'test-data/668839.cif').read_text().splitlines(keepends=True))
     # pprint(cif.cif_data)
     pprint(cif._space_group_centring_type)
     # sys.exit()
