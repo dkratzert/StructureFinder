@@ -130,6 +130,7 @@ class Cif(object):
                 loop = False
                 loophead_list.clear()
                 loopkey = ''
+                loop_body = False
                 continue
             if line[0] == "_" and loop_body:
                 loop = False
