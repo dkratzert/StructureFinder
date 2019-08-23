@@ -70,6 +70,7 @@ TODO:
 - fix bug with gemmi written files and ;
 - Use QPainter to draw molecule?
 - Use PyQt3D
+- http://nglviewer.org/ngl/gallery/index.html
 - Use spellfix for text search: https://www.sqlite.org/spellfix1.html
 
 Search for:
