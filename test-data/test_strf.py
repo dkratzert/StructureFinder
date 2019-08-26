@@ -20,6 +20,7 @@ from misc import update_check
 from misc.version import VERSION
 from pymatgen.core import lattice
 from searcher import database_handler, fileparser
+from searcher.fileparser import Cif
 from shelxfile import shelx, elements, misc
 
 
@@ -464,3 +465,13 @@ class TestSearch(unittest.TestCase):
             if mapping:
                 idlist.append(curr_cell[0])
         self.assertEqual(idlist, [260, 113])
+
+
+class TestParser(unittest.TestCase):
+    def setUp(self) -> None:
+        self.cif = Cif()
+
+    def test_file1(self):
+        cifok = self.cif.parsefile(Path(r'test-data/668839.cif').read_text().splitlines(keepends=True))
+        self.assertEqual(True, cifok)
+        self.assertEqual(69, len(list(self.cif.atoms)))
