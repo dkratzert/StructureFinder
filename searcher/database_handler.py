@@ -198,6 +198,7 @@ class DatabaseRequest():
                             alpha   FLOAT,
                             beta    FLOAT,
                             gamma   FLOAT,
+                            volume     FLOAT,
                         PRIMARY KEY(Id),
                           FOREIGN KEY(StructureId)
                             REFERENCES niggli_cell(Id)
@@ -396,24 +397,21 @@ class StructureTable():
         if ids:
             if len(ids) > 1:  # a collection of ids
                 ids = tuple(ids)
-                req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
-                         Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
+                req = '''SELECT Id, measurement, path, filename, 
+                         dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
             else:  # only one id
-                req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
-                            Structure.dataname FROM Structure WHERE Structure.Id == ?'''
+                req = '''SELECT Id, measurement, path, filename, dataname FROM Structure WHERE Structure.Id == ?'''
                 rows = self.database.db_request(req, ids)
                 return rows
         else:  # just all
-            req = '''SELECT Structure.Id, Structure.measurement, Structure.path, Structure.filename, 
-                                     Structure.dataname FROM Structure'''
+            req = '''SELECT Id, measurement, path, filename, dataname FROM Structure'''
         return self.database.db_request(req)
 
     def get_filepath(self, structure_id):
         """
         returns the path of a res file in the db
         """
-        req_path = '''SELECT Structure.dataname, Structure.path FROM Structure WHERE
-            Structure.Id = {0}'''.format(structure_id)
+        req_path = '''SELECT dataname, path FROM Structure WHERE Structure.Id = {0}'''.format(structure_id)
         path = self.database.db_request(req_path)[0]
         return path
 
@@ -449,6 +447,31 @@ class StructureTable():
         """
         req = '''INSERT INTO cell (StructureId, a, b, c, alpha, beta, gamma, volume) 
                             VALUES(?, ?, ?, ?, ?, ?, ?, ?)'''
+        if self.database.db_request(req, (structure_id, a, b, c, alpha, beta, gamma, volume)):
+            return True
+
+    def fill_niggli_cell_table(self, structure_id, a, b, c, alpha, beta, gamma, volume):
+        """
+        Fill the cell of structure(structureId) in the table with the reduced niggli cell.
+
+        :parameters:
+            **a**
+                Cell parameter a
+            **b**
+                Cell parameter b
+            **c**
+                Cell parameter c
+            **alpha**
+                Cell parameter alpha
+            **beta**
+                Cell parameter beta
+            **gamma**
+                Cell parameter gamma
+        :returns:
+            True if successful
+        """
+        req = '''INSERT INTO niggli_cell (StructureId, a, b, c, alpha, beta, gamma, volume) 
+                                    VALUES(?, ?, ?, ?, ?, ?, ?, ?)'''
         if self.database.db_request(req, (structure_id, a, b, c, alpha, beta, gamma, volume)):
             return True
 
@@ -687,6 +710,25 @@ class StructureTable():
                                           )
         return result
 
+    def make_indexes(self):
+        """ Databse indexes for faster searching
+        """
+        self.database.cur.execute("""CREATE INDEX idx_volume ON cell (volume)""")
+        self.database.cur.execute("""CREATE INDEX idx_a ON cell (a)""")
+        self.database.cur.execute("""CREATE INDEX idx_b ON cell (b)""")
+        self.database.cur.execute("""CREATE INDEX idx_c ON cell (c)""")
+        self.database.cur.execute("""CREATE INDEX idx_al ON cell (alpha)""")
+        self.database.cur.execute("""CREATE INDEX idx_be ON cell (beta)""")
+        self.database.cur.execute("""CREATE INDEX idx_ga ON cell (gamma)""")
+        self.database.cur.execute("""CREATE INDEX idx_volume_n ON niggli_cell (volume)""")
+        self.database.cur.execute("""CREATE INDEX idx_a_n ON niggli_cell (a)""")
+        self.database.cur.execute("""CREATE INDEX idx_b_n ON niggli_cell (b)""")
+        self.database.cur.execute("""CREATE INDEX idx_c_n ON niggli_cell (c)""")
+        self.database.cur.execute("""CREATE INDEX idx_al_n ON niggli_cell (alpha)""")
+        self.database.cur.execute("""CREATE INDEX idx_be_n ON niggli_cell (beta)""")
+        self.database.cur.execute("""CREATE INDEX idx_ga_n ON niggli_cell (gamma)""")
+        self.database.cur.execute("""CREATE INDEX idx_sumform ON Residuals (_space_group_IT_number)""")
+
     def populate_fulltext_search_table(self):
         """
         Populates the fts4 table with data to search for text.
@@ -710,8 +752,6 @@ class StructureTable():
         optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize'); """
         self.database.cur.execute(populate_index)
         self.database.cur.execute(optimize_queries)
-        # add an index to find cells faster
-        self.database.cur.execute("""CREATE INDEX idx_volume ON cell (volume)""")
 
     def get_row_as_dict(self, structure_id):
         """
@@ -814,7 +854,43 @@ class StructureTable():
             # print("Wrong volume for cell search.")
             return []
 
-    def find_by_strings(self, text: str) -> Tuple[int, str, str, str]:
+    def find_by_niggli_cell(self, a, b, c, alpha, beta, gamma, axtol=0.02, angtol=0.025, maxsolutions=None):
+        """
+        Searches cells with certain deviations in the unit cell parameters.
+        >>> db = StructureTable('./test-data/test.sql')
+        >>> vol = [7.878, 10.469, 16.068, 90.000, 95.147, 90.000]
+        >>> db.find_by_niggli_cell(*vol)
+        [8, 201, 202]
+        """
+        mina, minb, minc = [x - (x * axtol) for x in [a, b, c]]
+        maxa, maxb, maxc = [x + (x * axtol) for x in [a, b, c]]
+        minal, minbe, minga = [x - (x * angtol) for x in [alpha, beta, gamma]]
+        maxal, maxbe, maxga = [x + (x * angtol) for x in [alpha, beta, gamma]]
+        req = '''SELECT cell.StructureId, cell.a, cell.b, cell.c, cell.alpha, cell.beta, cell.gamma, 
+                        res._space_group_IT_number, cell.volume, stru.filename
+                                    FROM cell as cell
+                                        INNER JOIN niggli_cell as ni ON cell.Id = ni.StructureId
+                                                       and (ni.a BETWEEN ? and ?)
+                                                       and (ni.b BETWEEN  ? and ?)
+                                                       and (ni.c BETWEEN  ? and ?)
+                                                       and (ni.alpha BETWEEN  ? and ?)
+                                                       and (ni.beta BETWEEN  ? and ?)
+                                                       and (ni.gamma BETWEEN  ? and ?)
+                                        INNER JOIN Structure as stru ON cell.StructureId = stru.Id
+                                        INNER JOIN Residuals AS res WHERE cell.StructureId = res.StructureId
+
+              '''
+        try:
+            result = self.database.db_request(req, (
+                mina, maxa, minb, maxb, minc, maxc, minal, maxal, minbe, maxbe, minga, maxga))
+            if maxsolutions:
+                return result[:maxsolutions]
+            else:
+                return result
+        except(TypeError, KeyError):
+            return ()
+
+    def find_by_strings(self, text):
         """
         Searches cells with volume between upper and lower limit
         :param text: Volume uncertaincy where to search
@@ -931,7 +1007,6 @@ class StructureTable():
                 SELECT StructureId FROM Residuals WHERE _refine_ls_R_factor_gt <= ? OR _refine_ls_R_factor_all <= ?
                 """
         return self.result_to_list(self.database.db_request(req, (rvalue, rvalue)))
-
 
     def find_biggest_cell(self):
         """

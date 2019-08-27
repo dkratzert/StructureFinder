@@ -116,11 +116,11 @@ class StartStructureDB(QMainWindow):
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         # self.ui.centralwidget.setMinimumSize(1000, 500)
-        self.abort_import_button = QPushButton("Abort")
+        # self.abort_import_button = QPushButton("Abort")
         self.progress = QProgressBar(self)
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
-        self.ui.statusbar.addWidget(self.abort_import_button)
+        # self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
         self.apx = None
         self.structureId = 0
@@ -191,7 +191,7 @@ class StartStructureDB(QMainWindow):
         self.ui.importDirButton.clicked.connect(self.import_file_dirs)
         self.ui.openApexDBButton.clicked.connect(self.import_apex_db)
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
-        self.abort_import_button.clicked.connect(self.abort_import)
+        # self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
         self.ui.adv_SearchPushButton.clicked.connect(self.advanced_search)
@@ -532,12 +532,12 @@ class StartStructureDB(QMainWindow):
         self.close_db()
         self.start_db()
         self.progressbar(1, 0, 20)
-        self.abort_import_button.show()
+        # self.abort_import_button.show()
         if not startdir:
             startdir = self.get_startdir_from_dialog()
         if not startdir:
             self.progress.hide()
-            self.abort_import_button.hide()
+            # self.abort_import_button.hide()
         filecrawler.put_files_in_db(self, searchpath=startdir, fillres=self.ui.add_res.isChecked(),
                                     fillcif=self.ui.add_cif.isChecked())
         self.progress.hide()
@@ -557,7 +557,7 @@ class StartStructureDB(QMainWindow):
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(1)
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
-        self.abort_import_button.hide()
+        # self.abort_import_button.hide()
 
     def progressbar(self, curr: int, min: int, max: int) -> None:
         """
@@ -1190,14 +1190,14 @@ class StartStructureDB(QMainWindow):
         self.close_db()
         self.start_db()
         self.ui.cifList_treeWidget.show()
-        self.abort_import_button.show()
+        # self.abort_import_button.show()
         n = 1
         num = 0
         time1 = time.perf_counter()
         conn = self.open_apex_db(user, password, host)
-        if not conn:
-            self.abort_import_button.hide()
-            return None
+        #if not conn:
+        #    self.abort_import_button.hide()
+        #    return None
         cif = Cif()
         if conn:
             for i in self.apx.get_all_data():
@@ -1233,11 +1233,11 @@ class StartStructureDB(QMainWindow):
                 if n % 300 == 0:
                     self.structures.database.commit_db()
                 num += 1
-                if not self.decide_import:
-                    # This means, import was aborted.
-                    self.abort_import_button.hide()
-                    self.decide_import = True
-                    break
+                #if not self.decide_import:
+                #    # This means, import was aborted.
+                #    self.abort_import_button.hide()
+                #    self.decide_import = True
+                #    break
         time2 = time.perf_counter()
         diff = time2 - time1
         self.progress.hide()
@@ -1252,7 +1252,7 @@ class StartStructureDB(QMainWindow):
         self.structures.database.init_textsearch()
         self.structures.populate_fulltext_search_table()
         self.structures.database.commit_db("Committed")
-        self.abort_import_button.hide()
+        # self.abort_import_button.hide()
 
     def set_columnsize(self):
         """

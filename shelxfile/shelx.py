@@ -195,6 +195,8 @@ class ShelXFile():
             return
         try:
             self.parse_cards()
+            if self.latt.centric:
+                self.symmcards.set_centric(True)
         except Exception as e:
             # print('File not parsed:', self.resfile)
             if DEBUG:
@@ -375,6 +377,17 @@ class ShelXFile():
                     self.assign_card(self.zerr, line_num)
                 lastcard = 'ZERR'
                 continue
+            elif word == "LATT":
+                # LATT N[1]
+                # 1=P, 2=I, 3=rhombohedral obverse on hexagonal axes, 4=F, 5=A, 6=B, 7=C.
+                # negative is non-centrosymmetric
+                self.latt = LATT(self, spline)
+                self.assign_card(self.latt, line_num)
+                if not lastcard == 'ZERR':
+                    if DEBUG:
+                        print('*** ZERR instruction is missing! ***')
+                    # raise ParseOrderError
+                continue
             elif word == "SYMM":
                 # SYMM symmetry operation
                 #  Being more greedy, because many files do this wrong:
@@ -387,8 +400,9 @@ class ShelXFile():
                     if DEBUG:
                         print("*** LATT instruction is missing! ***")
                         raise ParseSyntaxError
-                if self.latt.centric:
-                    self.symmcards.set_centric(True)
+                # Have to do this after parsing, because P-1 has no SYMM!
+                #if self.latt.centric:
+                #    self.symmcards.set_centric(True)
                 self.symmcards.append(s.symmcard)
                 if s not in self._reslist:
                     self._reslist[line_num] = s
@@ -434,17 +448,6 @@ class ShelXFile():
                         print('*** Number of UNIT and SFAC values differ! ***')
                         raise ParseNumError
                 lastcard = 'UNIT'
-                continue
-            elif word == "LATT":
-                # LATT N[1]
-                # 1=P, 2=I, 3=rhombohedral obverse on hexagonal axes, 4=F, 5=A, 6=B, 7=C.
-                # negative is non-centrosymmetric
-                self.latt = LATT(self, spline)
-                self.assign_card(self.latt, line_num)
-                if not lastcard == 'ZERR':
-                    if DEBUG:
-                        print('*** ZERR instruction is missing! ***')
-                    # raise ParseOrderError
                 continue
             elif word in ['L.S.', 'CGLS']:
                 # CGLS nls[0] nrf[0] nextra[0]
@@ -1072,7 +1075,7 @@ class ShelXFile():
             try:
                 self.parameters = int(spline[1])
                 if self.data and self.parameters:
-                    self.dat_to_param = self.data / self.parameters
+                    self.dat_to_param = float(self.data) / float(self.parameters)
             except IndexError:
                 if DEBUG:
                     pass

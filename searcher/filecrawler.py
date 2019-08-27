@@ -278,12 +278,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 structures.database.commit_db()
             prognum += 1
             continue
-        if self:
-            if not self.decide_import:
-                # This means, import was aborted.
-                self.abort_import_button.hide()
-                self.decide_import = True
-                break
+    structures.make_indexes()
     structures.database.commit_db()
     time2 = time.process_time()
     diff = time2 - time1
