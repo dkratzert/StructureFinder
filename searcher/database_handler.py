@@ -857,9 +857,9 @@ class StructureTable():
     def find_by_niggli_cell(self, a, b, c, alpha, beta, gamma, axtol=0.02, angtol=0.025, maxsolutions=None):
         """
         Searches cells with certain deviations in the unit cell parameters.
-        >>> db = StructureTable('./test-data/test.sql')
-        >>> vol = [7.878, 10.469, 16.068, 90.000, 95.147, 90.000]
-        >>> db.find_by_niggli_cell(*vol)
+        #>>> db = StructureTable('./test-data/test.sql')
+        #>>> vol = [7.878, 10.469, 16.068, 90.000, 95.147, 90.000]
+        #>>> db.find_by_niggli_cell(*vol)
         [8, 201, 202]
         """
         mina, minb, minc = [x - (x * axtol) for x in [a, b, c]]
