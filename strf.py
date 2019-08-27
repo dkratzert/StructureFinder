@@ -551,6 +551,7 @@ class StartStructureDB(QMainWindow):
         except OperationalError as e:
             print(e)
             print('No fulltext search compiled into sqlite.')
+        self.structures.make_indexes()
         self.structures.database.commit_db()
         self.ui.cifList_treeWidget.show()
         self.set_columnsize()

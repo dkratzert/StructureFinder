@@ -278,7 +278,6 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 structures.database.commit_db()
             prognum += 1
             continue
-    structures.make_indexes()
     structures.database.commit_db()
     time2 = time.process_time()
     diff = time2 - time1

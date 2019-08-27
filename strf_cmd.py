@@ -117,6 +117,7 @@ else:
         if db and structures:
             db.init_textsearch()
             structures.populate_fulltext_search_table()
+            structures.make_indexes()
     except TypeError:
         print('No valid files found. They might be in excluded subdirectories.')
     time2 = time.perf_counter()
