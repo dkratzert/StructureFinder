@@ -968,7 +968,7 @@ class StartStructureDB(QMainWindow):
         idlist = []
         if cells:
             try:
-                lattice1 = lattice.Lattice.from_parameters_niggli_reduced(*cell)
+                lattice1 = lattice.Lattice.from_parameters(*cell)
             except ValueError:
                 lattice1 = lattice.Lattice.from_parameters(*cell)
             self.statusBar().clearMessage()
