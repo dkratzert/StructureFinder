@@ -590,10 +590,7 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     idlist2 = []
     # Real lattice comparing in G6:
     if cells:
-        try:
-            lattice1 = lattice.Lattice.from_parameters_niggli_reduced(*cell)
-        except ValueError:
-            lattice1 = lattice.Lattice.from_parameters(*cell)
+        lattice1 = lattice.Lattice.from_parameters(*cell)
         for num, curr_cell in enumerate(cells):
             try:
                 lattice2 = lattice.Lattice.from_parameters(*curr_cell[1:7])
