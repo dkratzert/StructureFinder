@@ -57,75 +57,80 @@ def check_update():
               'https://www.xs3.uni-freiburg.de/research/structurefinder')
 
 
-ncifs = 0
-try:
-    if not args.dir:
-        parser.print_help()
-        check_update()
-        sys.exit()
-except IndexError:
-    print("No valid search directory given.\n")
-    print("Please run this as 'stdb_rmd [directory]'\n")
-    print("stdb_cmd will search for .cif files in [directory] recoursively.")
-else:
-    if not any([args.fillres, args.fillcif]):
-        print("Error: You need to give either option -c, -r or both.")
-        sys.exit()
-    db = None
-    structures = None
-    time1 = time.perf_counter()
-    if args.outfile:
-        dbfilename = args.outfile
-    else:
-        dbfilename = 'structuredb.sqlite'
-    if args.delete:
-        try:
-            dbf = Path(dbfilename)
-            dbf.unlink()
-        except FileNotFoundError:
-            pass
-        except PermissionError:
-            print('Could not acess database file "{}". Is it used elsewhere?'.format(dbfilename))
-            print('Giving up...')
+def find_cell(cell: list):
+    pass
+
+
+def run_index():
+    ncifs = 0
+    try:
+        if not args.dir:
+            parser.print_help()
+            check_update()
             sys.exit()
-    for p in args.dir:
-        # the command line version
+    except IndexError:
+        print("No valid search directory given.\n")
+        print("Please run this as 'python3 stdb_cmd.py -d [directory]'\n")
+        print("stdb_cmd will search for .cif files in [directory] recoursively.")
+    else:
+        if not any([args.fillres, args.fillcif]):
+            print("Error: You need to give either option -c, -r or both.")
+            sys.exit()
+        if args.outfile:
+            dbfilename = args.outfile
+        else:
+            dbfilename = 'structuredb.sqlite'
+        if args.delete:
+            try:
+                dbf = Path(dbfilename)
+                dbf.unlink()
+            except FileNotFoundError:
+                pass
+            except PermissionError:
+                print('Could not acess database file "{}". Is it used elsewhere?'.format(dbfilename))
+                print('Giving up...')
+                sys.exit()
         db = DatabaseRequest(dbfilename)
         try:
             db.initialize_db()
         except DatabaseError:
             print('Database is corrupt! Delete the file first.')
-            break
-        lastid = db.get_lastrowid()
-        if not lastid:
-            lastid = 1
-        else:
-            lastid += 1
+            sys.exit()
         structures = StructureTable(dbfilename)
         structures.set_database_version(0)  # not an APEX db
+        time1 = time.perf_counter()
+        for p in args.dir:
+            # the command line version
+            lastid = db.get_lastrowid()
+            if not lastid:
+                lastid = 1
+            else:
+                lastid += 1
+            try:
+                ncifs = put_files_in_db(searchpath=p, excludes=args.ex,
+                                        structures=structures, lastid=lastid,
+                                        fillres=args.fillres, fillcif=args.fillcif)
+            except OSError as e:
+                print("Unable to collect files:")
+                print(e)
+            except KeyboardInterrupt:
+                sys.exit()
+            print("---------------------")
         try:
-            ncifs = put_files_in_db(searchpath=p, excludes=args.ex,
-                                    structures=structures, lastid=lastid,
-                                    fillres=args.fillres, fillcif=args.fillcif)
-        except OSError as e:
-            print("Unable to collect files:")
-            print(e)
-        except KeyboardInterrupt:
-            sys.exit()
-        print("---------------------")
-    try:
-        if db and structures:
-            db.init_textsearch()
-            structures.populate_fulltext_search_table()
-            structures.make_indexes()
-    except TypeError:
-        print('No valid files found. They might be in excluded subdirectories.')
-    time2 = time.perf_counter()
-    diff = time2 - time1
-    m, s = divmod(diff, 60)
-    h, m = divmod(m, 60)
-    tmessage = "\nTotal {3} cif/res files in '{4}'. Duration: {0:>2d} h, {1:>2d} m, {2:>3.2f} s"
-    print(tmessage.format(int(h), int(m), s, ncifs, dbfilename))
-    check_update()
+            if db and structures:
+                db.init_textsearch()
+                structures.populate_fulltext_search_table()
+                structures.make_indexes()
+        except TypeError:
+            print('No valid files found. They might be in excluded subdirectories.')
+        time2 = time.perf_counter()
+        diff = time2 - time1
+        m, s = divmod(diff, 60)
+        h, m = divmod(m, 60)
+        tmessage = "\nTotal {3} cif/res files in '{4}'. Duration: {0:>2d} h, {1:>2d} m, {2:>3.2f} s"
+        print(tmessage.format(int(h), int(m), s, ncifs, dbfilename))
+        check_update()
 
 
+if __name__ == '__main__':
+    run_index()
