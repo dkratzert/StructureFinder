@@ -967,10 +967,7 @@ class StartStructureDB(QMainWindow):
         # Real lattice comparing in G6:
         idlist = []
         if cells:
-            try:
-                lattice1 = lattice.Lattice.from_parameters(*cell)
-            except ValueError:
-                lattice1 = lattice.Lattice.from_parameters(*cell)
+            lattice1 = lattice.Lattice.from_parameters(*cell)
             self.statusBar().clearMessage()
             for num, curr_cell in enumerate(cells):
                 self.progressbar(num, 0, len(cells) - 1)

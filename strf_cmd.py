@@ -6,8 +6,10 @@ from sqlite3 import DatabaseError
 
 from misc import update_check
 from misc.version import VERSION
+from pymatgen.core.lattice import Lattice
 from searcher.database_handler import DatabaseRequest, StructureTable
 from searcher.filecrawler import put_files_in_db
+from searcher.misc import vol_unitcell
 
 parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect .cif/.res files to a '
                                              'database.\n'
@@ -58,8 +60,54 @@ def check_update():
 
 
 def find_cell(cell: list):
-    pass
-
+    """
+    Searches for unit cells by command line parameters
+    """
+    cell = [float(x) for x in cell]
+    no_result = '\nNo similar unit cell found.'
+    if args.outfile:
+        dbfilename = args.outfile
+    else:
+        dbfilename = 'structuredb.sqlite'
+    db, structures = get_database(dbfilename)
+    #if args.more_results:
+    #    # more results:
+    #    print('more results on')
+    #    vol_threshold = 0.04
+    #    ltol = 0.08
+    #    atol = 1.8
+    #else:
+    # regular:
+    vol_threshold = 0.02
+    ltol = 0.03
+    atol = 1.0
+    volume = vol_unitcell(*cell)
+    # the fist number in the result is the structureid:
+    cells = structures.find_by_volume(volume, vol_threshold)
+    idlist = []
+    if not cells:
+        print(no_result)
+        sys.exit()
+    lattice1 = Lattice.from_parameters(*cell)
+    for num, curr_cell in enumerate(cells):
+        try:
+            lattice2 = Lattice.from_parameters(*curr_cell[1:7])
+        except ValueError:
+            continue
+        mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
+        if mapping:
+            idlist.append(curr_cell[0])
+    if not idlist:
+        print(no_result)
+        sys.exit()
+    else:
+        print('\n{} Structures found:'.format(len(idlist)))
+        searchresult = structures.get_all_structure_names(idlist)
+    print('  ID   |   path     |   filename |   data   ')
+    print('-'*80)
+    for res in searchresult:
+        Id, measurement, path, filename, dataname = [str(x) for x in res]
+        print('{:}   |   {:<15s}       |      {:s}      |  {:s}'.format(measurement, path, filename, dataname, Id))
 
 def run_index():
     ncifs = 0
@@ -90,14 +138,7 @@ def run_index():
                 print('Could not acess database file "{}". Is it used elsewhere?'.format(dbfilename))
                 print('Giving up...')
                 sys.exit()
-        db = DatabaseRequest(dbfilename)
-        try:
-            db.initialize_db()
-        except DatabaseError:
-            print('Database is corrupt! Delete the file first.')
-            sys.exit()
-        structures = StructureTable(dbfilename)
-        structures.set_database_version(0)  # not an APEX db
+        db, structures = get_database(dbfilename)
         time1 = time.perf_counter()
         for p in args.dir:
             # the command line version
@@ -132,5 +173,18 @@ def run_index():
         check_update()
 
 
+def get_database(dbfilename):
+    db = DatabaseRequest(dbfilename)
+    try:
+        db.initialize_db()
+    except DatabaseError:
+        print('Database is corrupt! Delete the file first.')
+        sys.exit()
+    structures = StructureTable(dbfilename)
+    structures.set_database_version(0)  # not an APEX db
+    return db, structures
+
+
 if __name__ == '__main__':
     run_index()
+    #find_cell('10.5086  20.9035  20.5072   90.000   94.130   90.000'.split())
