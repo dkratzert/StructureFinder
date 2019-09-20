@@ -49,6 +49,12 @@ parser.add_argument("--delete",
                     default=False,
                     action='store_true',
                     help="Delete and do not append to previous database.")
+parser.add_argument("-f",
+                    dest='cell',
+                    default=False,
+                    action='append',
+                    help='Search for the specified unit cell.'
+                    )
 
 args = parser.parse_args()
 
