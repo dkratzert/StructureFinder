@@ -171,6 +171,7 @@ class TestApplication(unittest.TestCase):
         self.assertEqual('C107 H142 N14 O26', self.myapp.ui.allCifTreeWidget.topLevelItem(10).text(1))
         self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
+    @unittest.skip()
     def test_res_file_tab(self):
         item = self.myapp.ui.cifList_treeWidget.topLevelItem(261)
         self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
@@ -426,7 +427,7 @@ class TestSearch(unittest.TestCase):
         volume = searcher.misc.vol_unitcell(*cell)
         cells = self.structures.find_by_volume(volume, self.vol_threshold)
         self.assertEqual(cells, results)
-        lattice1 = lattice.Lattice.from_parameters_niggli_reduced(*cell)
+        lattice1 = lattice.Lattice.from_parameters(*cell)
         for curr_cell in cells:
             try:
                 lattice2 = lattice.Lattice.from_parameters(*curr_cell[1:7])
@@ -455,7 +456,7 @@ class TestSearch(unittest.TestCase):
         volume = searcher.misc.vol_unitcell(*cell)
         cells = self.structures.find_by_volume(volume, self.m_vol_threshold)
         self.assertEqual(cells, results)
-        lattice1 = lattice.Lattice.from_parameters_niggli_reduced(*cell)
+        lattice1 = lattice.Lattice.from_parameters(*cell)
         for curr_cell in cells:
             try:
                 lattice2 = lattice.Lattice.from_parameters(*curr_cell[1:7])
