@@ -1,7 +1,8 @@
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
-
+venv
+venv2
 build/
 dist/
 
