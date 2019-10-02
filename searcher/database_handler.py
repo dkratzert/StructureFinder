@@ -14,10 +14,8 @@ Created on 09.02.2015
 
 import sys
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
-from typing import Tuple, List, Union
+from typing import List, Union
 
-import searcher
-from searcher import misc
 from searcher.atoms import sorted_atoms
 
 DEBUG = False
@@ -407,7 +405,7 @@ class StructureTable():
             req = '''SELECT Id, measurement, path, filename, dataname FROM Structure'''
         return self.database.db_request(req)
 
-    def get_filepath(self, structure_id):
+    def get_filepath(self, structure_id) -> str:
         """
         returns the path of a res file in the db
         """
@@ -440,7 +438,8 @@ class StructureTable():
         self.database.db_request(req, (structure_id, name))
         return structure_id
 
-    def fill_cell_table(self, structure_id, a, b, c, alpha, beta, gamma, volume):
+    def fill_cell_table(self, structure_id: int, a: float, b: float, c: float, alpha: float, beta: float, gamma: float,
+                        volume: float):
         """
         fill the cell of structure(structureId) in the table
         cell = [a, b, c, alpha, beta, gamma]
@@ -450,32 +449,20 @@ class StructureTable():
         if self.database.db_request(req, (structure_id, a, b, c, alpha, beta, gamma, volume)):
             return True
 
-    def fill_niggli_cell_table(self, structure_id, a, b, c, alpha, beta, gamma, volume):
+    def fill_niggli_cell_table(self, structure_id: int, a: float, b: float, c: float, alpha: float, beta: float,
+                               gamma: float, volume: float):
         """
         Fill the cell of structure(structureId) in the table with the reduced niggli cell.
 
-        :parameters:
-            **a**
-                Cell parameter a
-            **b**
-                Cell parameter b
-            **c**
-                Cell parameter c
-            **alpha**
-                Cell parameter alpha
-            **beta**
-                Cell parameter beta
-            **gamma**
-                Cell parameter gamma
-        :returns:
-            True if successful
+        :returns True if successful
         """
         req = '''INSERT INTO niggli_cell (StructureId, a, b, c, alpha, beta, gamma, volume) 
                                     VALUES(?, ?, ?, ?, ?, ?, ?, ?)'''
         if self.database.db_request(req, (structure_id, a, b, c, alpha, beta, gamma, volume)):
             return True
 
-    def fill_atoms_table(self, structure_id, name, element, x, y, z, occ, part, xc, yc, zc):
+    def fill_atoms_table(self, structure_id: int, name: str, element: str, x: float, y: float, z: float, occ: float,
+                         part: int, xc: float, yc: float, zc: float):
         """
         Fill the atoms into the Atoms table.
         """
@@ -992,7 +979,6 @@ class StructureTable():
               """
         result = self.database.db_request(req, (start, end))
         return self.result_to_list(result)
-
 
     def find_by_rvalue(self, rvalue: float):
         """
