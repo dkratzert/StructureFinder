@@ -1,7 +1,7 @@
 altgraph==0.16.1
 macholib==1.11
 numpy==1.16.4
-PyInstaller==3.5
+PyInstaller>=3.5
 PyQt5==5.12.1
 PyQt5-sip==4.19.18
 PyQt5-stubs==5.12.1.0
