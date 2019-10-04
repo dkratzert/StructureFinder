@@ -1,17 +1,8 @@
 altgraph==0.16.1
-docutils==0.15.2
-future==0.17.1
-gunicorn==19.9.0
 macholib==1.11
 numpy==1.16.4
-pefile==2019.4.18
-pybind11==2.3.0
 PyInstaller==3.5
 PyQt5==5.12.1
 PyQt5-sip==4.19.18
 PyQt5-stubs==5.12.1.0
 PyQtWebEngine==5.12.1
-python-dateutil==2.8.0
-pywin32-ctypes==0.2.0
-six==1.12.0
-urllib3==1.25.3
