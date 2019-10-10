@@ -61,7 +61,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; IconFilename: "{app}\icons\strf.ico"
-Name: "{group}\StructureFinder"; Filename: "{app}\StructureFinder.exe"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"; Check: IsWin64
+Name: "{group}\StructureFinder"; Filename: "{app}\StructureFinder.exe"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"
 
 [UninstallDelete]
 Type: files; Name: "{app}\*.pyc"
