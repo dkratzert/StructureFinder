@@ -53,11 +53,11 @@ def make_distribs():
     innosetup_compiler = r'D:/Program Files (x86)/Inno Setup 5/ISCC.exe'
     # Run 64bit setup compiler
     subprocess.run([innosetup_compiler,
-                    r'D:\GitHub\StructureFinder\scripts\strf-install_win64.iss', ])
+                    r'scripts\strf-install_win64.iss', ])
 
-    # Run 32bit setup compiler
-    subprocess.run([innosetup_compiler,
-                    r'D:\GitHub\StructureFinder\scripts\strf-install_win32.iss', ])
+    ## Run 32bit setup compiler
+    #subprocess.run([innosetup_compiler,
+    #                r'scripts\strf-install_win32b.iss', ])
 
 
 # Make binary distributions:
