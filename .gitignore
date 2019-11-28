@@ -74,3 +74,5 @@ venv/
 test2.sqlite
 test3.sqlite
 
+cellcomp/.ncdist.cpp.cppimporthash
+cellcomp/ncdist.cpython-37m-darwin.so
