@@ -953,6 +953,7 @@ class StartStructureDB(QMainWindow):
             volume = misc.vol_unitcell(*cell)
             # the fist number in the result is the structureid:
             cells = self.structures.find_by_volume(volume, vol_threshold)
+            print(len(cells), 'cells to check at {}% theshold.'.format(vol_threshold * 100))
             if self.ui.sublattCheckbox.isChecked() or self.ui.adv_superlatticeCheckBox.isChecked():
                 # sub- and superlattices:
                 for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
