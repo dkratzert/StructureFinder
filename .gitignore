@@ -76,3 +76,4 @@ test3.sqlite
 
 cellcomp/.ncdist.cpp.cppimporthash
 cellcomp/ncdist.cpython-37m-darwin.so
+cellcomp/ncdist.cp37-win_amd64.pyd
