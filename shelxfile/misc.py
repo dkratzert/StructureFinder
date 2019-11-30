@@ -15,6 +15,7 @@ import re
 import textwrap
 import time
 from shutil import get_terminal_size
+from typing import List
 
 from shelxfile.dsrmath import frac_to_cart, subtract_vect, determinante
 
@@ -69,7 +70,7 @@ try:
     width, height = get_terminal_size()  # @UnusedVariable
 except():
     width = 80
-sep_line = (width-1)*'-'
+sep_line = (width - 1) * '-'
 
 
 def remove_file(filename, exit_dsr=False):
@@ -235,21 +236,22 @@ def vol_tetrahedron(a, b, c, d, cell=None):
 
 def time_this_method(f):
     """
-    Rather promitive way of timing a method. More advanced would be the profilehooks module.
+    Rather primitive way of timing a method. More advanced would be the profilehooks module.
     """
-    if PROFILE:
-        from functools import wraps
+    from functools import wraps
 
-        @wraps(f)
-        def wrapper(*args, **kwargs):
-            t1 = time.clock()
-            result = f(*args, **kwargs)
-            t2 = time.clock()
-            if PROFILE:
-                print('Time for "{}": {:5.3} ms\n'.format(f.__name__ + '()', (t2 - t1) * 1000))
-            return result
-    else:
-        wrapper = f
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        t1 = time.perf_counter()
+        result = f(*args, **kwargs)
+        t2 = time.perf_counter()
+        diff = t2 - t1
+        if diff > 0.5:
+            print('Time for "{}()": {:5.3f} s'.format(f.__name__, diff))
+        else:
+            print('Time for "{}()": {:5.3f} ms'.format(f.__name__, diff * 1000))
+        return result
+
     return wrapper
 
 
@@ -317,6 +319,7 @@ class ResList():
     """
     Contains the lines of the res file as unordered linked list.
     """
+
     def __init__(self):
         """
         >>> res = ResList()
@@ -360,7 +363,7 @@ class ResList():
         self.head = temp
         self.size += 1
 
-    def search(self,item):
+    def search(self, item):
         current = self.head
         found = False
         while current is not None and not found:
@@ -422,7 +425,7 @@ def wrap_line(line: str) -> str:
     return line
 
 
-def range_resolver(atoms_range: list, atom_names: list) -> list:
+def range_resolver(atoms_range: list, atom_names: list) -> List[str]:
     """
     Resolves the atom names of ranges like "C1 > C5"
     and works for each restraint line separately.
@@ -470,11 +473,10 @@ def range_resolver(atoms_range: list, atom_names: list) -> list:
     return atoms_range
 
 
-def walkdir(rootdir, include="", exclude=""):
+def walkdir(rootdir, include: str = "", exclude: str = "") -> List:
     """
     Returns a list of files in all subdirectories with full path.
     :param rootdir: base path from which walk should start
-    :param filter: list of file endings to include only e.g. ['.py', '.res']
     :return: list of files
 
     #>>> walkdir("../docs") #doctest: +REPORT_NDIFF +NORMALIZE_WHITESPACE +ELLIPSIS

@@ -4,6 +4,7 @@
 
 ###########################################################
 ###  Configure the web server here:   #####################
+from typing import List, Dict
 
 host = "10.6.13.3"
 port = "80"
@@ -197,6 +198,7 @@ def post_request():
         return get_all_cif_val_table(structures, str_id)
 
 
+# noinspection PyUnresolvedReferences
 @app.route('/static/<filepath:path>')
 def server_static(filepath):
     """
@@ -268,12 +270,12 @@ def show_cellcheck():
     else:
         cent = 0
     response.content_type = 'text/html; charset=UTF-8'
-    data = {"my_ip" : site_ip,
-            "title" : 'StructureFinder',
+    data = {"my_ip"  : site_ip,
+            "title"  : 'StructureFinder',
             'cellstr': cellstr,
-            'strid' : str_id,
-            'cent': cent,
-            'host'  : host,}
+            'strid'  : str_id,
+            'cent'   : cent,
+            'host'   : host, }
     output = template('./cgi_ui/views/cellcheckcsd', data)
     return output
 
@@ -285,7 +287,7 @@ def search_cellcheck_csd():
     """
     cmd = request.POST.cmd
     cell = request.POST.cell
-    elements = []
+    elements:List = []
     str_id = request.POST.str_id
     if not cell:
         return {}
@@ -345,7 +347,7 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     """
     Returns the next package of table rows for continuos scrolling.
     """
-    failure = {
+    failure: Dict[str, str] = {
         "status" : "error",
         "message": "Nothing found."
     }
@@ -420,8 +422,10 @@ def get_residuals_table1(structures: StructureTable, cif_dic: dict, structure_id
                cif_dic['_cell_formula_units_Z'],
                sumform,
                cif_dic['_diffrn_ambient_temperature'],
-               cif_dic['_refine_ls_wR_factor_ref'] if cif_dic['_refine_ls_wR_factor_ref'] else cif_dic['_refine_ls_wR_factor_gt'],
-               cif_dic['_refine_ls_R_factor_gt'] if cif_dic['_refine_ls_R_factor_gt'] else cif_dic['_refine_ls_R_factor_all'],
+               cif_dic['_refine_ls_wR_factor_ref'] if cif_dic['_refine_ls_wR_factor_ref'] else cif_dic[
+                   '_refine_ls_wR_factor_gt'],
+               cif_dic['_refine_ls_R_factor_gt'] if cif_dic['_refine_ls_R_factor_gt'] else cif_dic[
+                   '_refine_ls_R_factor_all'],
                cif_dic['_refine_ls_goodness_of_fit_ref'],
                cif_dic['_refine_ls_shift_su_max'],
                peakhole,
@@ -580,14 +584,14 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
             ltol = 0.03
             atol = 1.0
     volume = vol_unitcell(*cell)
-    cells = structures.find_by_volume(volume, vol_threshold)
+    cells: List = structures.find_by_volume(volume, vol_threshold)
     if sublattice:
         # sub- and superlattices:
         for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
             # First a list of structures where the volume is similar:
             cells.extend(structures.find_by_volume(v, vol_threshold))
         cells = list(set(cells))
-    idlist2 = []
+    idlist2: List = []
     # Real lattice comparing in G6:
     if cells:
         lattice1 = lattice.Lattice.from_parameters(*cell)
@@ -667,21 +671,21 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     the difference.
     """
     #
-    results = []
-    cell_results = []
-    spgr_results = []
-    elincl_results = []
-    txt_results = []
-    txt_ex_results = []
-    date_results = []
-    states = {'date'  : False,
-              'cell'  : False,
-              'elincl': False,
-              'elexcl': False,
-              'txt'   : False,
-              'txt_ex': False,
-              'spgr'  : False,
-              'rval'  : False}
+    results: List = []
+    cell_results: List = []
+    spgr_results: List = []
+    elincl_results: List = []
+    txt_results: List = []
+    txt_ex_results: List = []
+    date_results: List = []
+    states: Dict[str, bool] = {'date'  : False,
+                               'cell'  : False,
+                               'elincl': False,
+                               'elexcl': False,
+                               'txt'   : False,
+                               'txt_ex': False,
+                               'spgr'  : False,
+                               'rval'  : False}
     cell = is_valid_cell(cellstr)
     try:
         spgr = int(it_num.split()[0])
@@ -709,7 +713,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
         txt_results = [i[0] for i in structures.find_by_strings(txt)]
     if txt_ex:
         states['txt_ex'] = True
-        txt_ex_results = [i[0] for i in structures.find_by_strings(txt_ex)]
+        txt_ex_results: List = [i[0] for i in structures.find_by_strings(txt_ex)]
     if date1 != date2:
         states['date'] = True
         date_results = find_dates(structures, date1, date2)

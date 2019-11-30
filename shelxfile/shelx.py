@@ -82,7 +82,7 @@ class ShelXFile():
     _goof_regex = re.compile(r'^REM\swR2\s=\s.*,\sGooF', re.IGNORECASE)
     _spgrp_regex = re.compile(r'^REM\s+\S+\s+in\s+\S+', re.IGNORECASE)
 
-    @time_this_method
+    #@time_this_method
     def __init__(self: 'ShelXFile', resfile: str):
         """
         Reads the shelx file and extracts information.

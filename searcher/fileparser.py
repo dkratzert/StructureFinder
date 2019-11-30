@@ -14,7 +14,7 @@ Created on 09.02.2015
 import os
 from pathlib import Path
 from pprint import pprint
-from typing import List
+from typing import List, Dict, Union, Any
 
 from searcher.atoms import sorted_atoms
 
@@ -28,7 +28,7 @@ class Cif(object):
         if options is None:
             options = {'modification_time': "", 'file_size': ""}
         # This is a set of keys that are already there:
-        self.cif_data = {
+        self.cif_data: Dict[str, Union[str, Any]] = {
             "data"                                : '',
             "_audit_contact_author_name"          : '',
             "_cell_length_a"                      : '',
@@ -100,7 +100,7 @@ class Cif(object):
             "file_size"                           : options['file_size']
         }
 
-    def parsefile(self, txt: list):
+    def parsefile(self, txt: list) -> bool:
         """
         This method parses the cif file. Currently, only single items and atoms are supported.
         :param txt: cif file as list without line endings
@@ -111,21 +111,21 @@ class Cif(object):
         >>> cif.loops[0]
         {'_publ_author_name': 'Eva Hevia'}
         """
-        data = False
-        loop = False
-        hkl = False
-        loophead_list = []
-        save_frame = False
-        loops = []
-        loopkey = ''
-        loop_body = False
-        num = 0
-        semi_colon_text_field = ''
-        semi_colon_text_list = []
-        cont = False  # continue to next line if True
-        textlen = len(txt)
+        data: bool = False
+        loop: bool = False
+        hkl: bool = False
+        loophead_list: list = []
+        save_frame: bool = False
+        loops: List[Dict[str, str]] = []
+        loopkey: str = ''
+        loop_body: bool = False
+        num: int = 0
+        semi_colon_text_field: str = ''
+        semi_colon_text_list: List[str] = []
+        cont: bool = False  # continue to next line if True
+        textlen: int = len(txt)
         for num, line in enumerate(txt):
-            line = line.rstrip('\r\n ')
+            line: str = line.rstrip('\r\n ')
             if not line:
                 loop = False
                 loophead_list.clear()
@@ -210,7 +210,7 @@ class Cif(object):
             if semi_colon_text_field:
                 if not line.lstrip().startswith(";"):
                     semi_colon_text_list.append(line)
-                    continue  # otherwise, the next line would end the text field 
+                    continue  # otherwise, the next line would end the text field
                 if line.startswith(";") or line.startswith('_') or line.startswith('loop_'):
                     if not semi_colon_text_list:
                         continue
@@ -243,9 +243,9 @@ class Cif(object):
                 continue
             elif line[:5] == "save_" and save_frame:
                 save_frame = False
-        self.cif_data['_loop'] = loops
+        self.cif_data['_loop']: List[Dict[str, str]] = loops
         self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(self.symm)
-        self.cif_data['file_length_lines'] = num + 1
+        self.cif_data['file_length_lines']: int = num + 1
         # TODO: implement detection of self.cif_data["_space_group_centring_type"] by symmcards.
         if not data:
             return False
@@ -322,7 +322,7 @@ class Cif(object):
         return out
 
     @property
-    def cell(self) -> List:
+    def cell(self) -> List[float]:
         """
         >>> cif = Cif()
         >>> ok = cif.parsefile(Cif.readfile(r'./test-data/COD/4060314.cif'))
@@ -360,10 +360,17 @@ class Cif(object):
         return [a, b, c, alpha, beta, gamma]
 
     @property
-    def loops(self) -> list:
+    def loops(self) -> List[Dict]:
+        """
+        >>> from searcher.fileparser import Cif
+        >>> cif = Cif()
+        >>> ok = cif.parsefile(Cif.readfile(r'./test-data/COD/4060314.cif'))
+        >>> cif.loops[0]
+        {'_publ_author_name': 'Eva Hevia'}
+        """
         return self.cif_data['_loop']
 
-    def loop_items(self, item):
+    def loop_items(self, item: str) -> List[str]:
         """
         >>> cif = Cif()
         >>> ok = cif.parsefile(Cif.readfile(r'./test-data/COD/4060314.cif'))
@@ -376,10 +383,10 @@ class Cif(object):
         return [x[item] for x in self.loops if item in x]
 
     @property
-    def atoms(self) -> list:
+    def atoms(self) -> List[Union[str, str, float, float, float, float, int]]:
         """
         A convenient way of getting atoms from the cif file
-        [Name type x y z occupancy part]
+        [Name, type, x, y, z, occupancy, part]
         """
         for item in self._loop:
             try:
@@ -394,12 +401,13 @@ class Cif(object):
                 try:
                     # The atom type
                     type_symbol = item['_atom_site_type_symbol']
-                    if not type_symbol in sorted_atoms:
+                    if type_symbol not in sorted_atoms:
+                        # For cases where type is not pure element name like Na1+:
                         type_symbol = self._atom_from_symbol(type_symbol)
                 except KeyError:
-                    type_symbol = item['_atom_site_label'].split('(')[0].capitalize()
+                    label = item['_atom_site_label'].split('(')[0].capitalize()
                     # As last resort: cut out the atom type from the label
-                    type_symbol = self._atom_from_symbol(type_symbol)
+                    type_symbol = self._atom_from_symbol(label)
                 try:
                     # The occupancy:
                     occu = float(item['_atom_site_occupancy'].split('(')[0])
@@ -424,7 +432,12 @@ class Cif(object):
                 continue
 
     @staticmethod
-    def _atom_from_symbol(type_symbol):
+    def _atom_from_symbol(type_symbol: str) -> str:
+        """
+        Tries to get an element name from a string like Na1+
+        :param type_symbol: a string starting with an element name.
+        :return: a real element name
+        """
         if type_symbol not in sorted_atoms:
             for n in [2, 1]:
                 if type_symbol[:n] in sorted_atoms:
@@ -433,7 +446,7 @@ class Cif(object):
         return type_symbol
 
     @property
-    def symm(self) -> list:
+    def symm(self) -> List[str]:
         """
         Yields symmetry operations.
         >>> cif = Cif()
@@ -451,7 +464,7 @@ class Cif(object):
             return f.readlines()
 
     @staticmethod
-    def delimit_line(line: str) -> list:
+    def delimit_line(line: str) -> List[str]:
         """
         Searches for delimiters in a cif line and returns a list of the respective values.
         >>> Cif.delimit_line("Aminoff, G.")

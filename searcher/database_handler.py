@@ -14,7 +14,7 @@ Created on 09.02.2015
 
 import sys
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
-from typing import List, Union
+from typing import List, Union, Tuple
 
 from searcher.atoms import sorted_atoms
 
@@ -818,13 +818,11 @@ class StructureTable():
         else:
             return cell
 
-    def find_by_volume(self, volume, threshold=0.03):
+    def find_by_volume(self, volume: float, threshold: float = 0.03) -> List:
         """
         Searches cells with volume between upper and lower limit. Returns the Id and the unit cell.
         :param threshold: Volume uncertaincy where to search
-        :type threshold: float
         :param volume: the unit cell volume
-        :type volume: float
         :return: list
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_volume(3021.9, threshold=0.01)
@@ -923,13 +921,13 @@ class StructureTable():
         result = self.database.db_request(req, (value,))
         return self.result_to_list(result)
 
-    def result_to_list(self, result):
+    def result_to_list(self, result: Union[List, Tuple])-> List:
         if result and len(result) > 0:
             return [x[0] for x in result]
         else:
             return []
 
-    def find_by_elements(self, elements: list, excluding: list = None, onlyincluded: bool = False) -> list:
+    def find_by_elements(self, elements: list, excluding: list = None, onlyincluded: bool = False) -> List[int]:
         """
         Find structures where certain elements are included in the sum formula.
 
@@ -966,7 +964,7 @@ class StructureTable():
         result = self.database.db_request(req)
         return self.result_to_list(result)
 
-    def find_by_date(self, start='0000-01-01', end='NOW'):
+    def find_by_date(self, start='0000-01-01', end='NOW')-> List:
         """
         Find structures between start and end date.
 
@@ -980,7 +978,7 @@ class StructureTable():
         result = self.database.db_request(req, (start, end))
         return self.result_to_list(result)
 
-    def find_by_rvalue(self, rvalue: float):
+    def find_by_rvalue(self, rvalue: float) -> List:
         """
         Finds structures with R1 value better than rvalue. I search both R1 values, because often one or even both
         are missing.
@@ -1009,7 +1007,7 @@ class StructureTable():
         else:
             return False
 
-    def get_database_version(self):
+    def get_database_version(self) -> int:
         """
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.get_database_version()
@@ -1019,9 +1017,9 @@ class StructureTable():
               SELECT Format FROM database_format;
               """
         try:
-            version = self.database.db_request(req)[0][0]
+            version: int = self.database.db_request(req)[0][0]
         except IndexError:
-            version = 0
+            version: int = 0
         return version
 
     def set_database_version(self, version=0):
