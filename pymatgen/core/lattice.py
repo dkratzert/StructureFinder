@@ -1168,14 +1168,21 @@ if __name__ == '__main__':
     cell11 = [54.046, 55.329, 56.702, 90.00, 90.00, 90.00]
 
     c1 = (80.36, 80.36, 99.44, 90, 90, 120)
+    
+    # H. Wadepohl:
+    cell12 = [float(x) for x in "5.2601 9.1644 10.6090 104.851 104.324 100.457 ".split()]
+    cell13 = [float(x) for x in "5.2684 9.2080 10.6641 69.559 76.132 79.767".split()]
+    # H. Wadepohl2 TOTGOY:
+    cell14 = [float(x) for x in "7.5675 13.1966 11.3486   90.000  103.608   90.000 ".split()]
+    cell15 = [float(x) for x in "7.6870 13.2020 11.5790   90.000  105.840   90.000".split()]
 
     # latt5 = Lattice.from_string(cell5)
     # map = latt5.find_mapping(Lattice.from_string(cell6), ltol=0.0005)
     # print(map)
 
-    lattice7 = Lattice.from_parameters(*cell7)
-    lattice8 = Lattice.from_parameters(*cell11)
-    map = lattice7.find_mapping(lattice8, ltol=1.5, atol=1, skip_rotation_matrix=True)
+    l1 = Lattice.from_parameters(*cell12)
+    l2 = Lattice.from_parameters(*cell4)
+    map = l1.find_mapping(l2, ltol=1.5, atol=1, skip_rotation_matrix=True)
     # for i in map:
     #    print(i)
     if map:
