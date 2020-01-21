@@ -35,7 +35,14 @@ class DatabaseRequest():
         """
         # open the database
         self.con = connect(dbfile)
-        # self.con.execute("PRAGMA foreign_keys = ON")
+        self.con.execute("PRAGMA foreign_keys = ON")
+        ## These make requests faster: ###
+        self.con.execute("PRAGMA main.journal_mode = MEMORY;")
+        self.con.execute("PRAGMA temp.journal_mode = MEMORY;")
+        self.con.execute("PRAGMA main.cache_size = -20000;")
+        self.con.execute("PRAGMA recursive_triggers = 1;")
+        self.con.execute("PRAGMA main.synchronous = 0;")
+        self.con.execute("PRAGMA threads = 2;")
         # self.con.text_factory = str
         # self.con.text_factory = bytes
         with self.con:
