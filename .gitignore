@@ -77,3 +77,7 @@ test3.sqlite
 cellcomp/.ncdist.cpp.cppimporthash
 cellcomp/ncdist.cpython-37m-darwin.so
 cellcomp/ncdist.cp37-win_amd64.pyd
+test-data/atomstwoline-finalcif.cif
+test-data/COD/finalcif-crash.txt
+test-data/ICSD/1925_Barth, T._Ca (Ti O3)_C m m m_Calcium titanate.cif
+test-data/ICSD/1925_Barth, T._Ca (Ti O3)_C m m m_Calcium titanate.cif

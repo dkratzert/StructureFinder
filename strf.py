@@ -24,7 +24,7 @@ from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QResizeEvent
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
 from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow, \
     QMessageBox
@@ -291,6 +291,13 @@ class StartStructureDB(QMainWindow):
             self.search_for_res_cell(final_path)
         if ending == '.cif':
             self.search_for_cif_cell(final_path)
+
+    def resizeEvent(self, a0: QResizeEvent) -> None:
+        super(StartStructureDB, self).resizeEvent(a0)
+        try:
+            self.view.reload()
+        except AttributeError:
+            pass
 
     @staticmethod
     def validate_sumform(inelem: list):
