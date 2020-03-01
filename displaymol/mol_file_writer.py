@@ -42,7 +42,7 @@ class MolFile(object):
         X Y Z Element
         """
         atoms = []
-        for num, at in enumerate(self.atoms):
+        for at in self.atoms:
             atoms.append("{:>10.4f}{:>10.4f}{:>10.4f} {:<2s}".format(at[2], at[3], at[4], at[1]))
         return '\n'.join(atoms)
 
