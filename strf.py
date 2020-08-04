@@ -67,9 +67,12 @@ except Exception as e:
 
 """
 TODO:
-- fix bug with gemmi written files and ;
-- Use QPainter to draw molecule?
-- Use PyQt3D
+- use gemmi for cif files
+- add options
+- add possibility to append new cif/res
+- simplify database tables?
+- refractor indexer, test pyfilesystem api
+- improve data model of molecule viewer
 - http://nglviewer.org/ngl/gallery/index.html
 - Use spellfix for text search: https://www.sqlite.org/spellfix1.html
 
