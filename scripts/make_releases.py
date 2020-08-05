@@ -42,7 +42,7 @@ except:
 
 def make_distribs():
     # create binary distribution of 64bit variant:
-    subprocess.run(['venv2/Scripts/pyinstaller.exe',
+    subprocess.run(['venv/Scripts/pyinstaller.exe',
                     '--clean',
                     '-p',
                     r'D:\Programme\Windows Kits\10\Redist\ucrt\DLLs\x64',
