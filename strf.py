@@ -23,6 +23,7 @@ from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
+from typing import Union
 
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
 from PyQt5.QtGui import QIcon, QResizeEvent
@@ -125,6 +126,7 @@ class StartStructureDB(QMainWindow):
         self.progress = QProgressBar(self)
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
+        self.ui.appendDirButton.setDisabled(True)
         # self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
         self.apx = None
@@ -199,6 +201,7 @@ class StartStructureDB(QMainWindow):
         self.ui.importDatabaseButton.clicked.connect(self.import_database_file)
         self.ui.saveDatabaseButton.clicked.connect(self.save_database)
         self.ui.importDirButton.clicked.connect(self.import_file_dirs)
+        self.ui.appendDirButton.clicked.connect(self.append_file_dirs)
         self.ui.openApexDBButton.clicked.connect(self.import_apex_db)
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
         # self.abort_import_button.clicked.connect(self.abort_import)
@@ -537,7 +540,11 @@ class StartStructureDB(QMainWindow):
     def get_startdir_from_dialog(self):
         return QFileDialog.getExistingDirectory(self, 'Open Directory', '')
 
-    def import_file_dirs(self, startdir=None):
+    def append_file_dirs(self, startdir: Union[str, None] = None):
+        """Appends new files to database instead of creating a new database"""
+        self.import_file_dirs(startdir=startdir, append=True)
+
+    def import_file_dirs(self, startdir=None, append: bool = False):
         """
         Method to import res and cif files into the DB. "startdir" defines the directorz where to start indexing.
         """
@@ -546,8 +553,9 @@ class StartStructureDB(QMainWindow):
         self.tmpfile = True
         self.apexdb = 0
         self.statusBar().showMessage('')
-        self.close_db()
-        self.start_db()
+        if not append:
+            self.close_db()
+            self.start_db()
         self.progressbar(1, 0, 20)
         # self.abort_import_button.show()
         if not startdir:
@@ -555,8 +563,13 @@ class StartStructureDB(QMainWindow):
         if not startdir:
             self.progress.hide()
             # self.abort_import_button.hide()
+        lastid = self.structures.database.get_lastrowid()
+        if not lastid:
+            lastid = 1
+        else:
+            lastid += 1
         filecrawler.put_files_in_db(self, searchpath=startdir, fillres=self.ui.add_res.isChecked(),
-                                    fillcif=self.ui.add_cif.isChecked())
+                                    fillcif=self.ui.add_cif.isChecked(), lastid=lastid)
         self.progress.hide()
         try:
             self.structures.database.init_textsearch()
@@ -594,6 +607,7 @@ class StartStructureDB(QMainWindow):
         copy_on_close is used to save the databse into a file during close_db().
         :param copy_on_close: Path to where the file should be copied after close()
         """
+        self.ui.appendDirButton.setDisabled(True)
         self.ui.saveDatabaseButton.setDisabled(True)
         with suppress(Exception):
             self.structures.database.commit_db()
@@ -637,6 +651,7 @@ class StartStructureDB(QMainWindow):
         self.dbfdesc, self.dbfilename = tempfile.mkstemp()
         self.structures = database_handler.StructureTable(self.dbfilename)
         self.structures.database.initialize_db()
+        self.ui.appendDirButton.setEnabled(True)
 
     @pyqtSlot('QModelIndex', name="get_properties")
     def get_properties(self, item):
