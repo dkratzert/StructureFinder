@@ -19,6 +19,7 @@ import tempfile
 import time
 from contextlib import suppress
 from datetime import date
+from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
@@ -26,11 +27,11 @@ from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
 from PyQt5.QtGui import QIcon, QResizeEvent
 from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
-from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow, \
+from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox
-from math import sin, radians
 
 from displaymol.sdm import SDM
+from misc.settings import StructureFinderSettings
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
 
@@ -95,6 +96,7 @@ else:
 if DEBUG:
     try:
         from PyQt5 import uic
+
         uic.compileUiDir(os.path.join(application_path, './gui'))
         print('recompiled ui')
     except:
@@ -164,6 +166,7 @@ class StartStructureDB(QMainWindow):
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         self.ui.cifList_treeWidget.addAction(self.ui.actionGo_to_All_CIF_Tab)
         self.apexdb = 0
+        self.settings = StructureFinderSettings()
         if len(sys.argv) > 1:
             self.dbfilename = sys.argv[1]
             if isfile(self.dbfilename):
@@ -175,6 +178,10 @@ class StartStructureDB(QMainWindow):
                     print(e)
                     if DEBUG:
                         raise
+                os.chdir(str(Path(self.dbfilename).parent))
+                self.settings.save_current_dir(str(Path(self.dbfilename).parent))
+        else:
+            os.chdir(self.settings.load_last_workdir())
         # select the first item in the list
         item = self.ui.cifList_treeWidget.topLevelItem(0)
         self.ui.cifList_treeWidget.setCurrentItem(item)
@@ -565,10 +572,9 @@ class StartStructureDB(QMainWindow):
         self.structures.database.commit_db()
         self.ui.cifList_treeWidget.show()
         self.set_columnsize()
-        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        # self.ui.cifList_treeWidget.resizeColumnToContents(1)
-        # self.ui.cifList_treeWidget.sortByColumn(0, 0)
-        # self.abort_import_button.hide()
+        self.settings.save_current_dir(str(Path(startdir)))
+        os.chdir(str(Path(startdir).parent))
+        self.ui.saveDatabaseButton.setEnabled(True)
 
     def progressbar(self, curr: int, min: int, max: int) -> None:
         """
@@ -588,6 +594,7 @@ class StartStructureDB(QMainWindow):
         copy_on_close is used to save the databse into a file during close_db().
         :param copy_on_close: Path to where the file should be copied after close()
         """
+        self.ui.saveDatabaseButton.setDisabled(True)
         with suppress(Exception):
             self.structures.database.commit_db()
         self.ui.searchCellLineEDit.clear()
@@ -645,24 +652,28 @@ class StartStructureDB(QMainWindow):
         self.structureId = structure_id
         return True
 
-    def get_save_name_from_dialog(self):
-        return QFileDialog.getSaveFileName(self, caption='Save File', directory='./', filter="*.sqlite")
+    def get_save_name_from_dialog(self, dir: str = './'):
+        return QFileDialog.getSaveFileName(self, caption='Save File', directory=dir, filter="*.sqlite")
 
     def save_database(self, save_name=None) -> bool:
         """
         Saves the database to a certain file. Therefore I have to close the database.
         """
+        if not hasattr(self.structures, 'database'):
+            return False
         self.structures.database.commit_db()
         if self.structures.database.con.total_changes > 0:
             self.structures.set_database_version(self.apexdb)
         status = False
         if not save_name:
-            save_name, _ = self.get_save_name_from_dialog()
+            save_name, _ = self.get_save_name_from_dialog(dir=self.settings.load_last_workdir())
         if save_name:
             if isfile(save_name) and samefile(self.dbfilename, save_name):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
                 return False
             status = self.close_db(save_name)
+            os.chdir(str(Path(save_name).parent))
+            self.settings.save_current_dir(str(Path(save_name).parent))
         if status:
             self.statusBar().showMessage("Database saved.", msecs=5000)
 
@@ -1072,8 +1083,8 @@ class StartStructureDB(QMainWindow):
         tree_item.setData(3, 0, structure_id)  # id
         self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
 
-    def get_import_filename_from_dialog(self):
-        return QFileDialog.getOpenFileName(self, caption='Open File', directory='./', filter="*.sqlite")[0]
+    def get_import_filename_from_dialog(self, dir: str = './'):
+        return QFileDialog.getOpenFileName(self, caption='Open File', directory=dir, filter="*.sqlite")[0]
 
     def import_database_file(self, fname=None) -> bool:
         """
@@ -1082,7 +1093,9 @@ class StartStructureDB(QMainWindow):
         self.tmpfile = False
         self.close_db()
         if not fname:
-            fname = self.get_import_filename_from_dialog()
+            print('####', self.settings.load_last_workdir())
+            os.chdir(self.settings.load_last_workdir())
+            fname = self.get_import_filename_from_dialog(dir=self.settings.load_last_workdir())
         if not fname:
             return False
         print("Opened {}.".format(fname))
@@ -1099,6 +1112,9 @@ class StartStructureDB(QMainWindow):
                 pass
         except (TypeError, ProgrammingError):
             return False
+        self.settings.save_current_dir(str(Path(fname).parent))
+        os.chdir(str(Path(fname).parent))
+        self.ui.saveDatabaseButton.setEnabled(True)
         return True
 
     def open_apex_db(self, user: str, password: str, host: str) -> bool:
@@ -1111,6 +1127,7 @@ class StartStructureDB(QMainWindow):
             connok = self.apx.initialize_db(user, password, host)
         except Exception:
             self.passwd_handler()
+        self.ui.saveDatabaseButton.setEnabled(True)
         return connok
 
     def get_name_from_p4p(self):
@@ -1204,7 +1221,7 @@ class StartStructureDB(QMainWindow):
         num = 0
         time1 = time.perf_counter()
         conn = self.open_apex_db(user, password, host)
-        #if not conn:
+        # if not conn:
         #    self.abort_import_button.hide()
         #    return None
         cif = Cif()
@@ -1242,7 +1259,7 @@ class StartStructureDB(QMainWindow):
                 if n % 300 == 0:
                     self.structures.database.commit_db()
                 num += 1
-                #if not self.decide_import:
+                # if not self.decide_import:
                 #    # This means, import was aborted.
                 #    self.abort_import_button.hide()
                 #    self.decide_import = True
@@ -1269,8 +1286,8 @@ class StartStructureDB(QMainWindow):
         """
         self.ui.cifList_treeWidget.sortByColumn(0, 0)
         treewidth = self.ui.cifList_treeWidget.width()
-        self.ui.cifList_treeWidget.setColumnWidth(0, treewidth / 4)
-        self.ui.cifList_treeWidget.setColumnWidth(1, treewidth / 5)
+        self.ui.cifList_treeWidget.setColumnWidth(0, int(treewidth / 4.0))
+        self.ui.cifList_treeWidget.setColumnWidth(1, int(treewidth / 5.0))
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(1)
 
