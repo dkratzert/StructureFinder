@@ -56,7 +56,7 @@ def make_distribs():
                     '--windowed',
                     'strf.py'])
 
-    innosetup_compiler = r'D:/Program Files (x86)/Inno Setup 5/ISCC.exe'
+    innosetup_compiler = r'D:/Program Files (x86)/Inno Setup 6/ISCC.exe'
     # Run 64bit setup compiler
     subprocess.run([innosetup_compiler,
                     r'scripts\strf-install_win64.iss', ])
