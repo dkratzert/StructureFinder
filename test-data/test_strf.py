@@ -171,7 +171,7 @@ class TestApplication(unittest.TestCase):
         self.assertEqual('C107 H142 N14 O26', self.myapp.ui.allCifTreeWidget.topLevelItem(10).text(1))
         self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 
-    @unittest.skip()
+    @unittest.skip(' ')
     def test_res_file_tab(self):
         item = self.myapp.ui.cifList_treeWidget.topLevelItem(261)
         self.myapp.ui.cifList_treeWidget.setCurrentItem(item)
@@ -398,6 +398,7 @@ class TestApplication(unittest.TestCase):
         self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
         self.assertEqual("Found 0 structures.", self.myapp.statusBar().currentMessage())
 
+
 ######################################################
 ##  Database testing:
 ######################################################
@@ -473,6 +474,10 @@ class TestParser(unittest.TestCase):
         self.cif = Cif()
 
     def test_file1(self):
-        cifok = self.cif.parsefile(Path(r'test-data/668839.cif').read_text().splitlines(keepends=True))
+        cifok = self.cif.parsefile(Path('test-data/668839.cif').read_text().splitlines(keepends=True))
         self.assertEqual(True, cifok)
         self.assertEqual(69, len(list(self.cif.atoms)))
+
+
+if __name__ == '__main__':
+    unittest.main()

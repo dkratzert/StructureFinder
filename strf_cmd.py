@@ -51,12 +51,10 @@ parser.add_argument("--delete",
                     help="Delete and do not append to previous database.")
 parser.add_argument("-f",
                     dest='cell',
-                    default=False,
-                    action='append',
+                    #nargs=6,
+                    type=lambda s: [float(item) for item in s.split()],
                     help='Search for the specified unit cell.'
                     )
-
-args = parser.parse_args()
 
 
 def check_update():
@@ -76,13 +74,13 @@ def find_cell(cell: list):
     else:
         dbfilename = 'structuredb.sqlite'
     db, structures = get_database(dbfilename)
-    #if args.more_results:
+    # if args.more_results:
     #    # more results:
     #    print('more results on')
     #    vol_threshold = 0.04
     #    ltol = 0.08
     #    atol = 1.8
-    #else:
+    # else:
     # regular:
     vol_threshold = 0.02
     ltol = 0.03
@@ -109,23 +107,18 @@ def find_cell(cell: list):
     else:
         print('\n{} Structures found:'.format(len(idlist)))
         searchresult = structures.get_all_structure_names(idlist)
-    print('  ID   |   path     |   filename |   data   ')
-    print('-'*80)
+    print('ID  |      path                                                                |   filename            |   data   ')
+    print('-' * 130)
     for res in searchresult:
-        Id, measurement, path, filename, dataname = [str(x) for x in res]
-        print('{:}   |   {:<15s}       |      {:s}      |  {:s}'.format(measurement, path, filename, dataname, Id))
+        Id = res[0]
+        path, filename, dataname = [x.decode('utf-8') for x in res if isinstance(x, bytes)]
+        print('{:} | {:70s} | {:<25s} | {:s}'.format(Id, path, filename, dataname, ))
 
-def run_index():
+
+def run_index(args=None):
     ncifs = 0
-    try:
-        if not args.dir:
-            parser.print_help()
-            check_update()
-            sys.exit()
-    except IndexError:
-        print("No valid search directory given.\n")
-        print("Please run this as 'python3 stdb_cmd.py -d [directory]'\n")
-        print("stdb_cmd will search for .cif files in [directory] recoursively.")
+    if not args:
+        print('')
     else:
         if not any([args.fillres, args.fillcif]):
             print("Error: You need to give either option -c, -r or both.")
@@ -192,5 +185,18 @@ def get_database(dbfilename):
 
 
 if __name__ == '__main__':
-    run_index()
-    #find_cell('10.5086  20.9035  20.5072   90.000   94.130   90.000'.split())
+    args = parser.parse_args()
+    if args.cell:
+        find_cell(args.cell)
+    else:
+        try:
+            if not args.dir:
+                parser.print_help()
+                check_update()
+                sys.exit()
+        except IndexError:
+            print("No valid search directory given.\n")
+            print("Please run this as 'python3 stdb_cmd.py -d [directory]'\n")
+            print("stdb_cmd will search for .cif files in [directory] recoursively.")
+        run_index(args)
+    # find_cell('10.5086  20.9035  20.5072   90.000   94.130   90.000'.split())

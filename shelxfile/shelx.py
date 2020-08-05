@@ -1111,7 +1111,7 @@ class ShelXFile():
 if __name__ == "__main__":
     # get_commands()
     # sys.exit()
-    file = r'/Users/daniel/GitHub/StructureFinder/test-data/p21c_a_only_isotropic.res'
+    file = r'/Users/daniel/GitHub/StructureFinder/p21c_a_only_isotropic.res'
     try:
         shx = ShelXFile(file)
     except Exception:

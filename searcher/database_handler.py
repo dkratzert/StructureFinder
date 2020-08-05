@@ -310,7 +310,7 @@ class DatabaseRequest():
         # commit is very slow:
         try:
             self.con.commit()
-        except ProgrammingError:
+        except (AttributeError, ProgrammingError):
             pass
         try:
             self.con.close()
@@ -1046,7 +1046,7 @@ class StructureTable():
     def set_database_version(self, version=0):
         """
         Database version to indicate apex or other formats. A value of 1 means the data is from APEX.
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('test-data/test.sql')
         >>> db.get_database_version()
         0
         """
