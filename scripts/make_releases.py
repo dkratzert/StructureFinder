@@ -43,7 +43,7 @@ except:
 def make_distribs():
     # create binary distribution of 64bit variant:
     subprocess.run(['venv/Scripts/pyinstaller.exe',
-                    'StructureFinder_win32.spec',
+                    'StructureFinder.spec',
                     '--clean',
                     '-y',
                     ])
