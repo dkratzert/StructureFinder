@@ -412,14 +412,14 @@ class StartStructureDB(QMainWindow):
         the difference.
         """
         self.clear_fields()
-        states = {'date'  : False,
-                  'cell'  : False,
+        states = {'date': False,
+                  'cell': False,
                   'elincl': False,
                   'elexcl': False,
-                  'txt'   : False,
+                  'txt': False,
                   'txt_ex': False,
-                  'spgr'  : False,
-                  'rval'  : False}
+                  'spgr': False,
+                  'rval': False}
         if not self.structures:
             return
         cell = is_valid_cell(self.ui.adv_unitCellLineEdit.text())

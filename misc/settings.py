@@ -20,5 +20,7 @@ class StructureFinderSettings():
     def load_last_workdir(self) -> str:
         self.settings.beginGroup('WorkDir')
         lastdir = self.settings.value("dir", type=str)
+        if not lastdir:
+            lastdir = './'
         self.settings.endGroup()
         return lastdir
