@@ -43,17 +43,10 @@ except:
 def make_distribs():
     # create binary distribution of 64bit variant:
     subprocess.run(['venv/Scripts/pyinstaller.exe',
+                    'StructureFinder_win32.spec',
                     '--clean',
-                    '-p',
-                    r'D:\Programme\Windows Kits\10\Redist\ucrt\DLLs\x64',
-                    r'--add-data=gui;gui',
-                    r'--add-data=displaymol;displaymol',
-                    r'--add-data=icons;icons',
-                    '--hidden-import', 'PyQt5.sip',
-                    '-n', 'StructureFinder',
-                    '-y', '-i', 'icons/strf.ico',
-                    '--windowed',
-                    'strf.py'])
+                    '-y',
+                    ])
 
     innosetup_compiler = r'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
     # Run 64bit setup compiler
