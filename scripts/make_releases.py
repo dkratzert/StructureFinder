@@ -5,6 +5,12 @@
 This script has to be run from the main dir e.g. D:\GitHub\StructureFinder
 """
 import os
+import sys
+from pathlib import Path
+
+app_path = str(Path(os.path.dirname(os.path.abspath(__file__))).parent)
+main_path = str(Path(os.path.dirname(os.path.abspath(__file__))))
+sys.path.extend([app_path, main_path])
 import subprocess
 
 from PyQt5 import uic
@@ -56,7 +62,7 @@ def make_distribs():
                     r'scripts\strf-install_win64.iss', ])
 
     ## Run 32bit setup compiler
-    #subprocess.run([innosetup_compiler,
+    # subprocess.run([innosetup_compiler,
     #                r'scripts\strf-install_win32b.iss', ])
 
 
