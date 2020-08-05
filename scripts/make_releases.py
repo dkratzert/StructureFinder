@@ -46,7 +46,6 @@ def make_distribs():
                     '--clean',
                     '-p',
                     r'D:\Programme\Windows Kits\10\Redist\ucrt\DLLs\x64',
-                    r'--add-binary=C:\tools\opengl64\opengl32sw.dll;opengl32sw.dll',
                     r'--add-data=gui;gui',
                     r'--add-data=displaymol;displaymol',
                     r'--add-data=icons;icons',
