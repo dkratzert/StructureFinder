@@ -124,13 +124,13 @@ def filewalker_walk(startdir: str, patterns: list):
         for filen in files:
             omit = False
             if any(fnmatch.fnmatch(filen, pattern) for pattern in patterns):
-                fullpath = os.path.abspath(os.path.join(root, filen))
-                if os.stat(fullpath).st_size == 0:
-                    continue
                 for ex in excluded_names:
-                    if re.search(ex, fullpath, re.I):
+                    if re.search(ex, root, re.I):
                         omit = True
                 if omit:
+                    continue
+                fullpath = os.path.abspath(os.path.join(root, filen))
+                if os.stat(fullpath).st_size == 0:
                     continue
                 if filen == 'xd_geo.cif':  # Exclude xdgeom cif files
                     continue
