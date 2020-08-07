@@ -269,7 +269,7 @@ class DatabaseRequest():
         row = self.cur.fetchone()
         return row
 
-    def db_request(self, request, *args) -> (list, tuple):
+    def db_request(self, request, *args) -> Union[list, tuple, dict]:
         """
         Performs a SQLite3 database request with "request" and optional arguments
         to insert parameters via "?" into the database request.
@@ -358,7 +358,7 @@ class StructureTable():
         if found:
             return found
 
-    def get_all_structures_as_dict(self, ids: (list, tuple) = None, all=False) -> list:
+    def get_all_structures_as_dict(self, ids: (list, tuple) = None, all=False) -> dict:
         """
         Returns the list of structures as dictionary.
 

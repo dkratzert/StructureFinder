@@ -195,8 +195,8 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 except IndexError:
                     continue
                 if cif:  # means cif object has data inside (cif could be parsed)
-                    tst = fill_db_tables(cif, filename=name, path=filepth, structure_id=lastid,
-                                         structures=structures)
+                    tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid,
+                                                structures=structures)
                     if not tst:
                         continue
                     if self:
@@ -234,8 +234,8 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 except IndexError:
                     continue
                 if cif:
-                    tst = fill_db_tables(cif, filename=z.cifname, path=fullpath,
-                                         structure_id=lastid, structures=structures)
+                    tst = fill_db_with_cif_data(cif, filename=z.cifname, path=fullpath, structure_id=lastid,
+                                                structures=structures)
                     if not tst:
                         if DEBUG:
                             print('cif file not added:', fullpath)
@@ -292,7 +292,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
     return lastid - 1
 
 
-def fill_db_tables(cif: Cif, filename: str, path: str, structure_id: int,
+def fill_db_with_cif_data(cif: Cif, filename: str, path: str, structure_id: int,
                    structures: database_handler.StructureTable):
     """
     Fill all info from cif file into the database tables

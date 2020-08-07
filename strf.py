@@ -966,25 +966,25 @@ class StartStructureDB(QMainWindow):
             if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
                 # more results:
                 vol_threshold = 0.09
-                ltol = 0.2
-                atol = 2.0
+                ltol = 0.1
+                atol = 1.0
             else:
                 # regular:
                 vol_threshold = 0.03
                 ltol = 0.06
-                atol = 1.0
+                atol = 0.5
         else:  # regular database:
             if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
                 # more results:
                 print('more results on')
                 vol_threshold = 0.04
                 ltol = 0.08
-                atol = 1.8
+                atol = 1.0
             else:
                 # regular:
                 vol_threshold = 0.02
-                ltol = 0.03
-                atol = 1.0
+                ltol = 0.025
+                atol = 0.2
         try:
             volume = misc.vol_unitcell(*cell)
             # the fist number in the result is the structureid:
@@ -1265,8 +1265,8 @@ class StartStructureDB(QMainWindow):
                 cif.cif_data["_space_group_centring_type"] = i[28]
                 if comp:
                     cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
-                tst = filecrawler.fill_db_tables(cif=cif, filename=i[8], path=i[12],
-                                                 structure_id=n, structures=self.structures)
+                tst = filecrawler.fill_db_with_cif_data(cif=cif, filename=i[8], path=i[12], structure_id=n,
+                                                        structures=self.structures)
                 if not tst:
                     continue
                 self.add_table_row(filename=i[8], data=i[8], path=i[12], structure_id=str(n))
