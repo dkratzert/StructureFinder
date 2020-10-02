@@ -896,6 +896,16 @@ class StructureTable():
         except(TypeError, KeyError):
             return ()
 
+    def find_by_ccdc_num(self, ccdc: str) -> list:
+        """
+        Find structures with respective CCDC number.
+        """
+        req = """
+        SELECT StructureId FROM Residuals WHERE _database_code_depnum_ccdc_archive IS ?
+        """
+        result = self.database.db_request(req, (ccdc,))
+        return self.result_to_list(result)
+
     def find_by_strings(self, text):
         """
         Searches cells with volume between upper and lower limit

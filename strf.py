@@ -419,7 +419,8 @@ class StartStructureDB(QMainWindow):
                   'txt': False,
                   'txt_ex': False,
                   'spgr': False,
-                  'rval': False}
+                  'rval': False,
+                  'ccdc': False}
         if not self.structures:
             return
         cell = is_valid_cell(self.ui.adv_unitCellLineEdit.text())
@@ -428,6 +429,7 @@ class StartStructureDB(QMainWindow):
         elincl = self.ui.adv_elementsIncLineEdit.text().strip(' ')
         elexcl = self.ui.adv_elementsExclLineEdit.text().strip(' ')
         txt = self.ui.adv_textsearch.text().strip(' ')
+        ccdc_num = self.ui.CCDCNumLineEdit.text().strip(' ')
         try:
             rval = float(self.ui.adv_R1_search_line.text().strip(' '))
             states['rval'] = True
@@ -448,6 +450,11 @@ class StartStructureDB(QMainWindow):
         txt_results = []
         txt_ex_results = []
         date_results = []
+        ccdc_num_results = []
+        ccdc_num_results = self.structures.find_by_ccdc_num(ccdc_num)
+        if ccdc_num_results:
+            self.display_structures_by_idlist(ccdc_num_results)
+            return 
         try:
             spgr = int(spgr.split()[0])
         except Exception:
@@ -1327,7 +1334,6 @@ class StartStructureDB(QMainWindow):
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
-        self.ui.MaintabWidget.setCurrentIndex(0)
         self.ui.SpGrpComboBox.setCurrentIndex(0)
         self.ui.adv_elementsIncLineEdit.clear()
         self.ui.adv_elementsExclLineEdit.clear()
@@ -1336,9 +1342,11 @@ class StartStructureDB(QMainWindow):
         self.ui.adv_textsearch.clear()
         self.ui.adv_textsearch_excl.clear()
         self.ui.adv_unitCellLineEdit.clear()
+        self.ui.CCDCNumLineEdit.clear()
         # I need this to reset the date after clearing the search values in advanced search:
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
+        self.ui.MaintabWidget.setCurrentIndex(0)
 
     def clear_fields(self) -> None:
         """
