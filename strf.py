@@ -703,11 +703,11 @@ class StartStructureDB(QMainWindow):
         """Event filter for mouse clicks."""
         if event.type() == QEvent.MouseButtonDblClick:
             self.copyUnitCell()
-        elif event.type() == QEvent.MouseButtonPress:
+        """elif event.type() == QEvent.MouseButtonPress:
             if event.buttons() == Qt.RightButton:
                 # print("rightbutton")
-                return True
-        return False
+                return True"""
+        return True
 
     def keyPressEvent(self, q_key_event):
         """
