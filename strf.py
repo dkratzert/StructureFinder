@@ -183,7 +183,9 @@ class StartStructureDB(QMainWindow):
                 os.chdir(str(Path(self.dbfilename).parent))
                 self.settings.save_current_dir(str(Path(self.dbfilename).parent))
         else:
-            os.chdir(self.settings.load_last_workdir())
+            lastdir = self.settings.load_last_workdir()
+            if Path(lastdir).exists():
+                os.chdir(self.settings.load_last_workdir())
         # select the first item in the list
         item = self.ui.cifList_treeWidget.topLevelItem(0)
         self.ui.cifList_treeWidget.setCurrentItem(item)
