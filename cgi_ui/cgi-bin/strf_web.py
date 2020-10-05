@@ -78,7 +78,7 @@ def main():
     response.content_type = 'text/html; charset=UTF-8'
     data = {"my_ip": site_ip,
             "title": 'StructureFinder',
-            'host' : host}
+            'host': host}
     output = template('./cgi_ui/views/strf_web', data)
     return output
 
@@ -129,12 +129,14 @@ def adv():
     onlyelem = (request.GET.onlyelem == "true")
     it_num = request.GET.it_num
     r1val = request.GET.r1val
+    ccdc_num = request.GET.ccdc_num
     structures = StructureTable(dbfilename)
     print("Advanced search: elin:", elincl, 'elout:', elexcl, date1, '|', date2, '|', cell_search, 'txin:', txt_in,
-          'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num, 'only:', onlyelem)
+          'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num, 'only:', onlyelem,
+          'CCDC:', ccdc_num)
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt=txt_in, txt_ex=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
-                          structures=structures, it_num=it_num, onlythese=onlyelem, r1val=r1val)
+                          structures=structures, it_num=it_num, onlythese=onlyelem, r1val=r1val, ccdc_num=ccdc_num)
     print("--> Got {} structures from Advanced search.".format(len(ids)))
     return get_structures_json(structures, ids)
 
@@ -270,12 +272,12 @@ def show_cellcheck():
     else:
         cent = 0
     response.content_type = 'text/html; charset=UTF-8'
-    data = {"my_ip"  : site_ip,
-            "title"  : 'StructureFinder',
+    data = {"my_ip": site_ip,
+            "title": 'StructureFinder',
             'cellstr': cellstr,
-            'strid'  : str_id,
-            'cent'   : cent,
-            'host'   : host, }
+            'strid': str_id,
+            'cent': cent,
+            'host': host, }
     output = template('./cgi_ui/views/cellcheckcsd', data)
     return output
 
@@ -287,7 +289,7 @@ def search_cellcheck_csd():
     """
     cmd = request.POST.cmd
     cell = request.POST.cell
-    elements:List = []
+    elements: List = []
     str_id = request.POST.str_id
     if not cell:
         return {}
@@ -348,7 +350,7 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     Returns the next package of table rows for continuos scrolling.
     """
     failure: Dict[str, str] = {
-        "status" : "error",
+        "status": "error",
         "message": "Nothing found."
     }
     if not ids and not show_all:
@@ -665,7 +667,7 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
 
 def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
                     date1: str = None, date2: str = None, structures: StructureTable = None,
-                    it_num: str = None, onlythese: bool = False, r1val: float = 0.0) -> list:
+                    it_num: str = None, onlythese: bool = False, r1val: float = 0.0, ccdc_num: str = '') -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
@@ -678,14 +680,19 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     txt_results: List = []
     txt_ex_results: List = []
     date_results: List = []
-    states: Dict[str, bool] = {'date'  : False,
-                               'cell'  : False,
+    states: Dict[str, bool] = {'date': False,
+                               'cell': False,
                                'elincl': False,
                                'elexcl': False,
-                               'txt'   : False,
+                               'txt': False,
                                'txt_ex': False,
-                               'spgr'  : False,
-                               'rval'  : False}
+                               'spgr': False,
+                               'rval': False,
+                               'ccdc_num': False,
+                               }
+    ccdc_num_results = structures.find_by_ccdc_num(ccdc_num)
+    if ccdc_num_results:
+        return ccdc_num_results
     cell = is_valid_cell(cellstr)
     try:
         spgr = int(it_num.split()[0])
