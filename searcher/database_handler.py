@@ -901,9 +901,9 @@ class StructureTable():
         Find structures with respective CCDC number.
         """
         req = """
-        SELECT StructureId FROM Residuals WHERE _database_code_depnum_ccdc_archive IS ?
+        SELECT StructureId FROM Residuals WHERE _database_code_depnum_ccdc_archive LIKE ?
         """
-        result = self.database.db_request(req, (ccdc,))
+        result = self.database.db_request(req, ('%'+ccdc+'%',))
         return self.result_to_list(result)
 
     def find_by_strings(self, text):
