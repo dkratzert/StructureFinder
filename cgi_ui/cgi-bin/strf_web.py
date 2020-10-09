@@ -680,6 +680,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     txt_results: List = []
     txt_ex_results: List = []
     date_results: List = []
+    ccdc_num_results: List = []
     states: Dict[str, bool] = {'date': False,
                                'cell': False,
                                'elincl': False,
@@ -690,7 +691,8 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
                                'rval': False,
                                'ccdc_num': False,
                                }
-    ccdc_num_results = structures.find_by_ccdc_num(ccdc_num)
+    if ccdc_num:
+        ccdc_num_results = structures.find_by_ccdc_num(ccdc_num)
     if ccdc_num_results:
         return ccdc_num_results
     cell = is_valid_cell(cellstr)

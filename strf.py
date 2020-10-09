@@ -453,7 +453,8 @@ class StartStructureDB(QMainWindow):
         txt_ex_results = []
         date_results = []
         ccdc_num_results = []
-        ccdc_num_results = self.structures.find_by_ccdc_num(ccdc_num)
+        if ccdc_num:
+            ccdc_num_results = self.structures.find_by_ccdc_num(ccdc_num)
         if ccdc_num_results:
             self.display_structures_by_idlist(ccdc_num_results)
             return 
