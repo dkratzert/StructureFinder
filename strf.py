@@ -17,6 +17,7 @@ import shutil
 import sys
 import tempfile
 import time
+import traceback
 from contextlib import suppress
 from datetime import date
 from math import sin, radians
@@ -32,6 +33,7 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QT
     QMessageBox
 
 from displaymol.sdm import SDM
+from misc.dialogs import bug_found_warning
 from misc.settings import StructureFinderSettings
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
@@ -1385,7 +1387,36 @@ class StartStructureDB(QMainWindow):
 
 
 if __name__ == "__main__":
+    def my_exception_hook(exctype, value, error_traceback):
+        """
+        Hooks into Exceptions to create debug reports.
+        """
+        errortext = 'StructureFinder V{} crash report\n\n'.format(VERSION)
+        errortext += 'Please send also the corresponding CIF file, if possible.'
+        errortext += 'Python ' + sys.version + '\n'
+        errortext += sys.platform + '\n'
+        errortext += time.asctime(time.localtime(time.time())) + '\n'
+        errortext += "StructureFinder crashed during the following operation:" + '\n'
+        errortext += '-' * 80 + '\n'
+        errortext += ''.join(traceback.format_tb(error_traceback)) + '\n'
+        errortext += str(exctype.__name__) + ': '
+        errortext += str(value) + '\n'
+        errortext += '-' * 80 + '\n'
+        logfile = Path(r'./StructureFinder-crash.txt')
+        try:
+            logfile.write_text(errortext)
+        except PermissionError:
+            pass
+        sys.__excepthook__(exctype, value, error_traceback)
+        # Hier Fenster für meldung öffnen
+        bug_found_warning(logfile)
+        sys.exit(1)
 
+
+    if not DEBUG:
+        sys.excepthook = my_exception_hook
+    
+    
     # later http://www.pyinstaller.org/
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon('./icons/strf.png'))

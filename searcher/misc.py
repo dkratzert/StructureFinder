@@ -173,6 +173,8 @@ def get_error_from_value(value: str) -> Tuple[float, float]:
         vval, err = value.split("(")
         val = vval.split('.')
         err = err.split(")")[0]
+        if not err:  # for error given as ()
+            err = 0.0
         if len(val) > 1:
             return float(vval), int(err) * (10 ** (-1 * len(val[1])))
         else:
