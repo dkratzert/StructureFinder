@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "50"
+#define MyAppVersion "51"
 #define MyAppPublisher "Daniel Kratzert"
 
 ; Remember, first run pyInstaller script!
@@ -69,6 +69,7 @@ Type: files; Name: "{app}\*.*"
 Type: filesandordirs; Name: "{app}\*"
 
 [InstallDelete]
+Type: filesandordirs; Name: "{app}\*"
 
 [Tasks]
 
