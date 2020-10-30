@@ -712,7 +712,7 @@ class StartStructureDB(QMainWindow):
             if event.buttons() == Qt.RightButton:
                 # print("rightbutton")
                 return True"""
-        return True
+        return False
 
     def keyPressEvent(self, q_key_event):
         """
