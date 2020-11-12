@@ -2,7 +2,7 @@ altgraph==0.17
 docutils==0.16
 future==0.18.2
 macholib==1.14
-numpy==1.19.3
+numpy==1.19.4
 pefile==2019.4.18
 PyInstaller==4.0
 PyQt5==5.15.1

@@ -20,7 +20,7 @@ pip3 install -r requirements.txt
 
 pyinstaller StructureFinder_linux.spec --clean -y
 
-VER=$(cat tools/version.py | grep VERSION | cut -d ' ' -f 3)
+VER=$(cat misc/version.py | grep VERSION | cut -d ' ' -f 3)
 
 mv dist/StructureFinder "dist/StructureFinder-v${VER}_${DISTR}"
 
