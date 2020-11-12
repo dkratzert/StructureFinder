@@ -3,7 +3,7 @@ REM execute me from the main directory
 
 CALL venv\Scripts\activate.bat
 
-pip install pip -U
+venv\Scripts\pip install pip -U
 
 pip install -r requirements.txt
 
