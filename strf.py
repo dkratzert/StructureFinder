@@ -33,7 +33,7 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QT
     QMessageBox
 
 from displaymol.sdm import SDM
-from misc.dialogs import bug_found_warning
+from misc.dialogs import bug_found_warning, do_update_program
 from misc.settings import StructureFinderSettings
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
@@ -244,25 +244,26 @@ class StartStructureDB(QMainWindow):
         """
         Reads the reply from the server and displays a warning in case of an old version.
         """
-        version = 0
+        remote_version = 0
         try:
-            version = int(bytes(reply.readAll()).decode('ascii', 'ignore'))
+            remote_version = int(bytes(reply.readAll()).decode('ascii', 'ignore'))
         except Exception:
             pass
-        if version > VERSION:
-            print('Version {} is outdated (actual is {}).'.format(version, VERSION))
-            self.show_general_warning(
-                r"A newer version of StructureFinder is available under "
-                r"<a href='https://www.xs3.uni-freiburg.de/research/structurefinder'>"
-                r"https://www.xs3.uni-freiburg.de/research/structurefinder</a>")
-
-    def show_general_warning(self, warn_text=''):
-        """
-        A message box to display if the checksums do not agree.
-        """
-        if not warn_text:
-            return
-        info = QMessageBox(self).warning(self, ' ', warn_text)
+        if remote_version > VERSION:
+            print('Version {} is outdated (actual is {}).'.format(remote_version, VERSION))
+            warn_text = "A newer version of StructureFinder is available under " \
+                        "<a href='https://www.xs3.uni-freiburg.de/research/structurefinder'>" \
+                        "https://www.xs3.uni-freiburg.de/research/structurefinder</a>"
+            box = QMessageBox()
+            box.setTextFormat(Qt.AutoText)
+            box.setWindowTitle(" ")
+            box.setTextInteractionFlags(Qt.TextBrowserInteraction)
+            if sys.platform.startswith("win"):
+                warn_text += r"<br><br>Updating now will end all running StructureFinder programs!"
+                update_button = box.addButton('Update Now', QMessageBox.AcceptRole)
+                update_button.clicked.connect(lambda: do_update_program(str(remote_version)))
+            box.setText(warn_text.format(remote_version))
+            box.exec()
 
     def res_checkbox_clicked(self, click):
         if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
@@ -459,7 +460,7 @@ class StartStructureDB(QMainWindow):
             ccdc_num_results = self.structures.find_by_ccdc_num(ccdc_num)
         if ccdc_num_results:
             self.display_structures_by_idlist(ccdc_num_results)
-            return 
+            return
         try:
             spgr = int(spgr.split()[0])
         except Exception:
@@ -1415,8 +1416,7 @@ if __name__ == "__main__":
 
     if not DEBUG:
         sys.excepthook = my_exception_hook
-    
-    
+
     # later http://www.pyinstaller.org/
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon('./icons/strf.png'))

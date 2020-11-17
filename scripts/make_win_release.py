@@ -4,8 +4,10 @@
 """
 This script has to be run from the main dir e.g. D:\GitHub\StructureFinder
 """
+import hashlib
 import os
 import sys
+from datetime import datetime
 from pathlib import Path
 
 app_path = str(Path(os.path.dirname(os.path.abspath(__file__))).parent)
@@ -40,6 +42,25 @@ except:
     raise
 
 
+def sha512_checksum(filename, block_size=65536):
+    """
+    Calculates a SHA512 checksum from a file.
+    """
+    sha512 = hashlib.sha512()
+    with open(filename, 'rb') as f:
+        for block in iter(lambda: f.read(block_size), b''):
+            sha512.update(block)
+    return sha512.hexdigest()
+
+
+def make_shasum(filename):
+    sha = sha512_checksum(filename)
+    shafile = Path('scripts/Output/StructureFinder-setup-x64-v{}-sha512.sha'.format(VERSION))
+    shafile.unlink(missing_ok=True)
+    shafile.write_text(sha)
+    print("SHA512: {}".format(sha))
+
+
 def make_distribs():
     # create binary distribution of 64bit variant:
     subprocess.run(['venv/Scripts/pyinstaller.exe',
@@ -61,5 +82,10 @@ def make_distribs():
 # Make binary distributions:
 make_distribs()
 
+make_shasum("scripts/Output/StructureFinder-setup-x64-v{}.exe".format(VERSION))
+
 # Make a zip file for web interface distribution:
 make_zip(files)
+
+print('\nCreated version: {}'.format(VERSION))
+print(datetime.now().strftime("%d.%m.%Y %H:%M:%S"))
