@@ -1,6 +1,4 @@
 
-
-
 body {
     /*background-color: #ffffff;*/
     font-size: 12px;
@@ -11,6 +9,7 @@ body {
 .collapsing {
     transition: 1ms;
 }
+
 /*
 #resitable1 tr td {
     line-height: 13px;
@@ -35,8 +34,8 @@ body {
 }
 
 .input-group-addon {
-    min-width:75px;
-    text-align:left;
+    min-width: 75px;
+    text-align: left;
 }
 
 #resfile {
@@ -50,3 +49,10 @@ body {
     height: 320px;
 }
 
+#smpl_textsrchbutton {
+    margin-right: 0;
+}
+
+#cellsearchcsd_button {
+    margin-left: 3rem;
+}

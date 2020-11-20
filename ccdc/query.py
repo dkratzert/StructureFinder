@@ -9,7 +9,7 @@ from shutil import which
 from tempfile import mkstemp
 try:
     from winreg import OpenKey, HKEY_CURRENT_USER, EnumKey, QueryInfoKey, EnumValue
-except ModuleNotFoundError:
+except ImportError:
     pass
 
 

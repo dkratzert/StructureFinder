@@ -1,4 +1,4 @@
-// JSmolCore.js -- Jmol core capability 
+// JSmolCore.js -- Jmol core capability
 
 // allows Jmol applets to be created on a page with more flexibility and extendability
 // provides an object-oriented interface for JSpecView and syncing of Jmol/JSpecView
@@ -11,7 +11,7 @@
 // BH 10/20/2016 10:00:43 AM JmolTracker.php
 // BH 9/19/2016 8:22:48 AM drag-drop broken for https (imageDrop.htm)
 // BH 9/18/2016 btoa() does not work with UTF-8 data (set language es;write menu t.mnu)
-// BH 8/26/2016 11:29:48 AM RCSB ligand 
+// BH 8/26/2016 11:29:48 AM RCSB ligand
 // BH 8/26/2016 11:29:48 AM generic fixProtocol for .gov/ to https
 // BH 8/26/2016 6:56:31 AM chemapps.stolaf.edu exclusively https
 // BH 8/25/2016 9:47:26 PM bug fix: NCI/CADD now requires "get3d=true" not "get3d=True"
@@ -21,7 +21,7 @@
 // BH 4/21/2016 9:25:39 AM adds [URL] button to file load option
 // BH 4/20/2016 2:44:50 PM fixes async load problem with Safari
 // BH 4/18/2016 10:25:08 PM adds preliminary =xxxx.mmtf reader
-// BH 4/13/2016 9:12:31 PM  url.indexOf("http://www.rcsb.org/pdb/files/") == 0 && url.indexOf("/ligand/") < 0 ? 
+// BH 4/13/2016 9:12:31 PM  url.indexOf("http://www.rcsb.org/pdb/files/") == 0 && url.indexOf("/ligand/") < 0 ?
 // BH 4/11/2016 5:34:16 PM adds direct conversion to http://files.rcsb.org/view from http://www.rcsb.org/pdb/files/1xpb.pdb
 // BH 4/3/2016 9:10:31 PM adding materialsproject.org for AJAX.
 // BH 3/23/2016 1:21:39 PM adding http://files.rcsb.org/view/%FILE.pdb as default RCSB site for "="
@@ -29,7 +29,7 @@
 // BH 2/29/2016 3:59:55 PM broken cursor_wait image path when Info.j2sPath is not "j2s"
 // BH 2/19/2016 10:32:18 AM typo fixed for makeLiveImage
 // BH 2/14/2016 12:31:02 PM fixed local reader not disappearing after script call
-// BH 2/14/2016 12:30:41 PM Info.appletLoadingImage: "j2s/img/JSmol_spinner.gif", 
+// BH 2/14/2016 12:30:41 PM Info.appletLoadingImage: "j2s/img/JSmol_spinner.gif",
 // can be set to "none" or some other image; see Jmol._hideLoadingSpinner(applet)
 // implemented only for JSmolApplet, not others
 // BH 2/14/2016 12:27:09 PM Jmol._setCursor
@@ -1278,23 +1278,23 @@ if (!Jmol._version)
                     + applet._coverImage + "\" style=\"width:100%;height:100%\"" + more + "/>" + play + "</div>";
             }
 
-            var wait = (applet._isJava ? "" : "<image id=\"ID_waitimage\" style=\"display:none;position:absolute;bottom:10px;left:10px;"
-                + "z-index:" + Jmol._getZ(applet, "coverImage") + ";\" />");
+            //var wait = (applet._isJava ? "" : "<image id=\"ID_waitimage\" style=\"display:none;position:absolute;bottom:10px;left:10px;"
+            //    + "z-index:" + Jmol._getZ(applet, "coverImage") + ";\" />");
 
             var css = Jmol._appletCssText.replace(/\'/g, '"');
             var spinner = applet._getSpinner && applet._getSpinner();
             applet._spinner = spinner = (!spinner || spinner === "none" ? "" : "background-image:url(" + spinner + "); background-repeat:no-repeat; background-position:center;");
             css = spinner + (css.indexOf("style=\"") >= 0 ? css.split("style=\"")[1] : "\" " + css);
             s = "\
-...<div id=\"ID_appletinfotablediv\" style=\"width:Wpx;height:Hpx;font-size:14px;text-align:left\">IMG WAIT\
-......<div id=\"ID_appletdiv\" style=\"z-index:" + Jmol._getZ(applet, "header") + ";width:100%;height:100%;position:absolute;top:0px;left:0px;" + css + ">";
+...<div id=\"ID_appletinfotablediv\" style=\"position:center;font-size:14px;text-align:left\">IMG WAIT\
+......<div id=\"ID_appletdiv\" style=\"z-index:" + Jmol._getZ(applet, "header") + ";width:99%;height:99%;position:absolute;top:2px;left:2px;" + css + ">";
             var height = applet._height;
             var width = applet._width;
             if (typeof height !== "string" || height.indexOf("%") < 0)
                 height += "px";
             if (typeof width !== "string" || width.indexOf("%") < 0)
                 width += "px";
-            s = s.replace(/IMG/, img).replace(/WAIT/, wait).replace(/Hpx/g, height).replace(/Wpx/g, width);
+            //s = s.replace(/IMG/, img).replace(/WAIT/, wait).replace(/Hpx/g, height).replace(/Wpx/g, width);
         } else {
             s = "\
 ......</div>\

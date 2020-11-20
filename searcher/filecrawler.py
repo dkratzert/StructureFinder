@@ -5,13 +5,14 @@ Created on 09.02.2015
 
  ----------------------------------------------------------------------------
 * "THE BEER-WARE LICENSE" (Revision 42):
-* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this 
-* notice you can do whatever you want with this stuff. If we meet some day, and 
+* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this
+* notice you can do whatever you want with this stuff. If we meet some day, and
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
 
 @author: Daniel Kratzert
 """
+
 import fnmatch
 import os
 import pathlib
@@ -21,9 +22,10 @@ import tarfile
 import time
 import zipfile
 
-from lattice.lattice import vol_unitcell
 from searcher import database_handler
 from searcher.fileparser import Cif
+from searcher.misc import get_error_from_value, vol_unitcell
+from shelxfile.dsrmath import frac_to_cart
 from shelxfile.shelx import ShelXFile
 
 DEBUG = False
@@ -67,8 +69,8 @@ class MyZipReader(MyZipBase):
                     if not self.cifname.startswith('__') and zfile.NameToInfo[name].file_size < 150000000:
                         yield zfile.read(name).decode('utf-8', 'ignore').splitlines(keepends=True)
         except Exception as e:
-            #print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
-            #print(e, self.filepath)  # filepath is not utf-8 save
+            # print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
+            # print(e, self.filepath)  # filepath is not utf-8 save
             yield []
 
 
@@ -90,8 +92,8 @@ class MyTarReader(MyZipBase):
                 if self.cifname.endswith('.cif'):
                     yield tfile.extractfile(name).read().decode('utf-8', 'ignore').splitlines(keepends=True)
         except Exception as e:
-            #print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
-            #print(e, self.filepath)  # filepath is not utf-8 save
+            # print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
+            # print(e, self.filepath)  # filepath is not utf-8 save
             yield []
 
 
@@ -117,18 +119,18 @@ def filewalker_walk(startdir: str, patterns: list):
     Since os.walk() uses scandir, it is as fast as pathlib.
     """
     filelist = []
-    print('collecting files below ' + startdir)
+    print('collecting {} files below '.format(', '.join(patterns)) + startdir)
     for root, _, files in os.walk(startdir):
         for filen in files:
             omit = False
             if any(fnmatch.fnmatch(filen, pattern) for pattern in patterns):
-                fullpath = os.path.abspath(os.path.join(root, filen))
-                if os.stat(fullpath).st_size == 0:
-                    continue
                 for ex in excluded_names:
-                    if re.search(ex, fullpath, re.I):
+                    if re.search(ex, root, re.I):
                         omit = True
                 if omit:
+                    continue
+                fullpath = os.path.abspath(os.path.join(root, filen))
+                if os.stat(fullpath).st_size == 0:
                     continue
                 if filen == 'xd_geo.cif':  # Exclude xdgeom cif files
                     continue
@@ -145,6 +147,11 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     structures=None, fillcif=True, fillres=True) -> int:
     """
     Imports files from a certain directory
+    :param self: self
+    :param structures: database instance
+    :param searchpath: where to search for files.
+    :param lastid: id of last dbentry.
+    :param excludes: list of excluded directory names.
     :param fillres: Should it index res files or not.
     :param fillcif: Should it index cif files or not.
     """
@@ -161,7 +168,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
     zipcifs = 0
     rescount = 0
     cifcount = 0
-    time1 = time.clock()
+    time1 = time.process_time()
     patterns = ['*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '*.res']
     filelist = filewalker_walk(str(searchpath), patterns)
     options = {}
@@ -188,8 +195,8 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 except IndexError:
                     continue
                 if cif:  # means cif object has data inside (cif could be parsed)
-                    tst = fill_db_tables(cif, filename=name, path=filepth, structure_id=lastid,
-                                         structures=structures)
+                    tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid,
+                                                structures=structures)
                     if not tst:
                         continue
                     if self:
@@ -203,17 +210,17 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     prognum += 1
             continue
         if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2')
-                or name.endswith('.tgz')) and fillcif:
+            or name.endswith('.tgz')) and fillcif:
             if fullpath.endswith('.zip'):
                 # MyZipReader defines .cif ending:
                 z = MyZipReader(fullpath)
             else:
                 z = MyTarReader(fullpath)
-            for zippedfile in z:              # the list of cif files in the zip file
+            for zippedfile in z:  # the list of cif files in the zip file
                 # Important here to re-initialize empty cif dictionary:
                 cif = Cif(options=options)
                 omit = False
-                for ex in excluded_names:          # remove excludes
+                for ex in excluded_names:  # remove excludes
                     if re.search(ex, z.cifpath, re.I):
                         omit = True
                 if omit:
@@ -227,14 +234,14 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 except IndexError:
                     continue
                 if cif:
-                    tst = fill_db_tables(cif, filename=z.cifname, path=fullpath,
-                                         structure_id=str(lastid), structures=structures)
+                    tst = fill_db_with_cif_data(cif, filename=z.cifname, path=fullpath, structure_id=lastid,
+                                                structures=structures)
                     if not tst:
                         if DEBUG:
-                            print('cif file not added:', fullpath) 
+                            print('cif file not added:', fullpath)
                         continue
                     if self:
-                        self.add_table_row(name=z.cifname, path=fullpath,
+                        self.add_table_row(filename=z.cifname, path=fullpath,
                                            data=cif.cif_data['data'], structure_id=str(lastid))
                     zipcifs += 1
                     cifcount += 1
@@ -262,7 +269,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     print('res file not added:', fullpath)
                 continue
             if self:
-                self.add_table_row(name=name, path=fullpath, data=name, structure_id=str(lastid))
+                self.add_table_row(filename=name, path=fullpath, data=name, structure_id=str(lastid))
             lastid += 1
             num += 1
             rescount += 1
@@ -271,14 +278,8 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 structures.database.commit_db()
             prognum += 1
             continue
-        if self:
-            if not self.decide_import:
-                # This means, import was aborted.
-                self.abort_import_button.hide()
-                self.decide_import = True
-                break
     structures.database.commit_db()
-    time2 = time.clock()
+    time2 = time.process_time()
     diff = time2 - time1
     m, s = divmod(diff, 60)
     h, m = divmod(m, 60)
@@ -288,10 +289,10 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
     print(tmessage.format(num - 1, int(h), int(m), s, zipcifs, cifcount, rescount))
     if self:
         self.ui.statusbar.showMessage(tmessage.format(num - 1, int(h), int(m), s, zipcifs, cifcount, rescount))
-    return lastid-1
+    return lastid - 1
 
 
-def fill_db_tables(cif: Cif, filename: str, path: str, structure_id: str,
+def fill_db_with_cif_data(cif: Cif, filename: str, path: str, structure_id: int,
                    structures: database_handler.StructureTable):
     """
     Fill all info from cif file into the database tables
@@ -311,34 +312,21 @@ def fill_db_tables(cif: Cif, filename: str, path: str, structure_id: str,
     _atom_site_disorder_assembly
     _atom_site_disorder_group
     """
-    a = cif._cell_length_a
-    b = cif._cell_length_b
-    c = cif._cell_length_c
-    alpha = cif._cell_angle_alpha
-    beta = cif._cell_angle_beta
-    gamma = cif._cell_angle_gamma
-    volume = cif._cell_volume
+    a, aerror = get_error_from_value(cif._cell_length_a)
+    b, berror = get_error_from_value(cif._cell_length_b)
+    c, cerror = get_error_from_value(cif._cell_length_c)
+    alpha, alphaerror = get_error_from_value(cif._cell_angle_alpha)
+    beta, betaerror = get_error_from_value(cif._cell_angle_beta)
+    gamma, gammaerror = get_error_from_value(cif._cell_angle_gamma)
+    volume, volerror = get_error_from_value(cif._cell_volume)
     if not all((a, b, c, alpha, beta, gamma)):
         return False
     if not volume or volume == "?":
-        # TODO: bring get_error_from_value() to here:
         try:
-            if isinstance(a, str):
-                a = float(a.split('(')[0])
-            if isinstance(b, str):
-                b = float(b.split('(')[0])
-            if isinstance(c, str):
-                c = float(c.split('(')[0])
-            if isinstance(alpha, str):
-                alpha = float(alpha.split('(')[0])
-            if isinstance(beta, str):
-                beta = float(beta.split('(')[0])
-            if isinstance(gamma, str):
-                gamma = float(gamma.split('(')[0])
             volume = str(vol_unitcell(a, b, c, alpha, beta, gamma))
         except ValueError:
             volume = ''
-    #measurement_id = structures.fill_measuremnts_table(filename, structure_id)
+    # Unused value:
     measurement_id = 1
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
     structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma, volume)
@@ -365,32 +353,34 @@ def fill_db_tables(cif: Cif, filename: str, path: str, structure_id: str,
             except IndexError:
                 continue
             try:
+                xc, yc, zc = frac_to_cart([x[2], x[3], x[4]], [a, b, c, alpha, beta, gamma])
                 structures.fill_atoms_table(structure_id, name, atom_type_symbol,
-                                        x[2], x[3], x[4], occu, disord)
+                                            x[2], x[3], x[4], occu, disord, round(xc, 5), round(yc, 5), round(zc, 5))
             except ValueError:
                 pass
-                #print(cif.cif_data['data'], path, filename)
+                # print(cif.cif_data['data'], path, filename)
             if elem in sum_from_dict:
                 sum_from_dict[elem] += occu
             else:
                 sum_from_dict[elem] = occu
         except KeyError as e:
-            #print(x, filename, e)
+            # print(x, filename, e)
             pass
     cif.cif_data['calculated_formula_sum'] = sum_from_dict
     structures.fill_residuals_table(structure_id, cif)
     return True
 
 
-def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: str,
+def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: int,
                           structures: database_handler.StructureTable, options: dict):
     if not res.cell:
         return False
-    if not all([res.cell.a, res.cell.b, res.cell.al, res.cell.be, res.cell.ga]):
+    if not all([res.cell.a, res.cell.b, res.cell.c, res.cell.al, res.cell.be, res.cell.ga]):
         return False
     if not res.cell.volume:
         return False
-    measurement_id = structures.fill_measuremnts_table(filename, structure_id)
+    # Unused value:
+    measurement_id = 1
     structures.fill_structures_table(path, filename, structure_id, measurement_id, res.titl)
     structures.fill_cell_table(structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.al,
                                res.cell.be, res.cell.ga, res.cell.volume)
@@ -399,14 +389,15 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
             continue
         if at.element.lower() == 'cnt':  # Do not add Shelxle centroids
             continue
-        structures.fill_atoms_table(structure_id, 
+        structures.fill_atoms_table(structure_id,
                                     at.name,
                                     at.element.capitalize(),
                                     at.x,
                                     at.y,
                                     at.z,
                                     at.sof,
-                                    at.part.n)
+                                    at.part.n,
+                                    round(at.xc, 5), round(at.yc, 5), round(at.zc, 5))
     cif = Cif(options=options)
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([repr(x) for x in res.symmcards])
@@ -457,10 +448,10 @@ if __name__ == '__main__':
     for i in z:
         print(i)
 
-    #filewalker_walk('./')
-    #z = zipopener('../test-data/Archiv.zip')
-    #print(z)
+    # filewalker_walk('./')
+    # z = zipopener('../test-data/Archiv.zip')
+    # print(z)
 
-    #fp = create_file_list('../test-data/', 'zip')
-    #for i in fp:
+    # fp = create_file_list('../test-data/', 'zip')
+    # for i in fp:
     #    print(i)

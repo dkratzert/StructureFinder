@@ -54,7 +54,7 @@ _cell_length_a                    10.5086(3)
 _cell_length_b                    20.9035(5)
 _cell_length_c                    20.5072(5)
 _cell_angle_alpha                 90
-_cell_angle_beta                  94.1300(10)
+_cell_angle_beta                  94.1300()
 _cell_angle_gamma                 90
 _cell_volume                      ?
 _cell_formula_units_Z             4

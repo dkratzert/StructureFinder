@@ -54,8 +54,8 @@ $(document).ready(function($){
         var url;
         if (isValidCell(cell)) {
             w2ui['my_ccdc_grid'].request('get-records',
-                params = {cell: cell, centering: centering},
-                url = cgifile + "/csd-list",
+                params = {cell: cell, centering: centering, str_id: strid},
+                url = cgifile + "/csd-list",  // the 'get-records' request of w2ui fetches the CSD entries found by 'params'
                 function (result) {
                     display_csd_resultnum(result);
                     //console.log(result);
@@ -64,8 +64,19 @@ $(document).ready(function($){
             );
         }
     }
+    
+    
+    $('#filter_button').click(function(event) {
+        refine_elements(elements);    
+    });
+    
+    function refine_elements(elements) {
+        my_ccdc_grid.select(0);
+        //my_ccdc_grid.remove(0);
+        my_ccdc_grid.hide();
+    }
 
-        // display how many results I got
+    // display how many results I got
     function display_csd_resultnum(result) {
         var numresult;
         if (typeof result === 'undefined') numresult = 0;

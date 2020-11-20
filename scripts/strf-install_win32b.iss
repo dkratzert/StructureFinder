@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "52"
+#define MyAppVersion "47"
 #define MyAppPublisher "Daniel Kratzert"
 
 ; Remember, first run pyInstaller script!
@@ -11,12 +11,12 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{FD3791DD-E642-47A6-8434-FBD976271019}}
+AppId={{C627673C-AB6E-4540-91DA-B017A8159EC6}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 DefaultDirName={pf}\StructureFinder
-OutputBaseFilename=StructureFinder-setup-x64-v{#MyAppVersion}
+OutputBaseFilename=StructureFinder-setup-x32-v{#MyAppVersion}
 Compression=lzma2/fast
 SolidCompression=yes
 SetupLogging=True
@@ -61,7 +61,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; IconFilename: "{app}\icons\strf.ico"
-Name: "{group}\StructureFinder"; Filename: "{app}\StructureFinder.exe"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"; Check: IsWin64
+Name: "{group}\StructureFinder"; Filename: "{app}\StructureFinder.exe"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"
 
 [UninstallDelete]
 Type: files; Name: "{app}\*.pyc"
@@ -69,7 +69,6 @@ Type: files; Name: "{app}\*.*"
 Type: filesandordirs; Name: "{app}\*"
 
 [InstallDelete]
-Type: filesandordirs; Name: "{app}\*"
 
 [Tasks]
 

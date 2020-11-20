@@ -47,9 +47,9 @@ class MolFile():
     """
     This mol2 file writer is only to use the file with JSmol, not to implement the standard completely!
     """
-    def __init__(self, id: str, db: StructureTable, cell: tuple):
+    def __init__(self, id: str, db: StructureTable):
         self.db = db
-        self.atoms = self.db.get_atoms_table(id, cell, cartesian=True)
+        self.atoms = self.db.get_atoms_table(id, cartesian=True)
         self.bonds = self.get_conntable_from_atoms()
         self.bondscount = len(self.bonds)
         self.atomscount = len(self.atoms)

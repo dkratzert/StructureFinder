@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "38"
+#define MyAppVersion "52"
 #define MyAppPublisher "Daniel Kratzert"
 #define pzipfile "Python3.6.1-32.7z"
 
@@ -62,7 +62,6 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Source: "..\apex\*"; DestDir: "{app}\apex"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\displaymol\*"; DestDir: "{app}\displaymol"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\icons\*"; DestDir: "{app}\icons"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
-Source: "..\lattice\*"; DestDir: "{app}\lattice"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\misc\*"; DestDir: "{app}\misc"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\pg8000\*"; DestDir: "{app}\pg8000"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\pymatgen\*"; DestDir: "{app}\pymatgen"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
@@ -70,11 +69,10 @@ Source: "..\searcher\*"; DestDir: "{app}\searcher"; Flags: ignoreversion createa
 Source: "..\ccdc\*"; DestDir: "{app}\ccdc"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\shelxfile\*"; DestDir: "{app}\shelxfile"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\p4pfile\*"; DestDir: "{app}\p4pfile"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
+Source: "..\gui\*"; DestDir: "{app}\gui"; Flags: ignoreversion createallsubdirs recursesubdirs; Excludes: "*.pyc"
 Source: "..\strf.py"; DestDir: "{app}"; 
 Source: "..\six.py"; DestDir: "{app}";
 Source: "..\strf_cmd.py"; DestDir: "{app}"; 
-Source: "..\gui\strf_main.ui"; DestDir: "{app}\gui"; 
-Source: "..\gui\strf_dbpasswd.ui"; DestDir: "{app}\gui"; 
 Source: "win\strf_win_32.bat"; DestDir: "{app}"; DestName: "strf.bat"
 ; Caution change accordingly:
 ;Source: "F:\Programmieren\StructureFinder_distrib\{#PzipFile}"; DestDir: "{app}"; Flags: deleteafterinstall;
