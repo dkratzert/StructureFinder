@@ -83,3 +83,4 @@ test-data/ICSD/1925_Barth, T._Ca (Ti O3)_C m m m_Calcium titanate.cif
 test-data/ICSD/1925_Barth, T._Ca (Ti O3)_C m m m_Calcium titanate.cif
 test-data/p21c-finalcif.cif
 StructureFinder-crash.txt
+test-data/ICSD/finalcif-crash.txt
