@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from PyQt5.QtCore import QSettings
 
 
@@ -20,7 +22,7 @@ class StructureFinderSettings():
     def load_last_workdir(self) -> str:
         self.settings.beginGroup('WorkDir')
         lastdir = self.settings.value("dir", type=str)
-        if not lastdir:
+        if not Path(lastdir).exists():
             lastdir = './'
         self.settings.endGroup()
         return lastdir

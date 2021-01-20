@@ -1122,7 +1122,8 @@ class StartStructureDB(QMainWindow):
         self.close_db()
         if not fname:
             print('####', self.settings.load_last_workdir())
-            os.chdir(self.settings.load_last_workdir())
+            with suppress(FileNotFoundError):
+                os.chdir(self.settings.load_last_workdir())
             fname = self.get_import_filename_from_dialog(dir=self.settings.load_last_workdir())
         if not fname:
             return False
