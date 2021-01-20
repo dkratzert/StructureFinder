@@ -187,7 +187,8 @@ class StartStructureDB(QMainWindow):
         else:
             lastdir = self.settings.load_last_workdir()
             if Path(lastdir).exists():
-                os.chdir(self.settings.load_last_workdir())
+                with suppress(OSError, FileNotFoundError):
+                    os.chdir(self.settings.load_last_workdir())
         # select the first item in the list
         item = self.ui.cifList_treeWidget.topLevelItem(0)
         self.ui.cifList_treeWidget.setCurrentItem(item)
@@ -1122,7 +1123,7 @@ class StartStructureDB(QMainWindow):
         self.close_db()
         if not fname:
             print('####', self.settings.load_last_workdir())
-            with suppress(FileNotFoundError):
+            with suppress(FileNotFoundError, OSError):
                 os.chdir(self.settings.load_last_workdir())
             fname = self.get_import_filename_from_dialog(dir=self.settings.load_last_workdir())
         if not fname:
