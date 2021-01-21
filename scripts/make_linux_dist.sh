@@ -14,11 +14,11 @@ then
 fi
 
 
-pip install pip -U
+venv/bin/pip install pip -U
 
-pip3 install -r requirements.txt
+venv/bin/pip install -r requirements.txt
 
-pyinstaller StructureFinder_linux.spec --clean -y
+venv/bin/pyinstaller StructureFinder_linux.spec --clean -y
 
 VER=$(cat misc/version.py | grep VERSION | cut -d ' ' -f 3)
 
