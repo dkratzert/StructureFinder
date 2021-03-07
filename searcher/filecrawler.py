@@ -400,7 +400,10 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
                                     round(at.xc, 5), round(at.yc, 5), round(at.zc, 5))
     cif = Cif(options=options)
     cif.cif_data["_cell_formula_units_Z"] = res.Z
-    cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([repr(x) for x in res.symmcards])
+    try:
+        cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([repr(x) for x in res.symmcards])
+    except IndexError:
+        return False
     try:
         cif.cif_data["calculated_formula_sum"] = res.sum_formula_ex_dict()
     except ZeroDivisionError:
