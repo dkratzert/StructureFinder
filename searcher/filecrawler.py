@@ -403,7 +403,7 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
     try:
         cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([repr(x) for x in res.symmcards])
     except IndexError:
-        return False
+        pass
     try:
         cif.cif_data["calculated_formula_sum"] = res.sum_formula_ex_dict()
     except ZeroDivisionError:
