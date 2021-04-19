@@ -38,7 +38,6 @@
          </property>
          <property name="font">
           <font>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -70,7 +69,6 @@
          </property>
          <property name="font">
           <font>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -105,7 +103,6 @@
          </property>
          <property name="font">
           <font>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -240,7 +237,6 @@
          </property>
          <property name="font">
           <font>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -270,7 +266,7 @@
        <string notr="true"/>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="maintab">
        <attribute name="title">
@@ -325,7 +321,6 @@
                 <widget class="QLabel" name="SpaceGrouplabel">
                  <property name="font">
                   <font>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -385,7 +380,6 @@
                 <widget class="QLabel" name="wR2Label">
                  <property name="font">
                   <font>
-                   <weight>75</weight>
                    <italic>false</italic>
                    <bold>true</bold>
                   </font>
@@ -409,7 +403,6 @@
                 <widget class="QLabel" name="r1Label">
                  <property name="font">
                   <font>
-                   <weight>75</weight>
                    <italic>false</italic>
                    <bold>true</bold>
                   </font>
@@ -484,7 +477,6 @@
                 <widget class="QLabel" name="rintLabel">
                  <property name="font">
                   <font>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -507,7 +499,6 @@
                 <widget class="QLabel" name="rsigmaLabel">
                  <property name="font">
                   <font>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -559,7 +550,6 @@
                </property>
                <property name="font">
                 <font>
-                 <weight>75</weight>
                  <bold>true</bold>
                 </font>
                </property>
@@ -642,7 +632,6 @@
                 <widget class="QLabel" name="label">
                  <property name="font">
                   <font>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -790,57 +779,6 @@
             </layout>
            </widget>
           </item>
-          <item row="1" column="0" colspan="7">
-           <widget class="QTreeWidget" name="cifList_treeWidget">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>3</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="statusTip">
-             <string/>
-            </property>
-            <property name="autoFillBackground">
-             <bool>false</bool>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">background-color: rgb(255, 255, 255);</string>
-            </property>
-            <property name="verticalScrollBarPolicy">
-             <enum>Qt::ScrollBarAsNeeded</enum>
-            </property>
-            <property name="horizontalScrollBarPolicy">
-             <enum>Qt::ScrollBarAsNeeded</enum>
-            </property>
-            <property name="sortingEnabled">
-             <bool>false</bool>
-            </property>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>false</bool>
-            </attribute>
-            <column>
-             <property name="text">
-              <string>Filename</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Data Name</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Directory</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>Id</string>
-             </property>
-            </column>
-           </widget>
-          </item>
           <item row="2" column="6">
            <widget class="QGroupBox" name="molGroupBox">
             <property name="sizePolicy">
@@ -946,7 +884,6 @@
                 <widget class="QLabel" name="dataReflnsLabel">
                  <property name="font">
                   <font>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -1020,7 +957,6 @@
                 <widget class="QLabel" name="dLabel">
                  <property name="font">
                   <font>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -1043,7 +979,6 @@
                 <widget class="QLabel" name="completeLabel">
                  <property name="font">
                   <font>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -1231,6 +1166,31 @@ p, li { white-space: pre-wrap; }
             </property>
            </spacer>
           </item>
+          <item row="1" column="0" colspan="7">
+           <widget class="QTableView" name="cifList_tableView">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>3</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="statusTip">
+             <string/>
+            </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color: rgb(255, 255, 255);</string>
+            </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAsNeeded</enum>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
@@ -1297,7 +1257,6 @@ p, li { white-space: pre-wrap; }
            <widget class="QLabel" name="NotContainsLabel">
             <property name="font">
              <font>
-              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -1387,7 +1346,6 @@ p, li { white-space: pre-wrap; }
             </property>
             <property name="font">
              <font>
-              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -3134,7 +3092,6 @@ p, li { white-space: pre-wrap; }
              </property>
              <property name="font">
               <font>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -3237,7 +3194,7 @@ p, li { white-space: pre-wrap; }
   <tabstop>saveDatabaseButton</tabstop>
   <tabstop>closeDatabaseButton</tabstop>
   <tabstop>MaintabWidget</tabstop>
-  <tabstop>cifList_treeWidget</tabstop>
+  <tabstop>cifList_tableView</tabstop>
   <tabstop>searchCellLineEDit</tabstop>
   <tabstop>moreResultsCheckBox</tabstop>
   <tabstop>txtSearchEdit</tabstop>

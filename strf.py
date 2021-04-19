@@ -33,13 +33,14 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QT
     QMessageBox
 
 from displaymol.sdm import SDM
+from gui.table_model import TableModel
 from misc.dialogs import bug_found_warning, do_update_program
 from misc.settings import StructureFinderSettings
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
 
 print(sys.version)
-DEBUG = False
+DEBUG = True
 
 from apex import apeximporter
 from displaymol import mol_file_writer, write_html
@@ -118,8 +119,8 @@ class StartStructureDB(QMainWindow):
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
         self.statusBar().showMessage('StructureFinder version {}'.format(VERSION))
-        self.ui.cifList_treeWidget.show()
-        self.ui.cifList_treeWidget.hideColumn(3)
+        ##self.ui.cifList_treeWidget.show()
+        ##self.ui.cifList_treeWidget.hideColumn(3)
         self.dbfdesc = None
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
@@ -168,7 +169,7 @@ class StartStructureDB(QMainWindow):
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
-        self.ui.cifList_treeWidget.addAction(self.ui.actionGo_to_All_CIF_Tab)
+        ##self.ui.cifList_treeWidget.addAction(self.ui.actionGo_to_All_CIF_Tab)
         self.apexdb = 0
         self.settings = StructureFinderSettings()
         if len(sys.argv) > 1:
@@ -189,9 +190,11 @@ class StartStructureDB(QMainWindow):
             if Path(lastdir).exists():
                 with suppress(OSError, FileNotFoundError):
                     os.chdir(self.settings.load_last_workdir())
+        self.table_model = TableModel(structures=self.structures.get_all_structure_names([1, 2, 3, 6, 7, 8]))
+        self.ui.cifList_tableView.setModel(self.table_model)
         # select the first item in the list
-        item = self.ui.cifList_treeWidget.topLevelItem(0)
-        self.ui.cifList_treeWidget.setCurrentItem(item)
+        ##item = self.ui.cifList_treeWidget.topLevelItem(0)
+        ##self.ui.cifList_treeWidget.setCurrentItem(item)
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         self.netman = QNetworkAccessManager()
         self.netman.finished.connect(self.show_update_warning)
@@ -227,13 +230,13 @@ class StartStructureDB(QMainWindow):
         self.ui.txtSearchEdit.textChanged.connect(self.search_text)
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.p4pCellButton.clicked.connect(self.get_name_from_p4p)
-        self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
+        ##self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
         self.ui.CSDtreeWidget.itemDoubleClicked.connect(self.show_csdentry)
         self.ui.adv_elementsIncLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.adv_elementsExclLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.add_res.clicked.connect(self.res_checkbox_clicked)
         self.ui.add_cif.clicked.connect(self.cif_checkbox_clicked)
-        self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
+        ##self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.growCheckBox.toggled.connect(self.redraw_molecule)
 
     def checkfor_version(self):
@@ -505,11 +508,11 @@ class StartStructureDB(QMainWindow):
             return
         searchresult = self.structures.get_all_structure_names(idlist)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
-        self.ui.cifList_treeWidget.clear()
+        #self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for structure_id, _, path, filename, data in searchresult:
             self.add_table_row(filename, path, data, structure_id)
-        self.set_columnsize()
+        ##self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         if idlist:
             self.ui.MaintabWidget.setCurrentIndex(0)
@@ -1110,7 +1113,7 @@ class StartStructureDB(QMainWindow):
         tree_item.setText(1, data)  # data
         tree_item.setText(2, path)  # path
         tree_item.setData(3, 0, structure_id)  # id
-        self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
+        ##self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
 
     def get_import_filename_from_dialog(self, dir: str = './'):
         return QFileDialog.getOpenFileName(self, caption='Open File', directory=dir, filter="*.sqlite")[0]
@@ -1326,7 +1329,7 @@ class StartStructureDB(QMainWindow):
         Displays the complete list of structures
         [structure_id, meas, path, filename, data]
         """
-        self.ui.cifList_treeWidget.clear()
+        ##self.ui.cifList_treeWidget.clear()
         structure_id = 0
         try:
             if self.structures:
@@ -1338,7 +1341,7 @@ class StartStructureDB(QMainWindow):
                 self.add_table_row(filename, path, data, structure_id)
         mess = "Loaded {} entries.".format(structure_id)
         self.statusBar().showMessage(mess, msecs=5000)
-        self.set_columnsize()
+        ##self.set_columnsize()
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
