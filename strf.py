@@ -1411,7 +1411,7 @@ if __name__ == "__main__":
         errortext += str(exctype.__name__) + ': '
         errortext += str(value) + '\n'
         errortext += '-' * 80 + '\n'
-        logfile = Path(r'./StructureFinder-crash.txt')
+        logfile = Path.home().joinpath(Path(r'StructureFinder-crash.txt'))
         try:
             logfile.write_text(errortext)
         except PermissionError:
