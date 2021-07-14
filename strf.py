@@ -1280,8 +1280,14 @@ class StartStructureDB(QMainWindow):
                 cif.cif_data["_space_group_centring_type"] = i[28]
                 if comp:
                     cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
-                tst = filecrawler.fill_db_with_cif_data(cif=cif, filename=i[8], path=i[12], structure_id=n,
+                try:
+                    tst = filecrawler.fill_db_with_cif_data(cif=cif, filename=i[8], path=i[12], structure_id=n,
                                                         structures=self.structures)
+                except Exception as err:
+                    if DEBUG:
+                        print(str(err) + "\nIndexing error in file {}{}{} - Id: {}".format(i[12], os.path.sep, i[8], n))
+                        raise
+                    continue
                 if not tst:
                     continue
                 self.add_table_row(filename=i[8], data=i[8], path=i[12], structure_id=str(n))
