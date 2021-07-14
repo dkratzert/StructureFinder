@@ -75,11 +75,11 @@ Type: filesandordirs; Name: "{app}\*"
 
 [Files]
 Source: "..\dist\StructureFinder\*"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
-Name: "{app}\StructureFinder-crash.txt"; Permissions: everyone-full
+Source: "StructureFinder-crash.txt"; DestDir: "{app}"; Permissions: everyone-full
 
 [Dirs]
 Name: "{app}\displaymol"; Permissions: everyone-full
 Name: "{app}\gui"; Permissions: everyone-full
 
 [Code]
-SaveStringToFile('{app}\StructureFinder-crash.txt', ' ', True);
+
