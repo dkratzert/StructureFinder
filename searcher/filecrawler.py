@@ -347,7 +347,7 @@ def fill_db_with_cif_data(cif: Cif, filename: str, path: str, structure_id: int,
     measurement_id = 1
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
     structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma, volume)
-    sum_from_dict = {}
+    sum_formula_dict = {}
     for x in cif.atoms:
         #  0     1   2 3 4    5       6
         # [Name type x y z occupancy part]
@@ -376,14 +376,14 @@ def fill_db_with_cif_data(cif: Cif, filename: str, path: str, structure_id: int,
             except ValueError:
                 pass
                 # print(cif.cif_data['data'], path, filename)
-            if elem in sum_from_dict:
-                sum_from_dict[elem] += occu
+            if elem in sum_formula_dict:
+                sum_formula_dict[elem] += occu
             else:
-                sum_from_dict[elem] = occu
+                sum_formula_dict[elem] = occu
         except KeyError as e:
             # print(x, filename, e)
             pass
-    cif.cif_data['calculated_formula_sum'] = sum_from_dict
+    cif.cif_data['calculated_formula_sum'] = sum_formula_dict
     structures.fill_residuals_table(structure_id, cif)
     return True
 
