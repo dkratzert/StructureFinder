@@ -71,11 +71,16 @@ except Exception as e:
 
 """
 TODO:
-- use gemmi for cif files
+- Use ultra fast file walk for Windows:
+  https://github.com/githubrobbi/Ultra-Fast-Walk-in-NIM
+  nim c -d:danger --app:lib --opt:speed --gc:markAndSweep --out:ultra_fast_walk.pyd ultra_fast_walk.nim
+  import ultra_fast_walk as ufw
+  p = ufw.walker(folderpath= "C:/", extensions=[".res"], yieldfiles=False)
+- Make files sortable by date?
 - add options
 - add possibility to append new cif/res
 - simplify database tables?
-- refractor indexer, test pyfilesystem api
+- refactor indexer, test pyfilesystem api
 - improve data model of molecule viewer
 - http://nglviewer.org/ngl/gallery/index.html
 - Use spellfix for text search: https://www.sqlite.org/spellfix1.html
