@@ -185,6 +185,26 @@ def get_error_from_value(value: str) -> Tuple[float, float]:
         except ValueError:
             return 0.0, 0.0
 
+def get_value(string):
+    """
+    Returns only the numeric value from a cif item like 1.234(4).
+
+    :parameters
+        ** string **
+            A cif value as string
+    :returns
+        The value without error. (`float`)
+    """
+    if "(" in string:
+        vval = string.split("(")[0]
+        if vval == '':
+            vval = '0.0'
+        return float(vval)
+    else:
+        try:
+            return float(string)
+        except ValueError:
+            return 0.0
 
 def flatten(lis: List[Optional[List[Any]]]) -> List[Any]:
     """

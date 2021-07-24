@@ -72,11 +72,16 @@ except Exception as e:
 
 """
 TODO:
-- use gemmi for cif files
+- Use ultra fast file walk for Windows:
+  https://github.com/githubrobbi/Ultra-Fast-Walk-in-NIM
+  nim c -d:danger --app:lib --opt:speed --gc:markAndSweep --out:ultra_fast_walk.pyd ultra_fast_walk.nim
+  import ultra_fast_walk as ufw
+  p = ufw.walker(folderpath= "C:/", extensions=[".res"], yieldfiles=False)
+- Make files sortable by date?
 - add options
 - add possibility to append new cif/res
 - simplify database tables?
-- refractor indexer, test pyfilesystem api
+- refactor indexer, test pyfilesystem api
 - improve data model of molecule viewer
 - http://nglviewer.org/ngl/gallery/index.html
 - Use spellfix for text search: https://www.sqlite.org/spellfix1.html
@@ -1283,8 +1288,14 @@ class StartStructureDB(QMainWindow):
                 cif.cif_data["_space_group_centring_type"] = i[28]
                 if comp:
                     cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
-                tst = filecrawler.fill_db_with_cif_data(cif=cif, filename=i[8], path=i[12], structure_id=n,
+                try:
+                    tst = filecrawler.fill_db_with_cif_data(cif=cif, filename=i[8], path=i[12], structure_id=n,
                                                         structures=self.structures)
+                except Exception as err:
+                    if DEBUG:
+                        print(str(err) + "\nIndexing error in file {}{}{} - Id: {}".format(i[12], os.path.sep, i[8], n))
+                        raise
+                    continue
                 if not tst:
                     continue
                 self.add_table_row(filename=i[8], data=i[8], path=i[12], structure_id=str(n))
@@ -1408,7 +1419,7 @@ if __name__ == "__main__":
         errortext += str(exctype.__name__) + ': '
         errortext += str(value) + '\n'
         errortext += '-' * 80 + '\n'
-        logfile = Path(r'./StructureFinder-crash.txt')
+        logfile = Path.home().joinpath(Path(r'StructureFinder-crash.txt'))
         try:
             logfile.write_text(errortext)
         except PermissionError:

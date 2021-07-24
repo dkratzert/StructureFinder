@@ -314,7 +314,7 @@ class DatabaseRequest():
             pass
         try:
             self.con.close()
-        except ProgrammingError:
+        except (AttributeError, ProgrammingError):
             pass
 
     def commit_db(self, comment=""):

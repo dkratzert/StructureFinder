@@ -24,7 +24,7 @@ import zipfile
 
 from searcher import database_handler
 from searcher.fileparser import Cif
-from searcher.misc import get_error_from_value, vol_unitcell
+from searcher.misc import vol_unitcell, get_value
 from shelxfile.dsrmath import frac_to_cart
 from shelxfile.shelx import ShelXFile
 
@@ -195,8 +195,17 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 except IndexError:
                     continue
                 if cif:  # means cif object has data inside (cif could be parsed)
-                    tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid,
-                                                structures=structures)
+                    tst = None
+                    try:
+                        tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid,
+                                                    structures=structures)
+                    except Exception as err:
+                        if DEBUG:
+                            print(
+                                str(err) + "\nIndexing error in file {}{}{} - Id: {}".format(filepth, os.path.sep, name,
+                                                                                             lastid))
+                            raise
+                        continue
                     if not tst:
                         continue
                     if self:
@@ -234,8 +243,16 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 except IndexError:
                     continue
                 if cif:
-                    tst = fill_db_with_cif_data(cif, filename=z.cifname, path=fullpath, structure_id=lastid,
-                                                structures=structures)
+                    tst = None
+                    try:
+                        tst = fill_db_with_cif_data(cif, filename=z.cifname, path=fullpath, structure_id=lastid,
+                                                    structures=structures)
+                    except Exception as err:
+                        if DEBUG:
+                            print(
+                                str(err) + "\nIndexing error in file {}{}{} - Id: {}".format(filepth, os.path.sep, name,
+                                                                                             lastid))
+                            raise
                     if not tst:
                         if DEBUG:
                             print('cif file not added:', fullpath)
@@ -293,7 +310,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
 
 
 def fill_db_with_cif_data(cif: Cif, filename: str, path: str, structure_id: int,
-                   structures: database_handler.StructureTable):
+                          structures: database_handler.StructureTable):
     """
     Fill all info from cif file into the database tables
     _atom_site_label
@@ -312,13 +329,13 @@ def fill_db_with_cif_data(cif: Cif, filename: str, path: str, structure_id: int,
     _atom_site_disorder_assembly
     _atom_site_disorder_group
     """
-    a, aerror = get_error_from_value(cif._cell_length_a)
-    b, berror = get_error_from_value(cif._cell_length_b)
-    c, cerror = get_error_from_value(cif._cell_length_c)
-    alpha, alphaerror = get_error_from_value(cif._cell_angle_alpha)
-    beta, betaerror = get_error_from_value(cif._cell_angle_beta)
-    gamma, gammaerror = get_error_from_value(cif._cell_angle_gamma)
-    volume, volerror = get_error_from_value(cif._cell_volume)
+    a = get_value(cif._cell_length_a)
+    b = get_value(cif._cell_length_b)
+    c = get_value(cif._cell_length_c)
+    alpha = get_value(cif._cell_angle_alpha)
+    beta = get_value(cif._cell_angle_beta)
+    gamma = get_value(cif._cell_angle_gamma)
+    volume = get_value(cif._cell_volume)
     if not all((a, b, c, alpha, beta, gamma)):
         return False
     if not volume or volume == "?":
@@ -330,7 +347,7 @@ def fill_db_with_cif_data(cif: Cif, filename: str, path: str, structure_id: int,
     measurement_id = 1
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
     structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma, volume)
-    sum_from_dict = {}
+    sum_formula_dict = {}
     for x in cif.atoms:
         #  0     1   2 3 4    5       6
         # [Name type x y z occupancy part]
@@ -359,14 +376,14 @@ def fill_db_with_cif_data(cif: Cif, filename: str, path: str, structure_id: int,
             except ValueError:
                 pass
                 # print(cif.cif_data['data'], path, filename)
-            if elem in sum_from_dict:
-                sum_from_dict[elem] += occu
+            if elem in sum_formula_dict:
+                sum_formula_dict[elem] += occu
             else:
-                sum_from_dict[elem] = occu
+                sum_formula_dict[elem] = occu
         except KeyError as e:
             # print(x, filename, e)
             pass
-    cif.cif_data['calculated_formula_sum'] = sum_from_dict
+    cif.cif_data['calculated_formula_sum'] = sum_formula_dict
     structures.fill_residuals_table(structure_id, cif)
     return True
 
