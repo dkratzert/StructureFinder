@@ -10,6 +10,23 @@ Created on 09.02.2015
 * ----------------------------------------------------------------------------
 
 @author: daniel
+
+
+from PyQt5.QtSql import QSqlQuery, QSqlDatabase
+
+con = QSqlDatabase.addDatabase("QSQLITE")
+con.setDatabaseName("/Users/daniel/Documents/GitHub/StructureFinder/structuredb.sqlite")
+
+query = QSqlQuery()
+query.exec('''SELECT Name, element, x, y, z FROM ATOMS''')
+while query.next():
+    results.append(query.value(0), query.value(1), query.value(2), query.value(3), query.value(4))
+query.finish()
+
+con.close()
+con.isOpen()
+- False
+QSqlDatabase::removeDatabase("sales")
 """
 
 import sys
