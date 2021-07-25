@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\Github\StructureFinder\./gui\strf_main.ui'
+# Form implementation generated from reading ui file '/Users/daniel/Documents/GitHub/StructureFinder/./gui/strf_main.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.2
 #
@@ -120,6 +120,9 @@ class Ui_stdbMainwindow(object):
         self.appendDirButton.setObjectName("appendDirButton")
         self.gridLayout.addWidget(self.appendDirButton, 1, 0, 1, 1)
         self.horizontalLayout_5.addWidget(self.groupBox)
+        self.verticalLayout_6 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_6.setContentsMargins(-1, -1, 0, -1)
+        self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.MaintabWidget = QtWidgets.QTabWidget(self.centralwidget)
         self.MaintabWidget.setAccessibleName("")
         self.MaintabWidget.setAccessibleDescription("")
@@ -1112,7 +1115,15 @@ class Ui_stdbMainwindow(object):
         self.verticalLayout_4.addWidget(self.CSDtreeWidget)
         self.verticalLayout_5.addLayout(self.verticalLayout_4)
         self.MaintabWidget.addTab(self.CCDCSearchTab, "")
-        self.horizontalLayout_5.addWidget(self.MaintabWidget)
+        self.verticalLayout_6.addWidget(self.MaintabWidget)
+        self.verticalLayout_9 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_9.setObjectName("verticalLayout_9")
+        self.DatabaseNameDisplayLabel = QtWidgets.QLabel(self.centralwidget)
+        self.DatabaseNameDisplayLabel.setText("")
+        self.DatabaseNameDisplayLabel.setObjectName("DatabaseNameDisplayLabel")
+        self.verticalLayout_9.addWidget(self.DatabaseNameDisplayLabel)
+        self.verticalLayout_6.addLayout(self.verticalLayout_9)
+        self.horizontalLayout_5.addLayout(self.verticalLayout_6)
         stdbMainwindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(stdbMainwindow)
         self.statusbar.setObjectName("statusbar")
@@ -1146,8 +1157,7 @@ class Ui_stdbMainwindow(object):
         stdbMainwindow.setTabOrder(self.importDatabaseButton, self.openApexDBButton)
         stdbMainwindow.setTabOrder(self.openApexDBButton, self.saveDatabaseButton)
         stdbMainwindow.setTabOrder(self.saveDatabaseButton, self.closeDatabaseButton)
-        stdbMainwindow.setTabOrder(self.closeDatabaseButton, self.MaintabWidget)
-        stdbMainwindow.setTabOrder(self.MaintabWidget, self.cifList_treeWidget)
+        stdbMainwindow.setTabOrder(self.closeDatabaseButton, self.cifList_treeWidget)
         stdbMainwindow.setTabOrder(self.cifList_treeWidget, self.searchCellLineEDit)
         stdbMainwindow.setTabOrder(self.searchCellLineEDit, self.moreResultsCheckBox)
         stdbMainwindow.setTabOrder(self.moreResultsCheckBox, self.txtSearchEdit)
