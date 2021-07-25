@@ -71,11 +71,16 @@ except Exception as e:
 
 """
 TODO:
-- use gemmi for cif files
+- Use ultra fast file walk for Windows:
+  https://github.com/githubrobbi/Ultra-Fast-Walk-in-NIM
+  nim c -d:danger --app:lib --opt:speed --gc:markAndSweep --out:ultra_fast_walk.pyd ultra_fast_walk.nim
+  import ultra_fast_walk as ufw
+  p = ufw.walker(folderpath= "C:/", extensions=[".res"], yieldfiles=False)
+- Make files sortable by date?
 - add options
 - add possibility to append new cif/res
 - simplify database tables?
-- refractor indexer, test pyfilesystem api
+- refactor indexer, test pyfilesystem api
 - improve data model of molecule viewer
 - http://nglviewer.org/ngl/gallery/index.html
 - Use spellfix for text search: https://www.sqlite.org/spellfix1.html
@@ -183,6 +188,7 @@ class StartStructureDB(QMainWindow):
                     if DEBUG:
                         raise
                 os.chdir(str(Path(self.dbfilename).parent))
+                self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(self.dbfilename))
                 self.settings.save_current_dir(str(Path(self.dbfilename).parent))
         else:
             lastdir = self.settings.load_last_workdir()
@@ -203,7 +209,7 @@ class StartStructureDB(QMainWindow):
         The actionExit signal is connected in the ui file.
         """
         # Buttons:
-        self.ui.importDatabaseButton.clicked.connect(self.import_database_file)
+        self.ui.importDatabaseButton.clicked.connect(self.open_database_file)
         self.ui.saveDatabaseButton.clicked.connect(self.save_database)
         self.ui.importDirButton.clicked.connect(self.import_file_dirs)
         self.ui.appendDirButton.clicked.connect(self.append_file_dirs)
@@ -219,7 +225,7 @@ class StartStructureDB(QMainWindow):
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_file_dirs)
-        self.ui.actionImport_file.triggered.connect(self.import_database_file)
+        self.ui.actionImport_file.triggered.connect(self.open_database_file)
         self.ui.actionSave_Database.triggered.connect(self.save_database)
         self.ui.actionCopy_Unit_Cell.triggered.connect(self.copyUnitCell)
         self.ui.actionGo_to_All_CIF_Tab.triggered.connect(self.on_click_item)
@@ -649,6 +655,7 @@ class StartStructureDB(QMainWindow):
                     self.dbfilename = None
                 except Exception:
                     return False
+        self.ui.DatabaseNameDisplayLabel.setText('')
         return True
 
     @pyqtSlot(name="abort_import")
@@ -704,7 +711,9 @@ class StartStructureDB(QMainWindow):
             os.chdir(str(Path(save_name).parent))
             self.settings.save_current_dir(str(Path(save_name).parent))
         if status:
+            self.ui.DatabaseNameDisplayLabel.setText('')
             self.statusBar().showMessage("Database saved.", msecs=5000)
+
 
     def eventFilter(self, object, event):
         """Event filter for mouse clicks."""
@@ -1115,7 +1124,7 @@ class StartStructureDB(QMainWindow):
     def get_import_filename_from_dialog(self, dir: str = './'):
         return QFileDialog.getOpenFileName(self, caption='Open File', directory=dir, filter="*.sqlite")[0]
 
-    def import_database_file(self, fname=None) -> bool:
+    def open_database_file(self, fname=None) -> bool:
         """
         Import a new database.
         """
@@ -1145,12 +1154,14 @@ class StartStructureDB(QMainWindow):
         self.settings.save_current_dir(str(Path(fname).parent))
         os.chdir(str(Path(fname).parent))
         self.ui.saveDatabaseButton.setEnabled(True)
+        self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(fname))
         return True
 
     def open_apex_db(self, user: str, password: str, host: str) -> bool:
         """
         Opens the APEX db to be displayed in the treeview.
         """
+        self.ui.DatabaseNameDisplayLabel.setText('')
         self.apx = apeximporter.ApexDB()
         connok = False
         try:
@@ -1158,6 +1169,8 @@ class StartStructureDB(QMainWindow):
         except Exception:
             self.passwd_handler()
         self.ui.saveDatabaseButton.setEnabled(True)
+        if connok:
+            self.ui.DatabaseNameDisplayLabel.setText('Database opened: APEX')
         return connok
 
     def get_name_from_p4p(self):
