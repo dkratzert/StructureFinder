@@ -840,7 +840,10 @@ class StartStructureDB(QMainWindow):
         self.ui.rintLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_av_R_equivalents']))
         self.ui.rsigmaLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_av_unetI_netI']))
         self.ui.cCDCNumberLineEdit.setText("{}".format(cif_dic['_database_code_depnum_ccdc_archive']))
-        self.ui.flackXLineEdit.setText("{}".format(cif_dic['_refine_ls_abs_structure_Flack']))
+        try:
+            self.ui.flackXLineEdit.setText("{}".format(cif_dic['_refine_ls_abs_structure_Flack']))
+        except KeyError:
+            pass
         try:
             dat_param = cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters']
         except (ValueError, ZeroDivisionError, TypeError):
