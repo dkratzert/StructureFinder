@@ -17,6 +17,7 @@ from pprint import pprint
 from typing import List, Dict, Union, Any
 
 from searcher.atoms import sorted_atoms
+from searcher.misc import get_error_from_value, vol_unitcell
 
 
 class Cif(object):
@@ -357,6 +358,36 @@ class Cif(object):
             beta = float(beta.split('(')[0])
         if isinstance(gamma, str):
             gamma = float(gamma.split('(')[0])
+        return [a, b, c, alpha, beta, gamma]
+
+    @property
+    def volume(self):
+        vol = self.cif_data['_cell_volume']
+        if vol:
+            return vol
+        else:
+            return vol_unitcell(*self.cell)
+
+    @property
+    def volume_error_tuple(self):
+        return get_error_from_value(self.volume)
+
+    @property
+    def cell_errors(self):
+        a = self.cif_data['_cell_length_a']
+        b = self.cif_data['_cell_length_b']
+        c = self.cif_data['_cell_length_c']
+        alpha = self.cif_data['_cell_angle_alpha']
+        beta = self.cif_data['_cell_angle_beta']
+        gamma = self.cif_data['_cell_angle_gamma']
+        if not all((a, b, c, alpha, beta, gamma)):
+            return []
+        a = get_error_from_value(a)[1]
+        b = get_error_from_value(b)[1]
+        c = get_error_from_value(c)[1]
+        alpha = get_error_from_value(alpha)[1]
+        beta = get_error_from_value(beta)[1]
+        gamma = get_error_from_value(gamma)[1]
         return [a, b, c, alpha, beta, gamma]
 
     @property

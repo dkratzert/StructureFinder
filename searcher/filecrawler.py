@@ -286,7 +286,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     print('res file not added:', fullpath)
                 continue
             if self:
-                self.add_table_row(filename=name, path=fullpath, data=name, structure_id=str(lastid))
+                self.add_table_row(filename=name, path=filepth, data=name, structure_id=str(lastid))
             lastid += 1
             num += 1
             rescount += 1
