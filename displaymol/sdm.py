@@ -15,7 +15,7 @@ import time
 from math import sqrt, cos, radians, sin
 
 from searcher import database_handler
-from searcher.atoms import get_radius_from_element
+from shelxfile.elements import get_radius_from_element
 from shelxfile.dsrmath import Array, SymmetryElement, Matrix, frac_to_cart
 
 DEBUG = False

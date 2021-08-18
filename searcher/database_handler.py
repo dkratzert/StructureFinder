@@ -16,7 +16,7 @@ import sys
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 from typing import List, Union, Tuple
 
-from searcher.atoms import sorted_atoms
+from shelxfile.elements import sorted_atoms
 
 DEBUG = False
 

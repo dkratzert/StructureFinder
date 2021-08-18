@@ -39,7 +39,7 @@
 import os
 
 from searcher import misc
-from searcher.atoms import get_radius_from_element
+from shelxfile.elements import get_radius_from_element
 from searcher.database_handler import StructureTable
 
 
