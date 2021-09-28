@@ -1,0 +1,33 @@
+Changelog
+
+-v55 Display database file name below main table.
+-v54 Small correction.
+-v53 Fixed crash when database location changes.
+-v52 Unit cell is visible again.
+-v51 Fixed crash on CIF files with values like 1.234().
+-v50 Fixed major bug that made advanced search useless.
+-v49 Added possibility to search for CCDC numbers. Small other improvements.
+-v48 Saves last dir to settings. Added append button to append new directories.
+-v47 Fixed bug with non-centrosymmetric shelx files. More compatible win32 version.
+-v46 Fixed bug in cif parser that prevented reading of atoms from files written by Crystals
+-v45 Fixed installation problems on some systems.
+-v44 Small improvements in the cif file parser.
+-v43 Added search option for R1 in advanced search.
+-v42 Fixed some more minor search bugs.
+-v41 Fixed completely wrong result for "more results" option. Added distinction between unit cells
+     from APEX and unit cells from files for optimal search thresholds. Made search behavior more intuitive.
+-v40 Improved program startup.
+-v39 Fixed bug that could stall the application while loading QWebEngineView.
+-v38 _data name was shown incorrectly.
+-v37 Fixed some minor search issues.
+-v36 Fixed .res file data appearing in compressed cif entries. Fixed certain search condition.
+-v35 Improved .cif file parser
+-v34 Web interface improvements.
+-v33 Added search option to search for structures with only certain elements included.
+-v32 Improved element search. Is is faster and more precise. (You need to rebuild your database!)
+-v31 Fixed two bugs that caused StructureFinder to crash during cell search.
+-v30 Added search in CellCeckCSD database. You need to install CellChekCSD in order to search CSD data.
+-v29 Fixed missing shelxfile directory in 32bit installer.
+-v28 Faster structure display. Some bugs fixed.
+-v27 Suport "grow structure" for web and qt interface.
+...
