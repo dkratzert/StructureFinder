@@ -1,6 +1,8 @@
 
 REM execute me from the main directory
 
+rmdir /S dist
+
 CALL venv\Scripts\activate.bat
 
 venv\Scripts\pip install pip -U
