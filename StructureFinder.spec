@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['strf.py'],
-             pathex=['D:\\Programme\\Windows Kits\\10\\Redist\\ucrt\\DLLs\\x64', 'D:\\GitHub\\StructureFinder'],
+             pathex=['.'],
              binaries=[],
              datas=[('gui', 'gui'), ('displaymol', 'displaymol'), ('icons', 'icons'), ('searcher', 'searcher'),
 			 ('apex', 'apex'),
