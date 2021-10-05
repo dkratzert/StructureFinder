@@ -54,9 +54,9 @@
 <div class="row">
     <div class="col-sm-12">
         <address>
-            <strong><a href="https://www.xs3.uni-freiburg.de/research/structurefinder">StructureFinder</a> 
+            <strong><a href="https://dkratzert.de/structurefinder.html">StructureFinder</a>
                 <span id="version"></span> by Daniel Kratzert</strong><br>
-          <a href="mailto:daniel.kratzert@ac.uni-freiburg.de">daniel.kratzert@ac.uni-freiburg.de</a>
+          <a href="mailto:dkratzert@gmx.de">daniel.kratzert@ac.uni-freiburg.de</a>
         </address>
     </div>
 </div>

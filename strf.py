@@ -5,7 +5,7 @@ Created on 09.02.2015
 
  ----------------------------------------------------------------------------
 * "THE BEER-WARE LICENSE" (Revision 42):
-* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this
+* <dkratzert@gmx.de> wrote this file. As long as you retain this
 * notice you can do whatever you want with this stuff. If we meet some day, and
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
@@ -28,12 +28,12 @@ from typing import Union
 
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
 from PyQt5.QtGui import QIcon, QResizeEvent
-from PyQt5.QtNetwork import QNetworkRequest, QNetworkReply, QNetworkAccessManager
 from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox
 
 from displaymol.sdm import SDM
 from misc.dialogs import bug_found_warning, do_update_program
+from misc.download import MyDownloader
 from misc.settings import StructureFinderSettings
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
@@ -199,8 +199,7 @@ class StartStructureDB(QMainWindow):
         item = self.ui.cifList_treeWidget.topLevelItem(0)
         self.ui.cifList_treeWidget.setCurrentItem(item)
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
-        self.netman = QNetworkAccessManager()
-        self.netman.finished.connect(self.show_update_warning)
+
         self.checkfor_version()
 
     def connect_signals_and_slots(self):
@@ -243,24 +242,27 @@ class StartStructureDB(QMainWindow):
         self.ui.growCheckBox.toggled.connect(self.redraw_molecule)
 
     def checkfor_version(self):
-        url = QUrl('https://xs3-data.uni-freiburg.de/structurefinder/version.txt')
-        req = QNetworkRequest(url)
-        self.netman.get(req)
+        url = 'https://dkratzert.de/files/structurefinder/version.txt'
+        upd = MyDownloader(self, url)
+        upd.finished.connect(self.show_update_warning)
+        upd.failed.connect(upd.failed_to_download)
+        upd.progress.connect(upd.print_status)
+        upd.start()
 
-    def show_update_warning(self, reply: QNetworkReply):
+    def show_update_warning(self, reply: bytes):
         """
         Reads the reply from the server and displays a warning in case of an old version.
         """
         remote_version = 0
         try:
-            remote_version = int(bytes(reply.readAll()).decode('ascii', 'ignore'))
+            remote_version = int(reply.decode('ascii', 'ignore'))
         except Exception:
             pass
         if remote_version > VERSION:
             print('Version {} is outdated (actual is {}).'.format(remote_version, VERSION))
             warn_text = "A newer version of StructureFinder is available under " \
-                        "<a href='https://www.xs3.uni-freiburg.de/research/structurefinder'>" \
-                        "https://www.xs3.uni-freiburg.de/research/structurefinder</a>"
+                        "<a href='https://dkratzert.de/structurefinder.html'>" \
+                        "https://dkratzert.de/structurefinder.html</a>"
             box = QMessageBox()
             box.setTextFormat(Qt.AutoText)
             box.setWindowTitle(" ")
@@ -274,7 +276,7 @@ class StartStructureDB(QMainWindow):
 
     def res_checkbox_clicked(self, click):
         if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
-            self.ui.add_cif.setChecked(True)
+            self.ui.add_res.setChecked(True)
 
     def cif_checkbox_clicked(self, click):
         if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
@@ -424,15 +426,15 @@ class StartStructureDB(QMainWindow):
         the difference.
         """
         self.clear_fields()
-        states = {'date': False,
-                  'cell': False,
+        states = {'date'  : False,
+                  'cell'  : False,
                   'elincl': False,
                   'elexcl': False,
-                  'txt': False,
+                  'txt'   : False,
                   'txt_ex': False,
-                  'spgr': False,
-                  'rval': False,
-                  'ccdc': False}
+                  'spgr'  : False,
+                  'rval'  : False,
+                  'ccdc'  : False}
         if not self.structures:
             return
         cell = is_valid_cell(self.ui.adv_unitCellLineEdit.text())
@@ -713,7 +715,6 @@ class StartStructureDB(QMainWindow):
         if status:
             self.ui.DatabaseNameDisplayLabel.setText('')
             self.statusBar().showMessage("Database saved.", msecs=5000)
-
 
     def eventFilter(self, object, event):
         """Event filter for mouse clicks."""
@@ -1298,7 +1299,7 @@ class StartStructureDB(QMainWindow):
                     cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
                 try:
                     tst = filecrawler.fill_db_with_cif_data(cif=cif, filename=i[8], path=i[12], structure_id=n,
-                                                        structures=self.structures)
+                                                            structures=self.structures)
                 except Exception as err:
                     if DEBUG:
                         print(str(err) + "\nIndexing error in file {}{}{} - Id: {}".format(i[12], os.path.sep, i[8], n))
