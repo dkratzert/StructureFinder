@@ -1,5 +1,6 @@
 Changelog
 
+-v56 Minor corrections.
 -v55 Display database file name below main table.
 -v54 Small correction.
 -v53 Fixed crash when database location changes.
