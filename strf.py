@@ -612,6 +612,7 @@ class StartStructureDB(QMainWindow):
         self.settings.save_current_dir(str(Path(startdir)))
         os.chdir(str(Path(startdir).parent))
         self.ui.saveDatabaseButton.setEnabled(True)
+        self.ui.ExportAsCIFpushButton.setEnabled(True)
 
     def progressbar(self, curr: int, min: int, max: int) -> None:
         """
@@ -633,6 +634,7 @@ class StartStructureDB(QMainWindow):
         """
         self.ui.appendDirButton.setDisabled(True)
         self.ui.saveDatabaseButton.setDisabled(True)
+        self.ui.ExportAsCIFpushButton.setDisabled(True)
         with suppress(Exception):
             self.structures.database.commit_db()
         self.ui.searchCellLineEDit.clear()
@@ -694,6 +696,8 @@ class StartStructureDB(QMainWindow):
 
     def export_current_cif(self):
         filename, _ = self.get_save_name_from_dialog(filter='*.cif')
+        if not filename or not self.structureId:
+            return
         try:
             # noinspection PyUnresolvedReferences
             data_name = self.structures.get_all_structure_names([self.structureId])[0][4].decode('ascii', 'ignore')
@@ -1199,6 +1203,7 @@ class StartStructureDB(QMainWindow):
         self.settings.save_current_dir(str(Path(fname).parent))
         os.chdir(str(Path(fname).parent))
         self.ui.saveDatabaseButton.setEnabled(True)
+        self.ui.ExportAsCIFpushButton.setEnabled(True)
         self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(fname))
         return True
 
@@ -1214,6 +1219,7 @@ class StartStructureDB(QMainWindow):
         except Exception:
             self.passwd_handler()
         self.ui.saveDatabaseButton.setEnabled(True)
+        self.ui.ExportAsCIFpushButton.setEnabled(True)
         if connok:
             self.ui.DatabaseNameDisplayLabel.setText('Database opened: APEX')
         return connok
