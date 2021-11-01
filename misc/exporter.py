@@ -40,7 +40,7 @@ def replace_float_values(val):
     return val
 
 
-def add_loop_to_block(block: gemmi.cif.Block, value: list[Dict]) -> None:
+def add_loop_to_block(block: 'gemmi.cif.Block', value: list[Dict]) -> None:
     loop: Dict
     new_loop = None
     current_loop = None
