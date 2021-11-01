@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 import gemmi as gemmi
 
@@ -31,7 +31,7 @@ def export_to_cif(cif: Dict, filename: str):
     doc.write_file(filename, style=gemmi.cif.Style.Indent35)
 
 
-def replace_float_values(val):
+def replace_float_values(val: str) -> str:
     val = val.replace('0.75', '3/4')
     val = val.replace('0.5', '1/2')
     val = val.replace('0.33', '1/3')
@@ -40,7 +40,7 @@ def replace_float_values(val):
     return val
 
 
-def add_loop_to_block(block: 'gemmi.cif.Block', value: list[Dict]) -> None:
+def add_loop_to_block(block: 'gemmi.cif.Block', value: List[Dict]) -> None:
     loop: Dict
     new_loop = None
     current_loop = None
