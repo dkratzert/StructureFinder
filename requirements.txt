@@ -12,3 +12,4 @@ PyQtWebEngine==5.15.2
 pywin32-ctypes==0.2.0
 six
 requests
+gemmi
