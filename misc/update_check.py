@@ -48,10 +48,6 @@ def is_update_needed(VERSION=0, silent=True):
     """
     Decides if an update of DSR is needed.
     :return: bool
-    >>> is_update_needed(VERSION=1)
-    False
-    >>> is_update_needed(VERSION=9999)
-    False
     """
     version = get_current_strf_version(silent=True)
     if int(VERSION) < int(version):
