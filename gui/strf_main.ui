@@ -275,7 +275,7 @@
          <string notr="true"/>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="maintab">
          <attribute name="title">
@@ -587,13 +587,13 @@
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
-                   <height>75</height>
+                   <height>70</height>
                   </size>
                  </property>
                  <property name="baseSize">
                   <size>
                    <width>0</width>
-                   <height>75</height>
+                   <height>70</height>
                   </size>
                  </property>
                  <property name="contextMenuPolicy">
@@ -779,18 +779,18 @@
                  </item>
                 </layout>
                </item>
-               <item>
-                <spacer name="verticalSpacer_7">
-                 <property name="orientation">
-                  <enum>Qt::Vertical</enum>
+               <item alignment="Qt::AlignLeft">
+                <widget class="QPushButton" name="ExportAsCIFpushButton">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
                  </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>20</width>
-                   <height>40</height>
-                  </size>
+                 <property name="text">
+                  <string>Export as CIF</string>
                  </property>
-                </spacer>
+                </widget>
                </item>
               </layout>
              </widget>
