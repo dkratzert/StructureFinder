@@ -11,7 +11,7 @@ from misc.version import VERSION
 This file is for updating the various version number definitions for each STRF release
 """
 
-isspath = ["./scripts/strf-install_win32.iss", "./scripts/strf-install_win64.iss"]
+isspath = ["./scripts/strf-install_win64.iss"]
 pypath = ["./shelxfile/shelx.py", "./strf.py", "./shelxfile/misc.py", "./searcher/database_handler.py"]
 
 
@@ -38,7 +38,6 @@ def disable_debug(filepath):
             print("DEBUG/PROFILE.. {}, {}".format(l[2], filepath))
             l[2] = '{}'.format("False")
             file[num] = " ".join(l)
-            continue
     iss_file = "\n".join(file)
     pth.write_text(iss_file, encoding="UTF-8")
 
