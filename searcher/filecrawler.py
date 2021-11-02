@@ -130,7 +130,10 @@ def filewalker_walk(startdir: str, patterns: list):
                 if omit:
                     continue
                 fullpath = os.path.abspath(os.path.join(root, filen))
-                if os.stat(fullpath).st_size == 0:
+                try:
+                    if os.stat(fullpath).st_size == 0:
+                        continue
+                except Exception:
                     continue
                 if filen == 'xd_geo.cif':  # Exclude xdgeom cif files
                     continue
