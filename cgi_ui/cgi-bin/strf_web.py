@@ -6,9 +6,10 @@
 ###  Configure the web server here:   #####################
 from typing import List, Dict
 
-host = "10.6.13.3"
-port = "80"
-dbfilename = "../structurefinder.sqlite"
+host = "127.0.0.1"
+port = "8080"
+dbfilename = "structuredb.sqlite"
+download_button = True
 
 ###########################################################
 
@@ -78,7 +79,7 @@ def main():
     response.content_type = 'text/html; charset=UTF-8'
     data = {"my_ip": site_ip,
             "title": 'StructureFinder',
-            'host': host}
+            'host' : host}
     output = template('./cgi_ui/views/strf_web', data)
     return output
 
@@ -231,7 +232,7 @@ def cellsearch():
     else:
         try:
             if which('ccdc_searcher') or \
-                    Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
+                Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
                 print('CellCheckCSD found')
                 return 'true'
         except TypeError:
@@ -272,12 +273,12 @@ def show_cellcheck():
     else:
         cent = 0
     response.content_type = 'text/html; charset=UTF-8'
-    data = {"my_ip": site_ip,
-            "title": 'StructureFinder',
+    data = {"my_ip"  : site_ip,
+            "title"  : 'StructureFinder',
             'cellstr': cellstr,
-            'strid': str_id,
-            'cent': cent,
-            'host': host, }
+            'strid'  : str_id,
+            'cent'   : cent,
+            'host'   : host, }
     output = template('./cgi_ui/views/cellcheckcsd', data)
     return output
 
@@ -350,7 +351,7 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     Returns the next package of table rows for continuos scrolling.
     """
     failure: Dict[str, str] = {
-        "status": "error",
+        "status" : "error",
         "message": "Nothing found."
     }
     if not ids and not show_all:
@@ -469,8 +470,8 @@ def get_residuals_table2(cif_dic: dict) -> str:
     <table class="table table-bordered table-condensed" id='resitable2'>
         <tbody>
         <tr><td style='width: 40%'><b>Measured Refl.</b></td>       <td>{0}</td></tr>
-        <tr><td><b>Independent Refl.</b></td>                       <td>{9}</td></tr>
-        <tr><td><b>Data with [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>    <td>{10}</td></tr>
+        <tr><td><b>Independent Refl.</b></td>                       <td>{10}</td></tr>
+        <tr><td><b>Data with [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>    <td>{11}</td></tr>
         <tr><td><b>Parameters</b></td>                              <td>{1}</td></tr>
         <tr><td><b>data/param</b></td>                              <td>{2:<5.1f}</td></tr>
         <tr><td><b>Restraints</b></td>                              <td>{3}</td></tr>
@@ -482,18 +483,18 @@ def get_residuals_table2(cif_dic: dict) -> str:
         <tr><td><b>CCDC Number</b></td>                             <td>{9}</td></tr>
         </tbody>
     </table>
-    """.format(cif_dic['_diffrn_reflns_number'],
-               cif_dic['_refine_ls_number_parameters'],
-               data_to_param,
-               cif_dic['_refine_ls_number_restraints'],
-               thetamax if thetamax else '?',
-               thetafull if thetafull else '?',
-               d,
-               compl,
-               cif_dic['_refine_ls_abs_structure_Flack'],
-               cif_dic['_database_code_depnum_ccdc_archive'],
-               cif_dic['_refine_ls_number_reflns'],
-               cif_dic['_reflns_number_gt']
+    """.format(cif_dic['_diffrn_reflns_number'],  # 0
+               cif_dic['_refine_ls_number_parameters'],  # 1
+               data_to_param,  # 2
+               cif_dic['_refine_ls_number_restraints'],  # 3
+               thetamax if thetamax else '?',  # 4
+               thetafull if thetafull else '?',  # 5
+               d,  # 6
+               compl,  # 7
+               cif_dic['_refine_ls_abs_structure_Flack'],  # 8
+               cif_dic['_database_code_depnum_ccdc_archive'],  # 9
+               cif_dic['_refine_ls_number_reflns'],  # 10
+               cif_dic['_reflns_number_gt']  # 11
                )
     return table2
 
@@ -681,14 +682,14 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     txt_ex_results: List = []
     date_results: List = []
     ccdc_num_results: List = []
-    states: Dict[str, bool] = {'date': False,
-                               'cell': False,
-                               'elincl': False,
-                               'elexcl': False,
-                               'txt': False,
-                               'txt_ex': False,
-                               'spgr': False,
-                               'rval': False,
+    states: Dict[str, bool] = {'date'    : False,
+                               'cell'    : False,
+                               'elincl'  : False,
+                               'elexcl'  : False,
+                               'txt'     : False,
+                               'txt_ex'  : False,
+                               'spgr'    : False,
+                               'rval'    : False,
                                'ccdc_num': False,
                                }
     if ccdc_num:
