@@ -34,7 +34,7 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QT
 from displaymol.sdm import SDM
 from misc.dialogs import bug_found_warning, do_update_program
 from misc.download import MyDownloader
-from misc.exporter import export_to_cif
+from misc.exporter import export_to_cif_file
 from misc.settings import StructureFinderSettings
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
@@ -698,41 +698,8 @@ class StartStructureDB(QMainWindow):
         filename, _ = self.get_save_name_from_dialog(filter='*.cif')
         if not filename or not self.structureId:
             return
-        try:
-            # noinspection PyUnresolvedReferences
-            data_name = self.structures.get_all_structure_names([self.structureId])[0][4].decode('ascii', 'ignore')
-        except IndexError:
-            data_name = ''
-        data_name = data_name.replace(' ', '_')
-        cif = self.structures.get_row_as_dict(self.structureId)
-        cell = self.structures.get_cell_by_id(self.structureId)
-        cif['data'] = data_name
-        cif['_cell_length_a'] = cell[0]
-        cif['_cell_length_b'] = cell[1]
-        cif['_cell_length_c'] = cell[2]
-        cif['_cell_angle_alpha'] = cell[3]
-        cif['_cell_angle_beta'] = cell[4]
-        cif['_cell_angle_gamma'] = cell[5]
-        cif['_cell_volume'] = cell[6]
-        # Sort the dictionary to have the pairs sorted in the CIF:
-        cif = dict(sorted(cif.items(), key=lambda kv: kv[0]))
-        atoms = self.structures.get_atoms_table(self.structureId, cartesian=False, as_list=False)
-        cif['_loop'] = []
-        # Atoms can be empty:
-        if atoms:
-            for atom in atoms:
-                try:
-                    cif['_loop'].append({'_atom_site_label'         : str(atom[0]),
-                                         '_atom_site_type_symbol'   : str(atom[1]),
-                                         '_atom_site_fract_x'       : str(atom[2]),
-                                         '_atom_site_fract_y'       : str(atom[3]),
-                                         '_atom_site_fract_z'       : str(atom[4]),
-                                         '_atom_site_disorder_group': str(atom[5]),
-                                         '_atom_site_occupancy'     : str(atom[6]),
-                                         })
-                except(IndexError, ValueError):
-                    pass
-        export_to_cif(cif, filename=filename)
+        cif_data = self.structures.get_cif_export_data(self.structureId)
+        export_to_cif_file(cif_data, filename=filename)
         print('cif exporrted')
 
     def get_save_name_from_dialog(self, dir: str = './', filter="*.sqlite"):

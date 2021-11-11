@@ -2,33 +2,29 @@
 # !C:\tools\Python-3.6.2_64\pythonw.exe
 # !/usr/local/bin/python3.6
 
-###########################################################
-###  Configure the web server here:   #####################
-from typing import List, Dict
-
-host = "127.0.0.1"
-port = "8080"
-dbfilename = "structuredb.sqlite"
-download_button = True
-
-###########################################################
-
-import socket
-
-names = ['PC9', 'DDT-2.local', 'DDT']
-# run on local ip on my PC:
-# print(socket.gethostname())
-if socket.gethostname() in names:
-    host = '127.0.0.1'
-    port = "8080"
-    dbfilename = "./test.sqlite"
-site_ip = host + ':' + port
-
+import datetime
 import math
 import os
 import sys
 from pathlib import Path
+from typing import List, Dict
 from xml.etree.ElementTree import ParseError
+
+from gemmi.cif import Style
+
+from misc.exporter import cif_data_to_document
+
+###########################################################
+###  Configure the web server here:   #####################
+
+host = "127.0.0.1"
+port = "8080"
+dbfilename = "structuredb.sqlite"
+download_button = False
+
+###########################################################
+
+site_ip = host + ':' + port
 
 try:  # Adding local path to PATH
     sys.path.insert(0, os.path.abspath('./'))
@@ -38,25 +34,19 @@ except(KeyError, ValueError):
 pyver = sys.version_info
 if pyver[0] == 3 and pyver[1] < 4:
     # Python 2 creates a syntax error anyway.
-    print("You need Python 3.4 and up in oder to run this proram!")
+    print("You need Python 3.4 and up in oder to run this program!")
     sys.exit()
 
 from shutil import which
 from searcher.constants import centering_letter_2_num, centering_num_2_letter
 from ccdc.query import get_cccsd_path, search_csd, parse_results
-from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response
+from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response, HTTPResponse
 from displaymol.mol_file_writer import MolFile
 from displaymol.sdm import SDM
 from pymatgen.core import lattice
 from searcher.database_handler import StructureTable
 from searcher.misc import is_valid_cell, get_list_of_elements, vol_unitcell, is_a_nonzero_file, format_sum_formula, \
     combine_results, formula_dict_to_elements
-
-"""
-TODO:
-- Make login infrastructure.
-- Maybe http://www.daterangepicker.com
-"""
 
 app = application = Bottle()
 
@@ -77,9 +67,13 @@ def main():
     """
     response.set_header('Set-Cookie', 'str_id=')
     response.content_type = 'text/html; charset=UTF-8'
-    data = {"my_ip": site_ip,
-            "title": 'StructureFinder',
-            'host' : host}
+    data = {"my_ip"        : site_ip,
+            "title"        : 'StructureFinder',
+            'host'         : host,
+            'download_link': r"""<p><a href="http://{}/dbfile.sqlite" download="structurefinder.sqlite" 
+                                     type="application/*">Download
+                                    database file</a></p>""".format(site_ip) if download_button else ''
+            }
     output = template('./cgi_ui/views/strf_web', data)
     return output
 
@@ -242,6 +236,25 @@ def cellsearch():
 @app.route('/favicon.ico')
 def redirect_to_favicon():
     redirect('/static/favicon.ico')
+
+
+@app.route('/current-cif/<structure_id:int>')
+def download_currently_selected_cif(structure_id):
+    if not download_button:
+        return 'Downloading a CIF was turned off by the administrator.'
+    headers = dict()
+    structures = StructureTable(dbfilename)
+    cif_data = structures.get_cif_export_data(structure_id)
+    doc = cif_data_to_document(cif_data)
+    file = doc.as_string(style=Style.Indent35)
+    headers['Content-Type'] = 'text/plain'
+    # headers['Content-Type'] = 'application/octet-stream'
+    headers['Content-Encoding'] = 'ascii'
+    headers['Content-Length'] = len(file)
+    now = datetime.datetime.now()
+    lm = now.strftime("%a, %d %b %Y %H:%M:%S GMT")
+    headers['Last-Modified'] = lm
+    return HTTPResponse(file, **headers)
 
 
 @app.get('/csd')
@@ -505,7 +518,9 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     """
     # starting table header (the div is for css):
     # style="white-space: pre": preserves white space
-    table_string = """<h4>All CIF values</h4>
+    button = """<a type="button" class="btn btn-default btn-sm" id="download_CIF"
+                                                 href='current-cif/{}' >Download as CIF</a>""".format(structure_id)
+    table_string = """<h4>All CIF values</h4> {}
                         <div id="myresidualtable">
                         <table class="table table-striped table-bordered table-condensed" style="white-space: pre">
                             <thead>
@@ -514,7 +529,7 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
                                     <th> Value </th>
                                 </tr>
                             </thead>
-                        <tbody>"""
+                        <tbody>""".format(button if download_button else '')
     # get the residuals of the cif file as a dictionary:
     dic = structures.get_row_as_dict(structure_id)
     if not dic:

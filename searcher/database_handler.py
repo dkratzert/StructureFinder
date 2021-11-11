@@ -173,23 +173,23 @@ class DatabaseRequest():
                     ''')
 
         self.cur.execute(
-                '''
-                CREATE TABLE IF NOT EXISTS cell (
-                    Id        INTEGER NOT NULL,
-                    StructureId    INTEGER NOT NULL,
-                    a    FLOAT,
-                    b    FLOAT,
-                    c    FLOAT,
-                    alpha   FLOAT,
-                    beta    FLOAT,
-                    gamma   FLOAT,
-                    volume     FLOAT,
-                PRIMARY KEY(Id),
-                  FOREIGN KEY(StructureId)
-                    REFERENCES Structure(Id)
-                      ON DELETE CASCADE
-                      ON UPDATE NO ACTION);
-                '''
+            '''
+            CREATE TABLE IF NOT EXISTS cell (
+                Id        INTEGER NOT NULL,
+                StructureId    INTEGER NOT NULL,
+                a    FLOAT,
+                b    FLOAT,
+                c    FLOAT,
+                alpha   FLOAT,
+                beta    FLOAT,
+                gamma   FLOAT,
+                volume     FLOAT,
+            PRIMARY KEY(Id),
+              FOREIGN KEY(StructureId)
+                REFERENCES Structure(Id)
+                  ON DELETE CASCADE
+                  ON UPDATE NO ACTION);
+            '''
         )
 
         """self.cur.execute(
@@ -213,17 +213,17 @@ class DatabaseRequest():
         )"""
 
         self.cur.execute(
-                '''
-                CREATE TABLE IF NOT EXISTS sum_formula (
-                        Id             INTEGER NOT NULL,
-                        StructureId    INTEGER NOT NULL,
-                        {}             FLOAT,
-                        PRIMARY KEY(Id),
-                          FOREIGN KEY (StructureId)
-                            REFERENCES Structure(Id)
-                              ON DELETE CASCADE
-                              ON UPDATE NO ACTION);
-                '''.format("   FLOAT, ".join(["'Elem_" + at + "'" for at in sorted_atoms]))
+            '''
+            CREATE TABLE IF NOT EXISTS sum_formula (
+                    Id             INTEGER NOT NULL,
+                    StructureId    INTEGER NOT NULL,
+                    {}             FLOAT,
+                    PRIMARY KEY(Id),
+                      FOREIGN KEY (StructureId)
+                        REFERENCES Structure(Id)
+                          ON DELETE CASCADE
+                          ON UPDATE NO ACTION);
+            '''.format("   FLOAT, ".join(["'Elem_" + at + "'" for at in sorted_atoms]))
         )
 
     def init_textsearch(self):
@@ -712,14 +712,14 @@ class StructureTable():
         self.database.cur.execute("""DROP INDEX if exists idx_al""")
         self.database.cur.execute("""DROP INDEX if exists idx_be""")
         self.database.cur.execute("""DROP INDEX if exists idx_ga""")
-        #self.database.cur.execute("""DROP INDEX if exists idx_a_n""")
-        #self.database.cur.execute("""DROP INDEX if exists idx_b_n""")
-        #self.database.cur.execute("""DROP INDEX if exists idx_c_n""")
-        #self.database.cur.execute("""DROP INDEX if exists idx_al_n""")
-        #self.database.cur.execute("""DROP INDEX if exists idx_be_n""")
-        #self.database.cur.execute("""DROP INDEX if exists idx_ga_n""")
+        # self.database.cur.execute("""DROP INDEX if exists idx_a_n""")
+        # self.database.cur.execute("""DROP INDEX if exists idx_b_n""")
+        # self.database.cur.execute("""DROP INDEX if exists idx_c_n""")
+        # self.database.cur.execute("""DROP INDEX if exists idx_al_n""")
+        # self.database.cur.execute("""DROP INDEX if exists idx_be_n""")
+        # self.database.cur.execute("""DROP INDEX if exists idx_ga_n""")
         self.database.cur.execute("""DROP INDEX if exists idx_volume""")
-        #self.database.cur.execute("""DROP INDEX if exists idx_volume_n""")
+        # self.database.cur.execute("""DROP INDEX if exists idx_volume_n""")
         self.database.cur.execute("""DROP INDEX if exists idx_sumform""")
         self.database.cur.execute("""CREATE INDEX idx_volume ON cell (volume)""")
         self.database.cur.execute("""CREATE INDEX idx_a ON cell (a)""")
@@ -728,13 +728,13 @@ class StructureTable():
         self.database.cur.execute("""CREATE INDEX idx_al ON cell (alpha)""")
         self.database.cur.execute("""CREATE INDEX idx_be ON cell (beta)""")
         self.database.cur.execute("""CREATE INDEX idx_ga ON cell (gamma)""")
-        #self.database.cur.execute("""CREATE INDEX idx_volume_n ON niggli_cell (volume)""")
-        #self.database.cur.execute("""CREATE INDEX idx_a_n ON niggli_cell (a)""")
-        #self.database.cur.execute("""CREATE INDEX idx_b_n ON niggli_cell (b)""")
-        #self.database.cur.execute("""CREATE INDEX idx_c_n ON niggli_cell (c)""")
-        #self.database.cur.execute("""CREATE INDEX idx_al_n ON niggli_cell (alpha)""")
-        #self.database.cur.execute("""CREATE INDEX idx_be_n ON niggli_cell (beta)""")
-        #self.database.cur.execute("""CREATE INDEX idx_ga_n ON niggli_cell (gamma)""")
+        # self.database.cur.execute("""CREATE INDEX idx_volume_n ON niggli_cell (volume)""")
+        # self.database.cur.execute("""CREATE INDEX idx_a_n ON niggli_cell (a)""")
+        # self.database.cur.execute("""CREATE INDEX idx_b_n ON niggli_cell (b)""")
+        # self.database.cur.execute("""CREATE INDEX idx_c_n ON niggli_cell (c)""")
+        # self.database.cur.execute("""CREATE INDEX idx_al_n ON niggli_cell (alpha)""")
+        # self.database.cur.execute("""CREATE INDEX idx_be_n ON niggli_cell (beta)""")
+        # self.database.cur.execute("""CREATE INDEX idx_ga_n ON niggli_cell (gamma)""")
         self.database.cur.execute("""CREATE INDEX idx_sumform ON Residuals (_space_group_IT_number)""")
 
     def populate_fulltext_search_table(self):
@@ -820,7 +820,7 @@ class StructureTable():
         [(7.9492, 8.9757, 11.3745, 106.974, 91.963, 103.456, 750.33)]
         """
         req = 'select a, b, c, alpha, beta, gamma, volume from cell where StructureId IN ({seq})'.format(
-                seq=self.joined_arglist(structure_ids))
+            seq=self.joined_arglist(structure_ids))
         return self.database.db_request(req, structure_ids)
 
     def get_cell_by_id(self, structure_id):
@@ -903,7 +903,7 @@ class StructureTable():
         req = """
         SELECT StructureId FROM Residuals WHERE _database_code_depnum_ccdc_archive LIKE ?
         """
-        result = self.database.db_request(req, ('%'+ccdc+'%',))
+        result = self.database.db_request(req, ('%' + ccdc + '%',))
         return self.result_to_list(result)
 
     def find_by_strings(self, text):
@@ -952,7 +952,7 @@ class StructureTable():
         result = self.database.db_request(req, (value,))
         return self.result_to_list(result)
 
-    def result_to_list(self, result: Union[List, Tuple])-> List:
+    def result_to_list(self, result: Union[List, Tuple]) -> List:
         if result and len(result) > 0:
             return [x[0] for x in result]
         else:
@@ -995,7 +995,7 @@ class StructureTable():
         result = self.database.db_request(req)
         return self.result_to_list(result)
 
-    def find_by_date(self, start='0000-01-01', end='NOW')-> List:
+    def find_by_date(self, start='0000-01-01', end='NOW') -> List:
         """
         Find structures between start and end date.
 
@@ -1064,6 +1064,42 @@ class StructureTable():
               INSERT or REPLACE into database_format (Id, Format) values (?, ?)
               """
         self.database.db_request(req, (1, version))
+
+    def get_cif_export_data(self, structure_id):
+        try:
+            data_name = bytes(self.get_all_structure_names([structure_id])[0][4]).decode('ascii', 'ignore')
+        except IndexError:
+            data_name = ''
+        data_name = data_name.replace(' ', '_')
+        cif = self.get_row_as_dict(structure_id)
+        cell = self.get_cell_by_id(structure_id)
+        cif['data'] = data_name
+        cif['_cell_length_a'] = cell[0]
+        cif['_cell_length_b'] = cell[1]
+        cif['_cell_length_c'] = cell[2]
+        cif['_cell_angle_alpha'] = cell[3]
+        cif['_cell_angle_beta'] = cell[4]
+        cif['_cell_angle_gamma'] = cell[5]
+        cif['_cell_volume'] = cell[6]
+        # Sort the dictionary to have the pairs sorted in the CIF:
+        cif = dict(sorted(cif.items(), key=lambda kv: kv[0]))
+        atoms = self.get_atoms_table(structure_id, cartesian=False, as_list=False)
+        cif['_loop'] = []
+        # Atoms can be empty:
+        if atoms:
+            for atom in atoms:
+                try:
+                    cif['_loop'].append({'_atom_site_label'         : str(atom[0]),
+                                         '_atom_site_type_symbol'   : str(atom[1]),
+                                         '_atom_site_fract_x'       : str(atom[2]),
+                                         '_atom_site_fract_y'       : str(atom[3]),
+                                         '_atom_site_fract_z'       : str(atom[4]),
+                                         '_atom_site_disorder_group': str(atom[5]),
+                                         '_atom_site_occupancy'     : str(atom[6]),
+                                         })
+                except(IndexError, ValueError):
+                    pass
+        return cif
 
 
 if __name__ == '__main__':

@@ -6,7 +6,12 @@ import gemmi as gemmi
 from searcher.fileparser import Cif
 
 
-def export_to_cif(cif: Dict, filename: str):
+def export_to_cif_file(cif: Dict, filename: str):
+    doc = cif_data_to_document(cif)
+    write_cif_to_disk(doc, filename)
+
+
+def cif_data_to_document(cif: Dict) -> gemmi.cif.Document:
     doc: gemmi.cif.Document = gemmi.cif.Document()
     title = 'exported_from_structurefinder_{}'.format(cif['data'])
     block: gemmi.cif.Block = doc.add_new_block(title)
@@ -28,6 +33,10 @@ def export_to_cif(cif: Dict, filename: str):
         if not str_value:
             str_value = '?'
         block.set_pair(key, gemmi.cif.quote(str_value))
+    return doc
+
+
+def write_cif_to_disk(doc, filename):
     doc.write_file(filename, style=gemmi.cif.Style.Indent35)
 
 
@@ -62,6 +71,6 @@ if __name__ == '__main__':
     cif = Cif()
     for num, file in enumerate(Path('./test-data').rglob('*.cif')):
         cifok = cif.parsefile(file.read_text().splitlines(keepends=True))
-        export_to_cif(cif.cif_data, 'test{}.cif'.format(num))
+        export_to_cif_file(cif.cif_data, 'test{}.cif'.format(num))
         # if num == 2:
         #    break
