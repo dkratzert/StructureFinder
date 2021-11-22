@@ -1,3 +1,4 @@
+#!/bin/bash
 #REM execute me from the main directory
 git pull
 
