@@ -1,5 +1,6 @@
 Changelog
 
+-v58 Fix crash during CIF export. Added CIF export to web interface.
 -v57 Added button to export the currently selected structure as CIF. This CIF is not the original CIF!
 -v56 Minor corrections.
 -v55 Display database file name below main table.
