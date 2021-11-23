@@ -7,12 +7,10 @@ source venv/bin/activate
 DISTR="linux"
 OS_RELEASE="$(cat /etc/os-release)"
 
-if [[ "ubuntu" == *$OS_RELEASE* ]]
-then
+if echo $OS_RELEASE | grep -q "ubuntu"; then
   DISTR="ubuntu"
 fi
-if [[ "suse" == *$OS_RELEASE* ]]
-then
+if echo $OS_RELEASE | grep -q "suse"; then
   DISTR="opensuse"
 fi
 
