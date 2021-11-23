@@ -5,11 +5,13 @@ git pull
 source venv/bin/activate
 
 DISTR="linux"
-if [[ $(cat /etc/os-release |grep -c "ubuntu") -gt 0 ]]
+OS_RELEASE="$(cat /etc/os-release)"
+
+if [[ "ubuntu" == *$OS_RELEASE* ]]
 then
   DISTR="ubuntu"
 fi
-if [[ $(cat /etc/os-release |grep -c "suse") -gt 0 ]]
+if [[ "suse" == *$OS_RELEASE* ]]
 then
   DISTR="opensuse"
 fi
