@@ -47,6 +47,8 @@ VersionInfoProductName=StructureFinder
 AlwaysShowComponentsList=False
 ShowComponentSizes=False
 SetupIconFile="..\icons\strf.ico"
+SignTool=signtool
+SignTool=signtool2
 
 [UninstallRun]
 
