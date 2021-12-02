@@ -1,1 +1,1 @@
-VERSION = 58
+VERSION = 59
