@@ -6,7 +6,7 @@ import os
 from time import perf_counter
 
 from searcher.misc import distance
-from searcher.atoms import get_radius_from_element
+from shelxfile.elements import get_radius_from_element
 
 
 class MolFile(object):

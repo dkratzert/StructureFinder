@@ -5,7 +5,7 @@ Created on 09.02.2015
 
  ----------------------------------------------------------------------------
 * "THE BEER-WARE LICENSE" (Revision 42):
-* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this
+* <dkratzert@gmx.de> wrote this file. As long as you retain this
 * notice you can do whatever you want with this stuff. If we meet some day, and
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
@@ -130,7 +130,10 @@ def filewalker_walk(startdir: str, patterns: list):
                 if omit:
                     continue
                 fullpath = os.path.abspath(os.path.join(root, filen))
-                if os.stat(fullpath).st_size == 0:
+                try:
+                    if os.stat(fullpath).st_size == 0:
+                        continue
+                except Exception:
                     continue
                 if filen == 'xd_geo.cif':  # Exclude xdgeom cif files
                     continue
@@ -286,7 +289,7 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                     print('res file not added:', fullpath)
                 continue
             if self:
-                self.add_table_row(filename=name, path=fullpath, data=name, structure_id=str(lastid))
+                self.add_table_row(filename=name, path=filepth, data=name, structure_id=str(lastid))
             lastid += 1
             num += 1
             rescount += 1

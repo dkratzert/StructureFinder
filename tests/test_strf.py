@@ -135,7 +135,7 @@ class TestApplication(unittest.TestCase):
         Testing the opening of a database.
         """
         # self.myapp.close_db()  # not needed here!
-        status = self.myapp.import_database_file('test-data/test.sql')
+        status = self.myapp.open_database_file('test-data/test.sql')
         self.assertEqual(True, status)
         self.assertEqual(263, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
 

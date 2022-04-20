@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "54"
+#define MyAppVersion "59"
 #define MyAppPublisher "Daniel Kratzert"
 
 ; Remember, first run pyInstaller script!
@@ -47,6 +47,8 @@ VersionInfoProductName=StructureFinder
 AlwaysShowComponentsList=False
 ShowComponentSizes=False
 SetupIconFile="..\icons\strf.ico"
+SignTool=signtool
+SignTool=signtool2
 
 [UninstallRun]
 

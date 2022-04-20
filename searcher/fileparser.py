@@ -4,7 +4,7 @@ Created on 09.02.2015
 
  ----------------------------------------------------------------------------
 * "THE BEER-WARE LICENSE" (Revision 42):
-* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this
+* <dkratzert@gmx.de> wrote this file. As long as you retain this
 * notice you can do whatever you want with this stuff. If we meet some day, and
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
@@ -16,7 +16,8 @@ from pathlib import Path
 from pprint import pprint
 from typing import List, Dict, Union, Any
 
-from searcher.atoms import sorted_atoms
+from searcher.misc import get_error_from_value, vol_unitcell
+from shelxfile.elements import sorted_atoms
 
 
 class Cif(object):
@@ -29,75 +30,75 @@ class Cif(object):
             options = {'modification_time': "", 'file_size': ""}
         # This is a set of keys that are already there:
         self.cif_data: Dict[str, Union[str, Any]] = {
-            "data"                                : '',
-            "_audit_contact_author_name"          : '',
-            "_cell_length_a"                      : '',
-            '_cell_length_b'                      : '',
-            '_cell_length_c'                      : '',
-            '_cell_angle_alpha'                   : '',
-            '_cell_angle_beta'                    : '',
-            '_cell_angle_gamma'                   : '',
-            "_cell_volume"                        : '',
-            "_cell_formula_units_Z"               : '',
-            "_space_group_name_H-M_alt"           : '',
-            "_space_group_name_Hall"              : '',
-            "_space_group_centring_type"          : '',
-            "_space_group_IT_number"              : '',
-            "_space_group_crystal_system"         : '',
-            "_space_group_symop_operation_xyz"    : '',
-            "_audit_creation_method"              : '',
-            "_chemical_formula_sum"               : '',
-            "_chemical_formula_weight"            : '',
-            "_exptl_crystal_description"          : '',
-            "_exptl_crystal_colour"               : '',
-            "_exptl_crystal_size_max"             : '',
-            "_exptl_crystal_size_mid"             : '',
-            "_exptl_crystal_size_min"             : '',
-            "_exptl_absorpt_coefficient_mu"       : '',
-            "_exptl_absorpt_correction_type"      : '',
-            "_exptl_special_details"              : '',
-            "_diffrn_ambient_temperature"         : '',
-            "_diffrn_radiation_wavelength"        : '',
-            "_diffrn_radiation_type"              : '',
-            "_diffrn_source"                      : '',
-            "_diffrn_measurement_device_type"     : '',
-            "_diffrn_reflns_number"               : '',
-            "_diffrn_reflns_av_R_equivalents"     : '',
-            "_diffrn_reflns_av_unetI/netI"        : '',
-            "_diffrn_reflns_theta_min"            : '',
-            "_diffrn_reflns_theta_max"            : '',
-            "_diffrn_reflns_theta_full"           : '',
-            "_diffrn_measured_fraction_theta_max" : '',
+            "data":                                 '',
+            "_audit_contact_author_name":           '',
+            "_cell_length_a":                       '',
+            '_cell_length_b':                       '',
+            '_cell_length_c':                       '',
+            '_cell_angle_alpha':                    '',
+            '_cell_angle_beta':                     '',
+            '_cell_angle_gamma':                    '',
+            "_cell_volume":                         '',
+            "_cell_formula_units_Z":                '',
+            "_space_group_name_H-M_alt":            '',
+            "_space_group_name_Hall":               '',
+            "_space_group_centring_type":           '',
+            "_space_group_IT_number":               '',
+            "_space_group_crystal_system":          '',
+            "_space_group_symop_operation_xyz":     '',
+            "_audit_creation_method":               '',
+            "_chemical_formula_sum":                '',
+            "_chemical_formula_weight":             '',
+            "_exptl_crystal_description":           '',
+            "_exptl_crystal_colour":                '',
+            "_exptl_crystal_size_max":              '',
+            "_exptl_crystal_size_mid":              '',
+            "_exptl_crystal_size_min":              '',
+            "_exptl_absorpt_coefficient_mu":        '',
+            "_exptl_absorpt_correction_type":       '',
+            "_exptl_special_details":               '',
+            "_diffrn_ambient_temperature":          '',
+            "_diffrn_radiation_wavelength":         '',
+            "_diffrn_radiation_type":               '',
+            "_diffrn_source":                       '',
+            "_diffrn_measurement_device_type":      '',
+            "_diffrn_reflns_number":                '',
+            "_diffrn_reflns_av_R_equivalents":      '',
+            "_diffrn_reflns_av_unetI/netI":         '',
+            "_diffrn_reflns_theta_min":             '',
+            "_diffrn_reflns_theta_max":             '',
+            "_diffrn_reflns_theta_full":            '',
+            "_diffrn_measured_fraction_theta_max":  '',
             "_diffrn_measured_fraction_theta_full": '',
-            "_reflns_number_total"                : '',
-            "_reflns_number_gt"                   : '',
-            "_reflns_threshold_expression"        : '',
-            "_reflns_Friedel_coverage"            : '',
-            "_computing_structure_solution"       : '',
-            "_computing_structure_refinement"     : '',
-            "_refine_special_details"             : '',
-            "_refine_ls_abs_structure_Flack"      : '',
-            "_refine_ls_structure_factor_coef"    : '',
-            "'_refine_ls_hydrogen_treatment'"     : '',
-            "_refine_ls_weighting_details"        : '',
-            "_refine_ls_number_reflns"            : '',
-            "_refine_ls_number_parameters"        : '',
-            "_refine_ls_number_restraints"        : '',
-            "_refine_ls_R_factor_all"             : '',
-            "_refine_ls_R_factor_gt"              : '',
-            "_refine_ls_wR_factor_ref"            : '',
-            "_refine_ls_wR_factor_gt"             : '',
-            "_refine_ls_goodness_of_fit_ref"      : '',
-            "_refine_ls_restrained_S_all"         : '',
-            "_refine_ls_shift/su_max"             : '',
-            "_refine_ls_shift/su_mean"            : '',
-            "_refine_diff_density_max"            : '',
-            "_refine_diff_density_min"            : '',
-            "_diffrn_reflns_av_unetI_netI"        : '',
-            "_database_code_depnum_ccdc_archive"  : '',
-            "_shelx_res_file"                     : '',
-            "modification_time"                   : options['modification_time'],
-            "file_size"                           : options['file_size']
+            "_reflns_number_total":                 '',
+            "_reflns_number_gt":                    '',
+            "_reflns_threshold_expression":         '',
+            "_reflns_Friedel_coverage":             '',
+            "_computing_structure_solution":        '',
+            "_computing_structure_refinement":      '',
+            "_refine_special_details":              '',
+            "_refine_ls_abs_structure_Flack":       '',
+            "_refine_ls_structure_factor_coef":     '',
+            "'_refine_ls_hydrogen_treatment'":      '',
+            "_refine_ls_weighting_details":         '',
+            "_refine_ls_number_reflns":             '',
+            "_refine_ls_number_parameters":         '',
+            "_refine_ls_number_restraints":         '',
+            "_refine_ls_R_factor_all":              '',
+            "_refine_ls_R_factor_gt":               '',
+            "_refine_ls_wR_factor_ref":             '',
+            "_refine_ls_wR_factor_gt":              '',
+            "_refine_ls_goodness_of_fit_ref":       '',
+            "_refine_ls_restrained_S_all":          '',
+            "_refine_ls_shift/su_max":              '',
+            "_refine_ls_shift/su_mean":             '',
+            "_refine_diff_density_max":             '',
+            "_refine_diff_density_min":             '',
+            "_diffrn_reflns_av_unetI_netI":         '',
+            "_database_code_depnum_ccdc_archive":   '',
+            "_shelx_res_file":                      '',
+            "modification_time":                    options['modification_time'],
+            "file_size":                            options['file_size']
         }
 
     def parsefile(self, txt: list) -> bool:
@@ -357,6 +358,36 @@ class Cif(object):
             beta = float(beta.split('(')[0])
         if isinstance(gamma, str):
             gamma = float(gamma.split('(')[0])
+        return [a, b, c, alpha, beta, gamma]
+
+    @property
+    def volume(self):
+        vol = self.cif_data['_cell_volume']
+        if vol:
+            return vol
+        else:
+            return vol_unitcell(*self.cell)
+
+    @property
+    def volume_error_tuple(self):
+        return get_error_from_value(self.volume)
+
+    @property
+    def cell_errors(self):
+        a = self.cif_data['_cell_length_a']
+        b = self.cif_data['_cell_length_b']
+        c = self.cif_data['_cell_length_c']
+        alpha = self.cif_data['_cell_angle_alpha']
+        beta = self.cif_data['_cell_angle_beta']
+        gamma = self.cif_data['_cell_angle_gamma']
+        if not all((a, b, c, alpha, beta, gamma)):
+            return []
+        a = get_error_from_value(a)[1]
+        b = get_error_from_value(b)[1]
+        c = get_error_from_value(c)[1]
+        alpha = get_error_from_value(alpha)[1]
+        beta = get_error_from_value(beta)[1]
+        gamma = get_error_from_value(gamma)[1]
         return [a, b, c, alpha, beta, gamma]
 
     @property

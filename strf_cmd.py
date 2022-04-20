@@ -60,7 +60,7 @@ parser.add_argument("-f",
 def check_update():
     if update_check.is_update_needed(VERSION=VERSION):
         print('A new Version of StructureFinder is available at '
-              'https://www.xs3.uni-freiburg.de/research/structurefinder')
+              'https://dkratzert.de/structurefinder.html')
 
 
 def find_cell(cell: list):

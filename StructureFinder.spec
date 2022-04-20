@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['strf.py'],
-             pathex=['D:\\Programme\\Windows Kits\\10\\Redist\\ucrt\\DLLs\\x64', 'D:\\GitHub\\StructureFinder'],
+             pathex=['.'],
              binaries=[],
              datas=[('gui', 'gui'), ('displaymol', 'displaymol'), ('icons', 'icons'), ('searcher', 'searcher'),
 			 ('apex', 'apex'),
@@ -15,7 +15,7 @@ a = Analysis(['strf.py'],
 			 ('shelxfile', 'shelxfile'),
 			 ('ccdc', 'ccdc'),
 			 ],
-             hiddenimports=['pg8000.__init__', 'decimal', 'six', 'uuid', 'distutils', 
+             hiddenimports=['pg8000.__init__', 'decimal', 'six', 'uuid', 'distutils', 'gemmi',
 			                'struct', 'time', 'distutils.version', 'json', 'numpy', 'ccdc', 'PyQt5.sip'],
              hookspath=[],
              runtime_hooks=[],
