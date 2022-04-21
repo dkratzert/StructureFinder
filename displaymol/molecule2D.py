@@ -27,7 +27,7 @@ class MoleculeWidget(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.factor = None
-        self.atoms_size = 12
+        self.atoms_size = 15
         self.bond_width = 2
         self.labels = False
         self.molecule_center = np.array([0, 0, 0])
@@ -53,7 +53,7 @@ class MoleculeWidget(QtWidgets.QWidget):
         self.projection_matrix = np.array([[1, 0, 0],
                                            [0, 1, 0]], dtype=np.float32)
         self.projected_points = []
-        self.zoom = 1.3
+        self.zoom = 1.0
 
     def open_molecule(self, atoms: List[atom], labels=False):
         self.labels = labels
@@ -62,7 +62,7 @@ class MoleculeWidget(QtWidgets.QWidget):
             if at[0].startswith('Q'):
                 continue
             self.atoms.append(Atom(at[2], at[3], at[4], at[0], at[1], at[5]))
-        if len(self.atoms) > 200:
+        if len(self.atoms) > 400:
             self.bond_width = 1
         self.connections = self.get_conntable_from_atoms()
         self.get_center_and_radius()

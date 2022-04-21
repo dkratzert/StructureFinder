@@ -716,24 +716,27 @@ class StartStructureDB(QMainWindow):
         if not cell:
             print('No cell found')
             return
-        symmcards = [x.split(',') for x in self.structures.get_row_as_dict(self.structureId)
-        ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
-        if symmcards[0] == ['']:
-            print('Cif file has no symmcards, unable to grow structure.')
         if self.ui.growCheckBox.isChecked():
+            symmcards = [x.split(',') for x in self.structures.get_row_as_dict(self.structureId)
+            ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+            if symmcards[0] == ['']:
+                print('Cif file has no symmcards, unable to grow structure.')
+                self.show_asymmetric_unit()
+                return
             self.ui.molGroupBox.setTitle('Completed Molecule')
-            atoms = self.structures.get_atoms_table(self.structureId, cartesian=False, as_list=False)
+            atoms = self.structures.get_atoms_table(self.structureId, cartesian=False, as_list=True)
             if atoms:
                 sdm = SDM(atoms, symmcards, cell)
-                with suppress(Exception):
-                    needsymm = sdm.calc_sdm()
-                    atoms = sdm.packer(sdm, needsymm)
-                    self.ui.render_widget.open_molecule(atoms)
-        else:
-            self.ui.molGroupBox.setTitle('Asymmetric Unit')
-            with suppress(Exception):
-                atoms = self.structures.get_atoms_table(self.structureId, cartesian=True, as_list=False)
+                needsymm = sdm.calc_sdm()
+                atoms = sdm.packer(sdm, needsymm)
                 self.ui.render_widget.open_molecule(atoms)
+        else:
+            self.show_asymmetric_unit()
+
+    def show_asymmetric_unit(self):
+        self.ui.molGroupBox.setTitle('Asymmetric Unit')
+        atoms = self.structures.get_atoms_table(self.structureId, cartesian=True, as_list=False)
+        self.ui.render_widget.open_molecule(atoms)
 
     def redraw_molecule(self) -> None:
         try:
@@ -760,7 +763,7 @@ class StartStructureDB(QMainWindow):
                 self.ui.lattCentComboBox.setCurrentIndex(centering_letter_2_num[cstring])
         if not cell:
             return False
-        self.view_molecule()
+        self.redraw_molecule()
         self.ui.cifList_treeWidget.setFocus()
         if not cif_dic:
             return False
