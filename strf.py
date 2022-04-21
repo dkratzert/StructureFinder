@@ -303,13 +303,6 @@ class StartStructureDB(QMainWindow):
         if ending == '.cif':
             self.search_for_cif_cell(final_path)
 
-    def resizeEvent(self, a0: QResizeEvent) -> None:
-        super(StartStructureDB, self).resizeEvent(a0)
-        try:
-            self.view.reload()
-        except AttributeError:
-            pass
-
     @staticmethod
     def validate_sumform(inelem: list):
         """
@@ -608,8 +601,6 @@ class StartStructureDB(QMainWindow):
         self.ui.searchCellLineEDit.clear()
         self.ui.txtSearchEdit.clear()
         self.ui.cifList_treeWidget.clear()
-        self.write_empty_molfile(mol_data=' ')
-        self.view.reload()
         with suppress(Exception):
             self.structures.database.cur.close()
         with suppress(Exception):
@@ -723,6 +714,7 @@ class StartStructureDB(QMainWindow):
     def view_molecule(self) -> None:
         cell = self.structures.get_cell_by_id(self.structureId)
         if not cell:
+            print('No cell found')
             return
         symmcards = [x.split(',') for x in self.structures.get_row_as_dict(self.structureId)
         ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
@@ -730,9 +722,9 @@ class StartStructureDB(QMainWindow):
             print('Cif file has no symmcards, unable to grow structure.')
         if self.ui.growCheckBox.isChecked():
             self.ui.molGroupBox.setTitle('Completed Molecule')
-            atoms = self.structures.get_atoms_table(self.structureId, cartesian=False, as_list=True)
+            atoms = self.structures.get_atoms_table(self.structureId, cartesian=False, as_list=False)
             if atoms:
-                sdm = SDM(atoms, symmcards, self.cif.cell[:6])
+                sdm = SDM(atoms, symmcards, cell)
                 with suppress(Exception):
                     needsymm = sdm.calc_sdm()
                     atoms = sdm.packer(sdm, needsymm)
@@ -740,7 +732,7 @@ class StartStructureDB(QMainWindow):
         else:
             self.ui.molGroupBox.setTitle('Asymmetric Unit')
             with suppress(Exception):
-                atoms = [x for x in self.cif.atoms_orth]
+                atoms = self.structures.get_atoms_table(self.structureId, cartesian=True, as_list=False)
                 self.ui.render_widget.open_molecule(atoms)
 
     def redraw_molecule(self) -> None:
@@ -748,13 +740,6 @@ class StartStructureDB(QMainWindow):
             self.view_molecule()
         except Exception:
             print('Molecule view crashed!!')
-
-    def clear_molecule(self):
-        """
-        Deletes the current molecule display.
-        :return:
-        """
-        raise NotImplemented
 
     def display_properties(self, structure_id, cif_dic):
         """
@@ -1352,7 +1337,7 @@ class StartStructureDB(QMainWindow):
         self.ui.lastModifiedLineEdit.clear()
         self.ui.SHELXplainTextEdit.clear()
         self.ui.cellField.clear()
-        self.clear_molecule()
+        #self.clear_molecule()
 
 
 if __name__ == "__main__":

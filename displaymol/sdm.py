@@ -17,8 +17,8 @@ from typing import Union
 
 from numpy.random._common import namedtuple
 
-from finalcif.cif.atoms import get_radius_from_element
-from finalcif.tools.dsrmath import Array, SymmetryElement, Matrix, frac_to_cart
+from shelxfile.dsrmath import SymmetryElement, Matrix, Array, frac_to_cart
+from shelxfile.elements import get_radius_from_element
 
 DEBUG = False
 
@@ -121,7 +121,7 @@ class SDM():
             self.symmcards.append(['-X', '-Y', '-Z'])
             self.symmcards[-1].centric = True
         for s in symmlist:
-            self.symmcards.append(s.split(','))
+            self.symmcards.append(s)
         self.cell = cell
         self.cosal = cos(radians(cell[3]))
         self.cosbe = cos(radians(cell[4]))
@@ -323,8 +323,6 @@ if __name__ == "__main__":
     from pathlib import Path
     from molecule2D import display
     from pathlib import Path
-    from finalcif.cif.cif_file_io import CifContainer
-
     cif = CifContainer(Path('test-data/4060314.cif'))
     atoms = make_molecule(cif)
     display(atoms)

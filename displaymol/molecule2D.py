@@ -9,8 +9,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPalette, QImage, QResizeEvent
 
-from finalcif.cif.atoms import get_radius_from_element, element2color
-from finalcif.cif.cif_file_io import CifContainer
+from shelxfile.elements import get_radius_from_element, element2color
 
 """
 A 2D molecule drawing widget. Feed it with a list (or generator) of atoms of this type:
@@ -60,7 +59,9 @@ class MoleculeWidget(QtWidgets.QWidget):
         self.labels = labels
         self.atoms.clear()
         for at in atoms:
-            self.atoms.append(Atom(at.x, at.y, at.z, at.label, at.type, at.part))
+            if at[0].startswith('Q'):
+                continue
+            self.atoms.append(Atom(at[2], at[3], at[4], at[0], at[1], at[5]))
         if len(self.atoms) > 200:
             self.bond_width = 1
         self.connections = self.get_conntable_from_atoms()
@@ -284,12 +285,13 @@ def display(atoms: List[atom]):
 
 
 if __name__ == "__main__":
+    pass
     # shx = Shelxfile()
     # shx.read_file('tests/examples/1979688-finalcif.res')
     # atoms = [x.cart_coords for x in shx.atoms]
     # cif = CifContainer('test-data/p21c.cif')
-    cif = CifContainer(r'../41467_2015.cif')
+    #cif = CifContainer(r'../41467_2015.cif')
     # cif = CifContainer('tests/examples/1979688.cif')
     # cif = CifContainer('/Users/daniel/Documents/GitHub/StructureFinder/test-data/668839.cif')
-    cif.load_this_block(len(cif.doc) - 1)
-    display(cif.atoms_orth)
+    #cif.load_this_block(len(cif.doc) - 1)
+    #display(cif.atoms_orth)

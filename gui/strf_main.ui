@@ -892,14 +892,14 @@
                 <number>1</number>
                </property>
                <item>
+                <widget class="MoleculeWidget" name="render_widget" native="true"/>
+               </item>
+               <item>
                 <widget class="QCheckBox" name="growCheckBox">
                  <property name="text">
                   <string>Grow Structure</string>
                  </property>
                 </widget>
-               </item>
-               <item>
-                <widget class="QWidget" name="openglview" native="true"/>
                </item>
               </layout>
              </widget>
@@ -3248,6 +3248,14 @@ p, li { white-space: pre-wrap; }
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>MoleculeWidget</class>
+   <extends>QWidget</extends>
+   <header>displaymol.molecule2D.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <tabstops>
   <tabstop>importDirButton</tabstop>
   <tabstop>importDatabaseButton</tabstop>
