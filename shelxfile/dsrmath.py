@@ -9,7 +9,6 @@
 # Daniel Kratzert
 # ----------------------------------------------------------------------------
 #
-
 from operator import sub, add
 import random
 import string
@@ -539,7 +538,7 @@ class SymmetryElement(object):
     """
     Class representing a symmetry operation.
     >>> from shelxfile.shelx import ShelXFile
-    >>> shx = ShelXFile('./tests/p21c.res')
+    >>> shx = ShelXFile('./test-data/p21c.res')
     >>> shx.symmcards[1]  # __repr__()
     -X, -Y, -Z
     >>> print(shx.symmcards[1])  # __str__()

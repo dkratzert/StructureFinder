@@ -44,7 +44,6 @@ print(sys.version)
 DEBUG = True
 
 from apex import apeximporter
-from displaymol import mol_file_writer, write_html
 from misc.version import VERSION
 from pymatgen.core import lattice
 from searcher import constants, misc, filecrawler, database_handler
@@ -64,12 +63,6 @@ try:
 except ModuleNotFoundError:
     print('Non xml parser found.')
 
-try:
-    from PyQt5.QtWebEngineWidgets import QWebEngineView
-except Exception as e:
-    print(e, '# Unable to import QWebEngineView')
-    if DEBUG:
-        raise
 
 """
 TODO:
@@ -158,17 +151,6 @@ class StartStructureDB(QMainWindow):
         self.connect_signals_and_slots()
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
-        try:
-            self.write_empty_molfile(mol_data=' ')
-        except Exception as e:
-            # Graphics driver not compatible
-            print(e, '##')
-            # raise
-        try:
-            self.init_webview()
-        except Exception as e:
-            print(e, '###')
-            # raise
         self.ui.MaintabWidget.setCurrentIndex(0)
         self.setWindowIcon(QIcon(os.path.join(application_path, './icons/strf.png')))
         self.uipass = Ui_PasswdDialog()
@@ -323,13 +305,6 @@ class StartStructureDB(QMainWindow):
             self.search_for_res_cell(final_path)
         if ending == '.cif':
             self.search_for_cif_cell(final_path)
-
-    def resizeEvent(self, a0: QResizeEvent) -> None:
-        super(StartStructureDB, self).resizeEvent(a0)
-        try:
-            self.view.reload()
-        except AttributeError:
-            pass
 
     @staticmethod
     def validate_sumform(inelem: list):
@@ -543,20 +518,6 @@ class StartStructureDB(QMainWindow):
         else:
             return None
 
-    def init_webview(self):
-        """
-        Initializes a QWebengine to view the molecule.
-        """
-        self.view = QWebEngineView()
-        self.view.load(QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
-        # self.view.setMaximumWidth(260)
-        # self.view.setMaximumHeight(290)
-        self.ui.ogllayout.addWidget(self.view)
-        self.view.loadFinished.connect(self.onWebviewLoadFinished)
-
-    def onWebviewLoadFinished(self):
-        self.view.show()
-
     @pyqtSlot(name="cell_state_changed")
     def cell_state_changed(self):
         """
@@ -643,8 +604,6 @@ class StartStructureDB(QMainWindow):
         self.ui.searchCellLineEDit.clear()
         self.ui.txtSearchEdit.clear()
         self.ui.cifList_treeWidget.clear()
-        self.write_empty_molfile(mol_data=' ')
-        self.view.reload()
         with suppress(Exception):
             self.structures.database.cur.close()
         with suppress(Exception):
@@ -755,23 +714,38 @@ class StartStructureDB(QMainWindow):
         else:
             super().keyPressEvent(q_key_event)
 
-    def redraw_molecule(self):
+    def view_molecule(self) -> None:
         cell = self.structures.get_cell_by_id(self.structureId)
         if not cell:
-            return False
-        try:
-            self.display_molecule(cell, str(self.structureId))
-        except Exception as e:
-            print(e, ", unable to display molecule")
-            self.write_empty_molfile(' ')
-            self.view.reload()
-            if DEBUG:
-                raise
+            print('No cell found')
+            return
+        if self.ui.growCheckBox.isChecked():
+            symmcards = [x.split(',') for x in self.structures.get_row_as_dict(self.structureId)
+            ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+            if symmcards[0] == ['']:
+                print('Cif file has no symmcards, unable to grow structure.')
+                self.show_asymmetric_unit()
+                return
+            self.ui.molGroupBox.setTitle('Completed Molecule')
+            atoms = self.structures.get_atoms_table(self.structureId, cartesian=False, as_list=True)
+            if atoms:
+                sdm = SDM(atoms, symmcards, cell)
+                needsymm = sdm.calc_sdm()
+                atoms = sdm.packer(sdm, needsymm)
+                self.ui.render_widget.open_molecule(atoms)
+        else:
+            self.show_asymmetric_unit()
 
-    @staticmethod
-    def write_empty_molfile(mol_data):
-        molf = Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-        molf.write_text(data=mol_data, encoding="utf-8", errors='ignore')
+    def show_asymmetric_unit(self):
+        self.ui.molGroupBox.setTitle('Asymmetric Unit')
+        atoms = self.structures.get_atoms_table(self.structureId, cartesian=True, as_list=False)
+        self.ui.render_widget.open_molecule(atoms)
+
+    def redraw_molecule(self) -> None:
+        try:
+            self.view_molecule()
+        except Exception:
+            print('Molecule view crashed!!')
 
     def display_properties(self, structure_id, cif_dic):
         """
@@ -792,14 +766,7 @@ class StartStructureDB(QMainWindow):
                 self.ui.lattCentComboBox.setCurrentIndex(centering_letter_2_num[cstring])
         if not cell:
             return False
-        try:
-            self.display_molecule(cell, structure_id)
-        except Exception as e:
-            print(e, "unable to display molecule!!")
-            self.write_empty_molfile(mol_data=' ')
-            self.view.reload()
-            if DEBUG:
-                raise
+        self.redraw_molecule()
         self.ui.cifList_treeWidget.setFocus()
         if not cif_dic:
             return False
@@ -906,56 +873,6 @@ class StartStructureDB(QMainWindow):
         self.ui.allCifTreeWidget.resizeColumnToContents(0)
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
         return True
-
-    def display_molecule(self, cell: [list, tuple], structure_id: str) -> None:
-        """
-        Creates a html file from a mol file to display the molecule in jsmol-lite
-        """
-        symmcards = [x.split(',') for x in self.structures.get_row_as_dict(structure_id)
-        ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
-        if symmcards[0] == ['']:
-            print('Cif file has no symmcards, unable to grow structure.')
-        blist = []
-        if self.ui.growCheckBox.isChecked():
-            self.ui.molGroupBox.setTitle('Completed Molecule')
-            atoms = self.structures.get_atoms_table(structure_id, cartesian=False, as_list=True)
-            if atoms:
-                sdm = SDM(atoms, symmcards, cell)
-                try:
-                    needsymm = sdm.calc_sdm()
-                    atoms = sdm.packer(sdm, needsymm)
-                except IndexError:
-                    atoms = []
-                # blist = [(x[0]+1, x[1]+1) for x in sdm.bondlist]
-                # print(len(blist))
-        else:
-            self.ui.molGroupBox.setTitle('Asymmetric Unit')
-            atoms = self.structures.get_atoms_table(structure_id, cartesian=True, as_list=False)
-            blist = []
-        try:
-            mol = ' '
-            if atoms:
-                mol = mol_file_writer.MolFile(atoms, blist)
-                mol = mol.make_mol()
-        except (TypeError, KeyError):
-            print("Error in structure", structure_id, "while writing mol file.")
-            mol = ' '
-            if DEBUG:
-                raise
-        # print(self.ui.openglview.width()-30, self.ui.openglview.height()-50)
-        content = write_html.write(mol, self.ui.openglview.width() - 30, self.ui.openglview.height() - 50)
-        p2 = Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-        p2.write_text(data=content, encoding="utf-8", errors='ignore')
-        self.view.reload()
-
-    def clear_molecule(self):
-        """
-        Deletes the current molecule display.
-        :return:
-        """
-        p2 = Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-        p2.write_text(data='', encoding="utf-8", errors='ignore')
-        self.view.reload()
 
     @pyqtSlot('QString')
     def find_dates(self, date1: str, date2: str) -> list:
@@ -1426,7 +1343,7 @@ class StartStructureDB(QMainWindow):
         self.ui.lastModifiedLineEdit.clear()
         self.ui.SHELXplainTextEdit.clear()
         self.ui.cellField.clear()
-        self.clear_molecule()
+        #self.clear_molecule()
 
 
 if __name__ == "__main__":
