@@ -38,6 +38,7 @@
          </property>
          <property name="font">
           <font>
+           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -69,6 +70,7 @@
          </property>
          <property name="font">
           <font>
+           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -103,6 +105,7 @@
          </property>
          <property name="font">
           <font>
+           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -237,6 +240,7 @@
          </property>
          <property name="font">
           <font>
+           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -321,6 +325,7 @@
                 <widget class="QLabel" name="SpaceGrouplabel">
                  <property name="font">
                   <font>
+                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -380,6 +385,7 @@
                 <widget class="QLabel" name="wR2Label">
                  <property name="font">
                   <font>
+                   <weight>75</weight>
                    <italic>false</italic>
                    <bold>true</bold>
                   </font>
@@ -403,6 +409,7 @@
                 <widget class="QLabel" name="r1Label">
                  <property name="font">
                   <font>
+                   <weight>75</weight>
                    <italic>false</italic>
                    <bold>true</bold>
                   </font>
@@ -477,6 +484,7 @@
                 <widget class="QLabel" name="rintLabel">
                  <property name="font">
                   <font>
+                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -499,6 +507,7 @@
                 <widget class="QLabel" name="rsigmaLabel">
                  <property name="font">
                   <font>
+                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -550,6 +559,7 @@
                </property>
                <property name="font">
                 <font>
+                 <weight>75</weight>
                  <bold>true</bold>
                 </font>
                </property>
@@ -608,16 +618,16 @@
               </widget>
              </item>
              <item>
-              <spacer name="verticalSpacer_6">
+              <spacer name="verticalSpacer_10">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
                <property name="sizeType">
-                <enum>QSizePolicy::Preferred</enum>
+                <enum>QSizePolicy::MinimumExpanding</enum>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>5</width>
+                 <width>20</width>
                  <height>10</height>
                 </size>
                </property>
@@ -632,6 +642,7 @@
                 <widget class="QLabel" name="label">
                  <property name="font">
                   <font>
+                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -764,17 +775,17 @@
               </layout>
              </item>
              <item>
-              <spacer name="verticalSpacer_7">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
+              <widget class="QPushButton" name="ExportAsCIFpushButton">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
                </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
+               <property name="text">
+                <string>Export as CIF</string>
                </property>
-              </spacer>
+              </widget>
              </item>
             </layout>
            </widget>
@@ -884,6 +895,7 @@
                 <widget class="QLabel" name="dataReflnsLabel">
                  <property name="font">
                   <font>
+                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -957,6 +969,7 @@
                 <widget class="QLabel" name="dLabel">
                  <property name="font">
                   <font>
+                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -979,6 +992,7 @@
                 <widget class="QLabel" name="completeLabel">
                  <property name="font">
                   <font>
+                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -1257,6 +1271,7 @@ p, li { white-space: pre-wrap; }
            <widget class="QLabel" name="NotContainsLabel">
             <property name="font">
              <font>
+              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -1346,6 +1361,7 @@ p, li { white-space: pre-wrap; }
             </property>
             <property name="font">
              <font>
+              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -3092,6 +3108,7 @@ p, li { white-space: pre-wrap; }
              </property>
              <property name="font">
               <font>
+               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
