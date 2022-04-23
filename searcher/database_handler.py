@@ -418,14 +418,13 @@ class StructureTable():
         if ids:
             if len(ids) > 1:  # a collection of ids
                 ids = tuple(ids)
-                req = '''SELECT Id, measurement, path, filename, 
-                         dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
+                req = '''SELECT Id, dataname, filename, path FROM Structure WHERE Structure.Id in {}'''.format(ids)
             else:  # only one id
-                req = '''SELECT Id, measurement, path, filename, dataname FROM Structure WHERE Structure.Id == ?'''
+                req = '''SELECT Id, dataname, filename, path FROM Structure WHERE Structure.Id == ?'''
                 rows = self.database.db_request(req, ids)
                 return rows
         else:  # just all
-            req = '''SELECT Id, measurement, path, filename, dataname FROM Structure'''
+            req = '''SELECT Id, dataname, filename, path FROM Structure'''
         return self.database.db_request(req)
 
     def get_filepath(self, structure_id) -> str:
@@ -494,7 +493,7 @@ class StructureTable():
         if self.database.db_request(req, (structure_id, name, element, x, y, z, occ, part, xc, yc, zc)):
             return True
 
-    def get_atoms_table(self, structure_id, cartesian=False, as_list=False):
+    def get_atoms_table(self, structure_id, cartesian=False, as_list=False) -> Union[List, Tuple]:
         """
         returns the atoms of structure with structure_id
         returns: [Name, Element, X, Y, Z, Part, ocuupancy]
@@ -515,7 +514,7 @@ class StructureTable():
                 return [list(x) for x in result]
             return result
         else:
-            return False
+            return []
 
     def fill_formula(self, structure_id, formula: dict):
         """
@@ -935,13 +934,13 @@ class StructureTable():
         [(237, b'DK_NTD51a-final.cif', b'p21c', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
         """
         req = '''
-        SELECT StructureId, filename, dataname, path FROM txtsearch WHERE filename MATCH ?
+        SELECT StructureId, dataname, filename, path FROM txtsearch WHERE filename MATCH ?
           UNION
-        SELECT StructureId, filename, dataname, path FROM txtsearch WHERE dataname MATCH ?
+        SELECT StructureId, dataname, filename, path FROM txtsearch WHERE dataname MATCH ?
           UNION
-        SELECT StructureId, filename, dataname, path FROM txtsearch WHERE path MATCH ?
+        SELECT StructureId, dataname, filename, path FROM txtsearch WHERE path MATCH ?
           UNION
-        SELECT StructureId, filename, dataname, path FROM txtsearch WHERE shelx_res_file MATCH ?
+        SELECT StructureId, dataname, filename, path FROM txtsearch WHERE shelx_res_file MATCH ?
         '''
         try:
             res = self.database.db_request(req, (text, text, text, text))

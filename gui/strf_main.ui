@@ -1212,7 +1212,7 @@ p, li { white-space: pre-wrap; }
                <enum>QAbstractScrollArea::AdjustIgnored</enum>
               </property>
               <property name="autoScroll">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="editTriggers">
                <set>QAbstractItemView::NoEditTriggers</set>
@@ -1227,7 +1227,7 @@ p, li { white-space: pre-wrap; }
                <bool>true</bool>
               </property>
               <property name="selectionMode">
-               <enum>QAbstractItemView::SingleSelection</enum>
+               <enum>QAbstractItemView::ExtendedSelection</enum>
               </property>
               <property name="selectionBehavior">
                <enum>QAbstractItemView::SelectRows</enum>

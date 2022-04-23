@@ -12,13 +12,9 @@ class TableModel(QtCore.QAbstractTableModel):
     def data(self, index: QModelIndex, role: int = None):
         row, col = index.row(), index.column()
         value = self._data[row][col]
-        if row == 0:
-            return
-        if col == 0:
-            return 
         if role == Qt.DisplayRole:
             if isinstance(value, bytes):
-                return value.decode('ascii')
+                return value.decode('utf-8')
             else:
                 return value
         #return value
@@ -47,3 +43,4 @@ class TableModel(QtCore.QAbstractTableModel):
             self._data[row][col] = value
             return True
         return False
+
