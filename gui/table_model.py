@@ -7,6 +7,7 @@ from PyQt5.QtCore import QModelIndex, Qt
 class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, *args, structures=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.horizontalHeaders = ['Id', 'Data Name', 'File Name', 'Path']
         self._data = structures or []
 
     def data(self, index: QModelIndex, role: int = None):
@@ -17,17 +18,24 @@ class TableModel(QtCore.QAbstractTableModel):
                 return value.decode('utf-8')
             else:
                 return value
-        #return value
+        # return value
 
-    def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...) -> Any:
-        if section == 1 and orientation == Qt.Horizontal:
-            return 'Data Name'
-        elif section == 2 and orientation == Qt.Horizontal:
-            return 'File Name'
-        elif section == 3 and orientation == Qt.Horizontal:
-            return 'Path Name'
-        else:
-            return super(TableModel, self).headerData(section, orientation, role)
+    def setHeaderData(self, section, orientation, data, role=Qt.EditRole):
+        if orientation == Qt.Horizontal and role in (Qt.DisplayRole, Qt.EditRole):
+            try:
+                self.horizontalHeaders[section] = data
+                return True
+            except IndexError:
+                return False
+        return super().setHeaderData(section, orientation, data, role)
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            try:
+                return self.horizontalHeaders[section]
+            except IndexError:
+                pass
+        return super().headerData(section, orientation, role)
 
     def rowCount(self, parent=None, *args, **kwargs):
         """
@@ -53,4 +61,3 @@ class TableModel(QtCore.QAbstractTableModel):
             self._data[row][col] = value
             return True
         return False
-
