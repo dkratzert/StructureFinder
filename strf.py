@@ -178,8 +178,8 @@ class StartStructureDB(QMainWindow):
             if Path(lastdir).exists():
                 with suppress(OSError, FileNotFoundError):
                     os.chdir(self.settings.load_last_workdir())
-        self.set_model_from_data(self.structures.get_all_structure_names())
-        self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
+        if self.structures:
+            self.set_model_from_data(self.structures.get_all_structure_names())
         # select the first item in the list
         ##item = self.ui.cifList_treeWidget.topLevelItem(0)
         ##self.ui.cifList_treeWidget.setCurrentItem(item)
@@ -190,6 +190,7 @@ class StartStructureDB(QMainWindow):
         self.table_model = TableModel(structures=data)
         self.ui.cifList_tableView.setModel(self.table_model)
         self.ui.cifList_tableView.hideColumn(0)
+        self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
 
     def connect_signals_and_slots(self):
         """
