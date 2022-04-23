@@ -191,12 +191,6 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_tableView.setModel(self.table_model)
         self.ui.cifList_tableView.hideColumn(0)
 
-    def set_header(self):
-        #self.ui.cifList_tableView.model().setHeaderData(0, Qt.Horizontal, 'Id')
-        self.ui.cifList_tableView.model().setHeaderData(1, Qt.Horizontal, 'Data Name')
-        self.ui.cifList_tableView.model().setHeaderData(2, Qt.Horizontal, 'File Name')
-        self.ui.cifList_tableView.model().setHeaderData(3, Qt.Horizontal, 'Path')
-
     def connect_signals_and_slots(self):
         """
         Connects the signals and slot.

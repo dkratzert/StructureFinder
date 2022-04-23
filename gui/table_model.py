@@ -19,6 +19,16 @@ class TableModel(QtCore.QAbstractTableModel):
                 return value
         #return value
 
+    def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...) -> Any:
+        if section == 1 and orientation == Qt.Horizontal:
+            return 'Data Name'
+        elif section == 2 and orientation == Qt.Horizontal:
+            return 'File Name'
+        elif section == 3 and orientation == Qt.Horizontal:
+            return 'Path Name'
+        else:
+            return super(TableModel, self).headerData(section, orientation, role)
+
     def rowCount(self, parent=None, *args, **kwargs):
         """
         The length of the outer list.
