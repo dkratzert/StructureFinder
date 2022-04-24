@@ -26,8 +26,8 @@ from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from typing import Union
 
-from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt, QItemSelection
-from PyQt5.QtGui import QIcon, QResizeEvent
+from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox
 
@@ -62,7 +62,6 @@ try:
     from ccdc.query import get_cccsd_path, search_csd, parse_results
 except ModuleNotFoundError:
     print('Non xml parser found.')
-
 
 """
 TODO:
@@ -496,7 +495,7 @@ class StartStructureDB(QMainWindow):
             return
         searchresult = self.structures.get_all_structure_names(idlist)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
-        #self.ui.cifList_treeWidget.clear()
+        # self.ui.cifList_treeWidget.clear()
         self.full_list = False
         for structure_id, _, path, filename, data in searchresult:
             self.add_table_row(filename, path, data, structure_id)
@@ -575,7 +574,8 @@ class StartStructureDB(QMainWindow):
         self.structures.make_indexes()
         self.structures.database.commit_db()
         self.ui.cifList_tableView.show()
-        #self.set_columnsize()
+        # self.set_columnsize()
+        self.show_full_list()
         self.settings.save_current_dir(str(Path(startdir)))
         os.chdir(str(Path(startdir).parent))
         self.ui.saveDatabaseButton.setEnabled(True)
@@ -606,7 +606,7 @@ class StartStructureDB(QMainWindow):
             self.structures.database.commit_db()
         self.ui.searchCellLineEDit.clear()
         self.ui.txtSearchEdit.clear()
-        #self.ui.cifList_tableView.clear()
+        # self.ui.cifList_tableView.clear()
         with suppress(Exception):
             self.structures.database.cur.close()
         with suppress(Exception):
@@ -744,9 +744,9 @@ class StartStructureDB(QMainWindow):
 
     def redraw_molecule(self) -> None:
         self.view_molecule()
-        #try:
+        # try:
         #    self.view_molecule()
-        #except Exception:
+        # except Exception:
         #    print('Molecule view crashed!!')
 
     def display_properties(self, structure_id, cif_dic):
@@ -911,10 +911,10 @@ class StartStructureDB(QMainWindow):
             print(e)
         try:
             self.statusBar().showMessage("Found {} structures.".format(len(searchresult)))
-            #for structure_id, filename, dataname, path in searchresult:
+            # for structure_id, filename, dataname, path in searchresult:
             #    self.add_table_row(filename, path, dataname, structure_id)
             self.set_model_from_data(searchresult)
-            #self.set_columnsize()
+            # self.set_columnsize()
         except Exception:
             self.statusBar().showMessage("Nothing found.")
 
@@ -1006,16 +1006,16 @@ class StartStructureDB(QMainWindow):
             return False  # No database cursor
         idlist = self.search_cell_idlist(cell)
         if not idlist:
-            #self.ui.cifList_tableView.clear()
+            # self.ui.cifList_tableView.clear()
             self.statusBar().showMessage('Found 0 structures.', msecs=0)
             return False
         searchresult = self.structures.get_all_structure_names(idlist)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
-        #self.ui.cifList_tableView.clear()
+        # self.ui.cifList_tableView.clear()
         self.full_list = False
         for structure_id, _, path, name, data in searchresult:
             self.add_table_row(name, path, data, structure_id)
-        #self.set_columnsize()
+        # self.set_columnsize()
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         return True
@@ -1042,23 +1042,6 @@ class StartStructureDB(QMainWindow):
             pass
         return list(res)
 
-    def add_table_row(self, filename: str, path: str, data: bytes, structure_id: str) -> None:
-        """
-        Adds a line to the search results table.
-        """
-        if isinstance(filename, bytes):
-            filename = filename.decode("utf-8", "surrogateescape")
-        if isinstance(path, bytes):
-            path = path.decode("utf-8", "surrogateescape")
-        if isinstance(data, bytes):
-            data = data.decode("utf-8", "surrogateescape")
-        tree_item = QTreeWidgetItem()
-        tree_item.setText(0, filename)  # name
-        tree_item.setText(1, data)  # data
-        tree_item.setText(2, path)  # path
-        tree_item.setData(3, 0, structure_id)  # id
-        ##self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
-
     def get_import_filename_from_dialog(self, dir: str = './'):
         return QFileDialog.getOpenFileName(self, caption='Open File', directory=dir, filter="*.sqlite")[0]
 
@@ -1069,12 +1052,12 @@ class StartStructureDB(QMainWindow):
         self.tmpfile = False
         self.close_db()
         if not fname:
-            print('####', self.settings.load_last_workdir())
             with suppress(FileNotFoundError, OSError):
                 os.chdir(self.settings.load_last_workdir())
             fname = self.get_import_filename_from_dialog(dir=self.settings.load_last_workdir())
         if not fname:
             return False
+        self.clear_fields()
         print("Opened {}.".format(fname))
         self.dbfilename = fname
         self.structures = database_handler.StructureTable(self.dbfilename)
@@ -1263,7 +1246,7 @@ class StartStructureDB(QMainWindow):
         self.ui.statusbar.showMessage('Added {} APEX entries in: {:>2d} h, {:>2d} m, {:>3.2f} s'
                                       .format(n - 1, int(h), int(m), s), msecs=0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        #self.set_columnsize()
+        # self.set_columnsize()
         self.structures.database.init_textsearch()
         self.structures.populate_fulltext_search_table()
         self.structures.database.commit_db("Committed")
@@ -1273,7 +1256,7 @@ class StartStructureDB(QMainWindow):
         """
         Sets columnsize of main structure list.
         """
-        self.ui.cifList_tableView.sortByColumn(0, 0)
+        self.ui.cifList_tableView.sortByColumn(1, 0)
         treewidth = self.ui.cifList_tableView.width()
         self.ui.cifList_tableView.setColumnWidth(0, int(treewidth / 4.0))
         self.ui.cifList_tableView.setColumnWidth(1, int(treewidth / 5.0))
@@ -1341,7 +1324,7 @@ class StartStructureDB(QMainWindow):
         self.ui.lastModifiedLineEdit.clear()
         self.ui.SHELXplainTextEdit.clear()
         self.ui.cellField.clear()
-        #self.clear_molecule()
+        self.ui.render_widget.clear()
 
 
 if __name__ == "__main__":

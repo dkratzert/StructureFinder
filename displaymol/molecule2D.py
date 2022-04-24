@@ -55,6 +55,9 @@ class MoleculeWidget(QtWidgets.QWidget):
         self.projected_points = []
         self.zoom = 1.0
 
+    def clear(self):
+        self.open_molecule(atoms=[])
+
     def open_molecule(self, atoms: List[atom], labels=False):
         self.labels = labels
         self.atoms.clear()
