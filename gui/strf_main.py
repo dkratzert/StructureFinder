@@ -122,6 +122,7 @@ class Ui_stdbMainwindow(object):
         self.maintab = QtWidgets.QWidget()
         self.maintab.setObjectName("maintab")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.maintab)
+        self.gridLayout_3.setContentsMargins(10, -1, 10, 10)
         self.gridLayout_3.setObjectName("gridLayout_3")
         self.importResults = QtWidgets.QGridLayout()
         self.importResults.setSizeConstraint(QtWidgets.QLayout.SetNoConstraint)

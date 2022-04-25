@@ -12,9 +12,9 @@ Created on 09.02.2015
 
 @author: Daniel Kratzert
 """
+import math
 import os
 import shutil
-import sqlite3
 import sys
 import tempfile
 import time
@@ -28,8 +28,8 @@ from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from typing import Union
 
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
+from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox
 
 from displaymol.sdm import SDM
@@ -44,7 +44,6 @@ from shelxfile.shelx import ShelXFile
 print(sys.version)
 DEBUG = True
 
-from apex import apeximporter
 from misc.version import VERSION
 from pymatgen.core import lattice
 from searcher import constants, misc, filecrawler, database_handler
@@ -113,6 +112,10 @@ class StartStructureDB(QMainWindow):
         super().__init__(*args, **kwargs)
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
+        font = QFont()
+        font.setFamily("Courier")
+        font.setStyleHint(QFont.Monospace)
+        self.ui.SHELXplainTextEdit.setFont(font)
         self.statusBar().showMessage('StructureFinder version {}'.format(VERSION))
         self.dbfdesc = None
         self.dbfilename = None
@@ -149,7 +152,6 @@ class StartStructureDB(QMainWindow):
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         self.ui.cifList_tableView.addAction(self.ui.actionGo_to_All_CIF_Tab)
-        self.apexdb = 0
         self.settings = StructureFinderSettings()
         if len(sys.argv) > 1:
             self.dbfilename = sys.argv[1]
@@ -157,7 +159,6 @@ class StartStructureDB(QMainWindow):
                 try:
                     self.structures = database_handler.StructureTable(self.dbfilename)
                     self.show_full_list()
-                    self.apexdb = self.structures.get_database_version()
                 except (IndexError, DatabaseError) as e:
                     print(e)
                     if DEBUG:
@@ -348,7 +349,7 @@ class StartStructureDB(QMainWindow):
             print(e)
             return
         print(len(results), 'Structures found...')
-        self.statusBar().showMessage("{} structures found in the CSD".format(len(results), msecs=9000))
+        self.statusBar().showMessage(f"{results} structures found in the CSD", msecs=9000)
         for res in results:
             csd_tree_item = QTreeWidgetItem()
             self.ui.CSDtreeWidget.addTopLevelItem(csd_tree_item)
@@ -492,22 +493,6 @@ class StartStructureDB(QMainWindow):
         if idlist:
             self.ui.MaintabWidget.setCurrentIndex(0)
 
-    def passwd_handler(self):
-        """
-        Manages the QDialog buttons on the password dialog.
-        """
-        d = QDialog()
-        self.passwd = self.uipass.setupUi(d)
-        ip_dialog = d.exec()
-        if ip_dialog == 1:  # Accepted
-            self.import_apex_db(user=self.uipass.userNameLineEdit.text(),
-                                password=self.uipass.PasswordLineEdit.text(),
-                                host=self.uipass.IPlineEdit.text())
-        elif ip_dialog == 0:  # reject
-            return None
-        else:
-            return None
-
     @pyqtSlot(name="cell_state_changed")
     def cell_state_changed(self):
         """
@@ -529,7 +514,6 @@ class StartStructureDB(QMainWindow):
         # worker = RunIndexerThread(self)
         # worker.start()
         self.tmpfile = True
-        self.apexdb = 0
         self.statusBar().showMessage('')
         if not append:
             self.close_db()
@@ -667,7 +651,7 @@ class StartStructureDB(QMainWindow):
             return False
         self.structures.database.commit_db()
         if self.structures.database.con.total_changes > 0:
-            self.structures.set_database_version(self.apexdb)
+            self.structures.set_database_version(0)
         status = False
         if not save_name:
             save_name, _ = self.get_save_name_from_dialog(dir=self.settings.load_last_workdir())
@@ -681,6 +665,7 @@ class StartStructureDB(QMainWindow):
         if status:
             self.ui.DatabaseNameDisplayLabel.setText('')
             self.statusBar().showMessage("Database saved.", msecs=5000)
+            # self.open_database_file(save_name)
 
     def eventFilter(self, object, event):
         """Event filter for mouse clicks."""
@@ -900,34 +885,22 @@ class StartStructureDB(QMainWindow):
         Searches for a unit cell and resturns a list of found database ids.
         This method does not validate the cell. This has to be done before!
         """
-        if self.apexdb == 1:  # needs less accurate search:
-            if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
-                # more results:
-                vol_threshold = 0.09
-                ltol = 0.1
-                atol = 1.0
-            else:
-                # regular:
-                vol_threshold = 0.03
-                ltol = 0.06
-                atol = 0.5
-        else:  # regular database:
-            if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
-                # more results:
-                print('more results on')
-                vol_threshold = 0.04
-                ltol = 0.08
-                atol = 1.0
-            else:
-                # regular:
-                vol_threshold = 0.02
-                ltol = 0.025
-                atol = 0.2
+        volume = misc.vol_unitcell(*cell)
+        if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
+            # more results:
+            print('more results activated')
+            vol_threshold = math.log(volume) + 2.0
+            ltol = 0.08
+            atol = 1.0
+        else:
+            # regular:
+            vol_threshold = math.log(volume) + 1.0
+            ltol = 0.025
+            atol = 0.2
         try:
-            volume = misc.vol_unitcell(*cell)
             # the fist number in the result is the structureid:
             cells = self.structures.find_by_volume(volume, vol_threshold)
-            print(len(cells), 'cells to check at {}% theshold.'.format(vol_threshold * 100))
+            print(f'{len(cells)} cells to check at {vol_threshold:.2f} theshold.')
             if self.ui.sublattCheckbox.isChecked() or self.ui.adv_superlatticeCheckBox.isChecked():
                 # sub- and superlattices:
                 for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
@@ -987,7 +960,6 @@ class StartStructureDB(QMainWindow):
             return False
         searchresult = self.structures.get_all_structure_names(idlist)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
-        # self.ui.cifList_tableView.clear()
         self.full_list = False
         self.set_model_from_data(searchresult)
         return True
@@ -1022,15 +994,14 @@ class StartStructureDB(QMainWindow):
         Import a new database.
         """
         self.tmpfile = False
-        self.close_db()
         if not fname:
             with suppress(FileNotFoundError, OSError):
                 os.chdir(self.settings.load_last_workdir())
             fname = self.get_import_filename_from_dialog(dir=self.settings.load_last_workdir())
         if not fname:
             return False
+        self.close_db()
         self.clear_fields()
-        print("Opened {}.".format(fname))
         self.dbfilename = fname
         self.structures = database_handler.StructureTable(self.dbfilename)
         try:
@@ -1044,29 +1015,13 @@ class StartStructureDB(QMainWindow):
                 pass
         except (TypeError, ProgrammingError):
             return False
+        print("Opened {}.".format(fname))
         self.settings.save_current_dir(str(Path(fname).parent))
         os.chdir(str(Path(fname).parent))
         self.ui.saveDatabaseButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
         self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(fname))
         return True
-
-    def open_apex_db(self, user: str, password: str, host: str) -> bool:
-        """
-        Opens the APEX db to be displayed in the treeview.
-        """
-        self.ui.DatabaseNameDisplayLabel.setText('')
-        self.apx = apeximporter.ApexDB()
-        connok = False
-        try:
-            connok = self.apx.initialize_db(user, password, host)
-        except Exception:
-            self.passwd_handler()
-        self.ui.saveDatabaseButton.setEnabled(True)
-        self.ui.ExportAsCIFpushButton.setEnabled(True)
-        if connok:
-            self.ui.DatabaseNameDisplayLabel.setText('Database opened: APEX')
-        return connok
 
     def get_name_from_p4p(self):
         """
@@ -1106,7 +1061,7 @@ class StartStructureDB(QMainWindow):
         if shx and shx.cell:
             with suppress(TypeError):
                 self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
-                                                       '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*shx.cell))
+                                                   '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*shx.cell))
         else:
             self.moving_message('Could not read res file!')
 
@@ -1132,77 +1087,6 @@ class StartStructureDB(QMainWindow):
             time.sleep(0.05)
             self.statusBar().showMessage("{}{}".format(' ' * s, message))
 
-    def import_apex_db(self, user: str = '', password: str = '', host: str = '') -> None:
-        """
-        Imports data from apex into own db
-        """
-        self.apexdb = 1
-        self.statusBar().showMessage('')
-        self.close_db()
-        self.start_db()
-        self.ui.cifList_tableView.show()
-        # self.abort_import_button.show()
-        n = 1
-        num = 0
-        time1 = time.perf_counter()
-        conn = self.open_apex_db(user, password, host)
-        # if not conn:
-        #    self.abort_import_button.hide()
-        #    return None
-        cif = Cif()
-        if conn:
-            for i in self.apx.get_all_data():
-                if num == 20:
-                    num = 0
-                self.progressbar(num, 0, 20)
-                cif.cif_data['_cell_length_a'] = i[1]
-                cif.cif_data['_cell_length_b'] = i[2]
-                cif.cif_data['_cell_length_c'] = i[3]
-                cif.cif_data['_cell_angle_alpha'] = i[4]
-                cif.cif_data['_cell_angle_beta'] = i[5]
-                cif.cif_data['_cell_angle_gamma'] = i[6]
-                cif.cif_data["data"] = i[8]
-                cif.cif_data['_diffrn_radiation_wavelength'] = i[13]
-                cif.cif_data['_exptl_crystal_colour'] = i[29]
-                cif.cif_data['_exptl_crystal_size_max'] = i[16]
-                cif.cif_data['_exptl_crystal_size_mid'] = i[17]
-                cif.cif_data['_exptl_crystal_size_min'] = i[18]
-                cif.cif_data["_chemical_formula_sum"] = i[25]
-                cif.cif_data['_diffrn_reflns_av_R_equivalents'] = i[21]  # rint
-                cif.cif_data['_diffrn_reflns_av_unetI/netI'] = i[22]  # rsig
-                cif.cif_data['_diffrn_reflns_number'] = i[23]
-                comp = i[26]
-                cif.cif_data["_space_group_centring_type"] = i[28]
-                if comp:
-                    cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
-                try:
-                    tst = filecrawler.fill_db_with_cif_data(cif=cif, filename=i[8], path=i[12], structure_id=n,
-                                                            structures=self.structures)
-                except Exception as err:
-                    if DEBUG:
-                        print(str(err) + "\nIndexing error in file {}{}{} - Id: {}".format(i[12], os.path.sep, i[8], n))
-                        raise
-                    continue
-                if not tst:
-                    continue
-                self.add_table_row(filename=i[8], data=i[8], path=i[12], structure_id=str(n))
-                n += 1
-                if n % 300 == 0:
-                    self.structures.database.commit_db()
-                num += 1
-        time2 = time.perf_counter()
-        diff = time2 - time1
-        self.progress.hide()
-        m, s = divmod(diff, 60)
-        h, m = divmod(m, 60)
-        if n == 0:
-            n += 1
-        self.ui.statusbar.showMessage('Added {} APEX entries in: {:>2d} h, {:>2d} m, {:>3.2f} s'
-                                      .format(n - 1, int(h), int(m), s), msecs=0)
-        self.structures.database.init_textsearch()
-        self.structures.populate_fulltext_search_table()
-        self.structures.database.commit_db("Committed")
-
     def set_columnsize(self):
         """
         TODO: currently unused
@@ -1220,7 +1104,7 @@ class StartStructureDB(QMainWindow):
         Displays the complete list of structures
         [structure_id, meas, path, filename, data]
         """
-        structure_id = 0
+        data = []
         try:
             if not self.structures:
                 return None
@@ -1250,6 +1134,7 @@ class StartStructureDB(QMainWindow):
         """
         Clears all residuals fields.
         """
+        self.ui.allCifTreeWidget.clear()
         self.ui.completeLineEdit.clear()
         self.ui.dataReflnsLineEdit.clear()
         self.ui.dLineEdit.clear()
