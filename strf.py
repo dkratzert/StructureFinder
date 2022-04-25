@@ -193,7 +193,6 @@ class StartStructureDB(QMainWindow):
         self.ui.saveDatabaseButton.clicked.connect(self.save_database)
         self.ui.importDirButton.clicked.connect(self.import_file_dirs)
         self.ui.appendDirButton.clicked.connect(self.append_file_dirs)
-        self.ui.openApexDBButton.clicked.connect(self.import_apex_db)
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
         # self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
@@ -614,6 +613,8 @@ class StartStructureDB(QMainWindow):
                 except Exception:
                     return False
         self.ui.DatabaseNameDisplayLabel.setText('')
+        self.set_model_from_data([])
+        self.clear_fields()
         return True
 
     @pyqtSlot(name="abort_import")
@@ -1216,7 +1217,10 @@ class StartStructureDB(QMainWindow):
         [structure_id, meas, path, filename, data]
         """
         structure_id = 0
-        if not self.structures:
+        try:
+            if not self.structures:
+                return None
+        except Exception:
             return None
         if self.structures:
             data = self.structures.get_all_structure_names()
