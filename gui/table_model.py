@@ -64,3 +64,9 @@ class TableModel(QtCore.QAbstractTableModel):
 
     def clear(self):
         self.resetInternalData()
+
+    def sort(self, column: int, order: Qt.SortOrder = ...) -> None:
+        self.layoutAboutToBeChanged.emit()
+        self._data.sort(key=lambda x: x[column], reverse=True if order == Qt.DescendingOrder else False)
+        self.layoutChanged.emit()
+        # super(TableModel, self).sort(column, order)

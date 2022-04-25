@@ -14,6 +14,7 @@ Created on 09.02.2015
 """
 import os
 import shutil
+import sqlite3
 import sys
 import tempfile
 import time
@@ -634,11 +635,14 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDirButton.setEnabled(True)
 
     @pyqtSlot(QItemSelection, QItemSelection, name="get_properties")
-    def get_properties(self, selected, deselected):
+    def get_properties(self, selected, deselected) -> bool:
         """
         This slot shows the properties of a cif file in the properties widget
         """
-        structure_id = selected.indexes()[0].data()
+        try:
+            structure_id = selected.indexes()[0].data()
+        except IndexError:
+            return False
         self.structureId = structure_id
         dic = self.structures.get_row_as_dict(structure_id)
         self.display_properties(structure_id, dic)
@@ -1225,7 +1229,7 @@ class StartStructureDB(QMainWindow):
         if self.structures:
             data = self.structures.get_all_structure_names()
             self.set_model_from_data(data)
-        mess = "Loaded {} entries.".format(structure_id)
+        mess = "Loaded {} entries.".format(len(data))
         self.statusBar().showMessage(mess, msecs=5000)
         self.full_list = True
         self.ui.SpGrpComboBox.setCurrentIndex(0)
