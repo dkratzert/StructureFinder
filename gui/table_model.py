@@ -61,3 +61,6 @@ class TableModel(QtCore.QAbstractTableModel):
             self._data[row][col] = value
             return True
         return False
+
+    def clear(self):
+        self.resetInternalData()

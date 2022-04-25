@@ -475,9 +475,9 @@ class StartStructureDB(QMainWindow):
         ####################
         results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
                                   txt_ex_results, txt_results, rval_results, states)
-        self.display_structures_by_idlist(list(results))
+        self.display_structures_by_idlist(tuple(results))
 
-    def display_structures_by_idlist(self, idlist: list or set) -> None:
+    def display_structures_by_idlist(self, idlist: Union[list, tuple]) -> None:
         """
         Displays the structures with id in results list
         """
@@ -487,12 +487,8 @@ class StartStructureDB(QMainWindow):
             return
         searchresult = self.structures.get_all_structure_names(idlist)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
-        # self.ui.cifList_treeWidget.clear()
         self.full_list = False
-        for structure_id, _, path, filename, data in searchresult:
-            self.add_table_row(filename, path, data, structure_id)
-        ##self.set_columnsize()
-        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        self.set_model_from_data(searchresult)
         if idlist:
             self.ui.MaintabWidget.setCurrentIndex(0)
 
@@ -566,7 +562,6 @@ class StartStructureDB(QMainWindow):
         self.structures.make_indexes()
         self.structures.database.commit_db()
         self.ui.cifList_tableView.show()
-        # self.set_columnsize()
         self.show_full_list()
         self.settings.save_current_dir(str(Path(startdir)))
         os.chdir(str(Path(startdir).parent))
@@ -686,10 +681,6 @@ class StartStructureDB(QMainWindow):
         """Event filter for mouse clicks."""
         if event.type() == QEvent.MouseButtonDblClick:
             self.copyUnitCell()
-        """elif event.type() == QEvent.MouseButtonPress:
-            if event.buttons() == Qt.RightButton:
-                # print("rightbutton")
-                return True"""
         return False
 
     def keyPressEvent(self, q_key_event):
@@ -736,18 +727,10 @@ class StartStructureDB(QMainWindow):
 
     def redraw_molecule(self) -> None:
         self.view_molecule()
-        # try:
-        #    self.view_molecule()
-        # except Exception:
-        #    print('Molecule view crashed!!')
 
     def display_properties(self, structure_id, cif_dic):
         """
         Displays the residuals from the cif file
-        Measured Refl.
-        Independent Refl.
-        Reflections Used
-
         _refine_ls_number_reflns -> unique reflect. (Independent reflections)
         _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
@@ -965,7 +948,6 @@ class StartStructureDB(QMainWindow):
                 mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
                 if mapping:
                     idlist.append(curr_cell[0])
-        # print("After match: ", len(idlist), sorted(idlist))
         return idlist
 
     @pyqtSlot('QString', name='search_cell')
@@ -1287,6 +1269,7 @@ class StartStructureDB(QMainWindow):
         self.ui.SHELXplainTextEdit.clear()
         self.ui.cellField.clear()
         self.ui.render_widget.clear()
+        self.table_model.clear()
 
 
 if __name__ == "__main__":
