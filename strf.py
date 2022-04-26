@@ -28,7 +28,7 @@ from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from typing import Union
 
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QIcon, QFont, QResizeEvent
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox
 
@@ -179,8 +179,8 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_tableView.setModel(self.table_model)
         self.ui.cifList_tableView.hideColumn(0)
         self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
-        #self.ui.cifList_tableView.resizeColumnToContents(1)
-        #self.ui.cifList_tableView.resizeColumnToContents(2)
+        # self.ui.cifList_tableView.resizeColumnToContents(1)
+        # self.ui.cifList_tableView.resizeColumnToContents(2)
         self.ui.cifList_tableView.resizeColumnToContents(3)
 
     def connect_signals_and_slots(self):
@@ -221,7 +221,7 @@ class StartStructureDB(QMainWindow):
         self.ui.growCheckBox.toggled.connect(self.redraw_molecule)
         self.ui.ExportAsCIFpushButton.clicked.connect(self.export_current_cif)
 
-    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
+    def resizeEvent(self, a0: QResizeEvent) -> None:
         super(StartStructureDB, self).resizeEvent(a0)
 
     def checkfor_version(self):

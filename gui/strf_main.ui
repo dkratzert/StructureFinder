@@ -1225,7 +1225,7 @@ p, li { white-space: pre-wrap; }
                <bool>true</bool>
               </attribute>
               <attribute name="horizontalHeaderMinimumSectionSize">
-               <number>150</number>
+               <number>90</number>
               </attribute>
               <attribute name="horizontalHeaderDefaultSectionSize">
                <number>250</number>
