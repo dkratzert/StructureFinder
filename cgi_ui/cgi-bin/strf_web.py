@@ -370,7 +370,7 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     if not ids and not show_all:
         # return json.dumps(failure)
         return {}
-    dic = structures.get_all_structures_as_dict(ids, show_all)
+    dic = structures.get_all_structures_as_dict(ids)
     number = len(dic)
     print("--> Got {} structures from actual search.".format(number))
     if number == 0:
@@ -714,7 +714,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     cell = is_valid_cell(cellstr)
     try:
         spgr = int(it_num.split()[0])
-    except:
+    except Exception:
         spgr = 0
     try:
         rval = float(r1val)

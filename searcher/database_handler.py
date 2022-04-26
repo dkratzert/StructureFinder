@@ -10,6 +10,23 @@ Created on 09.02.2015
 * ----------------------------------------------------------------------------
 
 @author: daniel
+
+
+from PyQt5.QtSql import QSqlQuery, QSqlDatabase
+
+con = QSqlDatabase.addDatabase("QSQLITE")
+con.setDatabaseName("/Users/daniel/Documents/GitHub/StructureFinder/structuredb.sqlite")
+
+query = QSqlQuery()
+query.exec('''SELECT Name, element, x, y, z FROM ATOMS''')
+while query.next():
+    results.append(query.value(0), query.value(1), query.value(2), query.value(3), query.value(4))
+query.finish()
+
+con.close()
+con.isOpen()
+- False
+QSqlDatabase::removeDatabase("sales")
 """
 
 import sys
@@ -358,57 +375,47 @@ class StructureTable():
         if found:
             return found
 
-    def get_all_structures_as_dict(self, ids: (list, tuple) = None, all=False) -> dict:
+    def get_all_structures_as_dict(self, ids: (list, tuple) = None) -> dict:
         """
         Returns the list of structures as dictionary.
 
-        >>> str = StructureTable('./test-data/test.sql')
-        >>> str.get_all_structures_as_dict([16])[0] == {'recid': 16, 'path': '/Users/daniel/GitHub/StructureFinder/test-data/106c.tgz', 'filename': 'ntd106c-P-1-final.cif', 'dataname': 'p-1'}
-        True
+        >>> str = StructureTable('C:/Users/daniel.kratzert/structurefinder.sqlite')
+        >>> str.get_all_structures_as_dict([1,2])
         """
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
-        order = """INNER JOIN Residuals as res ON res.modification_time WHERE recid = res.StructureId
-                      ORDER BY res.modification_time DESC"""
+        req = '''SELECT str.Id AS recid, str.path, str.filename, str.dataname, res.modification_time
+                        FROM Structure AS str 
+                        INNER JOIN Residuals as res ON res.StructureId == recid '''
         if ids:
             ids = tuple(ids)
-            if len(ids) > 1:
-                req = '''SELECT Structure.Id AS recid, Structure.path, Structure.filename, 
-                             Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
-            else:
-                # only one id
-                req = '''SELECT Structure.Id AS recid, Structure.path, Structure.filename, 
-                            Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(ids[0])
-        elif all:
-            req = '''SELECT Structure.Id AS recid, Structure.path, Structure.filename, 
-                      Structure.dataname FROM Structure'''
+            placeholders = ', '.join('?' * len(ids))
+            req = req + f''' WHERE str.Id in ({placeholders})'''
+            rows = self.database.db_request(req, ids)
         else:
-            return {}
-        rows = self.database.db_request(req)
+            rows = self.database.db_request(req)
         self.database.cur.close()
         # setting row_factory back to regular touple base requests:
         self.database.con.row_factory = None
         self.database.cur = self.database.con.cursor()
         return rows
 
-    def get_all_structure_names(self, ids: list = None) -> List[Union[int, int, str, str, str]]:
+    def get_all_structure_names(self, ids: list = None) -> List:
         """
         returns all fragment names in the database, sorted by name
         :returns [id, meas, path, filename, data]
+        >>> str = StructureTable('C:/Users/daniel.kratzert/structurefinder.sqlite')
+        >>> str.get_all_structure_names([1, 2])
         """
-        order = """INNER JOIN Residuals as res ON res.modification_time WHERE Structure.Id = res.StructureId
-                      ORDER BY res.modification_time DESC"""
+        req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
+                        FROM Structure AS str 
+                        INNER JOIN Residuals AS res ON res.StructureId == str.Id '''
         if ids:
-            if len(ids) > 1:  # a collection of ids
-                ids = tuple(ids)
-                req = '''SELECT Id, measurement, path, filename, 
-                         dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
-            else:  # only one id
-                req = '''SELECT Id, measurement, path, filename, dataname FROM Structure WHERE Structure.Id == ?'''
-                rows = self.database.db_request(req, ids)
-                return rows
-        else:  # just all
-            req = '''SELECT Id, measurement, path, filename, dataname FROM Structure'''
+            ids = tuple(ids)
+            placeholders = ', '.join('?' * len(ids))
+            req = req + f''' WHERE str.Id in ({placeholders})'''
+            rows = self.database.db_request(req, ids)
+            return rows
         return self.database.db_request(req)
 
     def get_filepath(self, structure_id) -> str:
@@ -477,7 +484,7 @@ class StructureTable():
         if self.database.db_request(req, (structure_id, name, element, x, y, z, occ, part, xc, yc, zc)):
             return True
 
-    def get_atoms_table(self, structure_id, cartesian=False, as_list=False):
+    def get_atoms_table(self, structure_id, cartesian=False, as_list=False) -> Union[List, Tuple]:
         """
         returns the atoms of structure with structure_id
         returns: [Name, Element, X, Y, Z, Part, ocuupancy]
@@ -485,20 +492,21 @@ class StructureTable():
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.get_atoms_table(16)[0]
         ('O1', 'O', 0.32157, 0.42645, 0.40201, 0, 1.0)
+        >>> db.get_atoms_table(16, cartesian=True)[0]
+        ('O1', 'O', 1.5088943989965458, 2.312523688689475, 4.346994224791996, 0, 1.0)
         """
-        req = """SELECT Name, element, x, y, z, CAST(part as integer), occupancy FROM Atoms WHERE StructureId = ?"""
-        req_cartesian = """SELECT Name, element, xc, yc, zc, CAST(part as integer), occupancy 
-                            FROM Atoms WHERE StructureId = ?"""
+        fractional = 'x, y, z'
+        cart_coords = 'xc, yc, zc'
+        req = """SELECT Name, element, {}, CAST(part as integer), occupancy 
+                              FROM Atoms WHERE StructureId = ?"""
         if cartesian:
-            result = self.database.db_request(req_cartesian, (structure_id,))
+            result = self.database.db_request(req.format(cart_coords), (structure_id,))
         else:
-            result = self.database.db_request(req, (structure_id,))
-        if result:
-            if as_list:
-                return [list(x) for x in result]
+            result = self.database.db_request(req.format(fractional), (structure_id,))
+        if as_list:
+            return [list(x) for x in result]
+        else:
             return result
-        else:
-            return False
 
     def fill_formula(self, structure_id, formula: dict):
         """
@@ -918,13 +926,13 @@ class StructureTable():
         [(237, b'DK_NTD51a-final.cif', b'p21c', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
         """
         req = '''
-        SELECT StructureId, filename, dataname, path FROM txtsearch WHERE filename MATCH ?
+        SELECT StructureId, dataname, filename, path FROM txtsearch WHERE filename MATCH ?
           UNION
-        SELECT StructureId, filename, dataname, path FROM txtsearch WHERE dataname MATCH ?
+        SELECT StructureId, dataname, filename, path FROM txtsearch WHERE dataname MATCH ?
           UNION
-        SELECT StructureId, filename, dataname, path FROM txtsearch WHERE path MATCH ?
+        SELECT StructureId, dataname, filename, path FROM txtsearch WHERE path MATCH ?
           UNION
-        SELECT StructureId, filename, dataname, path FROM txtsearch WHERE shelx_res_file MATCH ?
+        SELECT StructureId, dataname, filename, path FROM txtsearch WHERE shelx_res_file MATCH ?
         '''
         try:
             res = self.database.db_request(req, (text, text, text, text))

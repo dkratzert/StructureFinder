@@ -36,7 +36,7 @@ class MyDownloader(QThread):
         }
         # noinspection PyUnresolvedReferences
         self.progress.emit('Starting download: {}'.format(full_url))
-        response = requests.get(full_url, stream=True, headers=headers)
+        response = requests.get(full_url, stream=True, headers=headers, timeout=5)
         if response.status_code != 200:
             # noinspection PyUnresolvedReferences
             self.failed.emit(response.status_code)

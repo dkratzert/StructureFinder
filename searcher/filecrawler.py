@@ -211,8 +211,6 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                         continue
                     if not tst:
                         continue
-                    if self:
-                        self.add_table_row(name, filepth, cif.cif_data['data'], str(lastid))
                     cifcount += 1
                     lastid += 1
                     num += 1
@@ -260,9 +258,6 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                         if DEBUG:
                             print('cif file not added:', fullpath)
                         continue
-                    if self:
-                        self.add_table_row(filename=z.cifname, path=fullpath,
-                                           data=cif.cif_data['data'], structure_id=str(lastid))
                     zipcifs += 1
                     cifcount += 1
                     lastid += 1
@@ -288,8 +283,8 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 if DEBUG:
                     print('res file not added:', fullpath)
                 continue
-            if self:
-                self.add_table_row(filename=name, path=filepth, data=name, structure_id=str(lastid))
+            #            if self:
+            #                self.add_table_row(filename=name, path=filepth, data=name, structure_id=str(lastid))
             lastid += 1
             num += 1
             rescount += 1
@@ -297,7 +292,6 @@ def put_files_in_db(self=None, searchpath: str = './', excludes: list = None, la
                 print('{} files ...'.format(num))
                 structures.database.commit_db()
             prognum += 1
-            continue
     structures.database.commit_db()
     time2 = time.process_time()
     diff = time2 - time1
