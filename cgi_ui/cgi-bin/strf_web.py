@@ -41,7 +41,7 @@ from shutil import which
 from searcher.constants import centering_letter_2_num, centering_num_2_letter
 from ccdc.query import get_cccsd_path, search_csd, parse_results
 from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response, HTTPResponse
-#from displaymol.mol_file_writer import MolFile
+from displaymol.mol_file_writer import MolFile
 from displaymol.sdm import SDM
 from pymatgen.core import lattice
 from searcher.database_handler import StructureTable
@@ -157,9 +157,8 @@ def jsmol_request():
         else:
             atoms = structures.get_atoms_table(str_id, cartesian=True, as_list=False)
         try:
-            #m = MolFile(atoms)
-            #return m.make_mol()
-            pass
+            m = MolFile(atoms)
+            return m.make_mol()
         except(KeyError, TypeError) as e:
             print('Exception in jsmol_request: {}'.format(e))
             return ''
