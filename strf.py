@@ -42,7 +42,7 @@ from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
 
 print(sys.version)
-DEBUG = True
+DEBUG = False
 
 from misc.version import VERSION
 from pymatgen.core import lattice
@@ -70,9 +70,7 @@ TODO:
   nim c -d:danger --app:lib --opt:speed --gc:markAndSweep --out:ultra_fast_walk.pyd ultra_fast_walk.nim
   import ultra_fast_walk as ufw
   p = ufw.walker(folderpath= "C:/", extensions=[".res"], yieldfiles=False)
-- Make files sortable by date?
 - add options
-- simplify database tables?
 - Use spellfix for text search: https://www.sqlite.org/spellfix1.html
 
 Search for:
