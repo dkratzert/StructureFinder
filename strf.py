@@ -173,9 +173,6 @@ class StartStructureDB(QMainWindow):
                     os.chdir(self.settings.load_last_workdir())
         if self.structures:
             self.set_model_from_data(self.structures.get_all_structure_names())
-        # select the first item in the list
-        ##item = self.ui.cifList_treeWidget.topLevelItem(0)
-        ##self.ui.cifList_treeWidget.setCurrentItem(item)
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         self.checkfor_version()
 

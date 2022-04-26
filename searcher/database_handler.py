@@ -379,52 +379,43 @@ class StructureTable():
         """
         Returns the list of structures as dictionary.
 
-        >>> str = StructureTable('./test-data/test.sql')
-        >>> str.get_all_structures_as_dict([16])[0] == {'recid': 16, 'path': '/Users/daniel/GitHub/StructureFinder/test-data/106c.tgz', 'filename': 'ntd106c-P-1-final.cif', 'dataname': 'p-1'}
-        True
+        >>> str = StructureTable('C:/Users/daniel.kratzert/structurefinder.sqlite')
+        >>> str.get_all_structures_as_dict([1,2])
         """
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
-        order = """INNER JOIN Residuals as res ON res.modification_time WHERE recid = res.StructureId
-                      ORDER BY res.modification_time DESC"""
+        req = '''SELECT str.Id AS recid, str.path, str.filename, str.dataname, res.modification_time
+                        FROM Structure AS str 
+                        INNER JOIN Residuals as res ON res.StructureId == recid '''
         if ids:
             ids = tuple(ids)
-            if len(ids) > 1:
-                req = '''SELECT Structure.Id AS recid, Structure.path, Structure.filename, 
-                             Structure.dataname FROM Structure WHERE Structure.Id in {}'''.format(ids)
-            else:
-                # only one id
-                req = '''SELECT Structure.Id AS recid, Structure.path, Structure.filename, 
-                            Structure.dataname FROM Structure WHERE Structure.Id == {}'''.format(ids[0])
-        elif all:
-            req = '''SELECT Structure.Id AS recid, Structure.path, Structure.filename, 
-                      Structure.dataname FROM Structure'''
+            placeholders = ', '.join('?' * len(ids))
+            req = req + f''' WHERE str.Id in ({placeholders})'''
+            rows = self.database.db_request(req, ids)
         else:
-            return {}
-        rows = self.database.db_request(req)
+            rows = self.database.db_request(req)
         self.database.cur.close()
         # setting row_factory back to regular touple base requests:
         self.database.con.row_factory = None
         self.database.cur = self.database.con.cursor()
         return rows
 
-    def get_all_structure_names(self, ids: list = None) -> List[Union[int, int, str, str, str]]:
+    def get_all_structure_names(self, ids: list = None) -> List:
         """
         returns all fragment names in the database, sorted by name
         :returns [id, meas, path, filename, data]
+        >>> str = StructureTable('C:/Users/daniel.kratzert/structurefinder.sqlite')
+        >>> str.get_all_structure_names([1, 2])
         """
-        order = """INNER JOIN Residuals as res ON res.modification_time WHERE Structure.Id = res.StructureId
-                      ORDER BY res.modification_time DESC"""
+        req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
+                        FROM Structure AS str 
+                        INNER JOIN Residuals AS res ON res.StructureId == str.Id '''
         if ids:
-            if len(ids) > 1:  # a collection of ids
-                ids = tuple(ids)
-                req = '''SELECT Id, dataname, filename, path FROM Structure WHERE Structure.Id in {}'''.format(ids)
-            else:  # only one id
-                req = '''SELECT Id, dataname, filename, path FROM Structure WHERE Structure.Id == ?'''
-                rows = self.database.db_request(req, ids)
-                return rows
-        else:  # just all
-            req = '''SELECT Id, dataname, filename, path FROM Structure'''
+            ids = tuple(ids)
+            placeholders = ', '.join('?' * len(ids))
+            req = req + f''' WHERE str.Id in ({placeholders})'''
+            rows = self.database.db_request(req, ids)
+            return rows
         return self.database.db_request(req)
 
     def get_filepath(self, structure_id) -> str:

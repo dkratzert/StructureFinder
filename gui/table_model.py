@@ -7,7 +7,7 @@ from PyQt5.QtCore import QModelIndex, Qt
 class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, *args, structures=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.horizontalHeaders = ['Id', 'Data Name', 'File Name', 'Path']
+        self.horizontalHeaders = ['Id', 'Data Name', 'File Name', 'Modification Date', 'Path']
         self._data = structures or []
 
     def data(self, index: QModelIndex, role: int = None):
