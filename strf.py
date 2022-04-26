@@ -93,7 +93,7 @@ else:
 
 if DEBUG:
     try:
-        from PyQt5 import uic
+        from PyQt5 import uic, QtGui
 
         uic.compileUiDir(os.path.join(application_path, './gui'))
         print('recompiled ui')
@@ -181,6 +181,9 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_tableView.setModel(self.table_model)
         self.ui.cifList_tableView.hideColumn(0)
         self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
+        #self.ui.cifList_tableView.resizeColumnToContents(1)
+        #self.ui.cifList_tableView.resizeColumnToContents(2)
+        self.ui.cifList_tableView.resizeColumnToContents(3)
 
     def connect_signals_and_slots(self):
         """
@@ -219,6 +222,9 @@ class StartStructureDB(QMainWindow):
         self.ui.add_cif.clicked.connect(self.cif_checkbox_clicked)
         self.ui.growCheckBox.toggled.connect(self.redraw_molecule)
         self.ui.ExportAsCIFpushButton.clicked.connect(self.export_current_cif)
+
+    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
+        super(StartStructureDB, self).resizeEvent(a0)
 
     def checkfor_version(self):
         url = 'https://dkratzert.de/files/structurefinder/version.txt'

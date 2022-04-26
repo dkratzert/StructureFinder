@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\_DEV\GitHub\StructureFinder\./gui\strf_main.ui'
+# Form implementation generated from reading ui file '/Users/daniel/Documents/GitHub/StructureFinder/./gui/strf_main.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.6
 #
@@ -546,7 +546,7 @@ class Ui_stdbMainwindow(object):
         self.cifList_tableView.setAutoFillBackground(False)
         self.cifList_tableView.setStyleSheet("background-color: rgb(255, 255, 255);")
         self.cifList_tableView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.cifList_tableView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.cifList_tableView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.cifList_tableView.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustIgnored)
         self.cifList_tableView.setAutoScroll(True)
         self.cifList_tableView.setAutoScrollMargin(16)
@@ -560,8 +560,8 @@ class Ui_stdbMainwindow(object):
         self.cifList_tableView.setSortingEnabled(True)
         self.cifList_tableView.setObjectName("cifList_tableView")
         self.cifList_tableView.horizontalHeader().setCascadingSectionResizes(True)
-        self.cifList_tableView.horizontalHeader().setDefaultSectionSize(150)
-        self.cifList_tableView.horizontalHeader().setMinimumSectionSize(100)
+        self.cifList_tableView.horizontalHeader().setDefaultSectionSize(250)
+        self.cifList_tableView.horizontalHeader().setMinimumSectionSize(150)
         self.cifList_tableView.horizontalHeader().setStretchLastSection(True)
         self.importResults.addWidget(self.cifList_tableView, 1, 0, 1, 7)
         self.gridLayout_3.addLayout(self.importResults, 0, 0, 1, 1)

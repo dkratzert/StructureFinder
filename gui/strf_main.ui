@@ -1186,7 +1186,7 @@ p, li { white-space: pre-wrap; }
                <enum>Qt::ScrollBarAsNeeded</enum>
               </property>
               <property name="horizontalScrollBarPolicy">
-               <enum>Qt::ScrollBarAsNeeded</enum>
+               <enum>Qt::ScrollBarAlwaysOn</enum>
               </property>
               <property name="sizeAdjustPolicy">
                <enum>QAbstractScrollArea::AdjustIgnored</enum>
@@ -1225,10 +1225,10 @@ p, li { white-space: pre-wrap; }
                <bool>true</bool>
               </attribute>
               <attribute name="horizontalHeaderMinimumSectionSize">
-               <number>100</number>
+               <number>150</number>
               </attribute>
               <attribute name="horizontalHeaderDefaultSectionSize">
-               <number>150</number>
+               <number>250</number>
               </attribute>
               <attribute name="horizontalHeaderStretchLastSection">
                <bool>true</bool>

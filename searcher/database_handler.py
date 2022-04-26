@@ -375,7 +375,7 @@ class StructureTable():
         if found:
             return found
 
-    def get_all_structures_as_dict(self, ids: (list, tuple) = None, all=False) -> dict:
+    def get_all_structures_as_dict(self, ids: (list, tuple) = None) -> dict:
         """
         Returns the list of structures as dictionary.
 
@@ -492,20 +492,21 @@ class StructureTable():
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.get_atoms_table(16)[0]
         ('O1', 'O', 0.32157, 0.42645, 0.40201, 0, 1.0)
+        >>> db.get_atoms_table(16, cartesian=True)[0]
+        ('O1', 'O', 1.5088943989965458, 2.312523688689475, 4.346994224791996, 0, 1.0)
         """
-        req = """SELECT Name, element, x, y, z, CAST(part as integer), occupancy FROM Atoms WHERE StructureId = ?"""
-        req_cartesian = """SELECT Name, element, xc, yc, zc, CAST(part as integer), occupancy 
-                            FROM Atoms WHERE StructureId = ?"""
+        fractional = 'x, y, z'
+        cart_coords = 'xc, yc, zc'
+        req = """SELECT Name, element, {}, CAST(part as integer), occupancy 
+                              FROM Atoms WHERE StructureId = ?"""
         if cartesian:
-            result = self.database.db_request(req_cartesian, (structure_id,))
+            result = self.database.db_request(req.format(cart_coords), (structure_id,))
         else:
-            result = self.database.db_request(req, (structure_id,))
-        if result:
-            if as_list:
-                return [list(x) for x in result]
+            result = self.database.db_request(req.format(fractional), (structure_id,))
+        if as_list:
+            return [list(x) for x in result]
+        else:
             return result
-        else:
-            return []
 
     def fill_formula(self, structure_id, formula: dict):
         """
