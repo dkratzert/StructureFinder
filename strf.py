@@ -603,6 +603,7 @@ class StartStructureDB(QMainWindow):
         self.ui.DatabaseNameDisplayLabel.setText('')
         self.set_model_from_data([])
         self.clear_fields()
+        self.ui.MaintabWidget.setCurrentIndex(0)
         return True
 
     @pyqtSlot(name="abort_import")
