@@ -561,7 +561,7 @@ class Ui_stdbMainwindow(object):
         self.cifList_tableView.setObjectName("cifList_tableView")
         self.cifList_tableView.horizontalHeader().setCascadingSectionResizes(True)
         self.cifList_tableView.horizontalHeader().setDefaultSectionSize(250)
-        self.cifList_tableView.horizontalHeader().setMinimumSectionSize(150)
+        self.cifList_tableView.horizontalHeader().setMinimumSectionSize(90)
         self.cifList_tableView.horizontalHeader().setStretchLastSection(True)
         self.importResults.addWidget(self.cifList_tableView, 1, 0, 1, 7)
         self.gridLayout_3.addLayout(self.importResults, 0, 0, 1, 1)
