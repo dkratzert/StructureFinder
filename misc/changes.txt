@@ -4,7 +4,8 @@ Changelog
 * v60 Massive speed improvement for loading large databases. Adds a 'Last Modified' 
       column to the results table. The table is sortable by clicking on the column header now.
       Replaced the molecule viewer with a lighter one which results in a smaller install package. 
-      Some smaller improvements.
+      Removed APEX database support, because searching in APEX itself works now better than in 
+      StructureFinder. Some smaller improvements.
 * v59 Fixed crash when running offline.
 * v58 Fix crash during CIF export. Added CIF export to web interface.
 * v57 Added button to export the currently selected structure as CIF. This CIF is not the original CIF!
