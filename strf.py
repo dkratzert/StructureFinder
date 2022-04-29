@@ -5,37 +5,45 @@ Created on 09.02.2015
 
  ----------------------------------------------------------------------------
 * "THE BEER-WARE LICENSE" (Revision 42):
-* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this
+* <dkratzert@gmx.de> wrote this file. As long as you retain this
 * notice you can do whatever you want with this stuff. If we meet some day, and
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
 
 @author: Daniel Kratzert
 """
+import math
 import os
 import shutil
 import sys
 import tempfile
 import time
+import traceback
 from contextlib import suppress
 from datetime import date
+from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
+from typing import Union
 
-from PyQt5.QtCore import QModelIndex, pyqtSlot, QUrl, QDate, QEvent, Qt
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QFileDialog, QDialog, QProgressBar, QPushButton, QTreeWidgetItem, QMainWindow
-from math import sin, radians
+from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection
+from PyQt5.QtGui import QIcon, QFont, QResizeEvent
+from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
+    QMessageBox
 
 from displaymol.sdm import SDM
+from gui.table_model import TableModel
+from misc.dialogs import bug_found_warning, do_update_program
+from misc.download import MyDownloader
+from misc.exporter import export_to_cif_file
+from misc.settings import StructureFinderSettings
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from shelxfile.shelx import ShelXFile
 
+print(sys.version)
 DEBUG = False
 
-from apex import apeximporter
-from displaymol import mol_file_writer, write_html
 from misc.version import VERSION
 from pymatgen.core import lattice
 from searcher import constants, misc, filecrawler, database_handler
@@ -55,19 +63,15 @@ try:
 except ModuleNotFoundError:
     print('Non xml parser found.')
 
-try:
-    from PyQt5.QtWebEngineWidgets import QWebEngineView
-except Exception as e:
-    print(e, '# Unable to import QWebEngineView')
-    if DEBUG:
-        raise
-from gui.strf_main import Ui_stdbMainwindow
-from gui.strf_dbpasswd import Ui_PasswdDialog
-
 """
 TODO:
-- sort results by G6 distance
-- Use QPainter to draw molecule?
+- Use ultra fast file walk for Windows:
+  https://github.com/githubrobbi/Ultra-Fast-Walk-in-NIM
+  nim c -d:danger --app:lib --opt:speed --gc:markAndSweep --out:ultra_fast_walk.pyd ultra_fast_walk.nim
+  import ultra_fast_walk as ufw
+  p = ufw.walker(folderpath= "C:/", extensions=[".res"], yieldfiles=False)
+- add options
+- Use spellfix for text search: https://www.sqlite.org/spellfix1.html
 
 Search for:
 - draw structure (with JSME? Acros? Kekule?, https://github.com/ggasoftware/ketcher)
@@ -85,24 +89,40 @@ if getattr(sys, 'frozen', False):
 else:
     application_path = os.path.dirname(os.path.abspath(__file__))
 
+if DEBUG:
+    try:
+        from PyQt5 import uic, QtGui
+
+        uic.compileUiDir(os.path.join(application_path, './gui'))
+        print('recompiled ui')
+    except:
+        print("Unable to compile UI!")
+        raise
+else:
+    print("Remember, UI is not recompiled without DEBUG.")
+
+from gui.strf_main import Ui_stdbMainwindow
+from gui.strf_dbpasswd import Ui_PasswdDialog
+
 
 class StartStructureDB(QMainWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
+        font = QFont()
+        font.setFamily("Courier")
+        font.setStyleHint(QFont.Monospace)
+        self.ui.SHELXplainTextEdit.setFont(font)
         self.statusBar().showMessage('StructureFinder version {}'.format(VERSION))
-        self.ui.cifList_treeWidget.show()
-        self.ui.cifList_treeWidget.hideColumn(3)
         self.dbfdesc = None
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
-        # self.ui.centralwidget.setMinimumSize(1000, 500)
-        self.abort_import_button = QPushButton("Abort")
         self.progress = QProgressBar(self)
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
-        self.ui.statusbar.addWidget(self.abort_import_button)
+        self.ui.appendDirButton.setDisabled(True)
+        # self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
         self.apx = None
         self.structureId = 0
@@ -124,40 +144,44 @@ class StartStructureDB(QMainWindow):
         self.connect_signals_and_slots()
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
-        try:
-            self.write_empty_molfile(mol_data=' ')
-        except Exception as e:
-            # Graphics driver not compatible
-            print(e, '##')
-            # raise
-        try:
-            self.init_webview()
-        except Exception as e:
-            print(e, '###')
-            # raise
         self.ui.MaintabWidget.setCurrentIndex(0)
         self.setWindowIcon(QIcon(os.path.join(application_path, './icons/strf.png')))
         self.uipass = Ui_PasswdDialog()
-        # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
-        self.ui.cifList_treeWidget.addAction(self.ui.actionGo_to_All_CIF_Tab)
-        self.apexdb = 0
+        self.ui.cifList_tableView.addAction(self.ui.actionGo_to_All_CIF_Tab)
+        self.settings = StructureFinderSettings()
         if len(sys.argv) > 1:
             self.dbfilename = sys.argv[1]
             if isfile(self.dbfilename):
                 try:
                     self.structures = database_handler.StructureTable(self.dbfilename)
                     self.show_full_list()
-                    self.apexdb = self.structures.get_database_version()
                 except (IndexError, DatabaseError) as e:
                     print(e)
                     if DEBUG:
                         raise
-        # select the first item in the list
-        item = self.ui.cifList_treeWidget.topLevelItem(0)
-        self.ui.cifList_treeWidget.setCurrentItem(item)
+                os.chdir(str(Path(self.dbfilename).parent))
+                self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(self.dbfilename))
+                self.settings.save_current_dir(str(Path(self.dbfilename).parent))
+        else:
+            lastdir = self.settings.load_last_workdir()
+            if Path(lastdir).exists():
+                with suppress(OSError, FileNotFoundError):
+                    os.chdir(self.settings.load_last_workdir())
+        if self.structures:
+            self.set_model_from_data(self.structures.get_all_structure_names())
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
+        self.checkfor_version()
+
+    def set_model_from_data(self, data: Union[list, tuple]):
+        self.table_model = TableModel(structures=data)
+        self.ui.cifList_tableView.setModel(self.table_model)
+        self.ui.cifList_tableView.hideColumn(0)
+        self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
+        # self.ui.cifList_tableView.resizeColumnToContents(1)
+        # self.ui.cifList_tableView.resizeColumnToContents(2)
+        self.ui.cifList_tableView.resizeColumnToContents(3)
 
     def connect_signals_and_slots(self):
         """
@@ -165,12 +189,12 @@ class StartStructureDB(QMainWindow):
         The actionExit signal is connected in the ui file.
         """
         # Buttons:
-        self.ui.importDatabaseButton.clicked.connect(self.import_database_file)
+        self.ui.importDatabaseButton.clicked.connect(self.open_database_file)
         self.ui.saveDatabaseButton.clicked.connect(self.save_database)
         self.ui.importDirButton.clicked.connect(self.import_file_dirs)
-        self.ui.openApexDBButton.clicked.connect(self.import_apex_db)
+        self.ui.appendDirButton.clicked.connect(self.append_file_dirs)
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
-        self.abort_import_button.clicked.connect(self.abort_import)
+        # self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
         self.ui.adv_SearchPushButton.clicked.connect(self.advanced_search)
@@ -180,7 +204,7 @@ class StartStructureDB(QMainWindow):
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_file_dirs)
-        self.ui.actionImport_file.triggered.connect(self.import_database_file)
+        self.ui.actionImport_file.triggered.connect(self.open_database_file)
         self.ui.actionSave_Database.triggered.connect(self.save_database)
         self.ui.actionCopy_Unit_Cell.triggered.connect(self.copyUnitCell)
         self.ui.actionGo_to_All_CIF_Tab.triggered.connect(self.on_click_item)
@@ -188,18 +212,54 @@ class StartStructureDB(QMainWindow):
         self.ui.txtSearchEdit.textChanged.connect(self.search_text)
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
         self.ui.p4pCellButton.clicked.connect(self.get_name_from_p4p)
-        self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
+        ##self.ui.cifList_treeWidget.itemDoubleClicked.connect(self.on_click_item)
         self.ui.CSDtreeWidget.itemDoubleClicked.connect(self.show_csdentry)
         self.ui.adv_elementsIncLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.adv_elementsExclLineEdit.textChanged.connect(self.elements_fields_check)
         self.ui.add_res.clicked.connect(self.res_checkbox_clicked)
         self.ui.add_cif.clicked.connect(self.cif_checkbox_clicked)
-        self.ui.cifList_treeWidget.selectionModel().currentChanged.connect(self.get_properties)
         self.ui.growCheckBox.toggled.connect(self.redraw_molecule)
+        self.ui.ExportAsCIFpushButton.clicked.connect(self.export_current_cif)
+
+    def resizeEvent(self, a0: QResizeEvent) -> None:
+        super(StartStructureDB, self).resizeEvent(a0)
+
+    def checkfor_version(self):
+        url = 'https://dkratzert.de/files/structurefinder/version.txt'
+        upd = MyDownloader(self, url)
+        upd.finished.connect(self.show_update_warning)
+        upd.failed.connect(upd.failed_to_download)
+        upd.progress.connect(upd.print_status)
+        upd.start()
+
+    def show_update_warning(self, reply: bytes):
+        """
+        Reads the reply from the server and displays a warning in case of an old version.
+        """
+        remote_version = 0
+        try:
+            remote_version = int(reply.decode('ascii', 'ignore'))
+        except Exception:
+            pass
+        if remote_version > VERSION:
+            print('Version {} is outdated (actual is {}).'.format(remote_version, VERSION))
+            warn_text = "A newer version of StructureFinder is available under " \
+                        "<a href='https://dkratzert.de/structurefinder.html'>" \
+                        "https://dkratzert.de/structurefinder.html</a>"
+            box = QMessageBox()
+            box.setTextFormat(Qt.AutoText)
+            box.setWindowTitle(" ")
+            box.setTextInteractionFlags(Qt.TextBrowserInteraction)
+            if sys.platform.startswith("win"):
+                warn_text += r"<br><br>Updating now will end all running StructureFinder programs!"
+                update_button = box.addButton('Update Now', QMessageBox.AcceptRole)
+                update_button.clicked.connect(lambda: do_update_program(str(remote_version)))
+            box.setText(warn_text.format(remote_version))
+            box.exec()
 
     def res_checkbox_clicked(self, click):
         if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
-            self.ui.add_cif.setChecked(True)
+            self.ui.add_res.setChecked(True)
 
     def cif_checkbox_clicked(self, click):
         if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
@@ -290,7 +350,7 @@ class StartStructureDB(QMainWindow):
             print(e)
             return
         print(len(results), 'Structures found...')
-        self.statusBar().showMessage("{} structures found in the CSD".format(len(results), msecs=9000))
+        self.statusBar().showMessage(f"{results} structures found in the CSD", msecs=9000)
         for res in results:
             csd_tree_item = QTreeWidgetItem()
             self.ui.CSDtreeWidget.addTopLevelItem(csd_tree_item)
@@ -348,7 +408,9 @@ class StartStructureDB(QMainWindow):
                   'elexcl': False,
                   'txt'   : False,
                   'txt_ex': False,
-                  'spgr'  : False}
+                  'spgr'  : False,
+                  'rval'  : False,
+                  'ccdc'  : False}
         if not self.structures:
             return
         cell = is_valid_cell(self.ui.adv_unitCellLineEdit.text())
@@ -357,6 +419,12 @@ class StartStructureDB(QMainWindow):
         elincl = self.ui.adv_elementsIncLineEdit.text().strip(' ')
         elexcl = self.ui.adv_elementsExclLineEdit.text().strip(' ')
         txt = self.ui.adv_textsearch.text().strip(' ')
+        ccdc_num = self.ui.CCDCNumLineEdit.text().strip(' ')
+        try:
+            rval = float(self.ui.adv_R1_search_line.text().strip(' '))
+            states['rval'] = True
+        except ValueError:
+            rval = 0
         if len(txt) >= 2 and "*" not in txt:
             txt = '*' + txt + '*'
         txt_ex = self.ui.adv_textsearch_excl.text().strip(' ')
@@ -372,6 +440,12 @@ class StartStructureDB(QMainWindow):
         txt_results = []
         txt_ex_results = []
         date_results = []
+        ccdc_num_results = []
+        if ccdc_num:
+            ccdc_num_results = self.structures.find_by_ccdc_num(ccdc_num)
+        if ccdc_num_results:
+            self.display_structures_by_idlist(ccdc_num_results)
+            return
         try:
             spgr = int(spgr.split()[0])
         except Exception:
@@ -397,12 +471,15 @@ class StartStructureDB(QMainWindow):
         if date1 != date2:
             states['date'] = True
             date_results = self.find_dates(date1, date2)
+        rval_results = []
+        if rval > 0:
+            rval_results = self.structures.find_by_rvalue(rval / 100)
         ####################
         results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                                  txt_ex_results, txt_results, states)
-        self.display_structures_by_idlist(list(results))
+                                  txt_ex_results, txt_results, rval_results, states)
+        self.display_structures_by_idlist(tuple(results))
 
-    def display_structures_by_idlist(self, idlist: list or set) -> None:
+    def display_structures_by_idlist(self, idlist: Union[list, tuple]) -> None:
         """
         Displays the structures with id in results list
         """
@@ -412,44 +489,10 @@ class StartStructureDB(QMainWindow):
             return
         searchresult = self.structures.get_all_structure_names(idlist)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
-        self.ui.cifList_treeWidget.clear()
         self.full_list = False
-        for structure_id, _, path, filename, data in searchresult:
-            self.add_table_row(filename, path, data, structure_id)
-        self.set_columnsize()
-        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        self.set_model_from_data(searchresult)
         if idlist:
             self.ui.MaintabWidget.setCurrentIndex(0)
-
-    def passwd_handler(self):
-        """
-        Manages the QDialog buttons on the password dialog.
-        """
-        d = QDialog()
-        self.passwd = self.uipass.setupUi(d)
-        ip_dialog = d.exec()
-        if ip_dialog == 1:  # Accepted
-            self.import_apex_db(user=self.uipass.userNameLineEdit.text(),
-                                password=self.uipass.PasswordLineEdit.text(),
-                                host=self.uipass.IPlineEdit.text())
-        elif ip_dialog == 0:  # reject
-            return None
-        else:
-            return None
-
-    def init_webview(self):
-        """
-        Initializes a QWebengine to view the molecule.
-        """
-        self.view = QWebEngineView()
-        self.view.load(QUrl.fromLocalFile(os.path.abspath(os.path.join(application_path, "./displaymol/jsmol.htm"))))
-        # self.view.setMaximumWidth(260)
-        # self.view.setMaximumHeight(290)
-        self.ui.ogllayout.addWidget(self.view)
-        self.view.loadFinished.connect(self.onWebviewLoadFinished)
-
-    def onWebviewLoadFinished(self):
-        self.view.show()
 
     @pyqtSlot(name="cell_state_changed")
     def cell_state_changed(self):
@@ -461,26 +504,35 @@ class StartStructureDB(QMainWindow):
     def get_startdir_from_dialog(self):
         return QFileDialog.getExistingDirectory(self, 'Open Directory', '')
 
-    def import_file_dirs(self, startdir=None):
+    def append_file_dirs(self, startdir: Union[str, None] = None):
+        """Appends new files to database instead of creating a new database"""
+        self.import_file_dirs(startdir=startdir, append=True)
+
+    def import_file_dirs(self, startdir=None, append: bool = False):
         """
         Method to import res and cif files into the DB. "startdir" defines the directorz where to start indexing.
         """
         # worker = RunIndexerThread(self)
         # worker.start()
         self.tmpfile = True
-        self.apexdb = 0
         self.statusBar().showMessage('')
-        self.close_db()
-        self.start_db()
+        if not append:
+            self.close_db()
+            self.start_db()
         self.progressbar(1, 0, 20)
-        self.abort_import_button.show()
+        # self.abort_import_button.show()
         if not startdir:
             startdir = self.get_startdir_from_dialog()
         if not startdir:
             self.progress.hide()
-            self.abort_import_button.hide()
+            # self.abort_import_button.hide()
+        lastid = self.structures.database.get_lastrowid()
+        if not lastid:
+            lastid = 1
+        else:
+            lastid += 1
         filecrawler.put_files_in_db(self, searchpath=startdir, fillres=self.ui.add_res.isChecked(),
-                                    fillcif=self.ui.add_cif.isChecked())
+                                    fillcif=self.ui.add_cif.isChecked(), lastid=lastid)
         self.progress.hide()
         try:
             self.structures.database.init_textsearch()
@@ -492,13 +544,14 @@ class StartStructureDB(QMainWindow):
         except OperationalError as e:
             print(e)
             print('No fulltext search compiled into sqlite.')
+        self.structures.make_indexes()
         self.structures.database.commit_db()
-        self.ui.cifList_treeWidget.show()
-        self.set_columnsize()
-        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        # self.ui.cifList_treeWidget.resizeColumnToContents(1)
-        # self.ui.cifList_treeWidget.sortByColumn(0, 0)
-        self.abort_import_button.hide()
+        self.ui.cifList_tableView.show()
+        self.show_full_list()
+        self.settings.save_current_dir(str(Path(startdir)))
+        os.chdir(str(Path(startdir).parent))
+        self.ui.saveDatabaseButton.setEnabled(True)
+        self.ui.ExportAsCIFpushButton.setEnabled(True)
 
     def progressbar(self, curr: int, min: int, max: int) -> None:
         """
@@ -518,13 +571,14 @@ class StartStructureDB(QMainWindow):
         copy_on_close is used to save the databse into a file during close_db().
         :param copy_on_close: Path to where the file should be copied after close()
         """
+        self.ui.appendDirButton.setDisabled(True)
+        self.ui.saveDatabaseButton.setDisabled(True)
+        self.ui.ExportAsCIFpushButton.setDisabled(True)
         with suppress(Exception):
             self.structures.database.commit_db()
         self.ui.searchCellLineEDit.clear()
         self.ui.txtSearchEdit.clear()
-        self.ui.cifList_treeWidget.clear()
-        self.write_empty_molfile(mol_data=' ')
-        self.view.reload()
+        # self.ui.cifList_tableView.clear()
         with suppress(Exception):
             self.structures.database.cur.close()
         with suppress(Exception):
@@ -544,6 +598,10 @@ class StartStructureDB(QMainWindow):
                     self.dbfilename = None
                 except Exception:
                     return False
+        self.ui.DatabaseNameDisplayLabel.setText('')
+        self.set_model_from_data([])
+        self.clear_fields()
+        self.ui.MaintabWidget.setCurrentIndex(0)
         return True
 
     @pyqtSlot(name="abort_import")
@@ -560,50 +618,61 @@ class StartStructureDB(QMainWindow):
         self.dbfdesc, self.dbfilename = tempfile.mkstemp()
         self.structures = database_handler.StructureTable(self.dbfilename)
         self.structures.database.initialize_db()
+        self.ui.appendDirButton.setEnabled(True)
 
-    @pyqtSlot('QModelIndex', name="get_properties")
-    def get_properties(self, item):
+    @pyqtSlot(QItemSelection, QItemSelection, name="get_properties")
+    def get_properties(self, selected, deselected) -> bool:
         """
         This slot shows the properties of a cif file in the properties widget
         """
-        if not self.structures.database.cur:
+        try:
+            structure_id = selected.indexes()[0].data()
+        except IndexError:
             return False
-        structure_id = item.sibling(item.row(), 3).data()
         self.structureId = structure_id
         dic = self.structures.get_row_as_dict(structure_id)
         self.display_properties(structure_id, dic)
-        self.structureId = structure_id
         return True
 
-    def get_save_name_from_dialog(self):
-        return QFileDialog.getSaveFileName(self, caption='Save File', directory='./', filter="*.sqlite")
+    def export_current_cif(self):
+        filename, _ = self.get_save_name_from_dialog(filter='*.cif')
+        if not filename or not self.structureId:
+            return
+        cif_data = self.structures.get_cif_export_data(self.structureId)
+        export_to_cif_file(cif_data, filename=filename)
+        print('cif exported')
+
+    def get_save_name_from_dialog(self, dir: str = './', filter="*.sqlite"):
+        return QFileDialog.getSaveFileName(self, caption='Save File', directory=dir, filter=filter)
 
     def save_database(self, save_name=None) -> bool:
         """
         Saves the database to a certain file. Therefore I have to close the database.
         """
+        if not hasattr(self.structures, 'database'):
+            return False
         self.structures.database.commit_db()
         if self.structures.database.con.total_changes > 0:
-            self.structures.set_database_version(self.apexdb)
+            self.structures.set_database_version(0)
         status = False
         if not save_name:
-            save_name, _ = self.get_save_name_from_dialog()
+            save_name, _ = self.get_save_name_from_dialog(dir=self.settings.load_last_workdir())
         if save_name:
             if isfile(save_name) and samefile(self.dbfilename, save_name):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
                 return False
             status = self.close_db(save_name)
+            os.chdir(str(Path(save_name).parent))
+            self.settings.save_current_dir(str(Path(save_name).parent))
         if status:
+            self.ui.DatabaseNameDisplayLabel.setText('')
             self.statusBar().showMessage("Database saved.", msecs=5000)
+            # self.open_database_file(save_name)
 
     def eventFilter(self, object, event):
         """Event filter for mouse clicks."""
         if event.type() == QEvent.MouseButtonDblClick:
             self.copyUnitCell()
-        elif event.type() == QEvent.MouseButtonPress:
-            if event.buttons() == Qt.RightButton:
-                # print("rightbutton")
-                return True
         return False
 
     def keyPressEvent(self, q_key_event):
@@ -613,38 +682,47 @@ class StartStructureDB(QMainWindow):
         """
         if q_key_event.key() == Qt.Key_Return or q_key_event.key() == Qt.Key_Enter:
             fields = [self.ui.adv_elementsExclLineEdit, self.ui.adv_elementsIncLineEdit, self.ui.adv_textsearch,
-                      self.ui.adv_textsearch_excl, self.ui.adv_unitCellLineEdit]
+                      self.ui.adv_textsearch_excl, self.ui.adv_unitCellLineEdit, self.ui.adv_R1_search_line]
             for x in fields:
                 if x.hasFocus():
                     self.advanced_search()
         else:
             super().keyPressEvent(q_key_event)
 
-    def redraw_molecule(self):
+    def view_molecule(self) -> None:
         cell = self.structures.get_cell_by_id(self.structureId)
         if not cell:
-            return False
-        try:
-            self.display_molecule(cell, str(self.structureId))
-        except Exception as e:
-            print(e, ", unable to display molecule")
-            self.write_empty_molfile(' ')
-            self.view.reload()
-            if DEBUG:
-                raise
+            print('No cell found')
+            return
+        if self.ui.growCheckBox.isChecked():
+            symmcards = [x.split(',') for x in self.structures.get_row_as_dict(self.structureId)
+            ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+            if symmcards[0] == ['']:
+                print('Cif file has no symmcards, unable to grow structure.')
+                self.show_asymmetric_unit()
+                return
+            self.ui.molGroupBox.setTitle('Completed Molecule')
+            atoms = self.structures.get_atoms_table(self.structureId, cartesian=False, as_list=True)
+            if atoms:
+                sdm = SDM(atoms, symmcards, cell)
+                needsymm = sdm.calc_sdm()
+                atoms = sdm.packer(sdm, needsymm)
+                self.ui.render_widget.open_molecule(atoms)
+        else:
+            self.show_asymmetric_unit()
 
-    @staticmethod
-    def write_empty_molfile(mol_data):
-        molf = Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-        molf.write_text(data=mol_data, encoding="utf-8", errors='ignore')
+    def show_asymmetric_unit(self):
+        self.ui.molGroupBox.setTitle('Asymmetric Unit')
+        atoms = self.structures.get_atoms_table(self.structureId, cartesian=True, as_list=False)
+        if atoms:
+            self.ui.render_widget.open_molecule(atoms)
+
+    def redraw_molecule(self) -> None:
+        self.view_molecule()
 
     def display_properties(self, structure_id, cif_dic):
         """
         Displays the residuals from the cif file
-        Measured Refl.
-        Independent Refl.
-        Reflections Used
-
         _refine_ls_number_reflns -> unique reflect. (Independent reflections)
         _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
@@ -657,15 +735,8 @@ class StartStructureDB(QMainWindow):
                 self.ui.lattCentComboBox.setCurrentIndex(centering_letter_2_num[cstring])
         if not cell:
             return False
-        try:
-            self.display_molecule(cell, structure_id)
-        except Exception as e:
-            print(e, "unable to display molecule!!")
-            self.write_empty_molfile(mol_data=' ')
-            self.view.reload()
-            if DEBUG:
-                raise
-        self.ui.cifList_treeWidget.setFocus()
+        self.redraw_molecule()
+        self.ui.cifList_tableView.setFocus()
         if not cif_dic:
             return False
         a, b, c, alpha, beta, gamma, volume = 0, 0, 0, 0, 0, 0, 0
@@ -682,8 +753,12 @@ class StartStructureDB(QMainWindow):
         self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, cent))
         self.ui.cellField.installEventFilter(self)
         self.ui.cellField.setToolTip("Double click on 'Unit Cell' to copy to clipboard.")
+        # wR2:
         with suppress(ValueError, TypeError):
-            self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
+            if cif_dic['_refine_ls_wR_factor_ref']:
+                self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
+            else:
+                self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_gt']))
         try:  # R1:
             if cif_dic['_refine_ls_R_factor_gt']:
                 self.ui.r1LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_R_factor_gt']))
@@ -717,6 +792,10 @@ class StartStructureDB(QMainWindow):
         self.ui.rintLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_av_R_equivalents']))
         self.ui.rsigmaLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_av_unetI_netI']))
         self.ui.cCDCNumberLineEdit.setText("{}".format(cif_dic['_database_code_depnum_ccdc_archive']))
+        try:
+            self.ui.flackXLineEdit.setText("{}".format(cif_dic['_refine_ls_abs_structure_Flack']))
+        except KeyError:
+            pass
         try:
             dat_param = cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters']
         except (ValueError, ZeroDivisionError, TypeError):
@@ -764,56 +843,6 @@ class StartStructureDB(QMainWindow):
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
         return True
 
-    def display_molecule(self, cell: [list, tuple], structure_id: str) -> None:
-        """
-        Creates a html file from a mol file to display the molecule in jsmol-lite
-        """
-        symmcards = [x.split(',') for x in self.structures.get_row_as_dict(structure_id)
-        ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
-        if symmcards[0] == ['']:
-            print('Cif file has no symmcards, unable to grow structure.')
-        blist = []
-        if self.ui.growCheckBox.isChecked():
-            self.ui.molGroupBox.setTitle('Completed Molecule')
-            atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=False, as_list=True)
-            if atoms:
-                sdm = SDM(atoms, symmcards, cell)
-                try:
-                    needsymm = sdm.calc_sdm()
-                    atoms = sdm.packer(sdm, needsymm)
-                except IndexError:
-                    atoms = []
-                # blist = [(x[0]+1, x[1]+1) for x in sdm.bondlist]
-                # print(len(blist))
-        else:
-            self.ui.molGroupBox.setTitle('Asymmetric Unit')
-            atoms = self.structures.get_atoms_table(structure_id, cell[:6], cartesian=True, as_list=False)
-            blist = []
-        try:
-            mol = ' '
-            if atoms:
-                mol = mol_file_writer.MolFile(atoms, blist)
-                mol = mol.make_mol()
-        except (TypeError, KeyError):
-            print("Error in structure", structure_id, "while writing mol file.")
-            mol = ' '
-            if DEBUG:
-                raise
-        # print(self.ui.openglview.width()-30, self.ui.openglview.height()-50)
-        content = write_html.write(mol, self.ui.openglview.width() - 30, self.ui.openglview.height() - 50)
-        p2 = Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-        p2.write_text(data=content, encoding="utf-8", errors='ignore')
-        self.view.reload()
-
-    def clear_molecule(self):
-        """
-        Deletes the current molecule display.
-        :return:
-        """
-        p2 = Path(os.path.join(application_path, "./displaymol/jsmol.htm"))
-        p2.write_text(data='', encoding="utf-8", errors='ignore')
-        self.view.reload()
-
     @pyqtSlot('QString')
     def find_dates(self, date1: str, date2: str) -> list:
         """
@@ -832,7 +861,6 @@ class StartStructureDB(QMainWindow):
         searches db for given text
         """
         self.ui.searchCellLineEDit.clear()
-        self.ui.cifList_treeWidget.clear()
         try:
             if not self.structures:
                 return False  # Empty database
@@ -850,9 +878,7 @@ class StartStructureDB(QMainWindow):
             print(e)
         try:
             self.statusBar().showMessage("Found {} structures.".format(len(searchresult)))
-            for structure_id, filename, dataname, path in searchresult:
-                self.add_table_row(filename, path, dataname, structure_id)
-            self.set_columnsize()
+            self.set_model_from_data(searchresult)
         except Exception:
             self.statusBar().showMessage("Nothing found.")
 
@@ -861,33 +887,22 @@ class StartStructureDB(QMainWindow):
         Searches for a unit cell and resturns a list of found database ids.
         This method does not validate the cell. This has to be done before!
         """
-        if self.apexdb == 1:  # needs less accurate search:
-            if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
-                # more results:
-                vol_threshold = 0.09
-                ltol = 0.2
-                atol = 2.0
-            else:
-                # regular:
-                vol_threshold = 0.03
-                ltol = 0.06
-                atol = 1.0
-        else:  # regular database:
-            if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
-                # more results:
-                print('more results on')
-                vol_threshold = 0.04
-                ltol = 0.08
-                atol = 1.8
-            else:
-                # regular:
-                vol_threshold = 0.02
-                ltol = 0.03
-                atol = 1.0
+        volume = misc.vol_unitcell(*cell)
+        if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
+            # more results:
+            print('more results activated')
+            vol_threshold = math.log(volume) + 2.0
+            ltol = 0.08
+            atol = 1.0
+        else:
+            # regular:
+            vol_threshold = math.log(volume) + 1.0
+            ltol = 0.025
+            atol = 0.2
         try:
-            volume = misc.vol_unitcell(*cell)
             # the fist number in the result is the structureid:
             cells = self.structures.find_by_volume(volume, vol_threshold)
+            print(f'{len(cells)} cells to check at {vol_threshold:.2f} theshold.')
             if self.ui.sublattCheckbox.isChecked() or self.ui.adv_superlatticeCheckBox.isChecked():
                 # sub- and superlattices:
                 for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
@@ -896,16 +911,13 @@ class StartStructureDB(QMainWindow):
                 cells = list(set(cells))
         except (ValueError, AttributeError):
             if not self.full_list:
-                self.ui.cifList_treeWidget.clear()
+                self.ui.cifList_tableView.model().setData(value=[])
                 self.statusBar().showMessage('Found 0 structures.')
             return []
         # Real lattice comparing in G6:
         idlist = []
         if cells:
-            try:
-                lattice1 = lattice.Lattice.from_parameters_niggli_reduced(*cell)
-            except ValueError:
-                lattice1 = lattice.Lattice.from_parameters(*cell)
+            lattice1 = lattice.Lattice.from_parameters(*cell)
             self.statusBar().clearMessage()
             for num, curr_cell in enumerate(cells):
                 self.progressbar(num, 0, len(cells) - 1)
@@ -916,7 +928,6 @@ class StartStructureDB(QMainWindow):
                 mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
                 if mapping:
                     idlist.append(curr_cell[0])
-        # print("After match: ", len(idlist), sorted(idlist))
         return idlist
 
     @pyqtSlot('QString', name='search_cell')
@@ -946,18 +957,13 @@ class StartStructureDB(QMainWindow):
             return False  # No database cursor
         idlist = self.search_cell_idlist(cell)
         if not idlist:
-            self.ui.cifList_treeWidget.clear()
+            self.ui.cifList_tableView.model().resetInternalData()
             self.statusBar().showMessage('Found 0 structures.', msecs=0)
             return False
         searchresult = self.structures.get_all_structure_names(idlist)
         self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
-        self.ui.cifList_treeWidget.clear()
         self.full_list = False
-        for structure_id, _, path, name, data in searchresult:
-            self.add_table_row(name, path, data, structure_id)
-        self.set_columnsize()
-        # self.ui.cifList_treeWidget.sortByColumn(0, 0)
-        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
+        self.set_model_from_data(searchresult)
         return True
 
     def search_elements(self, elements: str, excluding: str, onlythese: bool = False) -> list:
@@ -982,37 +988,22 @@ class StartStructureDB(QMainWindow):
             pass
         return list(res)
 
-    def add_table_row(self, filename: str, path: str, data: bytes, structure_id: str) -> None:
-        """
-        Adds a line to the search results table.
-        """
-        if isinstance(filename, bytes):
-            filename = filename.decode("utf-8", "surrogateescape")
-        if isinstance(path, bytes):
-            path = path.decode("utf-8", "surrogateescape")
-        if isinstance(data, bytes):
-            data = data.decode("utf-8", "surrogateescape")
-        tree_item = QTreeWidgetItem()
-        tree_item.setText(0, filename)  # name
-        tree_item.setText(1, data)  # data
-        tree_item.setText(2, path)  # path
-        tree_item.setData(3, 0, structure_id)  # id
-        self.ui.cifList_treeWidget.addTopLevelItem(tree_item)
+    def get_import_filename_from_dialog(self, dir: str = './'):
+        return QFileDialog.getOpenFileName(self, caption='Open File', directory=dir, filter="*.sqlite")[0]
 
-    def get_import_filename_from_dialog(self):
-        return QFileDialog.getOpenFileName(self, caption='Open File', directory='./', filter="*.sqlite")[0]
-
-    def import_database_file(self, fname=None) -> bool:
+    def open_database_file(self, fname=None) -> bool:
         """
         Import a new database.
         """
         self.tmpfile = False
-        self.close_db()
         if not fname:
-            fname = self.get_import_filename_from_dialog()
+            with suppress(FileNotFoundError, OSError):
+                os.chdir(self.settings.load_last_workdir())
+            fname = self.get_import_filename_from_dialog(dir=self.settings.load_last_workdir())
         if not fname:
             return False
-        print("Opened {}.".format(fname))
+        self.close_db()
+        self.clear_fields()
         self.dbfilename = fname
         self.structures = database_handler.StructureTable(self.dbfilename)
         try:
@@ -1026,19 +1017,13 @@ class StartStructureDB(QMainWindow):
                 pass
         except (TypeError, ProgrammingError):
             return False
+        print("Opened {}.".format(fname))
+        self.settings.save_current_dir(str(Path(fname).parent))
+        os.chdir(str(Path(fname).parent))
+        self.ui.saveDatabaseButton.setEnabled(True)
+        self.ui.ExportAsCIFpushButton.setEnabled(True)
+        self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(fname))
         return True
-
-    def open_apex_db(self, user: str, password: str, host: str) -> bool:
-        """
-        Opens the APEX db to be displayed in the treeview.
-        """
-        self.apx = apeximporter.ApexDB()
-        connok = False
-        try:
-            connok = self.apx.initialize_db(user, password, host)
-        except Exception:
-            self.passwd_handler()
-        return connok
 
     def get_name_from_p4p(self):
         """
@@ -1061,15 +1046,12 @@ class StartStructureDB(QMainWindow):
             p4p = P4PFile(p4plist)
         else:
             return
-        if p4p:
-            if p4p.cell:
-                try:
-                    self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
-                                                       '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*p4p.cell))
-                except TypeError:
-                    pass
-            else:
-                self.moving_message('Could not read P4P file!')
+        if p4p and p4p.cell:
+            try:
+                self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
+                                                   '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*p4p.cell))
+            except TypeError:
+                pass
         else:
             self.moving_message('Could not read P4P file!')
 
@@ -1078,15 +1060,10 @@ class StartStructureDB(QMainWindow):
             shx = ShelXFile(fname)
         else:
             return
-        if shx:
-            if shx.cell:
-                try:
-                    self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
-                                                       '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*shx.cell))
-                except TypeError:
-                    pass
-            else:
-                self.moving_message('Could not read res file!')
+        if shx and shx.cell:
+            with suppress(TypeError):
+                self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
+                                                   '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*shx.cell))
         else:
             self.moving_message('Could not read res file!')
 
@@ -1100,15 +1077,10 @@ class StartStructureDB(QMainWindow):
                 self.moving_message('File not found.')
         else:
             return
-        if cif:
-            if cif.cell:
-                try:
-                    self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
-                                                       '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*cif.cell[:6]))
-                except TypeError:
-                    pass
-            else:
-                self.moving_message('Could not read cif file!')
+        if cif and cif.cell:
+            with suppress(TypeError):
+                self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
+                                                   '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*cif.cell[:6]))
         else:
             self.moving_message('Could not read cif file!')
 
@@ -1117,87 +1089,15 @@ class StartStructureDB(QMainWindow):
             time.sleep(0.05)
             self.statusBar().showMessage("{}{}".format(' ' * s, message))
 
-    def import_apex_db(self, user: str = '', password: str = '', host: str = '') -> None:
-        """
-        Imports data from apex into own db
-        """
-        self.apexdb = 1
-        self.statusBar().showMessage('')
-        self.close_db()
-        self.start_db()
-        self.ui.cifList_treeWidget.show()
-        self.abort_import_button.show()
-        n = 1
-        num = 0
-        time1 = time.perf_counter()
-        conn = self.open_apex_db(user, password, host)
-        if not conn:
-            self.abort_import_button.hide()
-            return None
-        cif = Cif()
-        if conn:
-            for i in self.apx.get_all_data():
-                if num == 20:
-                    num = 0
-                self.progressbar(num, 0, 20)
-                cif.cif_data['_cell_length_a'] = i[1]
-                cif.cif_data['_cell_length_b'] = i[2]
-                cif.cif_data['_cell_length_c'] = i[3]
-                cif.cif_data['_cell_angle_alpha'] = i[4]
-                cif.cif_data['_cell_angle_beta'] = i[5]
-                cif.cif_data['_cell_angle_gamma'] = i[6]
-                cif.cif_data["data"] = i[8]
-                cif.cif_data['_diffrn_radiation_wavelength'] = i[13]
-                cif.cif_data['_exptl_crystal_colour'] = i[29]
-                cif.cif_data['_exptl_crystal_size_max'] = i[16]
-                cif.cif_data['_exptl_crystal_size_mid'] = i[17]
-                cif.cif_data['_exptl_crystal_size_min'] = i[18]
-                cif.cif_data["_chemical_formula_sum"] = i[25]
-                cif.cif_data['_diffrn_reflns_av_R_equivalents'] = i[21]  # rint
-                cif.cif_data['_diffrn_reflns_av_unetI/netI'] = i[22]  # rsig
-                cif.cif_data['_diffrn_reflns_number'] = i[23]
-                comp = i[26]
-                cif.cif_data["_space_group_centring_type"] = i[28]
-                if comp:
-                    cif.cif_data['_diffrn_measured_fraction_theta_max'] = comp / 100
-                tst = filecrawler.fill_db_tables(cif=cif, filename=i[8], path=i[12],
-                                                 structure_id=n, structures=self.structures)
-                if not tst:
-                    continue
-                self.add_table_row(filename=i[8], data=i[8], path=i[12], structure_id=str(n))
-                n += 1
-                if n % 300 == 0:
-                    self.structures.database.commit_db()
-                num += 1
-                if not self.decide_import:
-                    # This means, import was aborted.
-                    self.abort_import_button.hide()
-                    self.decide_import = True
-                    break
-        time2 = time.perf_counter()
-        diff = time2 - time1
-        self.progress.hide()
-        m, s = divmod(diff, 60)
-        h, m = divmod(m, 60)
-        if n == 0:
-            n += 1
-        self.ui.statusbar.showMessage('Added {} APEX entries in: {:>2d} h, {:>2d} m, {:>3.2f} s'
-                                      .format(n - 1, int(h), int(m), s), msecs=0)
-        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        self.set_columnsize()
-        self.structures.database.init_textsearch()
-        self.structures.populate_fulltext_search_table()
-        self.structures.database.commit_db("Committed")
-        self.abort_import_button.hide()
-
     def set_columnsize(self):
         """
+        TODO: currently unused
         Sets columnsize of main structure list.
         """
-        self.ui.cifList_treeWidget.sortByColumn(0, 0)
-        treewidth = self.ui.cifList_treeWidget.width()
-        self.ui.cifList_treeWidget.setColumnWidth(0, treewidth / 4)
-        self.ui.cifList_treeWidget.setColumnWidth(1, treewidth / 5)
+        self.ui.cifList_tableView.sortByColumn(1, 0)
+        treewidth = self.ui.cifList_tableView.width()
+        self.ui.cifList_tableView.setColumnWidth(0, int(treewidth / 4.0))
+        self.ui.cifList_tableView.setColumnWidth(1, int(treewidth / 5.0))
         # self.ui.cifList_treeWidget.resizeColumnToContents(0)
         # self.ui.cifList_treeWidget.resizeColumnToContents(1)
 
@@ -1206,23 +1106,18 @@ class StartStructureDB(QMainWindow):
         Displays the complete list of structures
         [structure_id, meas, path, filename, data]
         """
-        self.ui.cifList_treeWidget.clear()
-        structure_id = 0
+        data = []
         try:
-            if self.structures:
-                pass
-        except TypeError:
+            if not self.structures:
+                return None
+        except Exception:
             return None
         if self.structures:
-            for structure_id, _, path, filename, data in self.structures.get_all_structure_names():
-                self.add_table_row(filename, path, data, structure_id)
-        mess = "Loaded {} entries.".format(structure_id)
+            data = self.structures.get_all_structure_names()
+            self.set_model_from_data(data)
+        mess = "Loaded {} entries.".format(len(data))
         self.statusBar().showMessage(mess, msecs=5000)
-        self.set_columnsize()
-        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        # self.ui.cifList_treeWidget.resizeColumnToContents(1)
         self.full_list = True
-        self.ui.MaintabWidget.setCurrentIndex(0)
         self.ui.SpGrpComboBox.setCurrentIndex(0)
         self.ui.adv_elementsIncLineEdit.clear()
         self.ui.adv_elementsExclLineEdit.clear()
@@ -1231,14 +1126,17 @@ class StartStructureDB(QMainWindow):
         self.ui.adv_textsearch.clear()
         self.ui.adv_textsearch_excl.clear()
         self.ui.adv_unitCellLineEdit.clear()
+        self.ui.CCDCNumLineEdit.clear()
         # I need this to reset the date after clearing the search values in advanced search:
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
+        self.ui.MaintabWidget.setCurrentIndex(0)
 
     def clear_fields(self) -> None:
         """
         Clears all residuals fields.
         """
+        self.ui.allCifTreeWidget.clear()
         self.ui.completeLineEdit.clear()
         self.ui.dataReflnsLineEdit.clear()
         self.ui.dLineEdit.clear()
@@ -1265,22 +1163,39 @@ class StartStructureDB(QMainWindow):
         self.ui.lastModifiedLineEdit.clear()
         self.ui.SHELXplainTextEdit.clear()
         self.ui.cellField.clear()
-        self.clear_molecule()
+        self.ui.render_widget.clear()
+        self.table_model.clear()
 
 
 if __name__ == "__main__":
-
-    if DEBUG:
+    def my_exception_hook(exctype, value, error_traceback):
+        """
+        Hooks into Exceptions to create debug reports.
+        """
+        errortext = 'StructureFinder V{} crash report\n\n'.format(VERSION)
+        errortext += 'Please send also the corresponding CIF file, if possible.'
+        errortext += 'Python ' + sys.version + '\n'
+        errortext += sys.platform + '\n'
+        errortext += time.asctime(time.localtime(time.time())) + '\n'
+        errortext += "StructureFinder crashed during the following operation:" + '\n'
+        errortext += '-' * 80 + '\n'
+        errortext += ''.join(traceback.format_tb(error_traceback)) + '\n'
+        errortext += str(exctype.__name__) + ': '
+        errortext += str(value) + '\n'
+        errortext += '-' * 80 + '\n'
+        logfile = Path.home().joinpath(Path(r'StructureFinder-crash.txt'))
         try:
-            from PyQt5 import uic
+            logfile.write_text(errortext)
+        except PermissionError:
+            pass
+        sys.__excepthook__(exctype, value, error_traceback)
+        # Hier Fenster für meldung öffnen
+        bug_found_warning(logfile)
+        sys.exit(1)
 
-            uic.compileUiDir(os.path.join(application_path, './gui'))
-            print('recompiled ui')
-        except:
-            print("Unable to compile UI!")
-            raise
-    else:
-        print("Remember, UI is not recompiled without DEBUG.")
+
+    if not DEBUG:
+        sys.excepthook = my_exception_hook
 
     # later http://www.pyinstaller.org/
     app = QApplication(sys.argv)

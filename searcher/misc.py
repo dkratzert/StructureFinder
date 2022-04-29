@@ -3,16 +3,18 @@ Created on 09.02.2015
 
  ----------------------------------------------------------------------------
 * "THE BEER-WARE LICENSE" (Revision 42):
-* <daniel.kratzert@uni-freiburg.de> wrote this file. As long as you retain this
+* <dkratzert@gmx.de> wrote this file. As long as you retain this
 * notice you can do whatever you want with this stuff. If we meet some day, and
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
 
 @author: daniel
 """
+
 import os
 import shutil
 from math import sqrt, cos, radians
+from typing import List, Union, Dict, Optional, Tuple, Any
 
 from searcher import constants
 
@@ -38,18 +40,16 @@ elements = ['X', 'H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es']
 
 
-def write_file(list: list, name: str) -> None:
+def write_file(inplist: List, name: str) -> None:
     """
     Writes the content of list to name.
-    :param list: list
-    :param name:  string
     """
     with open(name, 'w') as ofile:
-        for line in list:  # modified reslist
+        for line in inplist:  # modified reslist
             ofile.write("%s" % line)  # write the new file
 
 
-def find_binary_string(file, string: str, seek, size, return_ascii=False):
+def find_binary_string(file, string: str, seek: int, size: int, return_ascii: bool = False) -> Union[str, bytes]:
     """
     finds a string in a binary file
     :rtype: str
@@ -71,11 +71,10 @@ def find_binary_string(file, string: str, seek, size, return_ascii=False):
                 return result
 
 
-def walkdir(rootdir, include=None, exclude=None):
+def walkdir(rootdir, include: str = None, exclude: List = None) -> list:
     """
     Returns a list of files in all subdirectories with full path.
     :param rootdir: base path from which walk should start
-    :param filter: list of file endings to include only e.g. ['.py', '.res']
     :return: list of files
 
     >>> walkdir("../setup/modpath.iss")
@@ -106,7 +105,7 @@ def walkdir(rootdir, include=None, exclude=None):
     return results
 
 
-def open_file_read(filename: str, asci: bool = True) -> str or list:
+def open_file_read(filename: str, asci: bool = True) -> Union[str, List]:
     if asci:
         state = 'r'
     else:
@@ -123,7 +122,7 @@ def open_file_read(filename: str, asci: bool = True) -> str or list:
             return binary
 
 
-def is_a_nonzero_file(filename):
+def is_a_nonzero_file(filename: str) -> bool:
     """
     Check if a file exists and has some content.
 
@@ -136,7 +135,6 @@ def is_a_nonzero_file(filename):
     >>> is_a_nonzero_file('./strf.py')
     True
     """
-    filesize = False
     status = False
     if os.path.isfile(filename):
         filesize = int(os.stat(str(filename)).st_size)
@@ -149,7 +147,7 @@ def is_a_nonzero_file(filename):
     return status
 
 
-def get_error_from_value(value: str) -> tuple:
+def get_error_from_value(value: str) -> Tuple[float, float]:
     """
     Returns the error value from a number string.
     :type value: str
@@ -170,11 +168,13 @@ def get_error_from_value(value: str) -> tuple:
     try:
         value = value.replace(" ", "")
     except AttributeError:
-        return value, 0.0
+        return float(value), 0.0
     if "(" in value:
         vval, err = value.split("(")
         val = vval.split('.')
         err = err.split(")")[0]
+        if not err:  # for error given as ()
+            err = 0.0
         if len(val) > 1:
             return float(vval), int(err) * (10 ** (-1 * len(val[1])))
         else:
@@ -185,23 +185,45 @@ def get_error_from_value(value: str) -> tuple:
         except ValueError:
             return 0.0, 0.0
 
+def get_value(string):
+    """
+    Returns only the numeric value from a cif item like 1.234(4).
 
-def flatten(lis: list) -> list:
+    :parameters
+        ** string **
+            A cif value as string
+    :returns
+        The value without error. (`float`)
+    """
+    if "(" in string:
+        vval = string.split("(")[0]
+        if vval == '':
+            vval = '0.0'
+        return float(vval)
+    else:
+        try:
+            return float(string)
+        except ValueError:
+            return 0.0
+
+def flatten(lis: List[Optional[List[Any]]]) -> List[Any]:
     """
     Given a list, possibly nested to any level, return it flattened.
     From: http://code.activestate.com/recipes/578948-flattening-an-arbitrarily-nested-list-in-python/
+
+    >>> flatten([1, 2, 3, [4,5,6,[789, 10, [100]]], 11, [12, 13, [14]]])
+    [1, 2, 3, 4, 5, 6, 789, 10, 100, 11, 12, 13, 14]
     """
     new_lis = []
     for item in lis:
-        if type(item) == type([]):
+        if isinstance(item, list):
             new_lis.extend(flatten(item))
         else:
             new_lis.append(item)
     return new_lis
 
 
-def distance(x1: float, y1: float, z1: float,
-             x2: float, y2: float, z2: float) -> float:
+def distance(x1: float, y1: float, z1: float, x2: float, y2: float, z2: float) -> float:
     """
     distance between two points in space for orthogonal axes.
     >>> distance(1, 1, 1, 2, 2, 2)
@@ -212,7 +234,7 @@ def distance(x1: float, y1: float, z1: float,
     return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
 
 
-def format_sum_formula(sumform: dict, break_after: int = 99) -> str:
+def format_sum_formula(sumform: Dict[str, Union[int, float]], break_after: int = 99) -> str:
     """
     Makes html formated sum formula from dictionary.
     >>> format_sum_formula({'C': 12, 'H': 6, 'O': 3, 'Mn': 7})
@@ -246,7 +268,7 @@ def format_sum_formula(sumform: dict, break_after: int = 99) -> str:
     return formula
 
 
-def formula_dict_to_str(formula: dict):
+def formula_dict_to_str(formula: Dict[str, Union[int, float]]) -> str:
     """
     Converts a sum formula from a dictionary like {'C': 12, 'H': 6, 'O': 3} to a
     string like C12 H6 O3
@@ -258,18 +280,20 @@ def formula_dict_to_str(formula: dict):
     return formstr
 
 
-def formula_dict_to_elements(formula: dict):
+def formula_dict_to_elements(formula: Dict[str, int]) -> str:
     """
     Converts a sum formula from a dictionary like {'C': 12, 'H': 6, 'O': 3} to a
     string like C H O.
     >>> formula_dict_to_elements({'Elem_C': 12, 'Elem_H': 6.5, 'Elem_O': 3, 'Elem_Mn': 7})
     'C H O Mn'
+    >>> formula_dict_to_elements({'Elem_C': 12, 'Elem_H': 6.5, 'Elem_O': 3, 'Elem_Mn': 7, 'Elem_N': 0})
+    'C H O Mn'
     """
-    formstr = ' '.join([x[5:] for x in formula.keys()])
+    formstr = ' '.join([x[5:] for x in formula.keys() if formula[x]])
     return formstr
 
 
-def formula_str_to_dict(sumform: str or bytes) -> dict:
+def formula_str_to_dict(sumform: Union[str, bytes]) -> Dict[str, str]:
     """
     converts an atom name like C12 to the element symbol C
     Use this code to find the atoms while going through the character astream of a sumformula
@@ -336,7 +360,7 @@ def formula_str_to_dict(sumform: str or bytes) -> dict:
     return atlist
 
 
-def get_list_of_elements(formula: str) -> list:
+def get_list_of_elements(formula: str) -> List[str]:
     """
     >>> get_list_of_elements("SCl")
     ['S', 'Cl']
@@ -364,7 +388,7 @@ def get_list_of_elements(formula: str) -> list:
     return atlist
 
 
-def remove_file(filename):
+def remove_file(filename: str) -> bool:
     """
     removes the file "filename" from disk
     >>> remove_file('foobar')
@@ -379,7 +403,7 @@ def remove_file(filename):
     return True
 
 
-def copy_file(source, target, move=False):
+def copy_file(source, target, move=False) -> None:
     """
     Copy a file from source to target. Source can be a single file or
     a directory. Target can be a single file or a directory.
@@ -414,7 +438,7 @@ def copy_file(source, target, move=False):
         print(e)
 
 
-def is_valid_cell(cell: str = None) -> list:
+def is_valid_cell(cell: str = None) -> List[float]:
     """
     Checks is a unit cell is valid
     """
@@ -429,8 +453,9 @@ def is_valid_cell(cell: str = None) -> list:
     return cell
 
 
-def combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                    txt_ex_results, txt_results, states: dict) -> set:
+def combine_results(cell_results: List, date_results: List, elincl_results: List, results: Union[List, set],
+                    spgr_results: List,
+                    txt_ex_results: List, txt_results: List, rval_results: List, states: dict) -> Union[set, List]:
     """
     Combines all search results together. Returns a list with database ids from found structures.
     """
@@ -475,18 +500,21 @@ def combine_results(cell_results, date_results, elincl_results, results, spgr_re
                 results = set([])
             else:
                 results = date_results
+    if states['rval']:
+        rval_results = set(rval_results)
+        if results:
+            results = set(results).intersection(rval_results)
+        else:
+            if states['txt'] or states['elincl'] or states['spgr'] or states['cell'] or states['date']:
+                results = set([])
+            else:
+                results = rval_results
     return results
 
 
-def vol_unitcell(a, b, c, al, be, ga):
+def vol_unitcell(a: float, b: float, c: float, al: float, be: float, ga: float) -> float:
     """
     calculates the volume of a unit cell
-    :type a: float
-    :type b: float
-    :type c: float
-    :type al: float
-    :type be: float
-    :type ga: float
 
     >>> v = vol_unitcell(2, 2, 2, 90, 90, 90)
     >>> print(v)

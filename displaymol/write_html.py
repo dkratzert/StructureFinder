@@ -1,3 +1,5 @@
+
+
 def write(moldata: str, width: int = 240, height: int = 240):
     m = """
     <!DOCTYPE html>

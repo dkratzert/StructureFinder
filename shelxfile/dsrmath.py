@@ -3,7 +3,7 @@
 #
 # ----------------------------------------------------------------------------
 # "THE BEER-WARE LICENSE" (Revision 42):
-# <daniel.kratzert@ac.uni-freiburg.de> wrote this file. As long as you retain
+# <dkratzert@gmx.de> wrote this file. As long as you retain
 # this notice you can do whatever you want with this stuff. If we meet some day,
 # and you think this stuff is worth it, you can buy me a beer in return.
 # Daniel Kratzert
@@ -538,7 +538,7 @@ class SymmetryElement(object):
     """
     Class representing a symmetry operation.
     >>> from shelxfile.shelx import ShelXFile
-    >>> shx = ShelXFile('./tests/p21c.res')
+    >>> shx = ShelXFile('./test-data/p21c.res')
     >>> shx.symmcards[1]  # __repr__()
     -X, -Y, -Z
     >>> print(shx.symmcards[1])  # __str__()
@@ -691,7 +691,7 @@ class SymmetryElement(object):
                 sign = parts[0][-1]
             else:
                 sign = '+'
-            if sign is '-':
+            if sign == '-':
                 return -1, ''.join((parts[0][:-1], parts[2]))
             else:
                 return 1, ''.join((parts[0], parts[2])).replace('+', '')

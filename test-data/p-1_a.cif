@@ -9,7 +9,7 @@ loop_
   _publ_author_name
   _publ_author_email
   _publ_author_address
- 'Kratzert, D.' daniel.kratzert@ac.uni-freiburg.de
+ 'Kratzert, D.' dkratzert@gmx.de
 ;
 Albertstrasse 21
 Freiburg i. Br.
@@ -24,7 +24,7 @@ Freiburg i. Br.
 79104
 Germany
 ;
-_publ_contact_author_email        daniel.kratzert@ac.uni-freiburg.de
+_publ_contact_author_email        dkratzert@gmx.de
 _publ_contact_author_id_orcid     ''
 _publ_contact_author_name         'Kratzert, D.'
 _publ_contact_author_phone        +49761-2036156

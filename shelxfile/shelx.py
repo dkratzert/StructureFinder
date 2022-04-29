@@ -3,12 +3,13 @@
 #
 # ----------------------------------------------------------------------------
 # "THE BEER-WARE LICENSE" (Revision 42):
-# <daniel.kratzert@ac.uni-freiburg.de> wrote this file. As long as you retain
+# <dkratzert@gmx.de> wrote this file. As long as you retain
 # this notice you can do whatever you want with this stuff. If we meet some day,
 # and you think this stuff is worth it, you can buy me a beer in return.
 # Daniel Kratzert
 # ----------------------------------------------------------------------------
 #
+
 
 __doc__ = """
 This is a full implementation of the SHELXL file syntax. Additionally it is able to edit SHELX properties with Python.
@@ -18,7 +19,6 @@ The parser is quiet about the most errors unless you enable DEBUG in misc.py. Th
 SHELX file even if it has syntax errors, but if for example, the SFAC and UNIT instruction is not consistent 
 it will fail. 
 """
-
 import os
 import re
 import sys
@@ -82,8 +82,8 @@ class ShelXFile():
     _goof_regex = re.compile(r'^REM\swR2\s=\s.*,\sGooF', re.IGNORECASE)
     _spgrp_regex = re.compile(r'^REM\s+\S+\s+in\s+\S+', re.IGNORECASE)
 
-    @time_this_method
-    def __init__(self: 'ShelXFile', resfile: str):
+    #@time_this_method
+    def __init__(self, resfile: str):
         """
         Reads the shelx file and extracts information.
 
@@ -195,6 +195,8 @@ class ShelXFile():
             return
         try:
             self.parse_cards()
+            if self.latt.centric:
+                self.symmcards.set_centric(True)
         except Exception as e:
             # print('File not parsed:', self.resfile)
             if DEBUG:
@@ -375,6 +377,17 @@ class ShelXFile():
                     self.assign_card(self.zerr, line_num)
                 lastcard = 'ZERR'
                 continue
+            elif word == "LATT":
+                # LATT N[1]
+                # 1=P, 2=I, 3=rhombohedral obverse on hexagonal axes, 4=F, 5=A, 6=B, 7=C.
+                # negative is non-centrosymmetric
+                self.latt = LATT(self, spline)
+                self.assign_card(self.latt, line_num)
+                if not lastcard == 'ZERR':
+                    if DEBUG:
+                        print('*** ZERR instruction is missing! ***')
+                    # raise ParseOrderError
+                continue
             elif word == "SYMM":
                 # SYMM symmetry operation
                 #  Being more greedy, because many files do this wrong:
@@ -387,8 +400,9 @@ class ShelXFile():
                     if DEBUG:
                         print("*** LATT instruction is missing! ***")
                         raise ParseSyntaxError
-                if self.latt.centric:
-                    self.symmcards.set_centric(True)
+                # Have to do this after parsing, because P-1 has no SYMM!
+                #if self.latt.centric:
+                #    self.symmcards.set_centric(True)
                 self.symmcards.append(s.symmcard)
                 if s not in self._reslist:
                     self._reslist[line_num] = s
@@ -434,17 +448,6 @@ class ShelXFile():
                         print('*** Number of UNIT and SFAC values differ! ***')
                         raise ParseNumError
                 lastcard = 'UNIT'
-                continue
-            elif word == "LATT":
-                # LATT N[1]
-                # 1=P, 2=I, 3=rhombohedral obverse on hexagonal axes, 4=F, 5=A, 6=B, 7=C.
-                # negative is non-centrosymmetric
-                self.latt = LATT(self, spline)
-                self.assign_card(self.latt, line_num)
-                if not lastcard == 'ZERR':
-                    if DEBUG:
-                        print('*** ZERR instruction is missing! ***')
-                    # raise ParseOrderError
                 continue
             elif word in ['L.S.', 'CGLS']:
                 # CGLS nls[0] nrf[0] nextra[0]
@@ -1072,7 +1075,7 @@ class ShelXFile():
             try:
                 self.parameters = int(spline[1])
                 if self.data and self.parameters:
-                    self.dat_to_param = self.data / self.parameters
+                    self.dat_to_param = float(self.data) / float(self.parameters)
             except IndexError:
                 if DEBUG:
                     pass
@@ -1108,7 +1111,7 @@ class ShelXFile():
 if __name__ == "__main__":
     # get_commands()
     # sys.exit()
-    file = r'/Users/daniel/GitHub/StructureFinder/test-data/p21c_a_only_isotropic.res'
+    file = r'/Users/daniel/GitHub/StructureFinder/p21c_a_only_isotropic.res'
     try:
         shx = ShelXFile(file)
     except Exception:
