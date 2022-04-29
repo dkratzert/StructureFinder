@@ -1,0 +1,58 @@
+
+body {
+    /*background-color: #ffffff;*/
+    font-size: 12px;
+    line-height: inherit;
+}
+
+
+.collapsing {
+    transition: 1ms;
+}
+
+/*
+#resitable1 tr td {
+    line-height: 13px;
+    height: 13px;
+    overflow: auto;
+}
+
+#resitable2 tr td {
+    line-height: 13px;
+    height: 13px;
+    overflow: auto;
+}*/
+
+.btn-group {
+    padding-bottom: 2px;
+    padding-top: 2px;
+}
+
+.input-group {
+    padding-bottom: 2px;
+    padding-top: 2px;
+}
+
+.input-group-addon {
+    min-width: 75px;
+    text-align: left;
+}
+
+#resfile {
+    font-family: "Bitstream Vera Sans Mono", Monaco, "Courier New", Courier, monospace;
+}
+
+#jsmolcolumn {
+    margin-right: 15px;
+    margin-left: 15px;
+    width: 360px;
+    height: 320px;
+}
+
+#smpl_textsrchbutton {
+    margin-right: 0;
+}
+
+#cellsearchcsd_button {
+    margin-left: 3rem;
+}

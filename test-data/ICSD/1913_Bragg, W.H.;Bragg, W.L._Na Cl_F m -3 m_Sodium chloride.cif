@@ -1,0 +1,112 @@
+###############################################################################
+# Bragg, W.H.;Bragg, W.L. (1913)
+# Proceedings of the Royal Society of London, Series A: Mathematical and Physical Sciences (76,1906-) 88, 428-428
+# Structure of some crystals
+# 
+# CIF by ICSD-for-WWW,  Copyright 2003 FIZ-Karlsruhe & A.W.Hewat (hewat@ill.fr)
+# NOT TO BE PUBLISHED IN ANY FORM. See http://icsd.ill.fr/icsd/conditions.html
+###############################################################################
+
+data_53815-ICSD
+_database_code_ICSD                53815
+_audit_creation_date               2003-04-01
+_chemical_name_systematic
+'Sodium chloride'
+_chemical_formula_structural       
+'Na Cl'
+_chemical_formula_sum              
+'Cl1 Na1'
+_publ_section_title                
+'Cl1 Na1'
+loop_
+_citation_id
+_citation_journal_abbrev
+_citation_year
+_citation_journal_volume
+_citation_page_first
+_citation_page_last
+_citation_journal_id_ASTM
+primary 'Proceedings of the Royal Society of London, Series A: Mathematical and Physical Sciences (76,1906-)' 1913 88 428 428 PRLAAZ
+loop_
+_publ_author_name
+Bragg, W.H.;Bragg, W.L.
+_cell_length_a                     5.63
+_cell_length_b                     5.63
+_cell_length_c                     5.63
+_cell_angle_alpha                  90.
+_cell_angle_beta                   90.
+_cell_angle_gamma                  90.
+_cell_volume                       178.45
+_cell_formula_units_Z              4
+_symmetry_space_group_name_H-M     'F m -3 m'
+_symmetry_Int_Tables_number        225
+_refine_ls_R_factor_all            
+loop_
+_symmetry_equiv_pos_site_id
+_symmetry_equiv_pos_as_xyz
+  1     'z, y, -x'
+  2     'y, x, -z'
+  3     'x, z, -y'
+  4     'z, x, -y'
+  5     'y, z, -x'
+  6     'x, y, -z'
+  7     'z, -y, x'
+  8     'y, -x, z'
+  9     'x, -z, y'
+  10     'z, -x, y'
+  11     'y, -z, x'
+  12     'x, -y, z'
+  13     '-z, y, x'
+  14     '-y, x, z'
+  15     '-x, z, y'
+  16     '-z, x, y'
+  17     '-y, z, x'
+  18     '-x, y, z'
+  19     '-z, -y, -x'
+  20     '-y, -x, -z'
+  21     '-x, -z, -y'
+  22     '-z, -x, -y'
+  23     '-y, -z, -x'
+  24     '-x, -y, -z'
+  25     '-z, -y, x'
+  26     '-y, -x, z'
+  27     '-x, -z, y'
+  28     '-z, -x, y'
+  29     '-y, -z, x'
+  30     '-x, -y, z'
+  31     '-z, y, -x'
+  32     '-y, x, -z'
+  33     '-x, z, -y'
+  34     '-z, x, -y'
+  35     '-y, z, -x'
+  36     '-x, y, -z'
+  37     'z, -y, -x'
+  38     'y, -x, -z'
+  39     'x, -z, -y'
+  40     'z, -x, -y'
+  41     'y, -z, -x'
+  42     'x, -y, -z'
+  43     'z, y, x'
+  44     'y, x, z'
+  45     'x, z, y'
+  46     'z, x, y'
+  47     'y, z, x'
+  48     'x, y, z'
+loop_
+_atom_type_symbol
+_atom_type_oxidation_number
+Na1+     1.
+Cl1-     -1.
+loop_
+_atom_site_label
+_atom_site_type_symbol
+_atom_site_symmetry_multiplicity
+_atom_site_Wyckoff_symbol
+_atom_site_fract_x
+_atom_site_fract_y
+_atom_site_fract_z
+_atom_site_B_iso_or_equiv
+_atom_site_occupancy
+Na1 Na1+ 4 a 0 0 0 0. 1.
+Cl1 Cl1- 4 b 0.5 0.5 0.5 0. 1.
+#End of data_53815-ICSD

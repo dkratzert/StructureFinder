@@ -1,12 +1,13 @@
 """
 MOl V3000 format
 """
+
 import os
 from time import perf_counter
 
 
 from searcher.misc import distance
-from searcher.atoms import get_radius_from_element
+from shelxfile.elements import get_radius_from_element
 
 
 
@@ -42,7 +43,7 @@ class MolFile(object):
         X Y Z Element
         """
         atoms = []
-        for num, at in enumerate(self.atoms):
+        for at in self.atoms:
             atoms.append("{:>10.4f}{:>10.4f}{:>10.4f} {:<2s}".format(at[2], at[3], at[4], at[1]))
         return '\n'.join(atoms)
 
@@ -57,18 +58,15 @@ class MolFile(object):
             blist.append("{:>4d}{:>4d}  1  0  0  0  0".format(bo[0], bo[1]))
         return '\n'.join(blist)
 
-    def get_conntable_from_atoms(self, extra_param=0.35):
+    def get_conntable_from_atoms(self, extra_param=0.48):
         """
         returns a connectivity table from the atomic coordinates and the covalence
         radii of the atoms.
-        # a bond is defined with less than the sum of the covalence
-        # radii plus the extra_param:
-        TODO:
-        - read FREE command from db to control binding here.
+        a bond is defined with less than the sum of the covalence radii plus the extra_param:
         :param extra_param: additional distance to the covalence radius
         :type extra_param: float
         """
-        t1 = perf_counter()
+        #t1 = perf_counter()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
             at1_part = at1[5]
@@ -77,11 +75,13 @@ class MolFile(object):
                 at2_part = at2[5]
                 if at1_part * at2_part != 0 and at1_part != at2_part:
                     continue
-                if at1[0] == at2[0] and at1_part != at2_part:  # name1 = name2
+                if at1[0] == at2[0]:  # name1 = name2
+                    continue
+                d = distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
+                if d > 4.0:  # makes bonding faster (longer bonds do not exist)
                     continue
                 rad2 = get_radius_from_element(at2[1])
-                d = distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
-                if (rad1 + rad2) + extra_param >= d > (rad1 or rad2):
+                if (rad1 + rad2) + extra_param > d:
                     if at1[1] == 'H' and at2[1] == 'H':
                         continue
                     # print(num1, num2, d)
@@ -89,7 +89,7 @@ class MolFile(object):
                     if [num2, num1] in conlist:
                         continue
                     conlist.append([num1, num2])
-        t2 = perf_counter()
+        #t2 = perf_counter()
         #print('Bondzeit:', round(t2-t1, 3), 's')
         #print('len:', len(conlist))
         return conlist

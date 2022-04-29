@@ -9,11 +9,28 @@ elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
 
 $(document).ready(function($){
+
+    var d1 = $('input[id=date1]');
+    d1.w2field('date', {
+        format: 'yyyy-mm-dd',
+        end: d1
+    });
+    $('input[id=date2]').w2field('date', {
+        format: 'yyyy-mm-dd',
+        start: d1
+    });
+
     // The structure ID
     var strid = null;
     
+    $.get(url = cgifile+'/cellcheck', function (result) {
+        if (result === 'true') {
+            $("#cellsearchcsd_button").removeClass('invisible');
+        }
+    });
+    
     $.get(url = cgifile+'/version', function (result) {
-            document.getElementById("version").innerHTML = result;
+        document.getElementById("version").innerHTML = result;
     });
     
     // toggle for cell tooltip
@@ -36,11 +53,6 @@ $(document).ready(function($){
             {field: 'filename', caption: 'filename',  size: '20%',  sortable: false, resizable: true},
             {field: 'dataname', caption: 'dataname',  size: '15%',  sortable: false, resizable: true},
             {field: 'path',     caption: 'directory', size: '65%',  sortable: false, resizable: true}
-        ],
-        searches: [
-            {field: 'filename', caption: 'filename', type: 'text'},
-            {field: 'dataname', caption: 'dataname', type: 'text'},
-            {field: 'path', caption: 'directory', type: 'text'}
         ],
         //sortData: [{field: 'dataname', direction: 'ASC'}],
         onSelect:function(event) {
@@ -69,11 +81,14 @@ $(document).ready(function($){
         var cell_adv = document.getElementById("cell_adv").value;
         var more_res = $('#more_results').is(':checked');
         var supercell = $('#supercells').is(':checked');
+        var onlyelem = $('#onlythese_elem').is(':checked');
         var datefield1 = document.getElementById("date1").value;
         var datefield2 = document.getElementById("date2").value;
         var itnum = $("#IT_number").val().split(" ")[0];
+        var r1val = document.getElementById("r1_val_adv").value;
+        var ccdc_num = document.getElementById("ccdc_num_adv").value;
         advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res,
-                        supercell, datefield1, datefield2, itnum);
+                        supercell, datefield1, datefield2, itnum, onlyelem, r1val, ccdc_num);
     });
 
     function get_cell_from_p4p(p4pdata) {
@@ -270,7 +285,7 @@ $(document).ready(function($){
         }
         var sumlist = sumform.split(" ");
         //console.log(sumlist);
-        for (i = 0; i < sumlist.length; i++) {
+        for (var i = 0; i < sumlist.length; i++) {
             var el = sumlist[i];
             //console.log(el);
             if ($.inArray(el, elements) === -1) {
@@ -300,15 +315,16 @@ $(document).ready(function($){
     // Switch between grow and fuse:
     $('#growCheckBox').click(function(){
         var jsmolcol = $("#jsmolcolumn");
+        var data;
         if (this.checked) {
             // Get molecule data and display the molecule:
-            $.post(url = cgifile+'/molecule', data = {id: strid, grow: true}, function (result) {
-            display_molecule(result);
+            $.post(url = cgifile + '/molecule', data = {id: strid, grow: true}, function (result) {
+                display_molecule(result);
             });
         } else {
             // Get molecule data and display the molecule:
-            $.post(url = cgifile+'/molecule', data = {id: strid, grow: false}, function (result) {
-            display_molecule(result);
+            $.post(url = cgifile + '/molecule', data = {id: strid, grow: false}, function (result) {
+                display_molecule(result);
             });
         }
     });
@@ -359,7 +375,7 @@ $(document).ready(function($){
     });
 
     // Enter key pressed in one of the advanced search fields:
-    $('.advsearchfields').keypress(function(e) {
+    $('#adv-search').keypress(function(e) {
         if (e.which === 13) {  // enter key
             advanced_search_button.click();
             //console.log(cell);
@@ -368,11 +384,19 @@ $(document).ready(function($){
 
     // display how many results I got
     function displayresultnum(result) {
-        numresult = result.total;
-        if (typeof numresult === 'undefined') numresult = 0;
+        var numresult;
+        if (typeof result.total === 'undefined') {
+            numresult = 0;
+        } else {
+            numresult = result.total;
+        }
         $("#cellrow").removeClass('invisible');
         $("#cell_copy_btn").addClass('invisible');
         $("#growCheckBoxgroup").addClass('invisible');
+        $("#jsmolcolumn").addClass('invisible');
+        $("#all_residuals").addClass('invisible');
+        //$("#residualstable2").addClass('invisible');
+        //$("#residuals").addClass('invisible');
         document.getElementById("cellrow").innerHTML = "Found " + numresult + " structures";
     }
     
@@ -392,22 +416,22 @@ $(document).ready(function($){
         This function uses AJAX POST calls to get the data of a structure and displays
         them below the main table.
         */
-        
+        $("#all_residuals").removeClass('invisible');
         // Uncheck the grow button:
         //$('#growCheckBox').prop("checked", false);
-        
+        var data;
         // Get residuals table 1:
-        $.post(url = cgifile, data = {id: idstr, residuals1: true}, function (result) {
+        $.post(url = cgifile+'/residuals', data = {id: idstr, residuals1: true}, function (result) {
             document.getElementById("residualstable1").innerHTML = result;
         });
 
         // Get residuals table 2:
-        $.post(url = cgifile, data = {id: idstr, residuals2: true}, function (result) {
+        $.post(url = cgifile+'/residuals', data = {id: idstr, residuals2: true}, function (result) {
             document.getElementById("residualstable2").innerHTML = result;
         });
 
         // Get unit cell row:
-        $.post(url = cgifile, data = {id: idstr, unitcell: true}, function (result) {
+        $.post(url = cgifile+'/residuals', data = {id: idstr, unitcell: true}, function (result) {
             $("#cellrow").removeClass('invisible');
             $("#growCheckBoxgroup").removeClass('invisible');
             $("#cell_copy_btn").removeClass('invisible');
@@ -422,7 +446,7 @@ $(document).ready(function($){
         });
 
         // display the big cif data table:
-        $.post(url = cgifile, data = {id: idstr, all: true},
+        $.post(url = cgifile+'/residuals', data = {id: idstr, all: true},
             function (result) {
                 document.getElementById("residuals").innerHTML = result;
             }
@@ -465,11 +489,12 @@ $(document).ready(function($){
         spin: false,
         infodiv: false,
         debug: false,
-        j2sPath: "."
+        j2sPath: ".",
+        _serverUrl: ''
     };
 
     function advanced_search(text_in, text_out, elements_in, elements_out, cell_adv, more_res, supercell,
-                             date1, date2, itnum) {
+                             date1, date2, itnum, onlyelem, r1val, ccdc_num) {
         var cell = cell_adv.replace(/\s+/g, ' ').trim();
         cell = cell.replace(/,/g, '.');  // replace comma with point
         if (!isValidCell(cell)) {
@@ -477,7 +502,7 @@ $(document).ready(function($){
         }
         var gridparams = {cell_search: cell, text_in: text_in, text_out: text_out, elements_in: elements_in,
                           elements_out: elements_out, more: more_res, supercell: supercell, date1: date1, date2: date2
-                          ,it_num: itnum};
+                          ,it_num: itnum, onlyelem: onlyelem, r1val: r1val, ccdc_num: ccdc_num};
         //console.log(gridparams);
         var url;
         w2ui['mygrid'].request('get-records', gridparams,
@@ -548,7 +573,7 @@ $(document).ready(function($){
         var advanced = false;
         var params;
         var url;
-        //console.log(text);
+        //console.log(text+' in txtsearch');
         w2ui['mygrid'].request('get-records',
             params = {text_search: text},
             url = cgifile + "/txtsrch",

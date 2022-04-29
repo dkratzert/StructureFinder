@@ -2,132 +2,111 @@
 # !C:\tools\Python-3.6.2_64\pythonw.exe
 # !/usr/local/bin/python3.6
 
-###########################################################
-###  Configure the web server here:   #####################
-from contextlib import contextmanager
-from os.path import isfile
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
-from searcher.database_handler import get_residuals, get_cell_by_id, find_by_it_number, find_by_strings, \
-    get_atoms_table, find_by_elements, find_by_date, find_cell_by_volume, get_cells_as_list, get_all_structures_as_dict
-
-host = "10.6.13.3"
-port = "80"
-dbfilename = "../structurefinder.sqlite"
-
-###########################################################
-
-import socket
-names = ['PC9', 'DDT-2.local']
-# run on local ip on my PC:
-if socket.gethostname() in names:
-    host = '127.0.0.1'
-    port = "8080"
-site_ip = host + ':' + port
-
+import datetime
 import math
 import os
-import pathlib
 import sys
+from pathlib import Path
+from typing import List, Dict
+from xml.etree.ElementTree import ParseError
 
+from gemmi.cif import Style
 
-pyver = sys.version_info
-if pyver[0] == 3 and pyver[1] < 4:
-    # Python 2 creates a syntax error anyway.
-    print("You need Python 3.4 and up in oder to run this proram!")
-    sys.exit()
+from misc.exporter import cif_data_to_document
+
+###########################################################
+###  Configure the web server here:   #####################
+
+host = "127.0.0.1"
+port = "8080"
+dbfilename = "structuredb.sqlite"
+download_button = False
+
+###########################################################
+
+site_ip = host + ':' + port
 
 try:  # Adding local path to PATH
     sys.path.insert(0, os.path.abspath('./'))
 except(KeyError, ValueError):
     print('Unable to set PATH properly. strf_web.py might not work.')
 
-from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response
+pyver = sys.version_info
+if pyver[0] == 3 and pyver[1] < 4:
+    # Python 2 creates a syntax error anyway.
+    print("You need Python 3.4 and up in oder to run this program!")
+    sys.exit()
+
+from shutil import which
+from searcher.constants import centering_letter_2_num, centering_num_2_letter
+from ccdc.query import get_cccsd_path, search_csd, parse_results
+from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response, HTTPResponse
 from displaymol.mol_file_writer import MolFile
 from displaymol.sdm import SDM
-from lattice import lattice
-from pymatgen.core import mat_lattice
-from searcher.misc import is_valid_cell, flatten, is_a_nonzero_file, get_list_of_elements
-
-"""
-TODO:
-- Make login infrastructure.
-- Add option: should contain *only* these elements
-- Maybe http://www.daterangepicker.com
-"""
-
-if isfile(dbfilename):
-    engine = create_engine('sqlite:///' + dbfilename)
-    Session = sessionmaker(bind=engine)
-
-
-@contextmanager
-def session_scope():
-    """Provide a transactional scope around a series of operations."""
-    session = Session()
-    # session.autoflush = False
-    try:
-        yield session
-        session.commit()
-    except:
-        session.rollback()
-        raise
-    finally:
-        session.close()
-
+from pymatgen.core import lattice
+from searcher.database_handler import StructureTable
+from searcher.misc import is_valid_cell, get_list_of_elements, vol_unitcell, is_a_nonzero_file, format_sum_formula, \
+    combine_results, formula_dict_to_elements
 
 app = application = Bottle()
-# bottle.debug(True)  # Do not enable debug in production systems!
 
 
-@app.route('/all')
+@app.get('/all')
 def structures_list_data():
     """
     The content of the structures list.
     """
-    with session_scope() as session:
-        return get_structures_json(session, show_all=True)
+    structures = StructureTable(dbfilename)
+    return get_structures_json(structures, show_all=True)
 
 
-@app.route('/', method=['POST', 'GET'])
+@app.get('/')
 def main():
     """
-    The main web site with html template and space group listing.
+    The main web site with html template.
     """
+    response.set_header('Set-Cookie', 'str_id=')
     response.content_type = 'text/html; charset=UTF-8'
-    p = pathlib.Path('./cgi_ui/views/spgr.html').open()
-    space_groups = p.read().encode(encoding='UTF-8', errors='ignore')
-    p.close()
-    output = template('./cgi_ui/views/strf_web_template', {"my_ip": site_ip, "space_groups": space_groups})
+    data = {"my_ip"        : site_ip,
+            "title"        : 'StructureFinder',
+            'host'         : host,
+            'download_link': r"""<p><a href="http://{}/dbfile.sqlite" download="structurefinder.sqlite" 
+                                     type="application/*">Download
+                                    database file</a></p>""".format(site_ip) if download_button else ''
+            }
+    output = template('./cgi_ui/views/strf_web', data)
     return output
 
 
-@app.route("/cellsrch")
+@app.get('/dbfile.sqlite')
+def get_dbfile():
+    return Path(dbfilename).read_bytes()
+
+
+@app.get("/cellsrch")
 def cellsrch():
     cell_search = request.GET.cell_search
     more_results = (request.GET.more == "true")
     sublattice = (request.GET.supercell == "true")
     cell = is_valid_cell(cell_search)
     print("Cell search:", cell)
+    structures = StructureTable(dbfilename)
     if cell:
-        with session_scope() as session:
-            ids = find_cell(session, cell, more_results=more_results, sublattice=sublattice)
-            print("--> Got {} structures from cell search.".format(len(ids)))
-            return get_structures_json(session, ids, show_all=False)
+        ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
+        print("--> Got {} structures from cell search.".format(len(ids)))
+        return get_structures_json(structures, ids)
 
 
-@app.route("/txtsrch")
+@app.get("/txtsrch")
 def txtsrch():
+    structures = StructureTable(dbfilename)
     text_search = request.GET.text_search
     print("Text search:", text_search)
-    with session_scope() as session:
-        ids = search_text(session, text_search)
-        return get_structures_json(session, ids, show_all=False)
+    ids = search_text(structures, text_search)
+    return get_structures_json(structures, ids)
 
 
-@app.route("/adv_srch")
+@app.get("/adv_srch")
 def adv():
     elincl = request.GET.elements_in
     elexcl = request.GET.elements_out
@@ -136,76 +115,87 @@ def adv():
     cell_search = request.GET.cell_search
     txt_in = request.GET.text_in
     txt_out = request.GET.text_out
+    if len(txt_in) >= 2 and "*" not in txt_in:
+        txt_in = '*' + txt_in + '*'
+    if len(txt_out) >= 2 and "*" not in txt_out:
+        txt_out = '*' + txt_out + '*'
     more_results = (request.GET.more == "true")
     sublattice = (request.GET.supercell == "true")
+    onlyelem = (request.GET.onlyelem == "true")
     it_num = request.GET.it_num
-    print("Advanced search:", elincl, elexcl, date1, date2, cell_search, txt_in, txt_out, more_results, sublattice,
-          it_num)
-    with session_scope() as session:
-        ids = advanced_search(session, cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt_in=txt_in, txt_out=txt_out,
-                              sublattice=sublattice, more_results=more_results, date1=date1, date2=date2, it_num=it_num)
-        print("--> Got {} structures from Advanced search.".format(len(ids)))
-        return get_structures_json(session, ids)
+    r1val = request.GET.r1val
+    ccdc_num = request.GET.ccdc_num
+    structures = StructureTable(dbfilename)
+    print("Advanced search: elin:", elincl, 'elout:', elexcl, date1, '|', date2, '|', cell_search, 'txin:', txt_in,
+          'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num, 'only:', onlyelem,
+          'CCDC:', ccdc_num)
+    ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt=txt_in, txt_ex=txt_out,
+                          sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
+                          structures=structures, it_num=it_num, onlythese=onlyelem, r1val=r1val, ccdc_num=ccdc_num)
+    print("--> Got {} structures from Advanced search.".format(len(ids)))
+    return get_structures_json(structures, ids)
 
 
-@app.route('/molecule', method='POST')
+@app.post('/molecule')
 def jsmol_request():
     """
     A request for atom data from jsmol.
     """
     str_id = request.POST.id
     print("Molecule id:", str_id)
-    with session_scope() as session:
-        if str_id:
-            cell = get_cell_by_id(session, str_id)
-            if request.POST.grow == 'true':
-                symmcards = [x.split(',') for x in get_row_as_dict(str_id)
-                ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
-                atoms = get_atoms_table(str_id, cell[:6], cartesian=False)
-                if atoms:
-                    sdm = SDM(atoms, symmcards, cell)
-                    needsymm = sdm.calc_sdm()
-                    atoms = sdm.packer(sdm, needsymm)
-            else:
-                atoms = get_atoms_table(session, str_id, cell[:6], cartesian=True)
-            try:
-                m = MolFile(atoms)
-                return m.make_mol()
-            except(KeyError, TypeError) as e:
-                print('Exception in jsmol_request: {}'.format(e))
-                return ''
+    structures = StructureTable(dbfilename)
+    if str_id:
+        cell = structures.get_cell_by_id(str_id)
+        if request.POST.grow == 'true':
+            symmcards = [x.split(',') for x in structures.get_row_as_dict(str_id)
+            ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+            atoms = structures.get_atoms_table(str_id, cartesian=False, as_list=True)
+            if atoms:
+                sdm = SDM(atoms, symmcards, cell)
+                needsymm = sdm.calc_sdm()
+                atoms = sdm.packer(sdm, needsymm)
+        else:
+            atoms = structures.get_atoms_table(str_id, cartesian=True, as_list=False)
+        try:
+            m = MolFile(atoms)
+            return m.make_mol()
+        except(KeyError, TypeError) as e:
+            print('Exception in jsmol_request: {}'.format(e))
+            return ''
 
 
-@app.route('/', method='POST')
+@app.post('/residuals')
 def post_request():
     """
     Handle POST requests.
     """
     cif_dic = {}
     str_id = request.POST.id
+    response.set_header('Set-Cookie', 'str_id=' + str_id)
     resid1 = request.POST.residuals1 == 'true'
     resid2 = request.POST.residuals2 == 'true'
-    all_cif = (request.POST.all == 'true')
+    all_cif = request.POST.all == 'true'
     unitcell = request.POST.unitcell
+    structures = StructureTable(dbfilename)
     print("Structure id:", str_id)
-    with session_scope() as session:
-        if str_id:
-            cif_dic = get_residuals(session, str_id)
-        if str_id and unitcell and not (resid1 or resid2 or all_cif):
-            try:
-                return get_cell_by_id(session, str_id)
-            except ValueError as e:
-                print("Exception raised:")
-                print(e)
-                return ''
-        if str_id and resid1:
-            return get_residuals_table1(cif_dic)
-        if str_id and resid2:
-            return get_residuals_table2(cif_dic)
-        if str_id and all_cif:
-            return get_all_cif_val_table(session, str_id)
+    if str_id:
+        cif_dic = structures.get_row_as_dict(str_id)
+    if str_id and unitcell and not (resid1 or resid2 or all_cif):
+        try:
+            return get_cell_parameters(structures, str_id)
+        except ValueError as e:
+            print("Exception raised:")
+            print(e)
+            return ''
+    if str_id and resid1:
+        return get_residuals_table1(structures, cif_dic, str_id)
+    if str_id and resid2:
+        return get_residuals_table2(cif_dic)
+    if str_id and all_cif:
+        return get_all_cif_val_table(structures, str_id)
 
 
+# noinspection PyUnresolvedReferences
 @app.route('/static/<filepath:path>')
 def server_static(filepath):
     """
@@ -215,7 +205,9 @@ def server_static(filepath):
     <filename> wildcard won’t match a path with a slash in it. To serve files in subdirectories, change
     the wildcard to use the path filter:
     """
-    return static_file(filepath, root='./cgi_ui/static/')
+    response = static_file(filepath, root='./cgi_ui/static/')
+    response.set_header("Cache-Control", "public, max-age=240")
+    return response
 
 
 @app.route('/version')
@@ -224,14 +216,126 @@ def version():
     return 'version ' + str(VERSION)
 
 
-@app.route('/cgi-bin/strf_web.cgi')
-def redirect_old_path():
-    redirect('/')
+@app.get('/cellcheck')
+def cellsearch():
+    if sys.platform == 'win32':
+        if not get_cccsd_path():
+            return 'false'
+        else:
+            return 'true'
+    else:
+        try:
+            if which('ccdc_searcher') or \
+                Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
+                print('CellCheckCSD found')
+                return 'true'
+        except TypeError:
+            return 'false'
 
 
 @app.route('/favicon.ico')
 def redirect_to_favicon():
     redirect('/static/favicon.ico')
+
+
+@app.route('/current-cif/<structure_id:int>')
+def download_currently_selected_cif(structure_id):
+    if not download_button:
+        return 'Downloading a CIF was turned off by the administrator.'
+    headers = dict()
+    structures = StructureTable(dbfilename)
+    cif_data = structures.get_cif_export_data(structure_id)
+    doc = cif_data_to_document(cif_data)
+    file = doc.as_string(style=Style.Indent35)
+    headers['Content-Type'] = 'text/plain'
+    # headers['Content-Type'] = 'application/octet-stream'
+    headers['Content-Encoding'] = 'ascii'
+    headers['Content-Length'] = len(file)
+    now = datetime.datetime.now()
+    lm = now.strftime("%a, %d %b %Y %H:%M:%S GMT")
+    headers['Last-Modified'] = lm
+    return HTTPResponse(file, **headers)
+
+
+@app.get('/csd')
+def show_cellcheck():
+    """
+    Shows the CellcheckCSD web page
+    """
+    structures = StructureTable(dbfilename)
+    str_id = request.get_cookie('str_id')
+    centering = ''
+    if str_id:
+        cell = structures.get_cell_by_id(str_id)
+        cif_dic = structures.get_row_as_dict(str_id)
+        try:
+            centering = cif_dic['_space_group_centring_type']
+        except KeyError:
+            centering = ''
+        # formula = structures.get_calc_sum_formula(str_id)
+        # print(formula)
+        cellstr = '{:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f}'.format(*cell)
+    else:
+        cellstr = ''
+        # formula = ''
+    if centering:
+        try:
+            cent = centering_letter_2_num[centering]
+        except KeyError:  # mostly value of '?'
+            cent = 0
+    else:
+        cent = 0
+    response.content_type = 'text/html; charset=UTF-8'
+    data = {"my_ip"  : site_ip,
+            "title"  : 'StructureFinder',
+            'cellstr': cellstr,
+            'strid'  : str_id,
+            'cent'   : cent,
+            'host'   : host, }
+    output = template('./cgi_ui/views/cellcheckcsd', data)
+    return output
+
+
+@app.post('/csd-list')
+def search_cellcheck_csd():
+    """
+    Search with CellcheckCSD.
+    """
+    cmd = request.POST.cmd
+    cell = request.POST.cell
+    elements: List = []
+    str_id = request.POST.str_id
+    if not cell:
+        return {}
+    cent = request.POST.centering
+    if len(cell) < 6:
+        return {}
+    if cmd == 'get-records' and len(cell.split()) == 6:
+        xml = search_csd(cell.split(), centering=centering_num_2_letter[int(cent)])
+        # print(xml)
+        try:
+            results = parse_results(xml)  # results in a dictionary
+        except ParseError as e:
+            print(e)
+            return
+        # print(results)
+        if str_id:
+            structures = StructureTable(dbfilename)
+            elements = formula_dict_to_elements(structures.get_calc_sum_formula(str_id)).split()
+            # TODO: filter by above elements
+            # something like this:
+            """for r in results:
+                formula = r['formula']
+                for e in formula:
+                    if e not in elements:
+                        continue
+                    else
+                        filtered.append(r)
+                        """
+        print(len(results), 'Structures found...')
+        return {"total": len(results), "records": results, "status": "success"}
+    else:
+        return {}
 
 
 @app.error(404)
@@ -255,18 +359,18 @@ def is_ajax():
         return False
 
 
-def get_structures_json(session: 'Session', ids: (list, tuple) = None, show_all: bool = False) -> dict:
+def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, show_all: bool = False) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
-    failure = {
+    failure: Dict[str, str] = {
         "status" : "error",
         "message": "Nothing found."
     }
     if not ids and not show_all:
         # return json.dumps(failure)
         return {}
-    dic = get_all_structures_as_dict(session)
+    dic = structures.get_all_structures_as_dict(ids)
     number = len(dic)
     print("--> Got {} structures from actual search.".format(number))
     if number == 0:
@@ -275,11 +379,11 @@ def get_structures_json(session: 'Session', ids: (list, tuple) = None, show_all:
     return {"total": number, "records": dic, "status": "success"}
 
 
-def get_cell_parameters(session: 'Session', strid: str) -> str:
+def get_cell_parameters(structures: StructureTable, strid: str) -> str:
     """
     Resturns unit cell parameters as html formated string.
     """
-    c = get_cell_by_id(session, strid)
+    c = structures.get_cell_by_id(strid)
     cstr = """<b>Unit Cell:</b>&nbsp;&nbsp; 
                       <i>a</i> = {0:>8.3f}&nbsp;&angst;,&nbsp;
                       <i>b</i> = {1:>8.3f}&nbsp;&angst;,&nbsp;
@@ -293,7 +397,7 @@ def get_cell_parameters(session: 'Session', strid: str) -> str:
     return cstr
 
 
-def get_residuals_table1(cif_dic: dict) -> str:
+def get_residuals_table1(structures: StructureTable, cif_dic: dict, structure_id: int) -> str:
     """
     Returns a table with the most important residuals of a structure.
     """
@@ -307,8 +411,15 @@ def get_residuals_table1(cif_dic: dict) -> str:
         peakhole = "{} / {}".format(cif_dic['_refine_diff_density_max'], cif_dic['_refine_diff_density_min'])
     else:
         peakhole = " "
+    try:
+        sumform = format_sum_formula(structures.get_calc_sum_formula(structure_id), break_after=99)
+    except KeyError:
+        sumform = ''
+    if sumform == '':
+        # Display this as last resort:
+        sumform = cif_dic['_chemical_formula_sum']
     table1 = """
-    <table class="table table-bordered" id='resitable1'>
+    <table class="table table-bordered table-condensed" id='resitable1'>
         <tbody>
         <tr><td style='width: 40%'><b>Space Group</b></td>                 <td>{0}</td></tr>
         <tr><td><b>Z</b></td>                           <td>{1}</td></tr>
@@ -325,10 +436,12 @@ def get_residuals_table1(cif_dic: dict) -> str:
     </table>
     """.format(cif_dic['_space_group_name_H_M_alt'],
                cif_dic['_cell_formula_units_Z'],
-               cif_dic['_chemical_formula_sum'],
+               sumform,
                cif_dic['_diffrn_ambient_temperature'],
-               cif_dic['_refine_ls_wR_factor_ref'],
-               cif_dic['_refine_ls_R_factor_gt'],
+               cif_dic['_refine_ls_wR_factor_ref'] if cif_dic['_refine_ls_wR_factor_ref'] else cif_dic[
+                   '_refine_ls_wR_factor_gt'],
+               cif_dic['_refine_ls_R_factor_gt'] if cif_dic['_refine_ls_R_factor_gt'] else cif_dic[
+                   '_refine_ls_R_factor_all'],
                cif_dic['_refine_ls_goodness_of_fit_ref'],
                cif_dic['_refine_ls_shift_su_max'],
                peakhole,
@@ -348,6 +461,7 @@ def get_residuals_table2(cif_dic: dict) -> str:
         return ""
     wavelen = cif_dic['_diffrn_radiation_wavelength']
     thetamax = cif_dic['_diffrn_reflns_theta_max']
+    thetafull = cif_dic['_diffrn_reflns_theta_full']
     # d = lambda/2sin(theta):
     try:
         d = wavelen / (2 * math.sin(math.radians(thetamax)))
@@ -366,54 +480,58 @@ def get_residuals_table2(cif_dic: dict) -> str:
     except TypeError:
         data_to_param = 0
     table2 = """
-    <table class="table table-bordered" id='resitable2'>
+    <table class="table table-bordered table-condensed" id='resitable2'>
         <tbody>
         <tr><td style='width: 40%'><b>Measured Refl.</b></td>       <td>{0}</td></tr>
-        <tr><td><b>Independent Refl.</b></td>                       <td>{9}</td></tr>
-        <tr><td><b>Data with [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>    <td>{10}</td></tr>
+        <tr><td><b>Independent Refl.</b></td>                       <td>{10}</td></tr>
+        <tr><td><b>Data with [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>    <td>{11}</td></tr>
         <tr><td><b>Parameters</b></td>                              <td>{1}</td></tr>
         <tr><td><b>data/param</b></td>                              <td>{2:<5.1f}</td></tr>
         <tr><td><b>Restraints</b></td>                              <td>{3}</td></tr>
-        <tr><td><b>&theta;<sub>max</sub> [&deg;]</b></td>                    <td>{4}</td></tr>
-        <tr><td><b>&theta;<sub>full</sub> [&deg;]</b></td>                   <td>{5}</td></tr>
+        <tr><td><b>&theta;<sub>full</sub> [&deg;]</b> / 
+        <b>&theta;<sub>max</sub> [&deg;]</b></td>                    <td>{4} / {5}</td></tr>
         <tr><td><b>d [&angst;]</b></td>                             <td>{6:5.3f}</td></tr>
         <tr><td><b>completeness [%]</b></td>                            <td>{7:<5.1f}</td></tr>
-        <tr><td><b>CCDC Number</b></td>                             <td>{8}</td></tr>
+        <tr><td><b>Flack X parameter</b></td>                             <td>{8}</td></tr>
+        <tr><td><b>CCDC Number</b></td>                             <td>{9}</td></tr>
         </tbody>
     </table>
-    """.format(cif_dic['_diffrn_reflns_number'],
-               cif_dic['_refine_ls_number_parameters'],
-               data_to_param,
-               cif_dic['_refine_ls_number_restraints'],
-               thetamax,
-               cif_dic['_diffrn_reflns_theta_full'],
-               d,
-               compl,
-               cif_dic['_database_code_depnum_ccdc_archive'],
-               cif_dic['_refine_ls_number_reflns'],
-               cif_dic['_reflns_number_gt']
+    """.format(cif_dic['_diffrn_reflns_number'],  # 0
+               cif_dic['_refine_ls_number_parameters'],  # 1
+               data_to_param,  # 2
+               cif_dic['_refine_ls_number_restraints'],  # 3
+               thetamax if thetamax else '?',  # 4
+               thetafull if thetafull else '?',  # 5
+               d,  # 6
+               compl,  # 7
+               cif_dic['_refine_ls_abs_structure_Flack'],  # 8
+               cif_dic['_database_code_depnum_ccdc_archive'],  # 9
+               cif_dic['_refine_ls_number_reflns'],  # 10
+               cif_dic['_reflns_number_gt']  # 11
                )
     return table2
 
 
-def get_all_cif_val_table(session, structure_id: int) -> str:
+def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     """
     Returns a html table with the residuals values of a structure.
     """
     # starting table header (the div is for css):
     # style="white-space: pre": preserves white space
-    table_string = """<h4>All CIF values</h4>
+    button = """<a type="button" class="btn btn-default btn-sm" id="download_CIF"
+                                                 href='current-cif/{}' >Download as CIF</a>""".format(structure_id)
+    table_string = """<h4>All CIF values</h4> {}
                         <div id="myresidualtable">
-                        <table class="table table-striped table-bordered" style="white-space: pre">
+                        <table class="table table-striped table-bordered table-condensed" style="white-space: pre">
                             <thead>
                                 <tr>
                                     <th> Item </th>
                                     <th> Value </th>
                                 </tr>
                             </thead>
-                        <tbody>"""
+                        <tbody>""".format(button if download_button else '')
     # get the residuals of the cif file as a dictionary:
-    dic = get_residuals(session, structure_id)
+    dic = structures.get_row_as_dict(structure_id)
     if not dic:
         return ""
     # filling table with data rows:
@@ -454,58 +572,62 @@ def chunks(l: list, n: int) -> list:
     return [l[i:i + n] for i in range(0, len(l), n)]
 
 
-def find_cell(session: Session, cell: list, sublattice=False, more_results=False) -> list:
+def find_cell(structures: StructureTable, cell: list, sublattice=False, more_results=False) -> list:
     """
     Finds unit cells in db. Rsturns hits a a list of ids.
     """
-    if more_results:
-        # more results:
-        vol_threshold = 0.09
-        ltol = 0.2
-        atol = 2
+    dbversion = structures.get_database_version()
+    if dbversion == 1:
+        # Threshold for APEX db unit cells
+        if more_results:
+            # more results:
+            vol_threshold = 0.09
+            ltol = 0.2
+            atol = 2.0
+        else:
+            # regular:
+            vol_threshold = 0.03
+            ltol = 0.06
+            atol = 1.0
     else:
-        # regular:
-        vol_threshold = 0.03
-        ltol = 0.06
-        atol = 1
-    volume = lattice.vol_unitcell(*cell)
-    idlist = find_cell_by_volume(session, volume, vol_threshold)
+        # regular unit cells, no APEX special:
+        if more_results:
+            # more results:
+            vol_threshold = 0.02
+            ltol = 0.03
+            atol = 1.8
+        else:
+            # regular:
+            vol_threshold = 0.02
+            ltol = 0.03
+            atol = 1.0
+    volume = vol_unitcell(*cell)
+    cells: List = structures.find_by_volume(volume, vol_threshold)
     if sublattice:
         # sub- and superlattices:
         for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
             # First a list of structures where the volume is similar:
-            idlist.extend(find_cell_by_volume(session, v, vol_threshold))
-        idlist = list(set(idlist))
-        idlist.sort()
-    idlist2 = []
+            cells.extend(structures.find_by_volume(v, vol_threshold))
+        cells = list(set(cells))
+    idlist2: List = []
     # Real lattice comparing in G6:
-    if idlist:
-        lattice1 = mat_lattice.Lattice.from_parameters_niggli_reduced(*cell)
-        cells = []
-        # SQLite can only handle 999 variables at once:
-        for cids in chunks(idlist, 500):
-            cells.extend(get_cells_as_list(cids))
-        for num, cell_id in enumerate(idlist):
+    if cells:
+        lattice1 = lattice.Lattice.from_parameters(*cell)
+        for num, curr_cell in enumerate(cells):
             try:
-                lattice2 = mat_lattice.Lattice.from_parameters(
-                        float(cells[num][2]),
-                        float(cells[num][3]),
-                        float(cells[num][4]),
-                        float(cells[num][5]),
-                        float(cells[num][6]),
-                        float(cells[num][7]))
+                lattice2 = lattice.Lattice.from_parameters(*curr_cell[1:7])
             except ValueError:
                 continue
             mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
             if mapping:
-                idlist2.append(cell_id)
+                idlist2.append(curr_cell[0])
     if idlist2:
         return idlist2
     else:
         return []
 
 
-def search_text(session: Session, search_string: str) -> tuple:
+def search_text(structures: StructureTable, search_string: str) -> tuple:
     """
     searches db for given text
     """
@@ -517,14 +639,14 @@ def search_text(session: Session, search_string: str) -> tuple:
             search_string = "{}{}{}".format('*', search_string, '*')
     try:
         #  bad hack, should make this return ids like cell search
-        idlist = tuple([x[0] for x in find_by_strings(session, search_string)])
+        idlist = tuple([x[0] for x in structures.find_by_strings(search_string)])
     except AttributeError as e:
         print("Exception in search_text:")
         print(e)
     return idlist
 
 
-def search_elements(session: Session, elements: str, anyresult: bool = False) -> list:
+def search_elements(structures: StructureTable, elements: str, excluding: str = '', onlyelem: bool = False) -> list:
     """
     list(set(l).intersection(l2))
     """
@@ -532,17 +654,22 @@ def search_elements(session: Session, elements: str, anyresult: bool = False) ->
     try:
         formula = get_list_of_elements(elements)
     except KeyError:
-        print('Element search error!')
+        print('Element search error! Wrong list of elements.')
         return []
     try:
-        res = find_by_elements(session, formula, anyresult=anyresult)
+        formula_ex = get_list_of_elements(excluding)
+    except KeyError:
+        print('Error: Wrong list of Elements!')
+        return []
+    try:
+        res = structures.find_by_elements(formula, excluding=formula_ex, onlyincluded=onlyelem)
     except AttributeError:
-        print('Element search error!')
+        print('Element search error! Wrong list of elements..')
         pass
     return list(res)
 
 
-def find_dates(session: Session, date1: str, date2: str) -> list:
+def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
     """
     Returns a list if id between date1 and date2
     """
@@ -550,72 +677,77 @@ def find_dates(session: Session, date1: str, date2: str) -> list:
         date1 = '0000-01-01'
     if not date2:
         date2 = 'NOW'
-    result = find_by_date(session, date1, date2)
+    result = structures.find_by_date(date1, date2)
     return result
 
 
-def advanced_search(session: Session, cellstr: str, elincl, elexcl, txt_in, txt_out, sublattice, more_results,
-                    date1: str = None, date2: str = None, it_num: str = None) -> list:
+def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
+                    date1: str = None, date2: str = None, structures: StructureTable = None,
+                    it_num: str = None, onlythese: bool = False, r1val: float = 0.0, ccdc_num: str = '') -> list:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
     """
-    excl = []
-    incl = []
-    date_results = []
-    results = []
-    it_results = []
-    cell = []
-    if cellstr:
-        cell = is_valid_cell(cellstr)
+    #
+    results: List = []
+    cell_results: List = []
+    spgr_results: List = []
+    elincl_results: List = []
+    txt_results: List = []
+    txt_ex_results: List = []
+    date_results: List = []
+    ccdc_num_results: List = []
+    states: Dict[str, bool] = {'date'    : False,
+                               'cell'    : False,
+                               'elincl'  : False,
+                               'elexcl'  : False,
+                               'txt'     : False,
+                               'txt_ex'  : False,
+                               'spgr'    : False,
+                               'rval'    : False,
+                               'ccdc_num': False,
+                               }
+    if ccdc_num:
+        ccdc_num_results = structures.find_by_ccdc_num(ccdc_num)
+    if ccdc_num_results:
+        return ccdc_num_results
+    cell = is_valid_cell(cellstr)
+    try:
+        spgr = int(it_num.split()[0])
+    except Exception:
+        spgr = 0
+    try:
+        rval = float(r1val)
+        states['rval'] = True
+    except ValueError:
+        rval = 0.0
     if cell:
-        cellres = find_cell(session, cell, sublattice=sublattice, more_results=more_results)
-        incl.append(cellres)
-    if elincl:
-        incl.append(search_elements(session, elincl))
+        states['cell'] = True
+        cell_results = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
+    if spgr:
+        states['spgr'] = True
+        spgr_results = structures.find_by_it_number(spgr)
+    if elincl or elexcl:
+        if elincl:
+            states['elincl'] = True
+        if elexcl:
+            states['elexcl'] = True
+        elincl_results = search_elements(structures, elincl, elexcl, onlythese)
+    if txt:
+        states['txt'] = True
+        txt_results = [i[0] for i in structures.find_by_strings(txt)]
+    if txt_ex:
+        states['txt_ex'] = True
+        txt_ex_results: List = [i[0] for i in structures.find_by_strings(txt_ex)]
     if date1 != date2:
-        date_results = find_dates(session, date1, date2)
-    if it_num:
-        try:
-            it_results = find_by_it_number(session, int(it_num))
-        except ValueError:
-            pass
-    if txt_in:
-        if len(txt_in) >= 2 and "*" not in txt_in:
-            txt_in = '*' + txt_in + '*'
-        idlist = find_by_strings(session, txt_in)
-        try:
-            incl.append([i[0] for i in idlist])
-        except(IndexError, KeyError):
-            incl.append([idlist])  # only one result
-    if elexcl:
-        excl.append(search_elements(session, elexcl, anyresult=True))
-    if txt_out:
-        if len(txt_out) >= 2 and "*" not in txt_out:
-            txt_out = '*' + txt_out + '*'
-        idlist = find_by_strings(session, txt_out)
-        try:
-            excl.append([i[0] for i in idlist])
-        except(IndexError, KeyError):
-            excl.append([idlist])  # only one result
-    if incl and incl[0]:
-        results = set(incl[0]).intersection(*incl)
-        if date_results:
-            results = set(date_results).intersection(results)
-        if it_results:
-            results = set(it_results).intersection(results)
-    elif date_results and not it_results:
-        results = date_results
-    elif not date_results and it_results:
-        results = it_results
-    elif it_results and date_results:
-        results = set(it_results).intersection(date_results)
-    if excl:
-        # excl list should not be in the resukts at all
-        try:
-            return list(results - set(flatten(excl)))
-        except TypeError:
-            return []
+        states['date'] = True
+        date_results = find_dates(structures, date1, date2)
+    rval_results = []
+    if rval > 0.0:
+        rval_results = structures.find_by_rvalue(rval / 100)
+    ####################
+    results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
+                              txt_ex_results, txt_results, rval_results, states)
     return list(results)
 
 
@@ -626,10 +758,14 @@ if __name__ == "__main__":
         print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
         sys.exit()
     print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
-    # plain python wsgiref server:
-    # app.run(host=host, port=port, reloader=True)
+    # plain python wsgiref server (gunicorn doesnt run on windows):
+    # app.run(host=host, port=port, server='wsgiref', reloader=True)
     # gunicorn server: Best used behind an nginx proxy server: http://docs.gunicorn.org/en/stable/deploy.html
     # you need "pip3 install gunicorn" to run this:
     # The current database interface allows only one worker (have to go to sqlalchemy!)
-    app.run(host=host, port=port, reload=True, server='gunicorn', accesslog='-', errorlog='-', workers=1,
+    if sys.platform == 'win32':
+        server = 'wsgiref'
+    else:
+        server = 'gunicorn'
+    app.run(host=host, port=port, reload=True, server=server, accesslog='-', errorlog='-', workers=1,
             access_log_format='%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s"')

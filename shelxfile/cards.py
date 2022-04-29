@@ -1,3 +1,5 @@
+
+
 import re
 from math import cos, radians, sqrt
 
@@ -363,6 +365,10 @@ class CELL(Command):
             v = 0.0
         return v
 
+    @property
+    def V(self) -> float:
+        return self.volume
+
     def __iter__(self):
         return iter(self._cell_list)
 
@@ -423,7 +429,7 @@ class Residues():
         self.shx = shx
         self.all_residues = []
         self.residue_classes = {}  # class: numbers
-        #self.residue_numbers = {}  # number: class
+        # self.residue_numbers = {}  # number: class
 
     def append(self, resi: 'RESI') -> None:
         """
@@ -801,6 +807,7 @@ class FMAP(Command):
     >>> shx.fmap.code
     2.0
     """
+
     def __init__(self, shx, spline: list):
         super(FMAP, self).__init__(shx, spline)
         params, _ = self._parse_line(spline)
@@ -1498,16 +1505,21 @@ class SUMP(Command):
 
 
 class LATT(Command):
-    lattdict = {1: [],                # Primitive
-                2: [SymmetryElement(['0.5', '0.5', '0.5'])],   # I-centered
+    """
+    1=P, 2=I, 3=rhombohedral obverse on hexagonal axes, 4=F, 5=A, 6=B, 7=C.
+    """
+    lattdict = {1: [],  # Primitive
+                2: [SymmetryElement(['0.5', '0.5', '0.5'])],  # I-centered
                 3: [SymmetryElement(['1/3', '2/3', '2/3']),  # Rhombohedral
                     SymmetryElement(['2/3', '1/3', '1/3'])],
                 4: [SymmetryElement(['0.0', '0.5', '0.5']),  # F-centered
                     SymmetryElement(['0.5', '0.0', '0.5']),
                     SymmetryElement(['0.5', '0.5', '0.0'])],
-                5: [SymmetryElement(['0.0', '0.5', '0.5'])],   # A-centered
-                6: [SymmetryElement(['0.5', '0.0', '0.5'])],   # B-centered
-                7: [SymmetryElement(['0.5', '0.5', '0.0'])]}   # C-centered
+                5: [SymmetryElement(['0.0', '0.5', '0.5'])],  # A-centered
+                6: [SymmetryElement(['0.5', '0.0', '0.5'])],  # B-centered
+                7: [SymmetryElement(['0.5', '0.5', '0.0'])]}  # C-centered
+
+    lattint_to_str = { 1: 'P', 2: 'I', 3: 'R', 4: 'F', 5: 'A', 6: 'B', 7: 'C' }
 
     def __init__(self, shx, spline: list):
         """
@@ -1516,7 +1528,11 @@ class LATT(Command):
         super(LATT, self).__init__(shx, spline)
         p, _ = self._parse_line(spline)
         self.centric = False
-        self.N = p[0]
+        try:
+            self.N = int(p[0])
+        except ValueError:
+            self.N = -1
+        self.N_str = self.lattint_to_str[abs(self.N)]
         if self.N > 0:  # centrosymmetric space group:
             self.centric = True
         self.lattOps = LATT.lattdict[abs(self.N)]

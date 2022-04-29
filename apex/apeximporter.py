@@ -106,8 +106,9 @@ class ApexDB():
             host = 'localhost'
         try:
             self.conn = pg8000.connect(user=user, password=password, ssl=False, database="BAXSdb", host=host)
-        except pg8000.core.ProgrammingError:
+        except pg8000.core.ProgrammingError as e:
             self.conn = None
+            print(e)
             return False
         self.cursor = self.conn.cursor()
         return True
@@ -144,33 +145,95 @@ class ApexDB():
                         sol.total_reflections,        --23
                         sol.unique_reflections,       --24
                         sol.form,                      --25
-                        sol.per_cent_in_shell         --26
+                        sol.per_cent_in_shell,         --26
+                        brav.bravais_lattice_type,     --27 Remember to add a comma to add new items!
+                        latt.lattice_type,             --28
+                        ccol.color                     --29
                         FROM scd.lsq_refinement AS lsq
                           INNER JOIN scd.samples AS sam 
-                        ON lsq.samples_id=sam.samples_id
+                        ON lsq.samples_id=sam.samples_id  and lsq.revision = sam.revision
                           INNER JOIN scd.indexing AS indx
                         ON lsq.samples_id=indx.samples_id
                           INNER JOIN scd.sample_color AS col 
                         ON lsq.samples_id=col.samples_id
+                          INNER JOIN scd.crystal_colors AS ccol
+                        ON col.crystal_colors_id_1 = ccol.crystal_colors_id
                           INNER JOIN scd.sample_size AS ssi 
-                        ON lsq.samples_id=ssi.samples_id
-                        INNER JOIN scd.struct_soln AS sol 
+                        ON lsq.samples_id=ssi.samples_id and sam.revision = col.revision
+                          LEFT JOIN scd.struct_soln AS sol 
                         ON lsq.samples_id=sol.samples_id
-                        
+                          INNER JOIN scd.bravais_lattice_types as brav
+                        ON lsq.bravais_lattice_types_id = brav.bravais_lattice_types_id
+                          INNER JOIN scd.lattice_types as latt
+                        ON brav.lattice_types_id = latt.lattice_types_id
                         ;
                 """)
         return self.cursor.fetchall()
 
-
+    def get_some_test_data(self):
+        self.cursor.execute("""SELECT 
+                    lsq.samples_id,         --0  
+                    lsq.a,                  --1
+                    lsq.b,                  --2
+                    lsq.c,                  --3
+                    lsq.alpha,              --4
+                    lsq.beta,               --5
+                    lsq.gamma,              --6
+                    sam.formula,               --7
+                    sam.sample_name,           --8
+                    sam.last_modified,         --9
+                    sam.last_directory,        --10 Not the dir where the files are?
+                    sam.compound,              --11
+                    indx.first_image,           --12 First image of indexing
+                    lsq.wavelength,              --13
+                    col.crystal_colors_id_1,      --14 Farbe 1
+                    col.crystal_colors_id_2,      --15 Farbe 2
+                    ssi.dimension_1,              --16
+                    ssi.dimension_2,              --17
+                    ssi.dimension_3,              --18
+                    sol.observed_reflections,     --19
+                    sol.per_cent_observed,        --20
+                    sol.rint,                     --21
+                    sol.rsig,                     --22
+                    sol.total_reflections,        --23
+                    sol.unique_reflections,       --24
+                    sol.form,                      --25
+                    sol.per_cent_in_shell,         --26
+                    ccol.color,
+                    brav.bravais_lattice_type,
+                    latt.lattice_type
+                    FROM scd.lsq_refinement AS lsq
+                    INNER JOIN scd.samples AS sam
+                    ON lsq.samples_id = sam.samples_id and lsq.revision = sam.revision
+                    INNER JOIN scd.indexing AS indx
+                        ON lsq.samples_id = indx.samples_id 
+                    INNER JOIN scd.bravais_lattice_types as brav
+                    ON lsq.bravais_lattice_types_id = brav.bravais_lattice_types_id
+                    INNER JOIN scd.lattice_types as latt
+                    ON brav.lattice_types_id = latt.lattice_types_id
+                    INNER JOIN scd.sample_color AS col
+                    ON sam.samples_id = col.samples_id and sam.revision = col.revision
+                    INNER JOIN scd.crystal_colors AS ccol
+                    ON col.crystal_colors_id_1 = ccol.crystal_colors_id
+                    INNER JOIN scd.sample_size as ssi
+                    ON lsq.samples_id = ssi.samples_id
+                    INNER JOIN scd.struct_soln AS sol
+                    ON lsq.samples_id = sol.samples_id
+                    ;
+                """)
+        return self.cursor.fetchall()
 
 if __name__ == '__main__':
     apex = ApexDB()
-    conn = apex.initialize_db()
+    conn = apex.initialize_db(host="192.168.2.107")
     if conn:
-        data = apex.get_residuals(2)
-        pprint.pprint(data)
+        #data = apex.get_residuals(2)
+        #pprint.pprint(data)
         print('###############################')
         data = apex.get_all_data()
         pprint.pprint(data)
+        print('####')
+        #data2 = apex.get_some_data()
+        #pprint.pprint(data2)
 
 

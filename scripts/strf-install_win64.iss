@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "28"
+#define MyAppVersion "60"
 #define MyAppPublisher "Daniel Kratzert"
 
 ; Remember, first run pyInstaller script!
@@ -47,6 +47,8 @@ VersionInfoProductName=StructureFinder
 AlwaysShowComponentsList=False
 ShowComponentSizes=False
 SetupIconFile="..\icons\strf.ico"
+SignTool=signtool
+SignTool=sign_sha256
 
 [UninstallRun]
 
@@ -69,16 +71,17 @@ Type: files; Name: "{app}\*.*"
 Type: filesandordirs; Name: "{app}\*"
 
 [InstallDelete]
+Type: filesandordirs; Name: "{app}\*"
 
 [Tasks]
 
 [Files]
 Source: "..\dist\StructureFinder\*"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "StructureFinder-crash.txt"; DestDir: "{app}"; Permissions: everyone-full
 
 [Dirs]
 Name: "{app}\displaymol"; Permissions: everyone-full
 Name: "{app}\gui"; Permissions: everyone-full
 
 [Code]
-
 

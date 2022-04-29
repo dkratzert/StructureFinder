@@ -1,4 +1,5 @@
 
+
 def write(moldata: str, width: int = 240, height: int = 240):
     m = """
     <!DOCTYPE html>
@@ -11,11 +12,11 @@ def write(moldata: str, width: int = 240, height: int = 240):
     <!-- 
     A template to display molecules with JSmol Lite.
     --> 
-    """+r"""
+    """ + r"""
     <!-- MOL DATA
     {}
     -->
-    """.format(moldata)+r"""
+    """.format(moldata) + r"""
     
     <script type="text/javascript"> 
     
@@ -23,10 +24,10 @@ def write(moldata: str, width: int = 240, height: int = 240):
     $(window).ready(function() {
       var Info;
       Info = {
-      """+"""
+      """ + """
           width: {},
           height: {},
-          """.format(width, height)+r"""
+          """.format(width, height) + r"""
           color: "0xFFFFFF",
           shadeAtoms: false,
           addSelectionOptions: false,
@@ -36,7 +37,7 @@ def write(moldata: str, width: int = 240, height: int = 240):
           bondWidth: 2,
           zoomScaling: 8,
           pinchScaling: 6.0,
-          mouseDragFactor: 0.5,
+          mouseDragFactor: 0.7,
           touchDragFactor: 0.15,
           multipleBondSpacing: 0,
           spinRateX: -0.08,
