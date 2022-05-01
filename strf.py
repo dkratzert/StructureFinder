@@ -27,8 +27,8 @@ from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from typing import Union
 
+from PyQt5 import QtGui
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection
-from PyQt5.QtGui import QIcon, QFont, QResizeEvent
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox
 
@@ -102,7 +102,6 @@ else:
     print("Remember, UI is not recompiled without DEBUG.")
 
 from gui.strf_main import Ui_stdbMainwindow
-from gui.strf_dbpasswd import Ui_PasswdDialog
 
 
 class StartStructureDB(QMainWindow):
@@ -110,9 +109,9 @@ class StartStructureDB(QMainWindow):
         super().__init__(*args, **kwargs)
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
-        font = QFont()
+        font = QtGui.QFont()
         font.setFamily("Courier")
-        font.setStyleHint(QFont.Monospace)
+        font.setStyleHint(QtGui.QFont.Monospace)
         self.ui.SHELXplainTextEdit.setFont(font)
         self.statusBar().showMessage('StructureFinder version {}'.format(VERSION))
         self.dbfdesc = None
@@ -145,11 +144,10 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
-        self.setWindowIcon(QIcon(os.path.join(application_path, './icons/strf.png')))
-        self.uipass = Ui_PasswdDialog()
+        self.setWindowIcon(QtGui.QIcon(os.path.join(application_path, './icons/strf.png')))
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
-        self.ui.cifList_tableView.addAction(self.ui.actionGo_to_All_CIF_Tab)
+        # self.ui.cifList_tableView.addAction(self.ui.actionGo_to_All_CIF_Tab)
         self.settings = StructureFinderSettings()
         if len(sys.argv) > 1:
             self.dbfilename = sys.argv[1]
@@ -207,7 +205,7 @@ class StartStructureDB(QMainWindow):
         self.ui.actionImport_file.triggered.connect(self.open_database_file)
         self.ui.actionSave_Database.triggered.connect(self.save_database)
         self.ui.actionCopy_Unit_Cell.triggered.connect(self.copyUnitCell)
-        self.ui.actionGo_to_All_CIF_Tab.triggered.connect(self.on_click_item)
+        self.ui.cifList_tableView.save_excel_triggered.connect(self.on_save_as_excel)
         # Other fields:
         self.ui.txtSearchEdit.textChanged.connect(self.search_text)
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
@@ -221,7 +219,7 @@ class StartStructureDB(QMainWindow):
         self.ui.growCheckBox.toggled.connect(self.redraw_molecule)
         self.ui.ExportAsCIFpushButton.clicked.connect(self.export_current_cif)
 
-    def resizeEvent(self, a0: QResizeEvent) -> None:
+    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
         super(StartStructureDB, self).resizeEvent(a0)
 
     def checkfor_version(self):
@@ -265,8 +263,24 @@ class StartStructureDB(QMainWindow):
         if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
             self.ui.add_cif.setChecked(True)
 
-    def on_click_item(self, item):
-        self.ui.MaintabWidget.setCurrentIndex(1)
+    def on_save_as_excel(self):
+        # filename = '/Users/daniel/Documents/GitHub/StructureFinder/test.xlsx'
+        filename = self.get_excel_export_filename_from_dialog()
+        if not filename or Path(filename).is_dir():
+            return None
+        selection = self.ui.cifList_tableView.selectionModel().selectedRows()
+        self.write_excel_file_from_selection(filename, selection)
+        self.ui.statusbar.showMessage(f'Selected rows written to {filename}')
+
+    def write_excel_file_from_selection(self, filename, selection):
+        import xlsxwriter
+        workbook = xlsxwriter.Workbook(filename)
+        worksheet = workbook.add_worksheet()
+        for row, index in enumerate(selection):
+            row_data = self.ui.cifList_tableView.model()._data[index.row()]
+            for col, item in enumerate(row_data):
+                worksheet.write(row, col, item.decode('utf-8') if isinstance(item, bytes) else item)
+        workbook.close()
 
     def show_csdentry(self, item: QModelIndex):
         import webbrowser
@@ -991,6 +1005,9 @@ class StartStructureDB(QMainWindow):
     def get_import_filename_from_dialog(self, dir: str = './'):
         return QFileDialog.getOpenFileName(self, caption='Open File', directory=dir, filter="*.sqlite")[0]
 
+    def get_excel_export_filename_from_dialog(self, dir: str = './'):
+        return QFileDialog.getSaveFileName(self, caption='Save Excel File', directory=dir, filter="*.xlsx")[0]
+
     def open_database_file(self, fname=None) -> bool:
         """
         Import a new database.
@@ -1199,7 +1216,7 @@ if __name__ == "__main__":
 
     # later http://www.pyinstaller.org/
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon('./icons/strf.png'))
+    app.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
     # Has to be without version number, because QWebengine stores data in ApplicationName directory:
     app.setApplicationName('StructureFinder')
     # app.setApplicationDisplayName("StructureFinder")

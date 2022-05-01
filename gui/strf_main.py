@@ -536,7 +536,7 @@ class Ui_stdbMainwindow(object):
         self.importResults.addLayout(self.searchLayout, 0, 0, 1, 7)
         spacerItem7 = QtWidgets.QSpacerItem(5, 20, QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
         self.importResults.addItem(spacerItem7, 2, 3, 1, 1)
-        self.cifList_tableView = QtWidgets.QTableView(self.maintab)
+        self.cifList_tableView = StructuresListTableView(self.maintab)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(3)
@@ -585,7 +585,7 @@ class Ui_stdbMainwindow(object):
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.SHELXtab)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.SHELXplainTextEdit = QtWidgets.QPlainTextEdit(self.SHELXtab)
-        self.SHELXplainTextEdit.setStyleSheet("font: 11pt \"Consolas\";")
+        self.SHELXplainTextEdit.setStyleSheet("")
         self.SHELXplainTextEdit.setObjectName("SHELXplainTextEdit")
         self.horizontalLayout_4.addWidget(self.SHELXplainTextEdit)
         self.MaintabWidget.addTab(self.SHELXtab, "")
@@ -1549,3 +1549,4 @@ class Ui_stdbMainwindow(object):
         self.actionGo_to_All_CIF_Tab.setText(_translate("stdbMainwindow", "Go to All CIF Tab"))
         self.actionGo_to_All_CIF_Tab.setShortcut(_translate("stdbMainwindow", "Meta+A"))
 from displaymol.molecule2D import MoleculeWidget
+from gui.table_view import StructuresListTableView
