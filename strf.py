@@ -28,7 +28,7 @@ from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from typing import Union
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection
+from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox
 
@@ -39,6 +39,7 @@ from misc.download import MyDownloader
 from misc.exporter import export_to_cif_file
 from misc.settings import StructureFinderSettings
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
+from searcher.worker import Worker
 from shelxfile.shelx import ShelXFile
 
 print(sys.version)
@@ -545,6 +546,20 @@ class StartStructureDB(QMainWindow):
             lastid = 1
         else:
             lastid += 1
+
+        self.thread = QThread()
+        self.worker = Worker()
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.progress.connect(self.reportProgress)
+        self.thread.start()
+        self.longRunningBtn.setEnabled(False)
+        self.thread.finished.connect(lambda: self.longRunningBtn.setEnabled(True))
+        self.thread.finished.connect(lambda: self.stepLabel.setText("Long-Running Step: 0"))
+
         filecrawler.put_files_in_db(self, searchpath=startdir, fillres=self.ui.add_res.isChecked(),
                                     fillcif=self.ui.add_cif.isChecked(), lastid=lastid)
         self.progress.hide()
