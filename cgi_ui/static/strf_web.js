@@ -1,14 +1,13 @@
+elements = ['X', 'H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
+    'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti', 'V', 'Cr',
+    'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr',
+    'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd',
+    'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd',
+    'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',
+    'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn',
+    'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
 
-elements = ['X',  'H',  'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
-            'Na', 'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K',  'Ca', 'Sc', 'Ti', 'V', 'Cr',
-            'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As', 'Se', 'Br', 'Kr',
-            'Rb', 'Sr', 'Y',  'Zr', 'Nb', 'Mo', 'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd',
-            'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd',
-            'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',
-            'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn',
-            'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
-
-$(document).ready(function($){
+$(document).ready(function ($) {
 
     var d1 = $('input[id=date1]');
     d1.w2field('date', {
@@ -22,46 +21,47 @@ $(document).ready(function($){
 
     // The structure ID
     var strid = null;
-    
-    $.get(url = cgifile+'/cellcheck', function (result) {
+
+    $.get(url = cgifile + '/cellcheck', function (result) {
         if (result === 'true') {
             $("#cellsearchcsd_button").removeClass('invisible');
         }
     });
-    
-    $.get(url = cgifile+'/version', function (result) {
+
+    $.get(url = cgifile + '/version', function (result) {
         document.getElementById("version").innerHTML = result;
     });
-    
+
     // toggle for cell tooltip
     $('[data-toggle="cell_tooltip"]').tooltip();
 
     mygrid = $('#mygrid');
-    
+
     // The main structures table:
     mygrid.w2grid({
         name: 'mygrid',
         header: 'StructureFinder',
-        url: cgifile+"/all",
+        url: cgifile + "/all",
         method: 'GET',
         show: {
             toolbar: false,
             footer: true
         },
         columns: [
-            {field: 'recid',    caption: 'ID',        size: '45px', sortable: false, attr: 'align=center'},
-            {field: 'filename', caption: 'filename',  size: '20%',  sortable: false, resizable: true},
-            {field: 'dataname', caption: 'dataname',  size: '15%',  sortable: false, resizable: true},
-            {field: 'path',     caption: 'directory', size: '65%',  sortable: false, resizable: true}
+            {field: 'recid',    caption: 'ID',            size: '45px', sortable: false, attr: 'align=center'},
+            {field: 'dataname', caption: 'Data Name',     size: '15%', sortable: false, resizable: true},
+            {field: 'filename', caption: 'File Name',     size: '20%', sortable: false, resizable: true},
+            {field: 'modification_time', caption: 'Last Modified', size: '10%', sortable: true, resizable: true},
+            {field: 'path',     caption: 'Path',          size: '65%', sortable: false, resizable: true}
         ],
-        //sortData: [{field: 'dataname', direction: 'ASC'}],
-        onSelect:function(event) {
+        sortData: [{field: 'modification_time', direction: 'ASC'}],
+        onSelect: function (event) {
             strid = event.recid;
             showprop(strid);
             //console.log(event);
         }
     });
-    
+
     //gets the window's height
     var b = $(window).height();
     var h = b * 0.35;
@@ -70,10 +70,10 @@ $(document).ready(function($){
     }
     // Define the grid height to 35% of the screen:
     mygrid.css("height", h);
-    
+
     // Do advanced search:
     var advanced_search_button = $("#advsearch-button");
-    advanced_search_button.click(function(event) {
+    advanced_search_button.click(function (event) {
         var txt_in = document.getElementById("text_in").value;
         var txt_out = document.getElementById("text_out").value;
         var elements_in = document.getElementById("elements_in").value;
@@ -88,7 +88,7 @@ $(document).ready(function($){
         var r1val = document.getElementById("r1_val_adv").value;
         var ccdc_num = document.getElementById("ccdc_num_adv").value;
         advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res,
-                        supercell, datefield1, datefield2, itnum, onlyelem, r1val, ccdc_num);
+            supercell, datefield1, datefield2, itnum, onlyelem, r1val, ccdc_num);
     });
 
     function get_cell_from_p4p(p4pdata) {
@@ -108,9 +108,9 @@ $(document).ready(function($){
                 cell += spline[5] + '  ';
                 cell += spline[6];
             }
-        //console.log(cell);
-        document.getElementById('smpl_cellsrch').value = cell;
-        document.getElementById('cell_adv').value = cell;
+            //console.log(cell);
+            document.getElementById('smpl_cellsrch').value = cell;
+            document.getElementById('cell_adv').value = cell;
         }
     }
 
@@ -128,9 +128,9 @@ $(document).ready(function($){
                 cell += spline[6] + '  ';
                 cell += spline[7];
             }
-        //console.log(cell);
-        document.getElementById('smpl_cellsrch').value = cell;
-        document.getElementById('cell_adv').value = cell;
+            //console.log(cell);
+            document.getElementById('smpl_cellsrch').value = cell;
+            document.getElementById('cell_adv').value = cell;
         }
     }
 
@@ -164,23 +164,23 @@ $(document).ready(function($){
             if (spline[0] === '_cell_angle_gamma') {
                 cell += spline[1].split('(')[0] + '  ';
             }
-        //console.log(cell);
-        document.getElementById('smpl_cellsrch').value = cell;
-        document.getElementById('cell_adv').value = cell;
+            //console.log(cell);
+            document.getElementById('smpl_cellsrch').value = cell;
+            document.getElementById('cell_adv').value = cell;
         }
     }
 
-    
+
     var dropZone = document.getElementById('dropZone');
 
-    dropZone.addEventListener('dragover', function(e) {
+    dropZone.addEventListener('dragover', function (e) {
         e.stopPropagation();
         e.preventDefault();
         //e.dataTransfer.dropEffect = 'copy';
     });
-    
+
     // Get file data on drop
-    dropZone.addEventListener('drop', function(e) {
+    dropZone.addEventListener('drop', function (e) {
         e.stopPropagation();
         e.preventDefault();
         var files = e.dataTransfer.files; // Array of all files
@@ -188,7 +188,7 @@ $(document).ready(function($){
         if (files[0].type.match(/.*/)) {
             var reader = new FileReader();
 
-            reader.onload = function(e2) {
+            reader.onload = function (e2) {
                 // finished reading file data.
                 var txt = e2.target.result;
                 if (files[0].name.split('.').pop() === 'p4p') {
@@ -205,7 +205,7 @@ $(document).ready(function($){
             reader.readAsText(files[0], "ASCII"); // start reading the file data.
         }
     });
-    
+
 
     // Check if element names are occouring more than one time:
     function is_elem_doubled(elements_in, elements_out) {
@@ -257,7 +257,7 @@ $(document).ready(function($){
     }
 
     function validate_element_input() {
-        if (!check_elin() || !check_elex()){
+        if (!check_elin() || !check_elex()) {
             elements_red();
         } else {
             elements_regular();
@@ -266,12 +266,12 @@ $(document).ready(function($){
     }
 
     // Validators for chemical elemets included search field:
-    $("#elements_in").keyup(function() {
+    $("#elements_in").keyup(function () {
         validate_element_input();
     });
 
     // Validators for chemical elemets excluded search field:
-    $("#elements_out").keyup(function() {
+    $("#elements_out").keyup(function () {
         validate_element_input();
     });
 
@@ -290,7 +290,9 @@ $(document).ready(function($){
             //console.log(el);
             if ($.inArray(el, elements) === -1) {
                 // A space character is allowed:
-                if (el.length === 0) {continue}
+                if (el.length === 0) {
+                    continue
+                }
                 ok = false;
             }
         }
@@ -299,7 +301,7 @@ $(document).ready(function($){
 
     // Toggle search info:
     var more_info_button = $('#more_info_badge');
-    more_info_button.click(function(){
+    more_info_button.click(function () {
         var button_text = more_info_button.text();
         $("#more-cell-info").toggle(1);
     });
@@ -311,9 +313,9 @@ $(document).ready(function($){
                 //console.log(result);
             });
     });
-    
+
     // Switch between grow and fuse:
-    $('#growCheckBox').click(function(){
+    $('#growCheckBox').click(function () {
         var jsmolcol = $("#jsmolcolumn");
         var data;
         if (this.checked) {
@@ -328,10 +330,10 @@ $(document).ready(function($){
             });
         }
     });
-    
+
     // Switch between advanced and simple search:
     var advbutton = $('#toggle_advsearch-button');
-    advbutton.click(function(){
+    advbutton.click(function () {
         var button_text = advbutton.text();
         $("#mainsearch").toggle(1);
         if (button_text.split(" ")[0] === "Advanced") {
@@ -344,29 +346,29 @@ $(document).ready(function($){
     });
 
     // Text search Button clicked:
-    $("#smpl_textsrchbutton").click(function(event) {
+    $("#smpl_textsrchbutton").click(function (event) {
         var txt = document.getElementById("smpl_textsrch").value;
         txtsearch(txt);
         //console.log(txt);
     });
 
     // Cell search Button clicked:
-    $("#smpl_cellsrchbutton").click(function(event) {
+    $("#smpl_cellsrchbutton").click(function (event) {
         var cell = document.getElementById("smpl_cellsrch").value;
         cellsearch(cell);
     });
 
     // Enter key pressed in the simple text search field:
-    $('#smpl_textsrch').keypress(function(e) {
+    $('#smpl_textsrch').keypress(function (e) {
         if (e.which === 13) {  // enter key
             var txt = document.getElementById("smpl_textsrch").value;
             txtsearch(txt);
             //console.log(txt);
         }
     });
-    
+
     // Enter key pressed in the simple cell search field:
-    $('#smpl_cellsrch').keypress(function(e) {
+    $('#smpl_cellsrch').keypress(function (e) {
         if (e.which === 13) {  // enter key
             var cell = document.getElementById("smpl_cellsrch").value;
             cellsearch(cell);
@@ -375,7 +377,7 @@ $(document).ready(function($){
     });
 
     // Enter key pressed in one of the advanced search fields:
-    $('#adv-search').keypress(function(e) {
+    $('#adv-search').keypress(function (e) {
         if (e.which === 13) {  // enter key
             advanced_search_button.click();
             //console.log(cell);
@@ -399,7 +401,7 @@ $(document).ready(function($){
         //$("#residuals").addClass('invisible');
         document.getElementById("cellrow").innerHTML = "Found " + numresult + " structures";
     }
-    
+
     function display_molecule(atoms) {
         Jmol._document = null;
         Jmol.getTMApplet("jmol", jsmol_options);
@@ -407,10 +409,10 @@ $(document).ready(function($){
         jsmolcol.html(jmol._code);
         jmol.__loadModel(atoms);
         var tbl = $('#residualstable2');
-        jsmolcol.css("height", tbl.height()-20);
+        jsmolcol.css("height", tbl.height() - 20);
         jsmolcol.removeClass('invisible');
     }
-    
+
     function showprop(idstr) {
         /*
         This function uses AJAX POST calls to get the data of a structure and displays
@@ -421,17 +423,17 @@ $(document).ready(function($){
         //$('#growCheckBox').prop("checked", false);
         var data;
         // Get residuals table 1:
-        $.post(url = cgifile+'/residuals', data = {id: idstr, residuals1: true}, function (result) {
+        $.post(url = cgifile + '/residuals', data = {id: idstr, residuals1: true}, function (result) {
             document.getElementById("residualstable1").innerHTML = result;
         });
 
         // Get residuals table 2:
-        $.post(url = cgifile+'/residuals', data = {id: idstr, residuals2: true}, function (result) {
+        $.post(url = cgifile + '/residuals', data = {id: idstr, residuals2: true}, function (result) {
             document.getElementById("residualstable2").innerHTML = result;
         });
 
         // Get unit cell row:
-        $.post(url = cgifile+'/residuals', data = {id: idstr, unitcell: true}, function (result) {
+        $.post(url = cgifile + '/residuals', data = {id: idstr, unitcell: true}, function (result) {
             $("#cellrow").removeClass('invisible');
             $("#growCheckBoxgroup").removeClass('invisible');
             $("#cell_copy_btn").removeClass('invisible');
@@ -439,14 +441,14 @@ $(document).ready(function($){
 
             var clipboard = new Clipboard('.btn');
             clipboard.on('success',
-                function(e) {
+                function (e) {
                     e.clearSelection();
                 }
             );
         });
 
         // display the big cif data table:
-        $.post(url = cgifile+'/residuals', data = {id: idstr, all: true},
+        $.post(url = cgifile + '/residuals', data = {id: idstr, all: true},
             function (result) {
                 document.getElementById("residuals").innerHTML = result;
             }
@@ -454,11 +456,11 @@ $(document).ready(function($){
 
         // Get molecule data and display the molecule:
         if ($('#growCheckBox').is(':checked') === true) {
-            $.post(url = cgifile+'/molecule', data = {id: idstr, grow: true}, function (result) {
+            $.post(url = cgifile + '/molecule', data = {id: idstr, grow: true}, function (result) {
                 display_molecule(result)
             });
         } else {
-            $.post(url = cgifile+'/molecule', data = {id: idstr, grow: false}, function (result) {
+            $.post(url = cgifile + '/molecule', data = {id: idstr, grow: false}, function (result) {
                 display_molecule(result)
             });
         }
@@ -500,9 +502,11 @@ $(document).ready(function($){
         if (!isValidCell(cell)) {
             cell = "";
         }
-        var gridparams = {cell_search: cell, text_in: text_in, text_out: text_out, elements_in: elements_in,
-                          elements_out: elements_out, more: more_res, supercell: supercell, date1: date1, date2: date2
-                          ,it_num: itnum, onlyelem: onlyelem, r1val: r1val, ccdc_num: ccdc_num};
+        var gridparams = {
+            cell_search: cell, text_in: text_in, text_out: text_out, elements_in: elements_in,
+            elements_out: elements_out, more: more_res, supercell: supercell, date1: date1, date2: date2
+            , it_num: itnum, onlyelem: onlyelem, r1val: r1val, ccdc_num: ccdc_num
+        };
         //console.log(gridparams);
         var url;
         w2ui['mygrid'].request('get-records', gridparams,
@@ -515,11 +519,11 @@ $(document).ready(function($){
     }
 
     // Search for structures of last month:
-    $('#lastmsearchlink').click(function(){
+    $('#lastmsearchlink').click(function () {
         var date_now = new Date();
         var month = date_now.getUTCMonth();
         var day = date_now.getUTCDate();
-        var lastmonth = new Date(date_now.getUTCFullYear(), month-1, day);
+        var lastmonth = new Date(date_now.getUTCFullYear(), month - 1, day);
         var lastmdate = lastmonth.toISOString().split("T")[0];
         //console.log(lastmdate+ ' '+ date_now.toISOString().split("T")[0]);
         // From last month to now():
@@ -540,7 +544,7 @@ $(document).ready(function($){
     // Test if all values in array are numeric:
     function isNumericArray(array) {
         var isal = true;
-        for (var i=0; i<array.length; i++) {
+        for (var i = 0; i < array.length; i++) {
             if (!$.isNumeric(array[i])) {
                 isal = false;
             }
