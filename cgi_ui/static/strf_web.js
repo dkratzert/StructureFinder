@@ -51,10 +51,10 @@ $(document).ready(function ($) {
             {field: 'recid',    caption: 'ID',            size: '45px', sortable: false, attr: 'align=center'},
             {field: 'dataname', caption: 'Data Name',     size: '15%', sortable: false, resizable: true},
             {field: 'filename', caption: 'File Name',     size: '20%', sortable: false, resizable: true},
-            {field: 'modification_time', caption: 'Last Modified', size: '10%', sortable: true, resizable: true},
+            {field: 'modification_time', caption: 'Last Modified', size: '10%', sortable: false, resizable: true},
             {field: 'path',     caption: 'Path',          size: '65%', sortable: false, resizable: true}
         ],
-        sortData: [{field: 'modification_time', direction: 'ASC'}],
+        //sortData: [{field: 'modification_time', direction: 'ASC'}],
         onSelect: function (event) {
             strid = event.recid;
             showprop(strid);
