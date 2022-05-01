@@ -48,11 +48,11 @@ $(document).ready(function ($) {
             footer: true
         },
         columns: [
-            {field: 'recid',    caption: 'ID',            size: '45px', sortable: false, attr: 'align=center'},
-            {field: 'dataname', caption: 'Data Name',     size: '15%', sortable: false, resizable: true},
-            {field: 'filename', caption: 'File Name',     size: '20%', sortable: false, resizable: true},
+            {field: 'recid', caption: 'ID', size: '45px', sortable: false, attr: 'align=center'},
+            {field: 'dataname', caption: 'Data Name', size: '15%', sortable: false, resizable: true},
+            {field: 'filename', caption: 'File Name', size: '20%', sortable: false, resizable: true},
             {field: 'modification_time', caption: 'Last Modified', size: '10%', sortable: false, resizable: true},
-            {field: 'path',     caption: 'Path',          size: '65%', sortable: false, resizable: true}
+            {field: 'path', caption: 'Path', size: '65%', sortable: false, resizable: true}
         ],
         //sortData: [{field: 'modification_time', direction: 'ASC'}],
         onSelect: function (event) {
