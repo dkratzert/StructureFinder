@@ -546,22 +546,31 @@ class StartStructureDB(QMainWindow):
             lastid = 1
         else:
             lastid += 1
-
+        self.ui.importDirButton.setDisabled(True)
+        self.ui.appendDirButton.setDisabled(True)
+        self.ui.closeDatabaseButton.setDisabled(True)
+        self.ui.p4pCellButton.setDisabled(True)
+        self.ui.importDatabaseButton.setDisabled(True)
         self.thread = QThread()
-        self.worker = Worker()
+        self.worker = Worker(searchpath=startdir, add_res_files=self.ui.add_res.isChecked(),
+                             add_cif_files=self.ui.add_cif.isChecked(), lastid=lastid, structures=self.structures)
         self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.run)
+        self.thread.started.connect(self.worker.index_files)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
-        self.worker.progress.connect(self.reportProgress)
+        #self.worker.progress.connect(self.report_progress)
         self.thread.start()
-        self.longRunningBtn.setEnabled(False)
-        self.thread.finished.connect(lambda: self.longRunningBtn.setEnabled(True))
-        self.thread.finished.connect(lambda: self.stepLabel.setText("Long-Running Step: 0"))
+        #self.thread.finished.connect(lambda: self.longRunningBtn.setEnabled(True))
+        self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir))
 
-        filecrawler.put_files_in_db(self, searchpath=startdir, fillres=self.ui.add_res.isChecked(),
-                                    fillcif=self.ui.add_cif.isChecked(), lastid=lastid)
+        #filecrawler.put_files_in_db(self, searchpath=startdir, fillres=self.ui.add_res.isChecked(),
+        #                            fillcif=self.ui.add_cif.isChecked(), lastid=lastid)
+
+    def report_progress(self, propress: int):
+        pass
+
+    def do_work_after_indexing(self, startdir: str):
         self.progress.hide()
         try:
             self.structures.database.init_textsearch()
@@ -581,6 +590,11 @@ class StartStructureDB(QMainWindow):
         os.chdir(str(Path(startdir).parent))
         self.ui.saveDatabaseButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
+        self.ui.importDirButton.setEnabled(True)
+        self.ui.appendDirButton.setEnabled(True)
+        self.ui.closeDatabaseButton.setEnabled(True)
+        self.ui.p4pCellButton.setEnabled(True)
+        self.ui.importDatabaseButton.setEnabled(True)
 
     def progressbar(self, curr: int, min: int, max: int) -> None:
         """

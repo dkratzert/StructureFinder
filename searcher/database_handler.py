@@ -51,7 +51,7 @@ class DatabaseRequest():
         :type dbfile: str
         """
         # open the database
-        self.con = connect(dbfile)
+        self.con = connect(dbfile, check_same_thread=False)
         self.con.execute("PRAGMA foreign_keys = ON")
         ## These make requests faster: ###
         self.con.execute("PRAGMA main.journal_mode = MEMORY;")
