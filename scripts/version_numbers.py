@@ -12,7 +12,8 @@ This file is for updating the various version number definitions for each STRF r
 """
 
 isspath = ["./scripts/strf-install_win64.iss"]
-pypath = ["./shelxfile/shelx.py", "./strf.py", "./shelxfile/misc.py", "./searcher/database_handler.py"]
+pypath = ["shelxfile/shelx.py", "./strf.py", "./shelxfile/misc.py", "./searcher/database_handler.py",
+          'searcher/filecrawler.py', "displaymol/sdm.py"]
 
 
 def process_iss(filepath):
