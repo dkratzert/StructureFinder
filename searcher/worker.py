@@ -18,21 +18,24 @@ DEBUG = False
 class Worker(QtCore.QObject):
     finished = QtCore.pyqtSignal(str)
     progress = QtCore.pyqtSignal(int)
+    number_of_files = QtCore.pyqtSignal(int)
 
     def __init__(self, searchpath: str, add_res_files: bool, add_cif_files: bool, lastid: int,
                  structures: StructureTable, excludes: Optional[list] = None, standalone: Optional[bool] = False):
         super().__init__()
+        self.stop = False
         self.searchpath = searchpath
         self.add_res_files = add_res_files
         self.add_cif_files = add_cif_files
         self.structures = structures
         self.lastid = lastid
         self.excludes = excludes
+        self.files_indexed = 0
         if standalone:
-            self.index_files()
+            self.files_indexed = self.index_files()
 
     def index_files(self):
-        filecrawler.put_files_in_db(self, searchpath=self.searchpath, structures=self.structures,
+        return self.put_files_in_db(searchpath=self.searchpath, structures=self.structures,
                                     fillres=self.add_res_files, excludes=None,
                                     fillcif=self.add_cif_files, lastid=self.lastid)
 
@@ -47,7 +50,6 @@ class Worker(QtCore.QObject):
             return 0
         if lastid <= 1:
             lastid = 1
-        prognum = 0
         num = 1
         zipcifs = 0
         rescount = 0
@@ -55,17 +57,18 @@ class Worker(QtCore.QObject):
         time1 = time.perf_counter()
         patterns = ['*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '*.res']
         filelist = filewalker_walk(str(searchpath), patterns)
+        self.number_of_files.emit(len(filelist))
         options = {}
         filecount = 1
         for filenum, (filepth, name) in enumerate(filelist, start=1):
+            if self.stop:
+                return 0
             filecount = filenum
             fullpath = os.path.join(filepth, name)
             options['modification_time'] = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(fullpath)))
             options['file_size'] = int(os.stat(str(fullpath)).st_size)
             cif = Cif(options=options)
-            if prognum == 20:
-                prognum = 0
-            self.progress.emit(prognum)
+            self.progress.emit(filecount)
             # This is really ugly copy&pase code. TODO: refractor this:
             if name.endswith('.cif') and fillcif:
                 with open(fullpath, mode='r', encoding='ascii', errors="ignore") as f:
@@ -98,7 +101,6 @@ class Worker(QtCore.QObject):
                         if lastid % 1000 == 0:
                             print('{} files ...'.format(num))
                             structures.database.commit_db()
-                        prognum += 1
                 continue
             if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2')
                 or name.endswith('.tgz')) and fillcif:
@@ -147,7 +149,6 @@ class Worker(QtCore.QObject):
                         if lastid % 1000 == 0:
                             print('{} files ...'.format(num))
                             structures.database.commit_db()
-                        prognum += 1
                 continue
             if name.endswith('.res') and fillres:
                 tst = None
@@ -173,10 +174,9 @@ class Worker(QtCore.QObject):
                 if lastid % 1000 == 0:
                     print('{} files ...'.format(num))
                     structures.database.commit_db()
-                prognum += 1
         structures.database.commit_db()
         time2 = time.perf_counter()
-        self.progress.emit(prognum)
+        self.progress.emit(filecount)
         m, s = divmod(time2 - time1, 60)
         h, m = divmod(m, 60)
         tmessage = 'Added {0} files ({5} cif, {6} res) files ({4} in compressed files) to database in: ' \

@@ -28,9 +28,9 @@ from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from typing import Union
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread
+from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread, QTime, QTimer
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
-    QMessageBox
+    QMessageBox, QPushButton
 
 from displaymol.sdm import SDM
 from gui.table_model import TableModel
@@ -115,14 +115,16 @@ class StartStructureDB(QMainWindow):
         font.setStyleHint(QtGui.QFont.Monospace)
         self.ui.SHELXplainTextEdit.setFont(font)
         self.statusBar().showMessage('StructureFinder version {}'.format(VERSION))
+        self.maxfiles = 0
         self.dbfdesc = None
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
+        self.abort_import_button = QPushButton('Abort Indexing')
         self.progress = QProgressBar(self)
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
         self.ui.appendDirButton.setDisabled(True)
-        # self.ui.statusbar.addWidget(self.abort_import_button)
+        self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
         self.apx = None
         self.structureId = 0
@@ -365,7 +367,7 @@ class StartStructureDB(QMainWindow):
             print(e)
             return
         print(len(results), 'Structures found...')
-        self.statusBar().showMessage(f"{results} structures found in the CSD", msecs=9000)
+        self.statusBar().showMessage(f"{len(results)} structures found in the CSD", msecs=9000)
         for res in results:
             csd_tree_item = QTreeWidgetItem()
             self.ui.CSDtreeWidget.addTopLevelItem(csd_tree_item)
@@ -559,16 +561,27 @@ class StartStructureDB(QMainWindow):
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
-        #self.worker.progress.connect(self.report_progress)
+        self.worker.progress.connect(self.report_progress)
+        self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
-        #self.thread.finished.connect(lambda: self.longRunningBtn.setEnabled(True))
         self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir))
+        self.statusBar().showMessage('Indexing files...')
+        QTimer.singleShot(5000, self.abort_import_button.show)
+        self.statusBar().show()
+        self.abort_import_button.clicked.connect(self.abort_indexing)
 
-        #filecrawler.put_files_in_db(self, searchpath=startdir, fillres=self.ui.add_res.isChecked(),
-        #                            fillcif=self.ui.add_cif.isChecked(), lastid=lastid)
+    def abort_indexing(self):
+        self.worker.stop = True
+        self.enable_buttons()
+        self.progress.hide()
+        self.statusBar().showMessage("Indexing aborted")
+        self.progress.hide()
 
-    def report_progress(self, propress: int):
-        pass
+    def set_maxfiles(self, number: int):
+        self.maxfiles = number
+
+    def report_progress(self, progress: int):
+        self.progressbar(progress, 0, self.maxfiles)
 
     def do_work_after_indexing(self, startdir: str):
         self.progress.hide()
@@ -588,6 +601,10 @@ class StartStructureDB(QMainWindow):
         self.show_full_list()
         self.settings.save_current_dir(str(Path(startdir)))
         os.chdir(str(Path(startdir).parent))
+        self.enable_buttons()
+        self.statusBar().showMessage(f'Found {self.maxfiles} files.')
+
+    def enable_buttons(self):
         self.ui.saveDatabaseButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
         self.ui.importDirButton.setEnabled(True)
