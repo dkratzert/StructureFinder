@@ -175,7 +175,8 @@ class StartStructureDB(QMainWindow):
         if self.structures:
             self.set_model_from_data(self.structures.get_all_structure_names())
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
-        self.checkfor_version()
+        if not "PYTEST_CURRENT_TEST" in os.environ:
+            self.checkfor_version()
 
     def set_model_from_data(self, data: Union[list, tuple]):
         self.table_model = TableModel(structures=data)
