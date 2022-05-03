@@ -8,8 +8,8 @@ from misc import update_check
 from misc.version import VERSION
 from pymatgen.core.lattice import Lattice
 from searcher.database_handler import DatabaseRequest, StructureTable
-from searcher.filecrawler import put_files_in_db
 from searcher.misc import vol_unitcell
+from searcher.worker import Worker
 
 parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect .cif/.res files to a '
                                              'database.\n'
@@ -51,7 +51,7 @@ parser.add_argument("--delete",
                     help="Delete and do not append to previous database.")
 parser.add_argument("-f",
                     dest='cell',
-                    #nargs=6,
+                    # nargs=6,
                     type=lambda s: [float(item) for item in s.split()],
                     help='Search for the specified unit cell.'
                     )
@@ -107,7 +107,8 @@ def find_cell(cell: list):
     else:
         print('\n{} Structures found:'.format(len(idlist)))
         searchresult = structures.get_all_structure_names(idlist)
-    print('ID  |      path                                                                |   filename            |   data   ')
+    print(
+        'ID  |      path                                                                |   filename            |   data   ')
     print('-' * 130)
     for res in searchresult:
         Id = res[0]
@@ -147,9 +148,10 @@ def run_index(args=None):
             else:
                 lastid += 1
             try:
-                ncifs = put_files_in_db(searchpath=p, excludes=args.ex,
-                                        structures=structures, lastid=lastid,
-                                        fillres=args.fillres, fillcif=args.fillcif)
+                ncifs = Worker(searchpath=p, excludes=args.ex,
+                               structures=structures, lastid=lastid,
+                               add_res_files=args.fillres, add_cif_files=args.fillcif,
+                               standalone=True)
             except OSError as e:
                 print("Unable to collect files:")
                 print(e)
