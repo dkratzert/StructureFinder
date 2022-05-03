@@ -627,7 +627,7 @@ class Lattice(object):
                 all_j[:, None], np.logical_and(alphab, betab[i][None, :])
             )
             for j, k in np.argwhere(inds):
-                scale_m = np.array((f_a[i], f_b[j], f_c[k]), dtype=np.int)
+                scale_m = np.array((f_a[i], f_b[j], f_c[k]), dtype=int)
                 if abs(np.linalg.det(scale_m)) < 1e-8:
                     continue
 
@@ -1080,12 +1080,12 @@ class Lattice(object):
         # Generate all possible images that could be within `r` of `center`
         mins = np.floor(pcoords - nmax)
         maxes = np.ceil(pcoords + nmax)
-        arange = np.arange(start=mins[0], stop=maxes[0], dtype=np.int)
-        brange = np.arange(start=mins[1], stop=maxes[1], dtype=np.int)
-        crange = np.arange(start=mins[2], stop=maxes[2], dtype=np.int)
-        arange = arange[:, None] * np.array([1, 0, 0], dtype=np.int)[None, :]
-        brange = brange[:, None] * np.array([0, 1, 0], dtype=np.int)[None, :]
-        crange = crange[:, None] * np.array([0, 0, 1], dtype=np.int)[None, :]
+        arange = np.arange(start=mins[0], stop=maxes[0], dtype=int)
+        brange = np.arange(start=mins[1], stop=maxes[1], dtype=int)
+        crange = np.arange(start=mins[2], stop=maxes[2], dtype=int)
+        arange = arange[:, None] * np.array([1, 0, 0], dtype=int)[None, :]
+        brange = brange[:, None] * np.array([0, 1, 0], dtype=int)[None, :]
+        crange = crange[:, None] * np.array([0, 0, 1], dtype=int)[None, :]
         images = arange[:, None, None] + brange[None, :, None] + crange[None, None, :]
 
         # Generate the coordinates of all atoms within these images

@@ -194,7 +194,7 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check number of results:
-        self.assertEqual(1, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual(1, self.myapp.ui.cifList_tableView.model().rowCount())
         self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
 
         # back to adv search tab:
@@ -209,7 +209,7 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check results
-        self.assertEqual(2, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual(2, self.myapp.ui.cifList_tableView.model().rowCount())
         self.assertEqual("Found 2 structures.", self.myapp.statusBar().currentMessage())
 
         # back to adv search tab:

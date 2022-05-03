@@ -50,7 +50,7 @@ from pymatgen.core import lattice
 from searcher import constants, misc, filecrawler, database_handler
 from searcher.constants import centering_num_2_letter, centering_letter_2_num
 from searcher.fileparser import Cif
-from searcher.misc import is_valid_cell, elements, combine_results
+from searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, regular_results_parameters
 
 is_windows = False
 import platform
@@ -956,14 +956,10 @@ class StartStructureDB(QMainWindow):
         if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
             # more results:
             print('more results activated')
-            vol_threshold = math.log(volume) + 2.0
-            ltol = 0.08
-            atol = 1.0
+            atol, ltol, vol_threshold = more_results_parameters(volume)
         else:
             # regular:
-            vol_threshold = math.log(volume) + 1.0
-            ltol = 0.025
-            atol = 0.2
+            atol, ltol, vol_threshold = regular_results_parameters(volume)
         try:
             # the fist number in the result is the structureid:
             cells = self.structures.find_by_volume(volume, vol_threshold)
