@@ -46,7 +46,6 @@ from displaymol.sdm import SDM
 from pymatgen.core import lattice
 from searcher.database_handler import StructureTable
 from searcher.misc import is_valid_cell, get_list_of_elements, vol_unitcell, is_a_nonzero_file, format_sum_formula, \
-    combine_results, formula_dict_to_elements
     combine_results, formula_dict_to_elements, more_results_parameters, regular_results_parameters
 
 app = application = Bottle()
