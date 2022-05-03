@@ -30,6 +30,7 @@ QSqlDatabase::removeDatabase("sales")
 """
 
 import sys
+from math import log
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 from typing import List, Union, Tuple
 
@@ -51,7 +52,7 @@ class DatabaseRequest():
         :type dbfile: str
         """
         # open the database
-        self.con = connect(dbfile)
+        self.con = connect(dbfile, check_same_thread=False)
         self.con.execute("PRAGMA foreign_keys = ON")
         ## These make requests faster: ###
         self.con.execute("PRAGMA main.journal_mode = MEMORY;")
@@ -379,8 +380,9 @@ class StructureTable():
         """
         Returns the list of structures as dictionary.
 
-        >>> str = StructureTable('C:/Users/daniel.kratzert/structurefinder.sqlite')
-        >>> str.get_all_structures_as_dict([1,2])
+        >>> str = StructureTable('test-data/test.sql')
+        >>> len(str.get_all_structures_as_dict([1,2]))
+        2
         """
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
@@ -404,8 +406,9 @@ class StructureTable():
         """
         returns all fragment names in the database, sorted by name
         :returns [id, meas, path, filename, data]
-        >>> str = StructureTable('C:/Users/daniel.kratzert/structurefinder.sqlite')
-        >>> str.get_all_structure_names([1, 2])
+        >>> str = StructureTable('test-data/test.sql')
+        >>> len(str.get_all_structure_names([1, 2]))
+        2
         """
         req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
                         FROM Structure AS str 
@@ -847,7 +850,7 @@ class StructureTable():
         else:
             return cell
 
-    def find_by_volume(self, volume: float, threshold: float = 0.03) -> List:
+    def find_by_volume(self, volume: float, threshold: float = 0) -> List:
         """
         Searches cells with volume between upper and lower limit. Returns the Id and the unit cell.
         :param threshold: Volume uncertaincy where to search
@@ -855,12 +858,14 @@ class StructureTable():
         :return: list
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_volume(3021.9, threshold=0.01)
-        [(9, 9.451, 17.881, 18.285, 90.0, 102.054, 90.0, 3021.9), (252, 9.451, 17.881, 18.285, 90.0, 102.054, 90.0, 3021.9), (69, 12.0939, 15.464, 16.854, 90.0, 105.295, 90.0, 3040.4)]
+        [(9, 9.451, 17.881, 18.285, 90.0, 102.054, 90.0, 3021.9), (252, 9.451, 17.881, 18.285, 90.0, 102.054, 90.0, 3021.9)]
         >>> db.find_by_volume(30021.9, threshold=0.01)
         ()
         """
-        upper_limit = float(volume + volume * threshold)
-        lower_limit = float(volume - volume * threshold)
+        if not threshold:
+            threshold = log(volume) + 1.0
+        upper_limit = float(volume + threshold)
+        lower_limit = float(volume - threshold)
         req = '''SELECT StructureId, a, b, c, alpha, beta, gamma, volume FROM cell WHERE cell.volume >= ? AND cell.volume <= ?'''
         try:
             return self.database.db_request(req, (lower_limit, upper_limit))
@@ -921,9 +926,9 @@ class StructureTable():
         id, name, data, path
         >>> db = StructureTable('./test-data/test.sql')
         >>> db.find_by_strings('NTD51a')
-        [(237, b'DK_NTD51a-final.cif', b'p21c', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
+        [(237, b'p21c', b'DK_NTD51a-final.cif', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
         >>> db.find_by_strings('ntd51A')
-        [(237, b'DK_NTD51a-final.cif', b'p21c', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
+        [(237, b'p21c', b'DK_NTD51a-final.cif', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
         """
         req = '''
         SELECT StructureId, dataname, filename, path FROM txtsearch WHERE filename MATCH ?

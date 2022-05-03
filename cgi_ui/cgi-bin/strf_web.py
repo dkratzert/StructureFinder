@@ -46,7 +46,7 @@ from displaymol.sdm import SDM
 from pymatgen.core import lattice
 from searcher.database_handler import StructureTable
 from searcher.misc import is_valid_cell, get_list_of_elements, vol_unitcell, is_a_nonzero_file, format_sum_formula, \
-    combine_results, formula_dict_to_elements
+    combine_results, formula_dict_to_elements, more_results_parameters, regular_results_parameters
 
 app = application = Bottle()
 
@@ -576,32 +576,13 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     """
     Finds unit cells in db. Rsturns hits a a list of ids.
     """
-    dbversion = structures.get_database_version()
-    if dbversion == 1:
-        # Threshold for APEX db unit cells
-        if more_results:
-            # more results:
-            vol_threshold = 0.09
-            ltol = 0.2
-            atol = 2.0
-        else:
-            # regular:
-            vol_threshold = 0.03
-            ltol = 0.06
-            atol = 1.0
-    else:
-        # regular unit cells, no APEX special:
-        if more_results:
-            # more results:
-            vol_threshold = 0.02
-            ltol = 0.03
-            atol = 1.8
-        else:
-            # regular:
-            vol_threshold = 0.02
-            ltol = 0.03
-            atol = 1.0
     volume = vol_unitcell(*cell)
+    if more_results:
+        # more results:
+        atol, ltol, vol_threshold = more_results_parameters(volume)
+    else:
+        # regular:
+        atol, ltol, vol_threshold = regular_results_parameters(volume)
     cells: List = structures.find_by_volume(volume, vol_threshold)
     if sublattice:
         # sub- and superlattices:

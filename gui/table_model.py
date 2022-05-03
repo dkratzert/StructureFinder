@@ -18,7 +18,6 @@ class TableModel(QtCore.QAbstractTableModel):
                 return value.decode('utf-8')
             else:
                 return value
-        # return value
 
     def setHeaderData(self, section, orientation, data, role=Qt.EditRole):
         if orientation == Qt.Horizontal and role in (Qt.DisplayRole, Qt.EditRole):

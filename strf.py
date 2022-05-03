@@ -12,7 +12,6 @@ Created on 09.02.2015
 
 @author: Daniel Kratzert
 """
-import math
 import os
 import shutil
 import sys
@@ -28,9 +27,9 @@ from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from typing import Union
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection
+from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
-    QMessageBox
+    QMessageBox, QPushButton
 
 from displaymol.sdm import SDM
 from gui.table_model import TableModel
@@ -39,17 +38,20 @@ from misc.download import MyDownloader
 from misc.exporter import export_to_cif_file
 from misc.settings import StructureFinderSettings
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
+from searcher.worker import Worker
 from shelxfile.shelx import ShelXFile
+
+app = QApplication(sys.argv)
 
 print(sys.version)
 DEBUG = False
 
 from misc.version import VERSION
 from pymatgen.core import lattice
-from searcher import constants, misc, filecrawler, database_handler
+from searcher import constants, misc, database_handler
 from searcher.constants import centering_num_2_letter, centering_letter_2_num
 from searcher.fileparser import Cif
-from searcher.misc import is_valid_cell, elements, combine_results
+from searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, regular_results_parameters
 
 is_windows = False
 import platform
@@ -114,14 +116,16 @@ class StartStructureDB(QMainWindow):
         font.setStyleHint(QtGui.QFont.Monospace)
         self.ui.SHELXplainTextEdit.setFont(font)
         self.statusBar().showMessage('StructureFinder version {}'.format(VERSION))
+        self.maxfiles = 0
         self.dbfdesc = None
         self.dbfilename = None
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
+        self.abort_import_button = QPushButton('Abort Indexing')
         self.progress = QProgressBar(self)
         self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
         self.ui.appendDirButton.setDisabled(True)
-        # self.ui.statusbar.addWidget(self.abort_import_button)
+        self.ui.statusbar.addWidget(self.abort_import_button)
         self.structures = None
         self.apx = None
         self.structureId = 0
@@ -155,6 +159,7 @@ class StartStructureDB(QMainWindow):
                 try:
                     self.structures = database_handler.StructureTable(self.dbfilename)
                     self.show_full_list()
+                    self.ui.appendDirButton.setEnabled(True)
                 except (IndexError, DatabaseError) as e:
                     print(e)
                     if DEBUG:
@@ -170,7 +175,8 @@ class StartStructureDB(QMainWindow):
         if self.structures:
             self.set_model_from_data(self.structures.get_all_structure_names())
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
-        self.checkfor_version()
+        if not "PYTEST_CURRENT_TEST" in os.environ:
+            self.checkfor_version()
 
     def set_model_from_data(self, data: Union[list, tuple]):
         self.table_model = TableModel(structures=data)
@@ -364,7 +370,7 @@ class StartStructureDB(QMainWindow):
             print(e)
             return
         print(len(results), 'Structures found...')
-        self.statusBar().showMessage(f"{results} structures found in the CSD", msecs=9000)
+        self.statusBar().showMessage(f"{len(results)} structures found in the CSD", msecs=9000)
         for res in results:
             csd_tree_item = QTreeWidgetItem()
             self.ui.CSDtreeWidget.addTopLevelItem(csd_tree_item)
@@ -524,10 +530,8 @@ class StartStructureDB(QMainWindow):
 
     def import_file_dirs(self, startdir=None, append: bool = False):
         """
-        Method to import res and cif files into the DB. "startdir" defines the directorz where to start indexing.
+        Method to import res and cif files into the DB. "startdir" defines the directory where to start indexing.
         """
-        # worker = RunIndexerThread(self)
-        # worker.start()
         self.tmpfile = True
         self.statusBar().showMessage('')
         if not append:
@@ -539,14 +543,51 @@ class StartStructureDB(QMainWindow):
             startdir = self.get_startdir_from_dialog()
         if not startdir:
             self.progress.hide()
-            # self.abort_import_button.hide()
+            self.abort_import_button.hide()
+            return
         lastid = self.structures.database.get_lastrowid()
         if not lastid:
             lastid = 1
         else:
             lastid += 1
-        filecrawler.put_files_in_db(self, searchpath=startdir, fillres=self.ui.add_res.isChecked(),
-                                    fillcif=self.ui.add_cif.isChecked(), lastid=lastid)
+        self.ui.importDirButton.setDisabled(True)
+        self.ui.appendDirButton.setDisabled(True)
+        self.ui.closeDatabaseButton.setDisabled(True)
+        self.ui.p4pCellButton.setDisabled(True)
+        self.ui.importDatabaseButton.setDisabled(True)
+        self.thread = QThread()
+        self.worker = Worker(searchpath=startdir, add_res_files=self.ui.add_res.isChecked(),
+                             add_cif_files=self.ui.add_cif.isChecked(), lastid=lastid, structures=self.structures)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.index_files)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.worker.finished.connect(lambda x: self.statusBar().showMessage(x))
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.progress.connect(self.report_progress)
+        self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
+        self.thread.start()
+        self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir))
+        self.statusBar().showMessage('Searching potential files...')
+        self.statusBar().show()
+        self.abort_import_button.clicked.connect(self.abort_indexing)
+
+    def abort_indexing(self):
+        self.worker.stop = True
+        self.enable_buttons()
+        self.progress.hide()
+        self.statusBar().showMessage("Indexing aborted")
+        self.progress.hide()
+        # self.close_db()
+
+    def set_maxfiles(self, number: int):
+        self.abort_import_button.show()
+        self.maxfiles = number
+
+    def report_progress(self, progress: int):
+        self.progressbar(progress, 0, self.maxfiles)
+
+    def do_work_after_indexing(self, startdir: str):
         self.progress.hide()
         try:
             self.structures.database.init_textsearch()
@@ -564,8 +605,17 @@ class StartStructureDB(QMainWindow):
         self.show_full_list()
         self.settings.save_current_dir(str(Path(startdir)))
         os.chdir(str(Path(startdir).parent))
+        self.enable_buttons()
+        # self.statusBar().showMessage(f'Found {self.maxfiles} files.')
+
+    def enable_buttons(self):
         self.ui.saveDatabaseButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
+        self.ui.importDirButton.setEnabled(True)
+        self.ui.appendDirButton.setEnabled(True)
+        self.ui.closeDatabaseButton.setEnabled(True)
+        self.ui.p4pCellButton.setEnabled(True)
+        self.ui.importDatabaseButton.setEnabled(True)
 
     def progressbar(self, curr: int, min: int, max: int) -> None:
         """
@@ -616,6 +666,7 @@ class StartStructureDB(QMainWindow):
         self.set_model_from_data([])
         self.clear_fields()
         self.ui.MaintabWidget.setCurrentIndex(0)
+        self.statusBar().showMessage('Database closed')
         return True
 
     @pyqtSlot(name="abort_import")
@@ -905,14 +956,10 @@ class StartStructureDB(QMainWindow):
         if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
             # more results:
             print('more results activated')
-            vol_threshold = math.log(volume) + 2.0
-            ltol = 0.08
-            atol = 1.0
+            atol, ltol, vol_threshold = more_results_parameters(volume)
         else:
             # regular:
-            vol_threshold = math.log(volume) + 1.0
-            ltol = 0.025
-            atol = 0.2
+            atol, ltol, vol_threshold = regular_results_parameters(volume)
         try:
             # the fist number in the result is the structureid:
             cells = self.structures.find_by_volume(volume, vol_threshold)
@@ -975,7 +1022,7 @@ class StartStructureDB(QMainWindow):
             self.statusBar().showMessage('Found 0 structures.', msecs=0)
             return False
         searchresult = self.structures.get_all_structure_names(idlist)
-        self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
+        # self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.full_list = False
         self.set_model_from_data(searchresult)
         return True
@@ -1038,6 +1085,7 @@ class StartStructureDB(QMainWindow):
         self.settings.save_current_dir(str(Path(fname).parent))
         os.chdir(str(Path(fname).parent))
         self.ui.saveDatabaseButton.setEnabled(True)
+        self.ui.appendDirButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
         self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(fname))
         return True
@@ -1132,8 +1180,8 @@ class StartStructureDB(QMainWindow):
         if self.structures:
             data = self.structures.get_all_structure_names()
             self.set_model_from_data(data)
-        mess = "Loaded {} entries.".format(len(data))
-        self.statusBar().showMessage(mess, msecs=5000)
+        # mess = "Loaded {} entries.".format(len(data))
+        # self.statusBar().showMessage(mess, msecs=5000)
         self.full_list = True
         self.ui.SpGrpComboBox.setCurrentIndex(0)
         self.ui.adv_elementsIncLineEdit.clear()
@@ -1214,8 +1262,6 @@ if __name__ == "__main__":
     if not DEBUG:
         sys.excepthook = my_exception_hook
 
-    # later http://www.pyinstaller.org/
-    app = QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
     # Has to be without version number, because QWebengine stores data in ApplicationName directory:
     app.setApplicationName('StructureFinder')

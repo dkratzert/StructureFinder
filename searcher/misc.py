@@ -13,21 +13,24 @@ Created on 09.02.2015
 
 import os
 import shutil
-from math import sqrt, cos, radians
+from math import sqrt, cos, radians, log
 from typing import List, Union, Dict, Optional, Tuple, Any
 
 from searcher import constants
 
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+def regular_results_parameters(volume):
+    vol_threshold = log(volume) + 1.0
+    ltol = 0.03
+    atol = 1.0
+    return atol, ltol, vol_threshold
+
+
+def more_results_parameters(volume):
+    vol_threshold = log(volume) + 5.0
+    ltol = 0.05
+    atol = 1.8
+    return atol, ltol, vol_threshold
 
 
 elements = ['X', 'H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
@@ -185,6 +188,7 @@ def get_error_from_value(value: str) -> Tuple[float, float]:
         except ValueError:
             return 0.0, 0.0
 
+
 def get_value(string):
     """
     Returns only the numeric value from a cif item like 1.234(4).
@@ -205,6 +209,7 @@ def get_value(string):
             return float(string)
         except ValueError:
             return 0.0
+
 
 def flatten(lis: List[Optional[List[Any]]]) -> List[Any]:
     """
