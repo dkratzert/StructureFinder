@@ -380,9 +380,9 @@ class StructureTable():
         """
         Returns the list of structures as dictionary.
 
-        >>> str = StructureTable('C:/Users/daniel.kratzert/structurefinder.sqlite')
-        >>> str.get_all_structures_as_dict([1,2])
-        [{'recid': 1, 'path': 'C:/frames\\\guest\\\AK-Streuff\\\Streuff_LHL_Diol', 'filename': 'Streuff_LHL_Diol_0m-finalcif.cif', 'dataname': 'Streuff_LHL_Diol_0m', 'modification_time': '2020-01-29'}, {'recid': 2, 'path': 'C:/frames\\\guest\\\AK-Streuff\\\Streuff_LHL_Diol\\\Streuff_LHL_Diol_0m-finalcif.zip', 'filename': 'Streuff_LHL_Diol_0m-finalcif.cif', 'dataname': 'Streuff_LHL_Diol_0m', 'modification_time': '2020-01-29'}]
+        >>> str = StructureTable('test-data/test.sql')
+        >>> len(str.get_all_structures_as_dict([1,2]))
+        2
         """
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
@@ -406,9 +406,9 @@ class StructureTable():
         """
         returns all fragment names in the database, sorted by name
         :returns [id, meas, path, filename, data]
-        >>> str = StructureTable('C:/Users/daniel.kratzert/structurefinder.sqlite')
-        >>> str.get_all_structure_names([1, 2])
-        [(1, 'Streuff_LHL_Diol_0m', 'Streuff_LHL_Diol_0m-finalcif.cif', '2020-01-29', 'C:/frames\\\guest\\\AK-Streuff\\\Streuff_LHL_Diol'), (2, 'Streuff_LHL_Diol_0m', 'Streuff_LHL_Diol_0m-finalcif.cif', '2020-01-29', 'C:/frames\\\guest\\\AK-Streuff\\\Streuff_LHL_Diol\\\Streuff_LHL_Diol_0m-finalcif.zip')]
+        >>> str = StructureTable('test-data/test.sql')
+        >>> len(str.get_all_structure_names([1, 2]))
+        2
         """
         req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
                         FROM Structure AS str 

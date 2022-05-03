@@ -12,7 +12,6 @@ Created on 09.02.2015
 
 @author: Daniel Kratzert
 """
-import math
 import os
 import shutil
 import sys
@@ -28,7 +27,7 @@ from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from typing import Union
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread, QTime, QTimer
+from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox, QPushButton
 
@@ -42,12 +41,14 @@ from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from searcher.worker import Worker
 from shelxfile.shelx import ShelXFile
 
+app = QApplication(sys.argv)
+
 print(sys.version)
 DEBUG = False
 
 from misc.version import VERSION
 from pymatgen.core import lattice
-from searcher import constants, misc, filecrawler, database_handler
+from searcher import constants, misc, database_handler
 from searcher.constants import centering_num_2_letter, centering_letter_2_num
 from searcher.fileparser import Cif
 from searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, regular_results_parameters
@@ -528,10 +529,8 @@ class StartStructureDB(QMainWindow):
 
     def import_file_dirs(self, startdir=None, append: bool = False):
         """
-        Method to import res and cif files into the DB. "startdir" defines the directorz where to start indexing.
+        Method to import res and cif files into the DB. "startdir" defines the directory where to start indexing.
         """
-        # worker = RunIndexerThread(self)
-        # worker.start()
         self.tmpfile = True
         self.statusBar().showMessage('')
         if not append:
@@ -578,7 +577,7 @@ class StartStructureDB(QMainWindow):
         self.progress.hide()
         self.statusBar().showMessage("Indexing aborted")
         self.progress.hide()
-        #self.close_db()
+        # self.close_db()
 
     def set_maxfiles(self, number: int):
         self.abort_import_button.show()
@@ -606,7 +605,7 @@ class StartStructureDB(QMainWindow):
         self.settings.save_current_dir(str(Path(startdir)))
         os.chdir(str(Path(startdir).parent))
         self.enable_buttons()
-        #self.statusBar().showMessage(f'Found {self.maxfiles} files.')
+        # self.statusBar().showMessage(f'Found {self.maxfiles} files.')
 
     def enable_buttons(self):
         self.ui.saveDatabaseButton.setEnabled(True)
@@ -1022,7 +1021,7 @@ class StartStructureDB(QMainWindow):
             self.statusBar().showMessage('Found 0 structures.', msecs=0)
             return False
         searchresult = self.structures.get_all_structure_names(idlist)
-        #self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
+        # self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.full_list = False
         self.set_model_from_data(searchresult)
         return True
@@ -1180,8 +1179,8 @@ class StartStructureDB(QMainWindow):
         if self.structures:
             data = self.structures.get_all_structure_names()
             self.set_model_from_data(data)
-        #mess = "Loaded {} entries.".format(len(data))
-        #self.statusBar().showMessage(mess, msecs=5000)
+        # mess = "Loaded {} entries.".format(len(data))
+        # self.statusBar().showMessage(mess, msecs=5000)
         self.full_list = True
         self.ui.SpGrpComboBox.setCurrentIndex(0)
         self.ui.adv_elementsIncLineEdit.clear()
@@ -1262,8 +1261,6 @@ if __name__ == "__main__":
     if not DEBUG:
         sys.excepthook = my_exception_hook
 
-    # later http://www.pyinstaller.org/
-    app = QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('./icons/strf.png'))
     # Has to be without version number, because QWebengine stores data in ApplicationName directory:
     app.setApplicationName('StructureFinder')
