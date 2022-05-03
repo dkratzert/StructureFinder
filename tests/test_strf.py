@@ -209,7 +209,7 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check results
-        self.assertEqual(2, self.myapp.ui.cifList_tableView.model().rowCount())
+        self.assertEqual(1, self.myapp.ui.cifList_tableView.model().rowCount())
         self.assertEqual("Found 2 structures.", self.myapp.statusBar().currentMessage())
 
         # back to adv search tab:
@@ -250,7 +250,7 @@ class TestApplication(unittest.TestCase):
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
         self.myapp.ui.adv_textsearch.setText('SADI')
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
-        self.assertEqual(4, self.myapp.ui.cifList_treeWidget.topLevelItemCount())
+        self.assertEqual(4, self.myapp.ui.cifList_tableView.model().rowCount())
         self.assertEqual("Found 4 structures.", self.myapp.statusBar().currentMessage())
         self.assertEqual('breit_tb13_85.cif', self.myapp.ui.cifList_treeWidget.topLevelItem(0).text(0))
         self.assertEqual('p21c.cif', self.myapp.ui.cifList_treeWidget.topLevelItem(2).text(0))

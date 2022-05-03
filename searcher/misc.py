@@ -27,7 +27,7 @@ def regular_results_parameters(volume):
 
 
 def more_results_parameters(volume):
-    vol_threshold = log(volume) + 2.0
+    vol_threshold = log(volume) + 5.0
     ltol = 0.05
     atol = 1.8
     return atol, ltol, vol_threshold
