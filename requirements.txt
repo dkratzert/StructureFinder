@@ -12,3 +12,4 @@ six
 requests
 gemmi
 gunicorn
+xlsxwriter

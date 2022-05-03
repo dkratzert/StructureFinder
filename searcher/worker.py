@@ -62,6 +62,8 @@ class Worker(QtCore.QObject):
         filecount = 1
         for filenum, (filepth, name) in enumerate(filelist, start=1):
             if self.stop:
+                structures.database.commit_db()
+                self.finished.emit('Indexing aborted')
                 return 0
             filecount = filenum
             fullpath = os.path.join(filepth, name)
@@ -69,6 +71,7 @@ class Worker(QtCore.QObject):
             options['file_size'] = int(os.stat(str(fullpath)).st_size)
             cif = Cif(options=options)
             self.progress.emit(filecount)
+            self.number_of_files.emit(filecount)
             # This is really ugly copy&pase code. TODO: refractor this:
             if name.endswith('.cif') and fillcif:
                 with open(fullpath, mode='r', encoding='ascii', errors="ignore") as f:

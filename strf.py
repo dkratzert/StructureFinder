@@ -158,6 +158,7 @@ class StartStructureDB(QMainWindow):
                 try:
                     self.structures = database_handler.StructureTable(self.dbfilename)
                     self.show_full_list()
+                    self.ui.appendDirButton.setEnabled(True)
                 except (IndexError, DatabaseError) as e:
                     print(e)
                     if DEBUG:
@@ -542,7 +543,8 @@ class StartStructureDB(QMainWindow):
             startdir = self.get_startdir_from_dialog()
         if not startdir:
             self.progress.hide()
-            # self.abort_import_button.hide()
+            self.abort_import_button.hide()
+            return
         lastid = self.structures.database.get_lastrowid()
         if not lastid:
             lastid = 1
@@ -560,13 +562,13 @@ class StartStructureDB(QMainWindow):
         self.thread.started.connect(self.worker.index_files)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
+        self.worker.finished.connect(lambda x: self.statusBar().showMessage(x))
         self.thread.finished.connect(self.thread.deleteLater)
         self.worker.progress.connect(self.report_progress)
         self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
         self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir))
-        self.statusBar().showMessage('Indexing files...')
-        QTimer.singleShot(5000, self.abort_import_button.show)
+        self.statusBar().showMessage('Searching potential files...')
         self.statusBar().show()
         self.abort_import_button.clicked.connect(self.abort_indexing)
 
@@ -576,8 +578,10 @@ class StartStructureDB(QMainWindow):
         self.progress.hide()
         self.statusBar().showMessage("Indexing aborted")
         self.progress.hide()
+        #self.close_db()
 
     def set_maxfiles(self, number: int):
+        self.abort_import_button.show()
         self.maxfiles = number
 
     def report_progress(self, progress: int):
@@ -602,7 +606,7 @@ class StartStructureDB(QMainWindow):
         self.settings.save_current_dir(str(Path(startdir)))
         os.chdir(str(Path(startdir).parent))
         self.enable_buttons()
-        self.statusBar().showMessage(f'Found {self.maxfiles} files.')
+        #self.statusBar().showMessage(f'Found {self.maxfiles} files.')
 
     def enable_buttons(self):
         self.ui.saveDatabaseButton.setEnabled(True)
@@ -662,6 +666,7 @@ class StartStructureDB(QMainWindow):
         self.set_model_from_data([])
         self.clear_fields()
         self.ui.MaintabWidget.setCurrentIndex(0)
+        self.statusBar().showMessage('Database closed')
         return True
 
     @pyqtSlot(name="abort_import")
@@ -1021,7 +1026,7 @@ class StartStructureDB(QMainWindow):
             self.statusBar().showMessage('Found 0 structures.', msecs=0)
             return False
         searchresult = self.structures.get_all_structure_names(idlist)
-        self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
+        #self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.full_list = False
         self.set_model_from_data(searchresult)
         return True
@@ -1084,6 +1089,7 @@ class StartStructureDB(QMainWindow):
         self.settings.save_current_dir(str(Path(fname).parent))
         os.chdir(str(Path(fname).parent))
         self.ui.saveDatabaseButton.setEnabled(True)
+        self.ui.appendDirButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
         self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(fname))
         return True
@@ -1178,8 +1184,8 @@ class StartStructureDB(QMainWindow):
         if self.structures:
             data = self.structures.get_all_structure_names()
             self.set_model_from_data(data)
-        mess = "Loaded {} entries.".format(len(data))
-        self.statusBar().showMessage(mess, msecs=5000)
+        #mess = "Loaded {} entries.".format(len(data))
+        #self.statusBar().showMessage(mess, msecs=5000)
         self.full_list = True
         self.ui.SpGrpComboBox.setCurrentIndex(0)
         self.ui.adv_elementsIncLineEdit.clear()
