@@ -24,7 +24,7 @@ import zipfile
 from searcher import database_handler
 from searcher.fileparser import Cif
 from searcher.misc import vol_unitcell, get_value
-from structurefinder.shelxfile import frac_to_cart
+from structurefinder.shelxfile.dsrmath import frac_to_cart
 from structurefinder.shelxfile.shelx import ShelXFile
 
 DEBUG = False
