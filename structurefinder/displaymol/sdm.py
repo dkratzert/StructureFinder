@@ -311,7 +311,7 @@ class SDM():
         return cart_atoms
 
 
-def make_molecule(cif: 'CifContainer') -> list:
+def make_molecule(cif) -> list:
     atoms = tuple(cif.atoms_fract)
     sdm = SDM(atoms, cif.symmops, cif.cell[:6], centric=cif.is_centrosymm)
     needsymm = sdm.calc_sdm()
