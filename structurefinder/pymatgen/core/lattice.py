@@ -11,7 +11,7 @@ import numpy as np
 from numpy import dot, transpose
 from numpy.linalg import inv
 
-from pymatgen.util.typing import Vector3Like
+from structurefinder.pymatgen.util.typing import Vector3Like
 
 
 def abs_cap(val, max_abs_val=1):
@@ -383,7 +383,7 @@ class Lattice(object):
             Lattice.from_dict(fmt="abivars", acell=3*[10], rprim=np.eye(3))
         """
         if fmt == "abivars":
-            from pymatgen.io.abinit.abiobjects import lattice_from_abivars
+            from structurefinder.pymatgen import lattice_from_abivars
 
             kwargs.update(d)
             return lattice_from_abivars(cls=cls, **kwargs)

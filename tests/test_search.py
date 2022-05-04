@@ -1,6 +1,6 @@
 import unittest
 
-from pymatgen.core import lattice
+from structurefinder.pymatgen.core import lattice
 from searcher import database_handler
 from searcher.misc import regular_results_parameters, more_results_parameters
 from structurefinder.shelxfile import vol_unitcell

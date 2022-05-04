@@ -47,7 +47,7 @@ print(sys.version)
 DEBUG = False
 
 from misc.version import VERSION
-from pymatgen.core import lattice
+from structurefinder.pymatgen.core import lattice
 from searcher import constants, misc, database_handler
 from searcher.constants import centering_num_2_letter, centering_letter_2_num
 from searcher.fileparser import Cif

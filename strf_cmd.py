@@ -6,7 +6,7 @@ from sqlite3 import DatabaseError
 
 from misc import update_check
 from misc.version import VERSION
-from pymatgen.core.lattice import Lattice
+from structurefinder.pymatgen import Lattice
 from searcher.database_handler import DatabaseRequest, StructureTable
 from searcher.misc import vol_unitcell, regular_results_parameters
 from searcher.worker import Worker
