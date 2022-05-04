@@ -1051,6 +1051,11 @@ class StructureTable():
         else:
             return False
 
+    def get_largest_id(self):
+        req = """SELECT Id FROM Structure ORDER BY id DESC LIMIT 1"""
+        result = self.database.db_request(req)
+        return result[-1][-1]
+
     def get_database_version(self) -> int:
         """
         >>> db = StructureTable('./test-data/test.sql')

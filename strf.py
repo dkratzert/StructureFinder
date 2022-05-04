@@ -167,6 +167,7 @@ class StartStructureDB(QMainWindow):
                 os.chdir(str(Path(self.dbfilename).parent))
                 self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(self.dbfilename))
                 self.settings.save_current_dir(str(Path(self.dbfilename).parent))
+                self.display_number_of_structures()
         else:
             lastdir = self.settings.load_last_workdir()
             if Path(lastdir).exists():
@@ -963,7 +964,7 @@ class StartStructureDB(QMainWindow):
         try:
             # the fist number in the result is the structureid:
             cells = self.structures.find_by_volume(volume, vol_threshold)
-            print(f'{len(cells)} cells to check at {vol_threshold:.2f} theshold.')
+            print(f'{len(cells)} cells to check at {vol_threshold:.2f} threshold.')
             if self.ui.sublattCheckbox.isChecked() or self.ui.adv_superlatticeCheckBox.isChecked():
                 # sub- and superlattices:
                 for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
@@ -1021,6 +1022,7 @@ class StartStructureDB(QMainWindow):
             self.ui.cifList_tableView.model().resetInternalData()
             self.statusBar().showMessage('Found 0 structures.', msecs=0)
             return False
+        print(f'Found {len(idlist)} results.')
         searchresult = self.structures.get_all_structure_names(idlist)
         # self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.full_list = False
@@ -1088,7 +1090,12 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDirButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
         self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(fname))
+        self.display_number_of_structures()
         return True
+
+    def display_number_of_structures(self):
+        number = self.structures.get_largest_id()
+        self.ui.statusbar.showMessage(f'Database with {number} structures loaded.')
 
     def get_name_from_p4p(self):
         """
