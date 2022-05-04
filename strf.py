@@ -61,7 +61,7 @@ if platform.system() == 'Windows':
 
 try:
     from xml.etree.ElementTree import ParseError
-    from ccdc.query import get_cccsd_path, search_csd, parse_results
+    from structurefinder.ccdc.query import get_cccsd_path, search_csd, parse_results
 except ModuleNotFoundError:
     print('Non xml parser found.')
 

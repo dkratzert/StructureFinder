@@ -39,7 +39,7 @@ if pyver[0] == 3 and pyver[1] < 4:
 
 from shutil import which
 from searcher.constants import centering_letter_2_num, centering_num_2_letter
-from ccdc.query import get_cccsd_path, search_csd, parse_results
+from structurefinder.ccdc.query import get_cccsd_path, search_csd, parse_results
 from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response, HTTPResponse
 from displaymol.mol_file_writer import MolFile
 from displaymol.sdm import SDM
