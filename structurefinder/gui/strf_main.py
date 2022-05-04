@@ -1548,5 +1548,5 @@ class Ui_stdbMainwindow(object):
         self.actionCopy_Unit_Cell.setText(_translate("stdbMainwindow", "Copy Unit Cell"))
         self.actionGo_to_All_CIF_Tab.setText(_translate("stdbMainwindow", "Go to All CIF Tab"))
         self.actionGo_to_All_CIF_Tab.setShortcut(_translate("stdbMainwindow", "Meta+A"))
-from displaymol.molecule2D import MoleculeWidget
+from structurefinder.displaymol.molecule2D import MoleculeWidget
 from structurefinder.gui.table_view import StructuresListTableView
