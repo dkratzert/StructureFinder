@@ -69,7 +69,7 @@ class Atoms():
     def number(self) -> int:
         """
         The number of atoms in the current SHELX file.
-        >>> from structurefinder.shelxfile import ShelXFile
+        >>> from structurefinder.shelxfile.shelx import ShelXFile
         >>> shx = ShelXFile('./test-data/p21c.res')
         >>> shx.atoms.number
         148

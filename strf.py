@@ -52,7 +52,8 @@ from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import misc
 from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
 from structurefinder.searcher.fileparser import Cif
-from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, regular_results_parameters
+from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, \
+    regular_results_parameters
 
 is_windows = False
 import platform

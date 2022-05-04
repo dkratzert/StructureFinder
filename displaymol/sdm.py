@@ -323,6 +323,6 @@ if __name__ == "__main__":
     from pathlib import Path
     from molecule2D import display
     from pathlib import Path
-    cif = CifContainer(Path('test-data/4060314.cif'))
+    cif = CifContainer(Path('tests/test-data/4060314.cif'))
     atoms = make_molecule(cif)
     display(atoms)

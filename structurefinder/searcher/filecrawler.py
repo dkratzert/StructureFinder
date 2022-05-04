@@ -299,13 +299,13 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
 
 
 if __name__ == '__main__':
-    z = MyTarReader('./test-data/106c.tar.bz2')
+    z = MyTarReader('./tests/test-data/106c.tar.bz2')
 
     for i in z:
         print(i)
 
     # filewalker_walk('./')
-    # z = zipopener('../test-data/Archiv.zip')
+    # z = zipopener('./tests/test-data/Archiv.zip')
     # print(z)
 
     # fp = create_file_list('../test-data/', 'zip')

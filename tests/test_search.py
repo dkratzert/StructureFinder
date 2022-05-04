@@ -3,12 +3,12 @@ import unittest
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import database_handler
 from structurefinder.searcher.misc import regular_results_parameters, more_results_parameters
-from structurefinder.shelxfile import vol_unitcell
+from structurefinder.shelxfile.dsrmath import vol_unitcell
 
 
 class TestSearch(unittest.TestCase):
     def setUp(self) -> None:
-        self.dbfilename = 'test-data/test.sql'
+        self.dbfilename = 'tests/test-data/test.sql'
         self.structures = database_handler.StructureTable(self.dbfilename)
 
     def test_cellfind(self):

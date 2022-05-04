@@ -266,7 +266,7 @@ class DatabaseRequest():
         """
         Retrurns the last rowid of a loaded database.
 
-        >>> db = DatabaseRequest('./test-data/test.sql')
+        >>> db = DatabaseRequest('./tests/test-data/test.sql')
         >>> db.get_lastrowid()
         263
         """
@@ -380,7 +380,7 @@ class StructureTable():
         """
         Returns the list of structures as dictionary.
 
-        >>> str = StructureTable('test-data/test.sql')
+        >>> str = StructureTable('tests/test-data/test.sql')
         >>> len(str.get_all_structures_as_dict([1,2]))
         2
         """
@@ -406,7 +406,7 @@ class StructureTable():
         """
         returns all fragment names in the database, sorted by name
         :returns [id, meas, path, filename, data]
-        >>> str = StructureTable('test-data/test.sql')
+        >>> str = StructureTable('tests/test-data/test.sql')
         >>> len(str.get_all_structure_names([1, 2]))
         2
         """
@@ -492,7 +492,7 @@ class StructureTable():
         returns the atoms of structure with structure_id
         returns: [Name, Element, X, Y, Z, Part, ocuupancy]
 
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.get_atoms_table(16)[0]
         ('O1', 'O', 0.32157, 0.42645, 0.40201, 0, 1.0)
         >>> db.get_atoms_table(16, cartesian=True)[0]
@@ -534,7 +534,7 @@ class StructureTable():
         """
         Returns the sum formula of an entry as dictionary.
 
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> sumf = db.get_calc_sum_formula(16)
         >>> sumf == {'Id': 13, 'StructureId': 16, 'Elem_C': 18.0, 'Elem_D': None, 'Elem_H': 19.0, 'Elem_N': 1.0, 'Elem_O': 4.0, 'Elem_Cl': None, 'Elem_Br': None, 'Elem_I': None, 'Elem_F': None, 'Elem_S': None, 'Elem_P': None, 'Elem_Ac': None, 'Elem_Ag': None, 'Elem_Al': None, 'Elem_Am': None, 'Elem_Ar': None, 'Elem_As': None, 'Elem_At': None, 'Elem_Au': None, 'Elem_B': None, 'Elem_Ba': None, 'Elem_Be': None, 'Elem_Bi': None, 'Elem_Bk': None, 'Elem_Ca': None, 'Elem_Cd': None, 'Elem_Ce': None, 'Elem_Cf': None, 'Elem_Cm': None, 'Elem_Co': None, 'Elem_Cr': None, 'Elem_Cs': None, 'Elem_Cu': None, 'Elem_Dy': None, 'Elem_Er': None, 'Elem_Eu': None, 'Elem_Fe': None, 'Elem_Fr': None, 'Elem_Ga': None, 'Elem_Gd': None, 'Elem_Ge': None, 'Elem_He': None, 'Elem_Hf': None, 'Elem_Hg': None, 'Elem_Ho': None, 'Elem_In': None, 'Elem_Ir': None, 'Elem_K': None, 'Elem_Kr': None, 'Elem_La': None, 'Elem_Li': None, 'Elem_Lu': None, 'Elem_Mg': None, 'Elem_Mn': None, 'Elem_Mo': None, 'Elem_Na': None, 'Elem_Nb': None, 'Elem_Nd': None, 'Elem_Ne': None, 'Elem_Ni': None, 'Elem_Np': None, 'Elem_Os': None, 'Elem_Pa': None, 'Elem_Pb': None, 'Elem_Pd': None, 'Elem_Pm': None, 'Elem_Po': None, 'Elem_Pr': None, 'Elem_Pt': None, 'Elem_Pu': None, 'Elem_Ra': None, 'Elem_Rb': None, 'Elem_Re': None, 'Elem_Rh': None, 'Elem_Rn': None, 'Elem_Ru': None, 'Elem_Sb': None, 'Elem_Sc': None, 'Elem_Se': None, 'Elem_Si': None, 'Elem_Sm': None, 'Elem_Sn': None, 'Elem_Sr': None, 'Elem_Ta': None, 'Elem_Tb': None, 'Elem_Tc': None, 'Elem_Te': None, 'Elem_Th': None, 'Elem_Ti': None, 'Elem_Tl': None, 'Elem_Tm': None, 'Elem_U': None, 'Elem_V': None, 'Elem_W': None, 'Elem_Xe': None, 'Elem_Y': None, 'Elem_Yb': None, 'Elem_Zn': None, 'Elem_Zr': None}
         True
@@ -561,7 +561,7 @@ class StructureTable():
         """
         returns the cell of a res file in the db
 
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.get_cif_sumform_by_id(16)
         ('C18 H19 N O4',)
         """
@@ -775,7 +775,7 @@ class StructureTable():
     def get_row_as_dict(self, structure_id):
         """
         Returns a database row from residuals table as dictionary.
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> row = db.get_row_as_dict(16)
         """
         request = """select * from residuals where StructureId = ?"""
@@ -804,7 +804,7 @@ class StructureTable():
     def get_cell_as_dict(self, structure_id):
         """
         Returns a database row as dictionary
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> cell = db.get_cell_as_dict(16)
         >>> cell == {'Id': 16, 'StructureId': 16, 'a': 7.9492, 'b': 8.9757, 'c': 11.3745, 'alpha': 106.974, 'beta': 91.963, 'gamma': 103.456, 'volume': 750.33}
         True
@@ -826,7 +826,7 @@ class StructureTable():
     def get_cells_as_list(self, structure_ids: list):
         """
         Returns a list of unit cells from the list of input ids.
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.get_cells_as_list([16])
         [(7.9492, 8.9757, 11.3745, 106.974, 91.963, 103.456, 750.33)]
         """
@@ -837,7 +837,7 @@ class StructureTable():
     def get_cell_by_id(self, structure_id):
         """
         returns the cell of a res file in the db
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.get_cell_by_id(16)
         (7.9492, 8.9757, 11.3745, 106.974, 91.963, 103.456, 750.33)
         """
@@ -856,7 +856,7 @@ class StructureTable():
         :param threshold: Volume uncertaincy where to search
         :param volume: the unit cell volume
         :return: list
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.find_by_volume(3021.9, threshold=0.01)
         [(9, 9.451, 17.881, 18.285, 90.0, 102.054, 90.0, 3021.9), (252, 9.451, 17.881, 18.285, 90.0, 102.054, 90.0, 3021.9)]
         >>> db.find_by_volume(30021.9, threshold=0.01)
@@ -876,7 +876,7 @@ class StructureTable():
     def find_by_niggli_cell(self, a, b, c, alpha, beta, gamma, axtol=0.02, angtol=0.025, maxsolutions=None):
         """
         Searches cells with certain deviations in the unit cell parameters.
-        #>>> db = StructureTable('./test-data/test.sql')
+        #>>> db = StructureTable('./tests/test-data/test.sql')
         #>>> vol = [7.878, 10.469, 16.068, 90.000, 95.147, 90.000]
         #>>> db.find_by_niggli_cell(*vol)
         [8, 201, 202]
@@ -924,7 +924,7 @@ class StructureTable():
         Searches cells with volume between upper and lower limit
         :param text: Volume uncertaincy where to search
         id, name, data, path
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.find_by_strings('NTD51a')
         [(237, b'p21c', b'DK_NTD51a-final.cif', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
         >>> db.find_by_strings('ntd51A')
@@ -951,7 +951,7 @@ class StructureTable():
         Find structures by space group number in international tables of
         crystallography.
         Returns a list of index numbers.
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.find_by_it_number(1)
         [33]
         >>> db.find_by_it_number(500)
@@ -975,7 +975,7 @@ class StructureTable():
         """
         Find structures where certain elements are included in the sum formula.
 
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.find_by_elements(['S', 'Sn'])
         [75]
         >>> db.find_by_elements(['Sn'])
@@ -1012,7 +1012,7 @@ class StructureTable():
         """
         Find structures between start and end date.
 
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.find_by_date(start='2017-08-25', end='2018-05-05')
         [16, 17, 20, 21, 241]
         """
@@ -1027,7 +1027,7 @@ class StructureTable():
         Finds structures with R1 value better than rvalue. I search both R1 values, because often one or even both
         are missing.
 
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.find_by_rvalue(0.035)
         [18, 64, 75, 128, 131, 135, 151, 164, 236, 237, 243]
         """
@@ -1040,7 +1040,7 @@ class StructureTable():
         """
         Finds the structure with the biggest cell in the db. This should be done by volume, but was
         just for fun...
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.find_biggest_cell()
         (250, 48.48, 21.72, 10.74)
         """
@@ -1058,7 +1058,7 @@ class StructureTable():
 
     def get_database_version(self) -> int:
         """
-        >>> db = StructureTable('./test-data/test.sql')
+        >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.get_database_version()
         0
         """
@@ -1074,7 +1074,7 @@ class StructureTable():
     def set_database_version(self, version=0):
         """
         Database version to indicate apex or other formats. A value of 1 means the data is from APEX.
-        >>> db = StructureTable('test-data/test.sql')
+        >>> db = StructureTable('tests/test-data/test.sql')
         >>> db.get_database_version()
         0
         """

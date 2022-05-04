@@ -31,7 +31,7 @@ class TestApplication(unittest.TestCase):
         self.myapp = strf.StartStructureDB()
         self.myapp.setWindowTitle('StructureFinder v{}'.format(VERSION))
         os.chdir(Path(__file__).parent.parent)
-        self.myapp.structures = database_handler.StructureTable('./test-data/test.sql')
+        self.myapp.structures = database_handler.StructureTable('./tests/test-data/test.sql')
         self.myapp.show_full_list()
 
     def tearDown(self) -> None:
@@ -139,16 +139,16 @@ class TestApplication(unittest.TestCase):
         Testing the opening of a database.
         """
         # self.myapp.close_db()  # not needed here!
-        status = self.myapp.open_database_file('test-data/test.sql')
+        status = self.myapp.open_database_file('tests/test-data/test.sql')
         self.assertEqual(True, status)
         self.assertEqual(263, self.get_row_count_from_table())
 
     def test_p4p_parser(self):
-        self.myapp.search_for_p4pcell('test-data/test2.p4p')
+        self.myapp.search_for_p4pcell('tests/test-data/test2.p4p')
         self.assertEqual('14.637 9.221  15.094 90.000 107.186 90.000', self.myapp.ui.searchCellLineEDit.text())
 
     def test_res_parser(self):
-        self.myapp.search_for_res_cell('test-data/p21c.res')
+        self.myapp.search_for_res_cell('tests/test-data/p21c.res')
         self.assertEqual('10.509 20.904 20.507 90.000 94.130 90.000', self.myapp.ui.searchCellLineEDit.text())
 
     def test_all_cif_values(self):

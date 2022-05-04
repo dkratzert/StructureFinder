@@ -82,7 +82,7 @@ class Lattice(object):
 
 if __name__ == '__main__':
     cif = Cif()
-    with open('test-data/p-1_a.cif', 'r') as f:
+    with open('tests/test-data/p-1_a.cif', 'r') as f:
         cifok = cif.parsefile(f.readlines())
     # pprint(cif.cif_data)
     # print(cifok)

@@ -292,9 +292,9 @@ if __name__ == "__main__":
     # shx = Shelxfile()
     # shx.read_file('tests/examples/1979688-finalcif.res')
     # atoms = [x.cart_coords for x in shx.atoms]
-    # cif = CifContainer('test-data/p21c.cif')
+    # cif = CifContainer('tests/test-data/p21c.cif')
     #cif = CifContainer(r'../41467_2015.cif')
     # cif = CifContainer('tests/examples/1979688.cif')
-    # cif = CifContainer('/Users/daniel/Documents/GitHub/StructureFinder/test-data/668839.cif')
+    # cif = CifContainer('tests/test-data/668839.cif')
     #cif.load_this_block(len(cif.doc) - 1)
     #display(cif.atoms_orth)

@@ -81,7 +81,7 @@ class P4PFile():
 
 
 if __name__ == '__main__':
-    p4p = P4PFile('./test-data/test1.p4p')
+    p4p = P4PFile('./tests/test-data/test1.p4p')
     print(p4p.cell)
     print(p4p.cellsd)
     print(p4p.volume)

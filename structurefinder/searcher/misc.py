@@ -129,11 +129,11 @@ def is_a_nonzero_file(filename: str) -> bool:
     """
     Check if a file exists and has some content.
 
-    >>> is_a_nonzero_file('./searcher/misc.py')
+    >>> is_a_nonzero_file('./structurefinder/searcher/misc.py')
     True
     >>> is_a_nonzero_file('foo.bar')
     False
-    >>> is_a_nonzero_file('./test-data/test_zerofile.cif')
+    >>> is_a_nonzero_file('./tests/test-data/test_zerofile.cif')
     False
     >>> is_a_nonzero_file('./strf.py')
     True

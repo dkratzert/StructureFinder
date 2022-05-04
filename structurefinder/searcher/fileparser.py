@@ -108,7 +108,7 @@ class Cif(object):
         :return: cif file content
         :rtype: dict
         >>> cif = Cif()
-        >>> ok = cif.parsefile(Cif.readfile(r'./test-data/COD/4060314.cif'))
+        >>> ok = cif.parsefile(Cif.readfile(r'./tests/test-data/COD/4060314.cif'))
         >>> cif.loops[0]
         {'_publ_author_name': 'Eva Hevia'}
         """
@@ -326,7 +326,7 @@ class Cif(object):
     def cell(self) -> List[float]:
         """
         >>> cif = Cif()
-        >>> ok = cif.parsefile(Cif.readfile(r'./test-data/COD/4060314.cif'))
+        >>> ok = cif.parsefile(Cif.readfile(r'./tests/test-data/COD/4060314.cif'))
         >>> cif.cell
         [12.092, 28.5736, 15.4221, 90.0, 107.365, 90.0]
 
@@ -393,9 +393,9 @@ class Cif(object):
     @property
     def loops(self) -> List[Dict]:
         """
-        >>> from structurefinder.searcher import Cif
+        >>> from structurefinder.searcher.fileparser import Cif
         >>> cif = Cif()
-        >>> ok = cif.parsefile(Cif.readfile(r'./test-data/COD/4060314.cif'))
+        >>> ok = cif.parsefile(Cif.readfile(r'./tests/test-data/COD/4060314.cif'))
         >>> cif.loops[0]
         {'_publ_author_name': 'Eva Hevia'}
         """
@@ -404,10 +404,10 @@ class Cif(object):
     def loop_items(self, item: str) -> List[str]:
         """
         >>> cif = Cif()
-        >>> ok = cif.parsefile(Cif.readfile(r'./test-data/COD/4060314.cif'))
+        >>> ok = cif.parsefile(Cif.readfile(r'./tests/test-data/COD/4060314.cif'))
         >>> cif.loop_items('_publ_author_name')
         ['Eva Hevia', 'Dolores Morales', 'Julio Perez', 'Victor Riera', 'Markus Seitz', 'Daniel Miguel']
-        >>> ok = cif.parsefile(Cif.readfile(r'./test-data/ICSD/1923_Aminoff, G._Ni As_P 63.m m c_Nickel arsenide.cif'))
+        >>> ok = cif.parsefile(Cif.readfile(r'./tests/test-data/ICSD/1923_Aminoff, G._Ni As_P 63.m m c_Nickel arsenide.cif'))
         >>> cif.loop_items('_symmetry_equiv_pos_site_id')
         ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24']
         """
@@ -481,7 +481,7 @@ class Cif(object):
         """
         Yields symmetry operations.
         >>> cif = Cif()
-        >>> ok = cif.parsefile(Cif.readfile(r'./test-data/COD/4060314.cif'))
+        >>> ok = cif.parsefile(Cif.readfile(r'./tests/test-data/COD/4060314.cif'))
         >>> cif.symm
         ['x, y, z', '-x+1/2, y+1/2, -z+1/2', '-x, -y, -z', 'x-1/2, -y-1/2, z-1/2']
         """
@@ -553,7 +553,7 @@ class Cif(object):
 
 if __name__ == '__main__':
     cif = Cif()
-    cifok = cif.parsefile(Path(r'test-data/668839.cif').read_text().splitlines(keepends=True))
+    cifok = cif.parsefile(Path(r'tests/test-data/668839.cif').read_text().splitlines(keepends=True))
     # pprint(cif.cif_data)
     pprint(cif._space_group_centring_type)
     # sys.exit()
