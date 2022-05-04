@@ -2,6 +2,6 @@
 
 TITLE "Structurefinder"
 
-start pythonw.exe strf.py
+start pythonw.exe structurefinder/strf.py
 rem pause
 exit
