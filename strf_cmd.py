@@ -31,9 +31,10 @@ parser.add_argument("-e",
                          'Modifying -e option discards the default.')
 parser.add_argument("-o",
                     dest="outfile",
-                    metavar='"file name"',
+                    metavar='"sqlite file name"',
                     type=str,
-                    help='Name of the output database file. Default: "structuredb.sqlite"')
+                    help='Name of the output database file. Default: "./structuredb.sqlite"\n'
+                         'Also used for the commandline search (-f option).')
 parser.add_argument("-c",
                     dest="fillcif",
                     default=False,
@@ -53,7 +54,8 @@ parser.add_argument("-f",
                     dest='cell',
                     # nargs=6,
                     type=lambda s: [float(item) for item in s.split()],
-                    help='Search for the specified unit cell.'
+                    help='Search for the specified unit cell. \n'
+                         'The cell values have to be enclosed in brackets.'
                     )
 
 
