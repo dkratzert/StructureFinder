@@ -32,7 +32,7 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidget
     QMessageBox, QPushButton
 
 from displaymol.sdm import SDM
-from gui.table_model import TableModel
+from structurefinder.gui.table_model import TableModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
@@ -95,7 +95,7 @@ if DEBUG:
     try:
         from PyQt5 import uic, QtGui
 
-        uic.compileUiDir(os.path.join(application_path, './gui'))
+        uic.compileUiDir(os.path.join(application_path, 'structurefinder/gui'))
         print('recompiled ui')
     except:
         print("Unable to compile UI!")
@@ -103,7 +103,7 @@ if DEBUG:
 else:
     print("Remember, UI is not recompiled without DEBUG.")
 
-from gui.strf_main import Ui_stdbMainwindow
+from structurefinder.gui.strf_main import Ui_stdbMainwindow
 
 
 class StartStructureDB(QMainWindow):

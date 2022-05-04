@@ -1549,4 +1549,4 @@ class Ui_stdbMainwindow(object):
         self.actionGo_to_All_CIF_Tab.setText(_translate("stdbMainwindow", "Go to All CIF Tab"))
         self.actionGo_to_All_CIF_Tab.setShortcut(_translate("stdbMainwindow", "Meta+A"))
 from displaymol.molecule2D import MoleculeWidget
-from gui.table_view import StructuresListTableView
+from structurefinder.gui.table_view import StructuresListTableView
