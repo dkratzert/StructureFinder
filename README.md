@@ -1,3 +1,7 @@
+![Lates Release](https://img.shields.io/github/v/tag/dkratzert/StructureFinder?label=Latest%20Release)
+[![Unit Tests](https://github.com/dkratzert/StructureFinder/actions/workflows/python-app_windows.yml/badge.svg?branch=master)](https://github.com/dkratzert/StructureFinder/actions/workflows/python-app_windows.yml)
+![Contributions](https://img.shields.io/badge/contributions-welcome-blue)
+
 # StructureFinder
 A crystal structure finder written in PyQt5 and Python3
 
