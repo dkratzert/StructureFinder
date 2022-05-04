@@ -1,7 +1,8 @@
 Changelog
 ---------
 * v61 Fixed unit cell search. It had a much too high threshold.
-      Added background indexing without blocking GUI. Other smaller improvements.
+      Added background indexing without blocking GUI. Indexing can be aborted now.
+      Other smaller improvements.
 * v60 Massive speed improvement for loading large databases. Adds a 'Last Modified' 
       column to the results table. The table is sortable by clicking on the column header now.
       Replaced the molecule viewer with a lighter one which results in a smaller install package. 
