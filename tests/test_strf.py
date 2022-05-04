@@ -13,7 +13,7 @@ from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import QApplication
 
 import strf
-from misc.version import VERSION
+from structurefinder.misc.version import VERSION
 from searcher import database_handler
 
 """

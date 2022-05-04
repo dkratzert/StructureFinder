@@ -3,7 +3,7 @@ import unittest
 
 import searcher
 import strf
-from misc import update_check
+from structurefinder.misc import update_check
 from searcher import database_handler, fileparser
 from structurefinder.shelxfile import shelx, elements
 from structurefinder.shelxfile import misc

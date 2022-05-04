@@ -4,8 +4,8 @@ import time
 from pathlib import Path
 from sqlite3 import DatabaseError
 
-from misc import update_check
-from misc.version import VERSION
+from structurefinder.misc import update_check
+from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen import Lattice
 from searcher.database_handler import DatabaseRequest, StructureTable
 from searcher.misc import vol_unitcell, regular_results_parameters

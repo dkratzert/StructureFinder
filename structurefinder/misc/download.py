@@ -3,7 +3,7 @@ import sys
 import requests
 from PyQt5.QtCore import QThread, pyqtSignal
 
-from misc.version import VERSION
+from structurefinder.misc.version import VERSION
 
 
 class MyDownloader(QThread):

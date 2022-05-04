@@ -33,10 +33,10 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidget
 
 from displaymol.sdm import SDM
 from gui.table_model import TableModel
-from misc.dialogs import bug_found_warning, do_update_program
-from misc.download import MyDownloader
-from misc.exporter import export_to_cif_file
-from misc.settings import StructureFinderSettings
+from structurefinder.misc.dialogs import bug_found_warning, do_update_program
+from structurefinder.misc.download import MyDownloader
+from structurefinder.misc.exporter import export_to_cif_file
+from structurefinder.misc.settings import StructureFinderSettings
 from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
 from searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
@@ -46,7 +46,7 @@ app = QApplication(sys.argv)
 print(sys.version)
 DEBUG = False
 
-from misc.version import VERSION
+from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core import lattice
 from searcher import constants, misc, database_handler
 from searcher.constants import centering_num_2_letter, centering_letter_2_num

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 
-from misc.version import VERSION
+from structurefinder.misc.version import VERSION
 
 
 def bug_found_warning(logfile) -> None:

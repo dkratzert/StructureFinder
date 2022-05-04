@@ -7,7 +7,7 @@ from zipfile import ZipFile
 
 import os
 
-from misc.version import VERSION
+from structurefinder.misc.version import VERSION
 from searcher.misc import copy_file, remove_file, walkdir
 
 version = VERSION

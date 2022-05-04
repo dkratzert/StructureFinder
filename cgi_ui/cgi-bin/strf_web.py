@@ -12,7 +12,7 @@ from xml.etree.ElementTree import ParseError
 
 from gemmi.cif import Style
 
-from misc.exporter import cif_data_to_document
+from structurefinder.misc.exporter import cif_data_to_document
 
 ###########################################################
 ###  Configure the web server here:   #####################
@@ -212,7 +212,7 @@ def server_static(filepath):
 
 @app.route('/version')
 def version():
-    from misc.version import VERSION
+    from structurefinder.misc.version import VERSION
     return 'version ' + str(VERSION)
 
 

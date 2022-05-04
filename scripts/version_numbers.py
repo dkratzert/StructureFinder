@@ -5,7 +5,7 @@ from __future__ import print_function
 
 from pathlib import Path
 
-from misc.version import VERSION
+from structurefinder.misc.version import VERSION
 
 """
 This file is for updating the various version number definitions for each STRF release

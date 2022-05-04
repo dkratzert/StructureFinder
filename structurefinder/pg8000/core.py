@@ -16,7 +16,7 @@ from calendar import timegm
 from distutils.version import LooseVersion
 from struct import Struct
 import time
-import pg8000
+from structurefinder import pg8000
 
 # Copyright (c) 2007-2009, Mathieu Fenniak
 # All rights reserved.

@@ -17,7 +17,7 @@ import subprocess
 
 from PyQt5 import uic
 
-from misc.version import VERSION
+from structurefinder.misc.version import VERSION
 from scripts.create_zipfile import make_zip, files
 from scripts.version_numbers import process_iss, disable_debug, isspath, pypath
 
