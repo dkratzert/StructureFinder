@@ -8,7 +8,7 @@ from misc import update_check
 from misc.version import VERSION
 from pymatgen.core.lattice import Lattice
 from searcher.database_handler import DatabaseRequest, StructureTable
-from searcher.misc import vol_unitcell
+from searcher.misc import vol_unitcell, regular_results_parameters
 from searcher.worker import Worker
 
 parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect .cif/.res files to a '
@@ -74,18 +74,8 @@ def find_cell(cell: list):
     else:
         dbfilename = 'structuredb.sqlite'
     db, structures = get_database(dbfilename)
-    # if args.more_results:
-    #    # more results:
-    #    print('more results on')
-    #    vol_threshold = 0.04
-    #    ltol = 0.08
-    #    atol = 1.8
-    # else:
-    # regular:
-    vol_threshold = 0.02
-    ltol = 0.03
-    atol = 1.0
     volume = vol_unitcell(*cell)
+    atol, ltol, vol_threshold = regular_results_parameters(volume)
     # the fist number in the result is the structureid:
     cells = structures.find_by_volume(volume, vol_threshold)
     idlist = []
@@ -108,12 +98,12 @@ def find_cell(cell: list):
         print('\n{} Structures found:'.format(len(idlist)))
         searchresult = structures.get_all_structure_names(idlist)
     print(
-        'ID  |      path                                                                |   filename            |   data   ')
+        'ID  |      path                                                                     |   filename            |   data   ')
     print('-' * 130)
     for res in searchresult:
         Id = res[0]
-        path, filename, dataname = [x.decode('utf-8') for x in res if isinstance(x, bytes)]
-        print('{:} | {:70s} | {:<25s} | {:s}'.format(Id, path, filename, dataname, ))
+        dataname, filename, path = [x.decode('utf-8') for x in res if isinstance(x, bytes)]
+        print(f'{Id:3} | {path:77s} | {filename:<21s} | {dataname:s}')
 
 
 def run_index(args=None):
