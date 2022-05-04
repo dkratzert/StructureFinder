@@ -37,7 +37,7 @@ from misc.dialogs import bug_found_warning, do_update_program
 from misc.download import MyDownloader
 from misc.exporter import export_to_cif_file
 from misc.settings import StructureFinderSettings
-from p4pfile.p4p_reader import P4PFile, read_file_to_list
+from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
 from searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
 
