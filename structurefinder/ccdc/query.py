@@ -7,11 +7,12 @@ from pathlib import Path
 from pprint import pprint
 from shutil import which
 from tempfile import mkstemp
+from typing import Union
+
 try:
     from winreg import OpenKey, HKEY_CURRENT_USER, EnumKey, QueryInfoKey, EnumValue
 except ImportError:
     pass
-
 
 querytext = """<?xml version="1.0" encoding="UTF-8"?>
 <query name="reduced_cell_search" version="1.0" originator="generic">
@@ -30,8 +31,8 @@ querytext = """<?xml version="1.0" encoding="UTF-8"?>
 </query> """
 
 
-def get_cccsd_path() -> Path:
-    """
+def get_cccsd_path() -> Union[Path, None]:
+    r"""
     HKEY_CURRENT_USER\SOFTWARE\CCDC\CellCheckCSD
     """
     software = r'SOFTWARE\CCDC\CellCheckCSD\\'
@@ -103,9 +104,9 @@ def parse_results(xmlinput: str) -> list:
         # unit cells are listed in parameters:
         for p in r.findall('parameters'):
             for item in p.findall('parameter'):
-                type = item.get('type')
+                item_type = item.get('type')
                 value = item.text
-                values[type] = value
+                values[item_type] = value
         results.append(values)
     return results
 
@@ -139,13 +140,13 @@ def search_csd(cell: list, centering: str) -> str:
     try:
         os.remove(queryfile)
         os.remove(resultfile)
-    except:
+    except Exception:
         pass
     return rf
 
 
 if __name__ == '__main__':
-    #print(get_cccsd_path())
+    # print(get_cccsd_path())
     cell = [10.6369, 10.6369, 24.5938, 90.0, 90.0, 120.0]
     xml = search_csd(cell, centering='R')
     res = parse_results(xml)

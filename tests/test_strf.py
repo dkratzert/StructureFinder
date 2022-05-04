@@ -169,6 +169,7 @@ class TestApplication(unittest.TestCase):
         QTest.mouseClick(self.myapp.ui.SHELXtab, Qt.LeftButton)
         self.assertEqual('No SHELXL res file in cif found.', self.myapp.ui.SHELXplainTextEdit.toPlainText())
 
+    @unittest.skip('Can not run this on Github')
     def test_cellchekcsd(self):
         """
         Test if the unit cell of the current structure gets into the cellcheckcsd tab.
