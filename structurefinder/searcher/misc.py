@@ -135,7 +135,7 @@ def is_a_nonzero_file(filename: str) -> bool:
     False
     >>> is_a_nonzero_file('./tests/test-data/test_zerofile.cif')
     False
-    >>> is_a_nonzero_file('./strf.py')
+    >>> is_a_nonzero_file('./structurefinder/strf.py')
     True
     """
     status = False
