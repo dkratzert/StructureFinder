@@ -17,7 +17,7 @@ from pprint import pprint
 from typing import List, Dict, Union, Any
 
 from searcher.misc import get_error_from_value, vol_unitcell
-from shelxfile.elements import sorted_atoms
+from structurefinder.shelxfile.elements import sorted_atoms
 
 
 class Cif(object):

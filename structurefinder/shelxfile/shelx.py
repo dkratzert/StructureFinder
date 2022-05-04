@@ -24,15 +24,15 @@ import re
 import sys
 from math import cos, sin
 
-from shelxfile.atoms import Atoms, Atom
-from shelxfile.cards import ACTA, FVAR, FVARs, REM, BOND, Restraints, DEFS, NCSY, ISOR, FLAT, \
+from structurefinder.shelxfile.atoms import Atoms, Atom
+from structurefinder.shelxfile.cards import ACTA, FVAR, FVARs, REM, BOND, Restraints, DEFS, NCSY, ISOR, FLAT, \
     BUMP, DFIX, DANG, SADI, SAME, RIGU, SIMU, DELU, CHIV, EADP, EXYZ, DAMP, HFIX, HKLF, SUMP, SYMM, LSCycles, \
     SFACTable, UNIT, BASF, TWIN, WGHT, BLOC, SymmCards, CONN, CONF, BIND, DISP, GRID, HTAB, MERG, FRAG, FREE, FMAP, \
     MOVE, PLAN, PRIG, RTAB, SHEL, SIZE, SPEC, STIR, TWST, WIGL, WPDB, XNPD, ZERR, CELL, LATT, MORE, MPLA, AFIX, PART, \
     RESI, ABIN, ANIS, Residues
-from shelxfile.dsrmath import Matrix
-from shelxfile.misc import DEBUG, ParseOrderError, ParseNumError, ParseUnknownParam, \
-     time_this_method, multiline_test, dsr_regex, wrap_line, ParseSyntaxError
+from structurefinder.shelxfile.dsrmath import Matrix
+from structurefinder.shelxfile.misc import DEBUG, ParseOrderError, ParseNumError, ParseUnknownParam, \
+    multiline_test, dsr_regex, wrap_line, ParseSyntaxError
 
 __version__ = 3
 """

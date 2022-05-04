@@ -17,7 +17,7 @@ import time
 from shutil import get_terminal_size
 from typing import List
 
-from shelxfile.dsrmath import frac_to_cart, subtract_vect, determinante
+from structurefinder.shelxfile.dsrmath import frac_to_cart, subtract_vect, determinante
 
 # Without DEBUG, the parser should only fail if the file is realy damaged. With DEBUG enabled, the parser
 # fails even in harmless cases.

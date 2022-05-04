@@ -3,10 +3,9 @@ MOl V3000 format
 """
 
 import os
-from time import perf_counter
 
 from searcher.misc import distance
-from shelxfile.elements import get_radius_from_element
+from structurefinder.shelxfile.elements import get_radius_from_element
 
 
 class MolFile(object):

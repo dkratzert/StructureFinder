@@ -1,0 +1,1 @@
+from structurefinder.shelxfile import *

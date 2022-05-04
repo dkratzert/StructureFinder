@@ -5,7 +5,8 @@ import searcher
 import strf
 from misc import update_check
 from searcher import database_handler, fileparser
-from shelxfile import shelx, elements, misc
+from structurefinder.shelxfile import shelx, elements
+from structurefinder.shelxfile import misc
 
 
 class DoctestsTest(unittest.TestCase):

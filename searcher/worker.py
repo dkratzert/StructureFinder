@@ -5,12 +5,11 @@ from typing import Optional
 
 from PyQt5 import QtCore
 
-from searcher import filecrawler
 from searcher.database_handler import StructureTable
 from searcher.filecrawler import excluded_names, filewalker_walk, fill_db_with_cif_data, MyZipReader, MyTarReader, \
     fill_db_with_res_data
 from searcher.fileparser import Cif
-from shelxfile.shelx import ShelXFile
+from structurefinder.shelxfile.shelx import ShelXFile
 
 DEBUG = False
 

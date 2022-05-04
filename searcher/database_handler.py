@@ -34,7 +34,7 @@ from math import log
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 from typing import List, Union, Tuple
 
-from shelxfile.elements import sorted_atoms
+from structurefinder.shelxfile.elements import sorted_atoms
 
 DEBUG = False
 

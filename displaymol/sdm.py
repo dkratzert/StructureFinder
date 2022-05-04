@@ -17,8 +17,8 @@ from typing import Union
 
 from numpy.random._common import namedtuple
 
-from shelxfile.dsrmath import SymmetryElement, Matrix, Array, frac_to_cart
-from shelxfile.elements import get_radius_from_element
+from structurefinder.shelxfile import SymmetryElement, Matrix, Array, frac_to_cart
+from structurefinder.shelxfile.elements import get_radius_from_element
 
 DEBUG = False
 

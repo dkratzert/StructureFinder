@@ -39,7 +39,7 @@ from misc.exporter import export_to_cif_file
 from misc.settings import StructureFinderSettings
 from p4pfile.p4p_reader import P4PFile, read_file_to_list
 from searcher.worker import Worker
-from shelxfile.shelx import ShelXFile
+from structurefinder.shelxfile.shelx import ShelXFile
 
 app = QApplication(sys.argv)
 
