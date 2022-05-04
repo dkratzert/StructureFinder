@@ -1,8 +1,7 @@
 import doctest
 import unittest
 
-from structurefinder import searcher
-import strf
+from structurefinder import searcher, strf
 from structurefinder.misc import update_check
 from structurefinder.searcher import database_handler, fileparser
 from structurefinder.shelxfile import shelx, elements

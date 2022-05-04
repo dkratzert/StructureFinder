@@ -12,7 +12,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import QApplication
 
-import strf
+from structurefinder import strf
 from structurefinder.misc.version import VERSION
 from structurefinder.searcher import database_handler
 
