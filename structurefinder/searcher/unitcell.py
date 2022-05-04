@@ -11,8 +11,8 @@ Created on 03.10.2017
 
 @author: Daniel Kratzert
 """
-from searcher.database_handler import StructureTable
-from searcher.fileparser import Cif
+from structurefinder.searcher.database_handler import StructureTable
+from structurefinder.searcher.fileparser import Cif
 
 
 class Lattice(object):

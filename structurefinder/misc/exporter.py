@@ -3,7 +3,7 @@ from typing import Dict, List
 
 import gemmi as gemmi
 
-from searcher.fileparser import Cif
+from structurefinder.searcher.fileparser import Cif
 
 
 def export_to_cif_file(cif: Dict, filename: str):

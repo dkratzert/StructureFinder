@@ -7,9 +7,9 @@ from sqlite3 import DatabaseError
 from structurefinder.misc import update_check
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen import Lattice
-from searcher.database_handler import DatabaseRequest, StructureTable
-from searcher.misc import vol_unitcell, regular_results_parameters
-from searcher.worker import Worker
+from structurefinder.searcher.database_handler import DatabaseRequest, StructureTable
+from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
+from structurefinder.searcher.worker import Worker
 
 parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect .cif/.res files to a '
                                              'database.\n'

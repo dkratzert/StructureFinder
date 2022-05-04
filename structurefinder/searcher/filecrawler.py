@@ -21,9 +21,9 @@ import sys
 import tarfile
 import zipfile
 
-from searcher import database_handler
-from searcher.fileparser import Cif
-from searcher.misc import vol_unitcell, get_value
+from structurefinder.searcher import database_handler
+from structurefinder.searcher.fileparser import Cif
+from structurefinder.searcher.misc import vol_unitcell, get_value
 from structurefinder.shelxfile.dsrmath import frac_to_cart
 from structurefinder.shelxfile.shelx import ShelXFile
 

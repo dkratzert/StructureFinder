@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from searcher.fileparser import Cif
+from structurefinder.searcher.fileparser import Cif
 
 
 class TestParser(unittest.TestCase):

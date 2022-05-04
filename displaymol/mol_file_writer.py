@@ -4,7 +4,7 @@ MOl V3000 format
 
 import os
 
-from searcher.misc import distance
+from structurefinder.searcher.misc import distance
 from structurefinder.shelxfile.elements import get_radius_from_element
 
 

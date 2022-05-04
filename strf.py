@@ -38,7 +38,8 @@ from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
 from structurefinder.misc.settings import StructureFinderSettings
 from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
-from searcher.worker import Worker
+from structurefinder.searcher import database_handler, constants
+from structurefinder.searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
 
 app = QApplication(sys.argv)
@@ -48,10 +49,10 @@ DEBUG = False
 
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core import lattice
-from searcher import constants, misc, database_handler
-from searcher.constants import centering_num_2_letter, centering_letter_2_num
-from searcher.fileparser import Cif
-from searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, regular_results_parameters
+from structurefinder.searcher import misc
+from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
+from structurefinder.searcher.fileparser import Cif
+from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, regular_results_parameters
 
 is_windows = False
 import platform

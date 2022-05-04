@@ -16,7 +16,7 @@ import shutil
 from math import sqrt, cos, radians, log
 from typing import List, Union, Dict, Optional, Tuple, Any
 
-from searcher import constants
+from structurefinder.searcher import constants
 
 
 def regular_results_parameters(volume):

@@ -16,7 +16,7 @@ from pathlib import Path
 from pprint import pprint
 from typing import List, Dict, Union, Any
 
-from searcher.misc import get_error_from_value, vol_unitcell
+from structurefinder.searcher.misc import get_error_from_value, vol_unitcell
 from structurefinder.shelxfile.elements import sorted_atoms
 
 
@@ -393,7 +393,7 @@ class Cif(object):
     @property
     def loops(self) -> List[Dict]:
         """
-        >>> from searcher.fileparser import Cif
+        >>> from structurefinder.searcher import Cif
         >>> cif = Cif()
         >>> ok = cif.parsefile(Cif.readfile(r'./test-data/COD/4060314.cif'))
         >>> cif.loops[0]

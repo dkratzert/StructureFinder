@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QApplication
 
 import strf
 from structurefinder.misc.version import VERSION
-from searcher import database_handler
+from structurefinder.searcher import database_handler
 
 """
 These tests only run with pytest, because they rely on the PYTEST_CURRENT_TEST environment variable.
