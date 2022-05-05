@@ -265,10 +265,6 @@ class DatabaseRequest():
     def get_lastrowid(self) -> int:
         """
         Retrurns the last rowid of a loaded database.
-
-        >>> db = DatabaseRequest('./tests/test-data/test.sql')
-        >>> db.get_lastrowid()
-        263
         """
         try:
             return self.db_fetchone("""SELECT max(id) FROM Structure""")[0]
@@ -445,7 +441,6 @@ class StructureTable():
     def fill_measuremnts_table(self, name: str, structure_id):
         """
         Fills a measurements into the database.
-
         """
         req = '''
               INSERT INTO measurement (Id, name) VALUES(?, ?)
@@ -491,12 +486,6 @@ class StructureTable():
         """
         returns the atoms of structure with structure_id
         returns: [Name, Element, X, Y, Z, Part, ocuupancy]
-
-        >>> db = StructureTable('./tests/test-data/test.sql')
-        >>> db.get_atoms_table(16)[0]
-        ('O1', 'O', 0.32157, 0.42645, 0.40201, 0, 1.0)
-        >>> db.get_atoms_table(16, cartesian=True)[0]
-        ('O1', 'O', 1.5088943989965458, 2.312523688689475, 4.346994224791996, 0, 1.0)
         """
         fractional = 'x, y, z'
         cart_coords = 'xc, yc, zc'
@@ -533,25 +522,6 @@ class StructureTable():
     def get_calc_sum_formula(self, structure_id: int) -> dict:
         """
         Returns the sum formula of an entry as dictionary.
-
-        >>> db = StructureTable('./tests/test-data/test.sql')
-        >>> sumf = db.get_calc_sum_formula(16)
-        >>> sumf == {'Id': 13, 'StructureId': 16, 'Elem_C': 18.0, 'Elem_D': None, 'Elem_H': 19.0, 'Elem_N': 1.0, 'Elem_O': 4.0, 'Elem_Cl': None, 'Elem_Br': None, 'Elem_I': None, 'Elem_F': None, 'Elem_S': None, 'Elem_P': None, 'Elem_Ac': None, 'Elem_Ag': None, 'Elem_Al': None, 'Elem_Am': None, 'Elem_Ar': None, 'Elem_As': None, 'Elem_At': None, 'Elem_Au': None, 'Elem_B': None, 'Elem_Ba': None, 'Elem_Be': None, 'Elem_Bi': None, 'Elem_Bk': None, 'Elem_Ca': None, 'Elem_Cd': None, 'Elem_Ce': None, 'Elem_Cf': None, 'Elem_Cm': None, 'Elem_Co': None, 'Elem_Cr': None, 'Elem_Cs': None, 'Elem_Cu': None, 'Elem_Dy': None, 'Elem_Er': None, 'Elem_Eu': None, 'Elem_Fe': None, 'Elem_Fr': None, 'Elem_Ga': None, 'Elem_Gd': None, 'Elem_Ge': None, 'Elem_He': None, 'Elem_Hf': None, 'Elem_Hg': None, 'Elem_Ho': None, 'Elem_In': None, 'Elem_Ir': None, 'Elem_K': None, 'Elem_Kr': None, 'Elem_La': None, 'Elem_Li': None, 'Elem_Lu': None, 'Elem_Mg': None, 'Elem_Mn': None, 'Elem_Mo': None, 'Elem_Na': None, 'Elem_Nb': None, 'Elem_Nd': None, 'Elem_Ne': None, 'Elem_Ni': None, 'Elem_Np': None, 'Elem_Os': None, 'Elem_Pa': None, 'Elem_Pb': None, 'Elem_Pd': None, 'Elem_Pm': None, 'Elem_Po': None, 'Elem_Pr': None, 'Elem_Pt': None, 'Elem_Pu': None, 'Elem_Ra': None, 'Elem_Rb': None, 'Elem_Re': None, 'Elem_Rh': None, 'Elem_Rn': None, 'Elem_Ru': None, 'Elem_Sb': None, 'Elem_Sc': None, 'Elem_Se': None, 'Elem_Si': None, 'Elem_Sm': None, 'Elem_Sn': None, 'Elem_Sr': None, 'Elem_Ta': None, 'Elem_Tb': None, 'Elem_Tc': None, 'Elem_Te': None, 'Elem_Th': None, 'Elem_Ti': None, 'Elem_Tl': None, 'Elem_Tm': None, 'Elem_U': None, 'Elem_V': None, 'Elem_W': None, 'Elem_Xe': None, 'Elem_Y': None, 'Elem_Yb': None, 'Elem_Zn': None, 'Elem_Zr': None}
-        True
-        >>> sumf['Id'] == 13
-        True
-        >>> sumf['Elem_C'] == 18.0
-        True
-        >>> sumf['Elem_D']
-
-        >>> sumf['Elem_H'] == 19.0
-        True
-        >>> sumf['Elem_N'] == 1.0
-        True
-        >>> sumf['Elem_O'] == 4.0
-        True
-        >>> sumf['Elem_O'] == 5.0
-        False
         """
         request = """SELECT * FROM sum_formula WHERE StructureId = ?"""
         dic = self.get_dict_from_request(request, structure_id)

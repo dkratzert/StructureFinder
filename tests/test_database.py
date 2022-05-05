@@ -45,6 +45,9 @@ class TestDatabase(unittest.TestCase):
     def test_get_largest_id(self):
         self.assertEqual(263, self.db.get_largest_id())
 
+    def test_get_lastrowid(self):
+        self.assertEqual(263, self.db.database.get_lastrowid())
+
     def test_db_version(self):
         self.assertEqual(0, self.db.get_database_version())
 
@@ -85,6 +88,23 @@ class TestDatabase(unittest.TestCase):
 
     def test_get_row_as_dict(self):
         self.assertEqual('SHELXL-97', self.db.get_row_as_dict(16).get('_audit_creation_method'))
+
+    def test_get_calc_sumformula(self):
+        sumf = self.db.get_calc_sum_formula(16)
+        self.assertEqual(13, sumf.get('Id'))
+        self.assertEqual(18.0, sumf.get('Elem_C'))
+        self.assertEqual(None, sumf.get('Elem_Cl'))
+        self.assertEqual(19.0, sumf.get('Elem_H'))
+        self.assertEqual(1.0, sumf.get('Elem_N'))
+
+    def test_get_atom_table(self):
+        self.assertEqual(('O1', 'O', 0.32157, 0.42645, 0.40201, 0, 1.0), self.db.get_atoms_table(16)[0])
+        self.assertEqual(('O1', 'O', 1.5088943989965458, 2.312523688689475, 4.346994224791996, 0, 1.0),
+                         self.db.get_atoms_table(16, cartesian=True)[0])
+
+    def test_get_filepath(self):
+        self.assertEqual((b'p-1', b'/Users/daniel/GitHub/StructureFinder/test-data/106c.tgz'),
+                         self.db.get_filepath(16))
 
 
 if __name__ == '__main__':
