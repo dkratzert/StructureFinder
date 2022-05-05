@@ -21,7 +21,7 @@ venv/bin/pip install -r requirements.txt -U
 
 venv/bin/pyinstaller StructureFinder_linux.spec --clean -y
 
-VER=$(cat misc/version.py | grep VERSION | cut -d ' ' -f 3)
+VER=$(cat structurefinder/misc/version.py | grep VERSION | cut -d ' ' -f 3)
 
 mv dist/StructureFinder "dist/StructureFinder-v${VER}_${DISTR}"
 

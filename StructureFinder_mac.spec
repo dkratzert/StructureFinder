@@ -4,14 +4,15 @@ block_cipher = None
 import os
 
 
-a = Analysis(['strf.py'],
-             pathex=[os.path.abspath(SPECPATH)],
-             binaries=[],
-             datas=[('gui', 'gui'), ('searcher', 'searcher'), ('shelxfile','shelxfile'), ('apex','apex'),
-                    ('displaymol', 'displaymol'), ('icons', 'icons'), ('p4pfile','p4pfile'),
-                    ('ccdc','ccdc'), ('pg8000','pg8000'), ('misc', 'misc'), ('pymatgen', 'pymatgen')],
-             hiddenimports=['pg8000', 'decimal', 'six', 'uuid', 'distutils',
-                            'json', 'apex', 'distutils.version', 'misc', 'numpy'],
+a = Analysis(['structurefinder/strf.py'],
+             pathex=['structurefinder'],
+             binaries=[('update.exe', '.')],
+             datas=[('structurefinder/gui', 'gui'),
+                    ('structurefinder/displaymol', 'displaymol'),
+                    ('icons', 'icons'),
+			 ],
+             hiddenimports=['pg8000.__init__', 'decimal', 'six', 'uuid', 'distutils', 'gemmi',
+			                'struct', 'time', 'distutils.version', 'json', 'numpy', 'ccdc', 'PyQt5.sip'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],

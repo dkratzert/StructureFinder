@@ -74,10 +74,6 @@ def make_distribs():
     subprocess.run([innosetup_compiler,
                     r'scripts\strf-install_win64.iss', ])
 
-    ## Run 32bit setup compiler
-    # subprocess.run([innosetup_compiler,
-    #                r'scripts\strf-install_win32b.iss', ])
-
 
 # Make binary distributions:
 make_distribs()

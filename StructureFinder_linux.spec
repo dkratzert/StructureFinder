@@ -3,14 +3,15 @@
 block_cipher = None
 
 
-a = Analysis(['strf.py'],
-             pathex=['D:\\Programme\\Windows Kits\\10\\Redist\\ucrt\\DLLs\\x64', 'D:\\GitHub\\StructureFinder'],
-             #binaries=[('C:\\tools\\opengl64\\opengl32sw.dll', 'opengl32sw.dll')],
-             datas=[('gui', 'gui'), ('searcher', 'searcher'), ('shelxfile','shelxfile'), ('apex','apex'),
-                    ('displaymol', 'displaymol'), ('icons', 'icons'), ('p4pfile','p4pfile'), 
-                    ('ccdc','ccdc'), ('pg8000','pg8000'), ('misc', 'misc'), ('pymatgen', 'pymatgen')],
-             hiddenimports=['pg8000', 'decimal', 'six', 'uuid', 'distutils', 'gemmi',
-                            'json', 'apex', 'distutils.version', 'misc', 'numpy', 'requests'],
+a = Analysis(['structurefinder/strf.py'],
+             pathex=['structurefinder'],
+             binaries=[('update.exe', '.')],
+             datas=[('structurefinder/gui', 'gui'),
+                    ('structurefinder/displaymol', 'displaymol'),
+                    ('icons', 'icons'),
+			 ],
+             hiddenimports=['pg8000.__init__', 'decimal', 'six', 'uuid', 'distutils', 'gemmi',
+			                'struct', 'time', 'distutils.version', 'json', 'numpy', 'ccdc', 'PyQt5.sip'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
