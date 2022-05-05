@@ -915,9 +915,9 @@ class StructureTable():
         id, name, data, path
         >>> db = StructureTable('./tests/test-data/test.sql')
         >>> db.find_by_strings('NTD51a')
-        [(237, b'p21c', b'DK_NTD51a-final.cif', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
+        [(237, b'p21c', b'DK_NTD51a-final.cif', '2017-05-18', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
         >>> db.find_by_strings('ntd51A')
-        [(237, b'p21c', b'DK_NTD51a-final.cif', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
+        [(237, b'p21c', b'DK_NTD51a-final.cif', '2017-05-18', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
         """
         req = '''
         SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx 
