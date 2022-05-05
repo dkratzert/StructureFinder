@@ -746,7 +746,7 @@ class StructureTable():
         # self.database.cur.execute("""CREATE INDEX idx_al_n ON niggli_cell (alpha)""")
         # self.database.cur.execute("""CREATE INDEX idx_be_n ON niggli_cell (beta)""")
         # self.database.cur.execute("""CREATE INDEX idx_ga_n ON niggli_cell (gamma)""")
-        self.database.cur.execute("""CREATE INDEX idx_sumform ON Residuals (_space_group_IT_number)""")
+        self.database.cur.execute("""CREATE INDEX idx_spgr ON Residuals (_space_group_IT_number)""")
 
     def populate_fulltext_search_table(self):
         """
