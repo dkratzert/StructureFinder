@@ -183,9 +183,13 @@ class Cif(object):
                     loops.append(loopitem)
                 continue
             # Find the loop positions:
-            if line[:5] == "loop_":
+            word = line[:5]
+            if word == "loop_":
                 loop = True
                 continue
+            elif word == 'data_' and data:
+                # Multi-cifs are not supported
+                break
             # Collect all data items outside loops:
             if line.startswith('_') and not loop:
                 lsplit = line.split()
@@ -234,14 +238,11 @@ class Cif(object):
                     self.cif_data['data'] = name
                     data = True
                     continue
-                else:  # break in occurence of a second data_
-                    break
             # Leave out save_ frames:
             if save_frame:
                 continue
             if line[:5] == "save_":
                 save_frame = True
-                continue
             elif line[:5] == "save_" and save_frame:
                 save_frame = False
         self.cif_data['_loop']: List[Dict[str, str]] = loops
@@ -250,9 +251,6 @@ class Cif(object):
         # TODO: implement detection of self.cif_data["_space_group_centring_type"] by symmcards.
         if not data:
             return False
-        # if not atoms:
-        #    self.cif_data.clear()
-        #    return False
         else:
             self.handle_deprecates()
             return True
@@ -553,17 +551,17 @@ class Cif(object):
 
 if __name__ == '__main__':
     cif = Cif()
-    cifok = cif.parsefile(Path(r'tests/test-data/668839.cif').read_text().splitlines(keepends=True))
-    # pprint(cif.cif_data)
-    pprint(cif._space_group_centring_type)
+    cifok = cif.parsefile(Path(r'/Users/daniel/Downloads/j9uwm9c3tmp.cif').read_text().splitlines(keepends=True))
+    #pprint(cif.cif_data)
+    #pprint(cif._space_group_centring_type)
     # sys.exit()
     # TODO: "_space_group_symop_operation_xyz" or '_symmetry_equiv_pos_as_xyz':
-    for x in cif.atoms:
-        pass
-        print(x)
+    print(len(list([x for x in cif.atoms])))
+    #    pass
+    #    print(x)
     print(cifok)
-    import doctest
+    #import doctest
 
-    failed, attempted = doctest.testmod()  # verbose=True)
-    if failed == 0:
-        print('passed all {} tests!'.format(attempted))
+    #failed, attempted = doctest.testmod()  # verbose=True)
+    #if failed == 0:
+    #    print('passed all {} tests!'.format(attempted))
