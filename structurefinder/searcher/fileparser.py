@@ -405,9 +405,6 @@ class Cif(object):
         >>> ok = cif.parsefile(Cif.readfile(r'./tests/test-data/COD/4060314.cif'))
         >>> cif.loop_items('_publ_author_name')
         ['Eva Hevia', 'Dolores Morales', 'Julio Perez', 'Victor Riera', 'Markus Seitz', 'Daniel Miguel']
-        >>> ok = cif.parsefile(Cif.readfile(r'./tests/test-data/ICSD/1923_Aminoff, G._Ni As_P 63.m m c_Nickel arsenide.cif'))
-        >>> cif.loop_items('_symmetry_equiv_pos_site_id')
-        ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24']
         """
         return [x[item] for x in self.loops if item in x]
 
