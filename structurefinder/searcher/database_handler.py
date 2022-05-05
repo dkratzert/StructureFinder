@@ -723,14 +723,7 @@ class StructureTable():
         self.database.cur.execute("""DROP INDEX if exists idx_al""")
         self.database.cur.execute("""DROP INDEX if exists idx_be""")
         self.database.cur.execute("""DROP INDEX if exists idx_ga""")
-        # self.database.cur.execute("""DROP INDEX if exists idx_a_n""")
-        # self.database.cur.execute("""DROP INDEX if exists idx_b_n""")
-        # self.database.cur.execute("""DROP INDEX if exists idx_c_n""")
-        # self.database.cur.execute("""DROP INDEX if exists idx_al_n""")
-        # self.database.cur.execute("""DROP INDEX if exists idx_be_n""")
-        # self.database.cur.execute("""DROP INDEX if exists idx_ga_n""")
         self.database.cur.execute("""DROP INDEX if exists idx_volume""")
-        # self.database.cur.execute("""DROP INDEX if exists idx_volume_n""")
         self.database.cur.execute("""DROP INDEX if exists idx_sumform""")
         self.database.cur.execute("""CREATE INDEX idx_volume ON cell (volume)""")
         self.database.cur.execute("""CREATE INDEX idx_a ON cell (a)""")
@@ -739,14 +732,10 @@ class StructureTable():
         self.database.cur.execute("""CREATE INDEX idx_al ON cell (alpha)""")
         self.database.cur.execute("""CREATE INDEX idx_be ON cell (beta)""")
         self.database.cur.execute("""CREATE INDEX idx_ga ON cell (gamma)""")
-        # self.database.cur.execute("""CREATE INDEX idx_volume_n ON niggli_cell (volume)""")
-        # self.database.cur.execute("""CREATE INDEX idx_a_n ON niggli_cell (a)""")
-        # self.database.cur.execute("""CREATE INDEX idx_b_n ON niggli_cell (b)""")
-        # self.database.cur.execute("""CREATE INDEX idx_c_n ON niggli_cell (c)""")
-        # self.database.cur.execute("""CREATE INDEX idx_al_n ON niggli_cell (alpha)""")
-        # self.database.cur.execute("""CREATE INDEX idx_be_n ON niggli_cell (beta)""")
-        # self.database.cur.execute("""CREATE INDEX idx_ga_n ON niggli_cell (gamma)""")
         self.database.cur.execute("""CREATE INDEX idx_spgr ON Residuals (_space_group_IT_number)""")
+        self.database.cur.execute("""CREATE INDEX idx_modiftime ON Residuals (modification_time)""")
+        self.database.cur.execute("""CREATE INDEX idx_itnum ON Residuals (_space_group_IT_number)""")
+        self.database.cur.execute("""CREATE INDEX idx_ccd ON Residuals (_database_code_depnum_ccdc_archive)""")
 
     def populate_fulltext_search_table(self):
         """
@@ -931,13 +920,21 @@ class StructureTable():
         [(237, b'p21c', b'DK_NTD51a-final.cif', b'/Users/daniel/GitHub/StructureFinder/test-data/051a')]
         """
         req = '''
-        SELECT StructureId, dataname, filename, path FROM txtsearch WHERE filename MATCH ?
+        SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx 
+            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId 
+            WHERE filename MATCH ? 
           UNION
-        SELECT StructureId, dataname, filename, path FROM txtsearch WHERE dataname MATCH ?
+        SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx
+            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId  
+            WHERE dataname MATCH ?
           UNION
-        SELECT StructureId, dataname, filename, path FROM txtsearch WHERE path MATCH ?
+        SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx 
+            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId 
+            WHERE path MATCH ?
           UNION
-        SELECT StructureId, dataname, filename, path FROM txtsearch WHERE shelx_res_file MATCH ?
+        SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx
+            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId  
+            WHERE shelx_res_file MATCH ?
         '''
         try:
             res = self.database.db_request(req, (text, text, text, text))
