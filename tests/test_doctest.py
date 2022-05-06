@@ -1,17 +1,14 @@
 import doctest
 import unittest
 
-from structurefinder import searcher, strf
-from structurefinder.misc import update_check
 from structurefinder.searcher import database_handler, fileparser
-from structurefinder.shelxfile import shelx, elements
-from structurefinder.shelxfile import misc
+from structurefinder.shelxfile import shelx, misc
 
 
 class DoctestsTest(unittest.TestCase):
     def test_run_doctest(self):
-        for name in [strf, shelx, elements, misc, searcher, update_check, database_handler,
-                     fileparser, searcher.misc]:
+        print('\n')
+        for name in [shelx, misc, database_handler, fileparser]:
             failed, attempted = doctest.testmod(name)  # , verbose=True)
             if failed == 0:
                 print('passed all {} tests in {}!'.format(attempted, name.__name__))

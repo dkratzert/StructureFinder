@@ -4,9 +4,9 @@ import time
 from pathlib import Path
 from sqlite3 import DatabaseError
 
-from structurefinder.misc import update_check
+from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
-from structurefinder.pymatgen import Lattice
+from structurefinder.pymatgen.core.lattice import Lattice
 from structurefinder.searcher.database_handler import DatabaseRequest, StructureTable
 from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
 from structurefinder.searcher.worker import Worker
@@ -60,7 +60,7 @@ parser.add_argument("-f",
 
 
 def check_update():
-    if update_check.is_update_needed(VERSION=VERSION):
+    if is_update_needed(VERSION=VERSION):
         print('A new Version of StructureFinder is available at '
               'https://dkratzert.de/structurefinder.html')
 

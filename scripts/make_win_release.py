@@ -75,13 +75,14 @@ def make_distribs():
                     r'scripts\strf-install_win64.iss', ])
 
 
-# Make binary distributions:
-make_distribs()
+if __name__ == '__main__':
+    # Make binary distributions:
+    make_distribs()
 
-make_shasum("scripts/Output/StructureFinder-setup-x64-v{}.exe".format(VERSION))
+    make_shasum("scripts/Output/StructureFinder-setup-x64-v{}.exe".format(VERSION))
 
-# Make a zip file for web interface distribution:
-make_zip(files)
+    # Make a zip file for web interface distribution:
+    make_zip(files)
 
-print('\nCreated version: {}'.format(VERSION))
-print(datetime.now().strftime("%d.%m.%Y %H:%M:%S"))
+    print('\nCreated version: {}'.format(VERSION))
+    print(datetime.now().strftime("%d.%m.%Y %H:%M:%S"))

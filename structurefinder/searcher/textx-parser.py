@@ -1,4 +1,4 @@
-from textx.metamodel import metamodel_from_str
+#from textx.metamodel import metamodel_from_str
 from pathlib import Path
 
 """
@@ -244,14 +244,14 @@ AnyPrintChar:
 
 
 if __name__ == '__main__':
-    mm = metamodel_from_str(lgrammar, skipws=False, autokwd=False, debug=True)
+    #mm = metamodel_from_str(lgrammar, skipws=False, autokwd=False, debug=True)
 
     # Meta-model knows how to parse and instantiate models.
     data = ''.join(open('./tests/test-data/p21c.cif', 'r').readlines()[13:32])
     print(data)
     #model = mm.model_from_file('../test-data/p21c.cif')
-    model = mm.model_from_str(data)
+    #model = mm.model_from_str(data)
 
-    print(model)
+    #print(model)
 
 

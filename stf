@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export PYTHONPATH=.
+python3.exe structurefinder/strf_cmd.py

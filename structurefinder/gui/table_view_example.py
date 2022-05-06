@@ -96,10 +96,10 @@ def create_connection():
         return False
     return True
 
-
-app = QApplication(sys.argv)
-if not create_connection():
-    sys.exit(1)
-win = Contacts()
-win.show()
-sys.exit(app.exec_())
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    if not create_connection():
+        sys.exit(1)
+    win = Contacts()
+    win.show()
+    sys.exit(app.exec_())
