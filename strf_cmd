@@ -1,4 +1,4 @@
 #!/bin/bash
 
 export PYTHONPATH=.
-python.exe structurefinder/strf.py
+python structurefinder/strf.py
