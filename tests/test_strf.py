@@ -6,7 +6,7 @@ import unittest
 from contextlib import suppress
 from pathlib import Path
 
-from PyQt5.QtCore import Qt, QDate
+from PyQt5.QtCore import Qt, QDate, QEventLoop
 from PyQt5.QtGui import QIcon
 from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import QApplication
@@ -142,9 +142,8 @@ class TestApplication(unittest.TestCase):
         while not self.get_row_count_from_table():
             if counter > 10:
                 break
-            strf.app.processEvents()
+            strf.app.processEvents(QEventLoop.AllEvents, 100)
             counter += 1
-            print(f'Waited {counter}')
 
     def test_index_db_only_res_files(self):
         self.myapp.ui.add_cif.setChecked(False)
