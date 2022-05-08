@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import QApplication
 
 from structurefinder import strf
 from structurefinder.misc.version import VERSION
+from structurefinder.searcher.misc import COL_FILE, COL_ID
 
 """
 These tests only run with pytest, because they rely on the PYTEST_CURRENT_TEST environment variable.
@@ -32,28 +33,38 @@ class TestApplication(unittest.TestCase):
         super(TestApplication, self).tearDown()
         strf.app.closeAllWindows()
 
-    # @unittest.skip("foo")
+    def get_row_content(self, row: int):
+        return self.myapp.ui.cifList_tableView.model()._data[row]
+
     def test_gui_simpl(self):
         # Number of items in main list
         self.assertEqual(263, self.get_row_count_from_table())
         # structureId
-        self.assertEqual(2, self.myapp.ui.cifList_tableView.model()._data[1][0])
+        self.assertEqual(2, self.get_row_content(1)[COL_ID])
         # filename
-        self.assertEqual(b'2004924.cif', self.myapp.ui.cifList_tableView.model()._data[1][2])
+        self.assertEqual(b'2004924.cif', self.get_row_content(1)[COL_FILE])
 
-    # @unittest.skip('skipping unfinished')
     def test_search_cell_simpl(self):
         """
         Testing simple unit cell search.
         """
+        # Table rows before search:
+        self.assertEqual(263, self.get_row_count_from_table())
         # correct cell:
         self.myapp.ui.searchCellLineEDit.setText('7.878 10.469 16.068 90.000 95.147 90.000')
         self.assertEqual(3, self.get_row_count_from_table())
+
+    def test_show_full_list(self):
         self.myapp.show_full_list()
+        self.assertEqual(263, self.get_row_count_from_table())
+
+    def test_search_incomplete_cell(self):
         # incomplete unit cell:
         self.myapp.ui.searchCellLineEDit.setText('7.878 10.469 16.068 90.000 95.147')
+        # still full list:
         self.assertEqual(263, self.get_row_count_from_table())
-        self.myapp.show_full_list()
+
+    def test_invalid_cell(self):
         # invalid unit cell:
         self.myapp.ui.searchCellLineEDit.setText('7.878 10.469 16.068 90.000 95.147 abc')
         self.assertEqual(263, self.get_row_count_from_table())
@@ -65,14 +76,20 @@ class TestApplication(unittest.TestCase):
         """
         self.myapp.ui.txtSearchEdit.setText('SADI')
         self.assertEqual(4, self.get_row_count_from_table())
-        self.assertEqual("Found 4 structures.", self.myapp.statusBar().currentMessage())
-        self.assertEqual(b'breit_tb13_85.cif', self.myapp.ui.cifList_tableView.model()._data[0][2])
-        self.assertEqual(b'p21c.res', self.myapp.ui.cifList_tableView.model()._data[1][2])
-        self.myapp.show_full_list()
+
+    def test_search_text_simpl_lower(self):
         self.myapp.ui.txtSearchEdit.setText('sadi')
         self.assertEqual(4, self.get_row_count_from_table())
-        self.myapp.show_full_list()
-        # should give no result
+
+    def test_statusbar_message(self):
+        self.myapp.ui.txtSearchEdit.setText('sadi')
+        self.assertEqual("Found 4 structures.", self.myapp.statusBar().currentMessage())
+
+    def test_data_name_column(self):
+        self.myapp.ui.txtSearchEdit.setText('sadi')
+        self.assertEqual(b'p21c.res', self.get_row_content(1)[COL_FILE])
+
+    def test_no_result(self):
         self.myapp.ui.txtSearchEdit.setText('foobar')
         self.assertEqual(0, self.get_row_count_from_table())
         self.assertEqual("Found 0 structures.", self.myapp.statusBar().currentMessage())

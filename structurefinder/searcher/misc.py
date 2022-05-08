@@ -18,6 +18,8 @@ from typing import List, Union, Dict, Optional, Tuple, Any
 
 from structurefinder.searcher import constants
 
+COL_ID, COL_DATA, COL_FILE, COL_MODIFIED, COL_PATH = range(5)
+
 
 def regular_results_parameters(volume):
     vol_threshold = log(volume) + 1.0
