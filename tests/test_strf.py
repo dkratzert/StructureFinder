@@ -23,14 +23,11 @@ These tests only run with pytest, because they rely on the PYTEST_CURRENT_TEST e
 class TestApplication(unittest.TestCase):
 
     def setUp(self) -> None:
-        # uic.compileUiDir('./gui')
-        os.chdir(Path(__file__).parent.parent)
         strf.app.setWindowIcon(QIcon('./icons/strf.png'))
         # Has to be without version number, because QWebengine stores data in ApplicationName directory:
         strf.app.setApplicationName('StructureFinder')
         self.myapp = strf.StartStructureDB()
         self.myapp.setWindowTitle('StructureFinder v{}'.format(VERSION))
-        os.chdir(Path(__file__).parent.parent)
         self.myapp.structures = database_handler.StructureTable('./tests/test-data/test.sql')
         self.myapp.show_full_list()
 
@@ -184,7 +181,6 @@ class TestApplication(unittest.TestCase):
         Tests for unit cells in advanced search mode.
         """
         # click on advanced search tab:
-        os.chdir(Path(__file__).parent)
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
         # fill in unit cell:
         self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')

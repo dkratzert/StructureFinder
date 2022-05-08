@@ -586,7 +586,6 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_tableView.show()
         self.show_full_list()
         self.settings.save_current_dir(str(Path(startdir)))
-        os.chdir(str(Path(startdir).parent))
         self.enable_buttons()
         # self.statusBar().showMessage(f'Found {self.maxfiles} files.')
 
@@ -715,7 +714,6 @@ class StartStructureDB(QMainWindow):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
                 return False
             status = self.close_db(save_name)
-            os.chdir(str(Path(save_name).parent))
             self.settings.save_current_dir(str(Path(save_name).parent))
         if status:
             self.ui.DatabaseNameDisplayLabel.setText('')
@@ -1074,7 +1072,6 @@ class StartStructureDB(QMainWindow):
             return False
         print("Opened {}.".format(file_name))
         self.settings.save_current_dir(str(Path(file_name).parent))
-        os.chdir(str(Path(file_name).parent))
         self.ui.saveDatabaseButton.setEnabled(True)
         self.ui.appendDirButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)

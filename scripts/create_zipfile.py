@@ -49,11 +49,9 @@ def make_zip(filelist):
             print("Adding {}".format(filen))
             copy_file(filen, target_dir)
     with ZipFile(zipfilen, mode='w', allowZip64=False) as myzip:
-        os.chdir(tmpdir)
         for filen in walkdir(maindir):
             myzip.write(filen)
     print("File written to {}".format(zipfilen))
-    os.chdir('..')
     shutil.rmtree(tmpdir)
 
 if __name__ == "__main__":

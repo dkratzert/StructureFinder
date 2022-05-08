@@ -1,5 +1,4 @@
 import ctypes
-import os
 from pathlib import Path
 
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
@@ -19,8 +18,8 @@ def bug_found_warning(logfile) -> None:
 
 
 def do_update_program(version):
-    os.chdir(str(Path(__file__).parent.parent))  # parent path of gui -> main dir
+    updater_exe = Path(__file__).parent.parent.parent.joinpath('update.exe')  # parent path of gui -> main dir
     args = ['-v', version,
             '-p', 'structurefinder']
     # Using this, because otherwise I can not write to the program dir:
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", 'update.exe', " ".join(args), None, 1)
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", updater_exe, " ".join(args), None, 1)
