@@ -125,6 +125,7 @@ class TestApplication(unittest.TestCase):
         self.myapp.import_file_dirs('tests/test-data/COD')
         self.wait_for_worker()
         self.assertEqual(22, self.get_row_count_from_table())
+        self.wait_for_worker()
 
     def test_index_db2(self):
         self.myapp.import_file_dirs('gui')
@@ -139,10 +140,11 @@ class TestApplication(unittest.TestCase):
     def wait_for_worker(self):
         counter = 0
         while not self.get_row_count_from_table():
-            if counter > 100:
+            if counter > 10:
                 break
             strf.app.processEvents()
             counter += 1
+            print(f'Waited {counter}')
 
     def test_index_db_only_res_files(self):
         self.myapp.ui.add_cif.setChecked(False)
