@@ -1,7 +1,6 @@
 """
 Unit tests for StructureFinder
 """
-import os
 import platform
 import unittest
 from contextlib import suppress
@@ -14,11 +13,11 @@ from PyQt5.QtWidgets import QApplication
 
 from structurefinder import strf
 from structurefinder.misc.version import VERSION
-from structurefinder.searcher import database_handler
 
 """
 These tests only run with pytest, because they rely on the PYTEST_CURRENT_TEST environment variable.
 """
+
 
 class TestApplication(unittest.TestCase):
 
@@ -26,10 +25,8 @@ class TestApplication(unittest.TestCase):
         strf.app.setWindowIcon(QIcon('./icons/strf.png'))
         # Has to be without version number, because QWebengine stores data in ApplicationName directory:
         strf.app.setApplicationName('StructureFinder')
-        self.myapp = strf.StartStructureDB()
+        self.myapp = strf.StartStructureDB(db_file_name='./tests/test-data/test.sql')
         self.myapp.setWindowTitle('StructureFinder v{}'.format(VERSION))
-        self.myapp.structures = database_handler.StructureTable('./tests/test-data/test.sql')
-        self.myapp.show_full_list()
 
     def tearDown(self) -> None:
         super(TestApplication, self).tearDown()
@@ -332,7 +329,7 @@ class TestApplication(unittest.TestCase):
         self.myapp.ui.MaintabWidget.setCurrentIndex(3)
         # fill in unit cell:
         self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
-        #self.myapp.ui.adv_elementsExclLineEdit.setText('Cl')
+        # self.myapp.ui.adv_elementsExclLineEdit.setText('Cl')
         # avtivate more results checkbox:
         self.assertEqual(True, self.myapp.ui.adv_moreResultscheckBox.isVisible())
         self.assertEqual(False, self.myapp.ui.adv_moreResultscheckBox.isChecked())
@@ -343,7 +340,7 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check results
-        #self.assertEqual(1, self.myapp.ui.cifList_tableView.model().rowCount())
+        # self.assertEqual(1, self.myapp.ui.cifList_tableView.model().rowCount())
         self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
 
     def test_superlatice_onlythese(self):

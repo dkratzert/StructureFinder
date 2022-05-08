@@ -1147,18 +1147,6 @@ class StartStructureDB(QMainWindow):
             time.sleep(0.05)
             self.statusBar().showMessage("{}{}".format(' ' * s, message))
 
-    def set_columnsize(self):
-        """
-        TODO: currently unused
-        Sets columnsize of main structure list.
-        """
-        self.ui.cifList_tableView.sortByColumn(1, 0)
-        treewidth = self.ui.cifList_tableView.width()
-        self.ui.cifList_tableView.setColumnWidth(0, int(treewidth / 4.0))
-        self.ui.cifList_tableView.setColumnWidth(1, int(treewidth / 5.0))
-        # self.ui.cifList_treeWidget.resizeColumnToContents(0)
-        # self.ui.cifList_treeWidget.resizeColumnToContents(1)
-
     def show_full_list(self) -> None:
         """
         Displays the complete list of structures
@@ -1173,8 +1161,6 @@ class StartStructureDB(QMainWindow):
         if self.structures:
             data = self.structures.get_all_structure_names()
             self.set_model_from_data(data)
-        # mess = "Loaded {} entries.".format(len(data))
-        # self.statusBar().showMessage(mess, msecs=5000)
         self.full_list = True
         self.ui.SpGrpComboBox.setCurrentIndex(0)
         self.ui.adv_elementsIncLineEdit.clear()
