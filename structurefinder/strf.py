@@ -109,7 +109,7 @@ from structurefinder.gui.strf_main import Ui_stdbMainwindow
 
 
 class StartStructureDB(QMainWindow):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, db_file_name: str = '', *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
@@ -120,7 +120,7 @@ class StartStructureDB(QMainWindow):
         self.statusBar().showMessage('StructureFinder version {}'.format(VERSION))
         self.maxfiles = 0
         self.dbfdesc = None
-        self.dbfilename = None
+        self.dbfilename = db_file_name
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         self.abort_import_button = QPushButton('Abort Indexing')
         self.progress = QProgressBar(self)
@@ -155,26 +155,8 @@ class StartStructureDB(QMainWindow):
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         # self.ui.cifList_tableView.addAction(self.ui.actionGo_to_All_CIF_Tab)
         self.settings = StructureFinderSettings()
-        if len(sys.argv) > 1:
-            self.dbfilename = sys.argv[1]
-            if isfile(self.dbfilename):
-                try:
-                    self.structures = database_handler.StructureTable(self.dbfilename)
-                    self.show_full_list()
-                    self.ui.appendDirButton.setEnabled(True)
-                except (IndexError, DatabaseError) as e:
-                    print(e)
-                    if DEBUG:
-                        raise
-                os.chdir(str(Path(self.dbfilename).parent))
-                self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(self.dbfilename))
-                self.settings.save_current_dir(str(Path(self.dbfilename).parent))
-                self.display_number_of_structures()
-        else:
-            lastdir = self.settings.load_last_workdir()
-            if Path(lastdir).exists():
-                with suppress(OSError, FileNotFoundError):
-                    os.chdir(self.settings.load_last_workdir())
+        if db_file_name:
+            self.open_database_file(db_file_name)
         if self.structures:
             self.set_model_from_data(self.structures.get_all_structure_names())
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
@@ -186,8 +168,6 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_tableView.setModel(self.table_model)
         self.ui.cifList_tableView.hideColumn(0)
         self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
-        # self.ui.cifList_tableView.resizeColumnToContents(1)
-        # self.ui.cifList_tableView.resizeColumnToContents(2)
         self.ui.cifList_tableView.resizeColumnToContents(3)
 
     def connect_signals_and_slots(self):
@@ -273,7 +253,6 @@ class StartStructureDB(QMainWindow):
             self.ui.add_cif.setChecked(True)
 
     def on_save_as_excel(self):
-        # filename = '/Users/daniel/Documents/GitHub/StructureFinder/test.xlsx'
         filename = self.get_excel_export_filename_from_dialog()
         if not filename or Path(filename).is_dir():
             return None
@@ -659,17 +638,21 @@ class StartStructureDB(QMainWindow):
                 return False
             else:
                 shutil.copy(self.dbfilename, copy_on_close)
-            if self.tmpfile:
-                try:
-                    os.remove(self.dbfilename)
-                    self.dbfilename = None
-                except Exception:
-                    return False
+            if self.tmpfile and not self.remove_db_tempfile():
+                return False
         self.ui.DatabaseNameDisplayLabel.setText('')
         self.set_model_from_data([])
         self.clear_fields()
         self.ui.MaintabWidget.setCurrentIndex(0)
         self.statusBar().showMessage('Database closed')
+        return True
+
+    def remove_db_tempfile(self) -> bool:
+        try:
+            os.remove(self.dbfilename)
+            self.dbfilename = ''
+        except Exception:
+            return False
         return True
 
     @pyqtSlot(name="abort_import")
@@ -710,8 +693,10 @@ class StartStructureDB(QMainWindow):
         export_to_cif_file(cif_data, filename=filename)
         print('cif exported')
 
-    def get_save_name_from_dialog(self, dir: str = './', filter="*.sqlite"):
-        return QFileDialog.getSaveFileName(self, caption='Save File', directory=dir, filter=filter)
+    def get_save_name_from_dialog(self, directory: str = '', filter="*.sqlite"):
+        if not directory:
+            directory = self.settings.load_last_workdir()
+        return QFileDialog.getSaveFileName(self, caption='Save File', directory=directory, filter=filter)
 
     def save_database(self, save_name=None) -> bool:
         """
@@ -724,7 +709,7 @@ class StartStructureDB(QMainWindow):
             self.structures.set_database_version(0)
         status = False
         if not save_name:
-            save_name, _ = self.get_save_name_from_dialog(dir=self.settings.load_last_workdir())
+            save_name, _ = self.get_save_name_from_dialog()
         if save_name:
             if isfile(save_name) and samefile(self.dbfilename, save_name):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
@@ -1053,26 +1038,28 @@ class StartStructureDB(QMainWindow):
             pass
         return list(res)
 
-    def get_import_filename_from_dialog(self, dir: str = './'):
-        return QFileDialog.getOpenFileName(self, caption='Open File', directory=dir, filter="*.sqlite")[0]
+    def get_import_filename_from_dialog(self, directory: str = ''):
+        if not directory:
+            directory = self.settings.load_last_workdir()
+        return QFileDialog.getOpenFileName(self, caption='Open File', directory=directory, filter="*.sqlite")[0]
 
-    def get_excel_export_filename_from_dialog(self, dir: str = './'):
-        return QFileDialog.getSaveFileName(self, caption='Save Excel File', directory=dir, filter="*.xlsx")[0]
+    def get_excel_export_filename_from_dialog(self, directory: str = ''):
+        if not directory:
+            directory = self.settings.load_last_workdir()
+        return QFileDialog.getSaveFileName(self, caption='Save Excel File', directory=directory, filter="*.xlsx")[0]
 
-    def open_database_file(self, fname=None) -> bool:
+    def open_database_file(self, file_name=None) -> bool:
         """
         Import a new database.
         """
         self.tmpfile = False
-        if not fname:
-            with suppress(FileNotFoundError, OSError):
-                os.chdir(self.settings.load_last_workdir())
-            fname = self.get_import_filename_from_dialog(dir=self.settings.load_last_workdir())
-        if not fname:
+        if not file_name:
+            file_name = self.get_import_filename_from_dialog()
+        if not file_name:
             return False
         self.close_db()
         self.clear_fields()
-        self.dbfilename = fname
+        self.dbfilename = file_name
         self.structures = database_handler.StructureTable(self.dbfilename)
         try:
             self.show_full_list()
@@ -1085,13 +1072,13 @@ class StartStructureDB(QMainWindow):
                 pass
         except (TypeError, ProgrammingError):
             return False
-        print("Opened {}.".format(fname))
-        self.settings.save_current_dir(str(Path(fname).parent))
-        os.chdir(str(Path(fname).parent))
+        print("Opened {}.".format(file_name))
+        self.settings.save_current_dir(str(Path(file_name).parent))
+        os.chdir(str(Path(file_name).parent))
         self.ui.saveDatabaseButton.setEnabled(True)
         self.ui.appendDirButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
-        self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(fname))
+        self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(file_name))
         self.display_number_of_structures()
         return True
 
@@ -1274,8 +1261,10 @@ if __name__ == "__main__":
     app.setWindowIcon(QtGui.QIcon('../icons/strf.png'))
     # Has to be without version number, because QWebengine stores data in ApplicationName directory:
     app.setApplicationName('StructureFinder')
-    # app.setApplicationDisplayName("StructureFinder")
-    myapp = StartStructureDB()
+    db_filename = ''
+    if len(sys.argv) > 1:
+        db_filename = sys.argv[1]
+    myapp = StartStructureDB(db_file_name=db_filename)
     myapp.show()
     myapp.raise_()
     myapp.setWindowTitle('StructureFinder v{}'.format(VERSION))
