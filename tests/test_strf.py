@@ -94,7 +94,6 @@ class TestApplication(unittest.TestCase):
         self.assertEqual(0, self.get_row_count_from_table())
         self.assertEqual("Found 0 structures.", self.myapp.statusBar().currentMessage())
 
-    # @unittest.skip("foo")
     def test_clicks(self):
         """
         Testing copy to clip board with double click on unit cell
@@ -104,52 +103,65 @@ class TestApplication(unittest.TestCase):
         clp = QApplication.clipboard().text()
         self.assertEqual("10.360 18.037 25.764 127.030 129.810 90.510", clp)
 
-    @unittest.skip('Does not work')
     def test_save_db(self):
         """
         Saves the current database to a file.
         """
-        self.myapp.import_file_dirs('test-data/COD')
         testfile = Path('./tst.sql')
         with suppress(Exception):
             Path.unlink(testfile)
-        self.myapp.save_database(testfile.absolute())
+        self.myapp.import_file_dirs('test-data/COD')
+        self.myapp.save_database(testfile.resolve())
         self.assertEqual(True, testfile.is_file())
         self.assertEqual(True, testfile.exists())
         Path.unlink(testfile)
         self.assertEqual(False, testfile.exists())
         self.assertEqual('Database saved.', self.myapp.statusBar().currentMessage())
 
-    @unittest.skip('Does not work')
     def test_index_db1(self):
         """
         Test index and save
         """
-        self.myapp.import_file_dirs('test-data/COD')
+        self.myapp.import_file_dirs('tests/test-data/COD')
+        self.wait_for_worker()
         self.assertEqual(22, self.get_row_count_from_table())
 
-    @unittest.skip('Does not work')
     def test_index_db2(self):
         self.myapp.import_file_dirs('gui')
+        self.wait_for_worker()
         self.assertEqual(0, self.get_row_count_from_table())
 
-    @unittest.skip('Does not work')
     def test_index_db3(self):
-        self.myapp.import_file_dirs('test-data/tst')
+        self.myapp.import_file_dirs('tests/test-data/tst')
+        self.wait_for_worker()
         self.assertEqual(3, self.get_row_count_from_table())
 
-    @unittest.skip('Does not work')
-    def test_index_db4(self):
+    def wait_for_worker(self):
+        counter = 0
+        while not self.get_row_count_from_table():
+            if counter > 100:
+                break
+            strf.app.processEvents()
+            counter += 1
+
+    def test_index_db_only_res_files(self):
         self.myapp.ui.add_cif.setChecked(False)
         self.myapp.ui.add_res.setChecked(True)
-        self.myapp.import_file_dirs('test-data/tst')
+        self.myapp.import_file_dirs('tests/test-data/tst')
+        self.wait_for_worker()
         self.assertEqual(1, self.get_row_count_from_table())
+
+    def test_index_db_only_cif_files(self):
+        self.myapp.ui.add_cif.setChecked(True)
+        self.myapp.ui.add_res.setChecked(False)
+        self.myapp.import_file_dirs('tests/test-data/tst')
+        self.wait_for_worker()
+        self.assertEqual(2, self.get_row_count_from_table())
 
     def test_open_database_file(self):
         """
         Testing the opening of a database.
         """
-        # self.myapp.close_db()  # not needed here!
         status = self.myapp.open_database_file('tests/test-data/test.sql')
         self.assertEqual(True, status)
         self.assertEqual(263, self.get_row_count_from_table())
