@@ -564,7 +564,10 @@ def get_radius_from_element(element: str) -> float:
     """
     Returns the radius of an atom by its element name.
     """
-    return element2cov[element]
+    try:
+        return element2cov[element]
+    except KeyError:
+        return 0.8
 
 
 def get_atomic_number(element: str) -> int:
