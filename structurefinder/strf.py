@@ -504,7 +504,7 @@ class StartStructureDB(QMainWindow):
         self.search_cell(self.ui.searchCellLineEDit.text())
 
     def get_startdir_from_dialog(self):
-        return QFileDialog.getExistingDirectory(self, 'Open Directory', '')
+        return QFileDialog.getExistingDirectory(self, 'Open Directory', directory=self.settings.load_last_indexdir())
 
     def append_file_dirs(self, startdir: Union[str, None] = None):
         """Appends new files to database instead of creating a new database"""
@@ -585,7 +585,7 @@ class StartStructureDB(QMainWindow):
         self.structures.database.commit_db()
         self.ui.cifList_tableView.show()
         self.show_full_list()
-        self.settings.save_current_work_dir(str(Path(startdir)))
+        self.settings.save_current_index_dir(str(Path(startdir)))
         self.enable_buttons()
         # self.statusBar().showMessage(f'Found {self.maxfiles} files.')
 
