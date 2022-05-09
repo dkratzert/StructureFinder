@@ -37,6 +37,9 @@ class TestApplication(unittest.TestCase):
     def get_row_content(self, row: int):
         return self.myapp.ui.cifList_tableView.model()._data[row]
 
+    def get_row_count_from_table(self):
+        return self.myapp.ui.cifList_tableView.model().rowCount()
+
     def wait_for_worker(self):
         counter = 0
         sleep(0.1)
@@ -115,7 +118,7 @@ class TestApplication(unittest.TestCase):
         clp = QApplication.clipboard().text()
         self.assertEqual("10.360 18.037 25.764 127.030 129.810 90.510", clp)
 
-    #@unittest.skip('Does not work')
+    # @unittest.skip('Does not work')
     def test_save_db(self):
         """
         Saves the current database to a file.
@@ -132,7 +135,7 @@ class TestApplication(unittest.TestCase):
         self.assertEqual(False, testfile.exists())
         self.assertEqual('Database saved.', self.myapp.statusBar().currentMessage())
 
-    #@unittest.skip('Not working an all systems')
+    # @unittest.skip('Not working an all systems')
     def test_index_db1(self):
         """
         Test index and save
@@ -141,19 +144,19 @@ class TestApplication(unittest.TestCase):
         self.wait_for_worker()
         self.assertEqual(22, self.get_row_count_from_table())
 
-    #@unittest.skip('Not working an all systems')
+    # @unittest.skip('Not working an all systems')
     def test_index_db2(self):
         self.myapp.import_file_dirs('gui')
         self.wait_for_worker()
         self.assertEqual(0, self.get_row_count_from_table())
 
-    #@unittest.skip('Not working an all systems')
+    # @unittest.skip('Not working an all systems')
     def test_index_db3(self):
         self.myapp.import_file_dirs('tests/test-data/tst')
         self.wait_for_worker()
         self.assertEqual(3, self.get_row_count_from_table())
 
-    #@unittest.skip('Not working an all systems')
+    # @unittest.skip('Not working an all systems')
     def test_index_db_only_res_files(self):
         self.myapp.ui.add_cif.setChecked(False)
         self.myapp.ui.add_res.setChecked(True)
@@ -161,7 +164,7 @@ class TestApplication(unittest.TestCase):
         self.wait_for_worker()
         self.assertEqual(1, self.get_row_count_from_table())
 
-    #@unittest.skip('Not working an all systems')
+    # @unittest.skip('Not working an all systems')
     def test_index_db_only_cif_files(self):
         self.myapp.ui.add_cif.setChecked(True)
         self.myapp.ui.add_res.setChecked(False)
@@ -211,10 +214,11 @@ class TestApplication(unittest.TestCase):
         self.myapp.ui.cifList_tableView.selectRow(2)
         QTest.mouseClick(self.myapp.ui.CCDCSearchTab, Qt.LeftButton)
         if platform.system() == 'Windows':
-            self.assertEqual('23.6015  20.9757  26.1674  90.0  101.784  90.0', self.myapp.ui.cellSearchCSDLineEdit.text())
+            self.assertEqual('23.6015  20.9757  26.1674  90.0  101.784  90.0',
+                             self.myapp.ui.cellSearchCSDLineEdit.text())
 
-    #@unittest.skip('Can not run this on Github')
-    def test_adv_search_cell(self):
+    # @unittest.skip('Can not run this on Github')
+    def test_advanced_mode_search_cell(self):
         """
         Tests for unit cells in advanced search mode.
         """
@@ -227,24 +231,22 @@ class TestApplication(unittest.TestCase):
         # check number of results:
         self.assertEqual(1, self.get_row_count_from_table())
         self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
-        # back to adv search tab:
+
+    def test_advanced_with_more_results(self):
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
-        self.myapp.ui.adv_unitCellLineEdit.clear()
         # fill in unit cell:
         self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
         # avtivate more results checkbox:
-        # QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, Qt.LeftButton, delay=10)
+        QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, Qt.LeftButton, delay=10)
         self.myapp.ui.adv_moreResultscheckBox.setChecked(True)
         self.myapp.ui.adv_superlatticeCheckBox.setChecked(False)
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check results
         self.assertEqual(1, self.get_row_count_from_table())
-        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
-        # back to adv search tab:
+
+    def test_advanced_with_more_results_and_superlattice(self):
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
-        self.myapp.ui.adv_unitCellLineEdit.clear()
-        # fill in unit cell:
         self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
         # avtivate more results checkbox:
         # QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, Qt.LeftButton, delay=10)
@@ -254,11 +256,9 @@ class TestApplication(unittest.TestCase):
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check results
         self.assertEqual(1, self.get_row_count_from_table())
-        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
-        # back to adv search tab:
+
+    def test_advanced_with_superlattice_only(self):
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
-        self.myapp.ui.adv_unitCellLineEdit.clear()
-        # fill in unit cell:
         self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
         # avtivate superlattice checkbox:
         self.myapp.ui.adv_moreResultscheckBox.setChecked(False)
@@ -267,24 +267,19 @@ class TestApplication(unittest.TestCase):
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check results
         self.assertEqual(1, self.get_row_count_from_table())
-        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
-
-    def get_row_count_from_table(self):
-        return self.myapp.ui.cifList_tableView.model().rowCount()
 
     def test_adv_search_text(self):
         """
         Searching for text advanced.
         """
-        # self.myapp.ui.MaintabWidget.setCurrentIndex(3)
         # click on advanced search tab:
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
         self.myapp.ui.adv_textsearch.setText('SADI')
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         self.assertEqual(4, self.get_row_count_from_table())
-        self.assertEqual("Found 4 structures.", self.myapp.statusBar().currentMessage())
-        self.assertEqual(b'breit_tb13_85.cif', self.myapp.ui.cifList_tableView.model()._data[0][2])
-        self.assertEqual(b'p21c.cif', self.myapp.ui.cifList_tableView.model()._data[3][2])
+        self.assertEqual(b'breit_tb13_85.cif', self.get_row_content(0)[2])
+        self.assertEqual(b'p21c.cif', self.get_row_content(3)[2])
+        self.assertEqual('2018-09-05', self.get_row_content(3)[3])
         self.assertEqual(True, self.myapp.ui.MaintabWidget.isVisible())
 
     def test_search_text_with_exclude(self):
@@ -303,7 +298,6 @@ class TestApplication(unittest.TestCase):
         self.myapp.ui.SpGrpComboBox.setCurrentIndex(14)
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         self.assertEqual(1, self.get_row_count_from_table())
-        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
 
     def test_search_text_and_elements(self):
         QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
@@ -315,7 +309,6 @@ class TestApplication(unittest.TestCase):
         self.myapp.ui.SpGrpComboBox.setCurrentIndex(5)
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         self.assertEqual(2, self.get_row_count_from_table())
-        self.assertEqual("Found 2 structures.", self.myapp.statusBar().currentMessage())
 
     # @unittest.skip
     def test_txt_elex_elin(self):
@@ -327,7 +320,7 @@ class TestApplication(unittest.TestCase):
         self.myapp.ui.adv_elementsExclLineEdit.setText('N')
         self.myapp.ui.SpGrpComboBox.setCurrentIndex(5)
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
-        self.assertEqual("Found 2 structures.", self.myapp.statusBar().currentMessage())
+        self.assertEqual(2, self.get_row_count_from_table())
 
     def test_zero_results_elexcl(self):
         # self.myapp.ui.MaintabWidget.setCurrentIndex(3)
@@ -335,7 +328,7 @@ class TestApplication(unittest.TestCase):
         self.myapp.ui.adv_elementsIncLineEdit.setText('C H O')
         self.myapp.ui.adv_elementsExclLineEdit.setText('N F')
         self.myapp.advanced_search()
-        # In this case (zero results), the cifList_treeWidget will not be updated!!!
+        # In this case (zero results), the cifList_tableView will show all entries!!!
         self.assertEqual(263, self.get_row_count_from_table())
         self.assertEqual("Found 0 structures.", self.myapp.statusBar().currentMessage())
 
@@ -347,7 +340,6 @@ class TestApplication(unittest.TestCase):
         self.myapp.advanced_search()
         # In this case (zero results), the cifList_treeWidget will not be updated!!!
         self.assertEqual(1, self.get_row_count_from_table())
-        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
 
     def test_zero_result_date1_sadi_excl(self):
         self.myapp.ui.adv_textsearch.setText('Breit')
@@ -381,8 +373,7 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check results
-        # self.assertEqual(1, self.myapp.ui.cifList_tableView.model().rowCount())
-        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
+        self.assertEqual(1, self.myapp.ui.cifList_tableView.model().rowCount())
 
     def test_superlatice_onlythese(self):
         # back to adv search tab:
@@ -402,14 +393,12 @@ class TestApplication(unittest.TestCase):
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # check results
         self.assertEqual(1, self.get_row_count_from_table())
-        self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
 
     def test_r1_val_find(self):
         self.myapp.ui.MaintabWidget.setCurrentIndex(3)
         self.myapp.ui.adv_R1_search_line.setText('2.5')
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         self.assertEqual(2, self.get_row_count_from_table())
-        self.assertEqual("Found 2 structures.", self.myapp.statusBar().currentMessage())
 
     def test_r1_val_nofind(self):
         self.myapp.ui.MaintabWidget.setCurrentIndex(3)
@@ -417,4 +406,4 @@ class TestApplication(unittest.TestCase):
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # returns full list:
         self.assertEqual(263, self.get_row_count_from_table())
-        self.assertEqual("Found 0 structures.", self.myapp.statusBar().currentMessage())
+
