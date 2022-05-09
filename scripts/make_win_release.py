@@ -34,8 +34,8 @@ for i in pypath:
 print("Version numbers updated.")
 
 try:
-    print(os.path.abspath('./gui'))
-    uic.compileUiDir('./gui')
+    print(os.path.abspath('./structurefinder/gui'))
+    uic.compileUiDir('./structurefinder/gui')
     print('recompiled ui')
 except:
     print("Unable to compile UI!")
