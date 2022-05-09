@@ -32,8 +32,7 @@ class TestApplication(unittest.TestCase):
         self.myapp.setWindowTitle('StructureFinder v{}'.format(VERSION))
 
     def tearDown(self) -> None:
-        #self.myapp.close()
-        pass
+        self.myapp.close()
 
     def get_row_content(self, row: int):
         return self.myapp.ui.cifList_tableView.model()._data[row]
@@ -42,7 +41,7 @@ class TestApplication(unittest.TestCase):
         counter = 0
         sleep(0.1)
         while not self.get_row_count_from_table():
-            strf.app.processEvents(QEventLoop.AllEvents, 100)
+            strf.app.processEvents(QEventLoop.AllEvents, 200)
             if counter > 10:
                 break
             counter += 1
