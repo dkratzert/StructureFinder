@@ -43,7 +43,7 @@ class TestApplication(unittest.TestCase):
             if counter > 10:
                 break
             counter += 1
-        sleep(0.5)
+        sleep(0.1)
 
     def test_gui_simpl(self):
         # Number of items in main list
@@ -129,7 +129,7 @@ class TestApplication(unittest.TestCase):
         self.assertEqual(False, testfile.exists())
         self.assertEqual('Database saved.', self.myapp.statusBar().currentMessage())
 
-    #@unittest.skip('Not working an all systems')
+    @unittest.skip('Not working an all systems')
     def test_index_db1(self):
         """
         Test index and save
@@ -144,7 +144,7 @@ class TestApplication(unittest.TestCase):
         self.wait_for_worker()
         self.assertEqual(0, self.get_row_count_from_table())
 
-    #@unittest.skip('Not working an all systems')
+    @unittest.skip('Not working an all systems')
     def test_index_db3(self):
         self.myapp.import_file_dirs('tests/test-data/tst')
         self.wait_for_worker()

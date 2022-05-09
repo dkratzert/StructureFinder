@@ -38,7 +38,7 @@ class Worker(QtCore.QObject):
                                     fillres=self.add_res_files, excludes=None,
                                     fillcif=self.add_cif_files, lastid=self.lastid)
 
-    def put_files_in_db(self, searchpath: str = './', excludes: list = None, lastid: int = 1,
+    def put_files_in_db(self, searchpath: str = '', excludes: list = None, lastid: int = 1,
                         structures=None, fillcif=True, fillres=True) -> int:
         """
         Imports files from a certain directory

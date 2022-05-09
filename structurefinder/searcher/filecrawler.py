@@ -20,6 +20,7 @@ import re
 import sys
 import tarfile
 import zipfile
+from typing import Generator
 
 from structurefinder.searcher import database_handler
 from structurefinder.searcher.fileparser import Cif
@@ -56,7 +57,7 @@ class MyZipReader(MyZipBase):
         """
         super().__init__(filepath)
 
-    def __iter__(self) -> list:
+    def __iter__(self) -> Generator:
         """
         returns an iterator of cif files in the zipfile as list.
         """
@@ -80,7 +81,7 @@ class MyTarReader(MyZipBase):
         """
         super().__init__(filepath)
 
-    def __iter__(self) -> list:
+    def __iter__(self) -> Generator:
         """
         returns an iterator of cif files in the zipfile as list.
         """
