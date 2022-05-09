@@ -18,7 +18,8 @@ def bug_found_warning(logfile) -> None:
 
 
 def do_update_program(version: str):
-    updater_exe = Path(__file__).parent.parent.parent.joinpath('update.exe')  # parent path of gui -> main dir
+    # parent path of gui -> main dir:
+    updater_exe = str(Path(__file__).parent.parent.parent.joinpath('update.exe'))
     args = ['-v', version,
             '-p', 'structurefinder']
     # Using this, because otherwise I can not write to the program dir:
