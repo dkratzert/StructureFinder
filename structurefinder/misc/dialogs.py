@@ -17,7 +17,7 @@ def bug_found_warning(logfile) -> None:
     window.show()
 
 
-def do_update_program(version):
+def do_update_program(version: str):
     updater_exe = Path(__file__).parent.parent.parent.joinpath('update.exe')  # parent path of gui -> main dir
     args = ['-v', version,
             '-p', 'structurefinder']
