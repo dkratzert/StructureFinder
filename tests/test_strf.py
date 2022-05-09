@@ -40,11 +40,13 @@ class TestApplication(unittest.TestCase):
 
     def wait_for_worker(self):
         counter = 0
+        sleep(0.1)
         while not self.get_row_count_from_table():
             strf.app.processEvents(QEventLoop.AllEvents, 100)
             if counter > 10:
                 break
             counter += 1
+            sleep(0.1)
         sleep(0.1)
 
     def test_gui_simpl(self):
