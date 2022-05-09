@@ -5,6 +5,7 @@ import platform
 import unittest
 from contextlib import suppress
 from pathlib import Path
+from time import sleep
 
 from PyQt5.QtCore import Qt, QDate, QEventLoop
 from PyQt5.QtGui import QIcon
@@ -34,6 +35,15 @@ class TestApplication(unittest.TestCase):
 
     def get_row_content(self, row: int):
         return self.myapp.ui.cifList_tableView.model()._data[row]
+
+    def wait_for_worker(self):
+        counter = 0
+        while not self.get_row_count_from_table():
+            strf.app.processEvents(QEventLoop.AllEvents, 100)
+            if counter > 10:
+                break
+            counter += 1
+        sleep(0.5)
 
     def test_gui_simpl(self):
         # Number of items in main list
@@ -134,19 +144,11 @@ class TestApplication(unittest.TestCase):
         self.wait_for_worker()
         self.assertEqual(0, self.get_row_count_from_table())
 
-    @unittest.skip('Not working an all systems')
+    #@unittest.skip('Not working an all systems')
     def test_index_db3(self):
         self.myapp.import_file_dirs('tests/test-data/tst')
         self.wait_for_worker()
         self.assertEqual(3, self.get_row_count_from_table())
-
-    def wait_for_worker(self):
-        counter = 0
-        while not self.get_row_count_from_table():
-            strf.app.processEvents(QEventLoop.AllEvents, 100)
-            if counter > 10:
-                break
-            counter += 1
 
     @unittest.skip('Not working an all systems')
     def test_index_db_only_res_files(self):

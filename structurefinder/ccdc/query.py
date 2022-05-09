@@ -2,12 +2,13 @@ import os
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
-from distutils.version import StrictVersion
 from pathlib import Path
 from pprint import pprint
 from shutil import which
 from tempfile import mkstemp
 from typing import Union
+
+from pkg_resources import parse_version
 
 try:
     from winreg import OpenKey, HKEY_CURRENT_USER, EnumKey, QueryInfoKey, EnumValue
@@ -42,11 +43,11 @@ def get_cccsd_path() -> Union[Path, None]:
         return None
     num = QueryInfoKey(csd)[0]  # returns the number of subkeys
     csd_path = None
-    latest = StrictVersion('0.0')
+    latest = parse_version('0.0')
     for n in range(num):
         vernum_dir = EnumKey(csd, n)  # subkey of version
         path = OpenKey(HKEY_CURRENT_USER, software + vernum_dir)
-        ver = StrictVersion(vernum_dir)
+        ver = parse_version(vernum_dir)
         if QueryInfoKey(path)[1] > 0:  # subkey with content
             if latest < ver:
                 csd_path = Path(EnumValue(path, 0)[1], 'ccdc_searcher.bat')
