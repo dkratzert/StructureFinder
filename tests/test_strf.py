@@ -111,6 +111,7 @@ class TestApplication(unittest.TestCase):
         with suppress(Exception):
             Path.unlink(testfile)
         self.myapp.import_file_dirs('test-data/COD')
+        self.wait_for_worker()
         self.myapp.save_database(testfile.resolve())
         self.assertEqual(True, testfile.is_file())
         self.assertEqual(True, testfile.exists())
@@ -118,7 +119,7 @@ class TestApplication(unittest.TestCase):
         self.assertEqual(False, testfile.exists())
         self.assertEqual('Database saved.', self.myapp.statusBar().currentMessage())
 
-    @unittest.skip('Not working an all systems')
+    #@unittest.skip('Not working an all systems')
     def test_index_db1(self):
         """
         Test index and save
@@ -144,7 +145,7 @@ class TestApplication(unittest.TestCase):
         while not self.get_row_count_from_table():
             if counter > 10:
                 break
-            strf.app.processEvents(QEventLoop.AllEvents, 100)
+            strf.app.processEvents(QEventLoop.AllEvents)
             counter += 1
 
     @unittest.skip('Not working an all systems')
