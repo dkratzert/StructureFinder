@@ -143,9 +143,9 @@ class TestApplication(unittest.TestCase):
     def wait_for_worker(self):
         counter = 0
         while not self.get_row_count_from_table():
+            strf.app.processEvents(QEventLoop.AllEvents, 100)
             if counter > 10:
                 break
-            strf.app.processEvents(QEventLoop.AllEvents)
             counter += 1
 
     @unittest.skip('Not working an all systems')
