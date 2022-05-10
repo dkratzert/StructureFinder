@@ -142,6 +142,7 @@ class TestApplication(unittest.TestCase):
         """
         self.myapp.import_file_dirs('tests/test-data/COD')
         self.wait_for_worker()
+        self.myapp.show_full_list()
         self.assertEqual(22, self.get_row_count_from_table())
 
     # @unittest.skip('Not working an all systems')

@@ -9,4 +9,6 @@ venv\Scripts\pip install pip -U
 
 pip install -r requirements.txt
 
-venv\Scripts\python.exe scripts\make_win_release.py
+CALL venv\Scripts\python.exe scripts\make_win_release.py
+
+git restore *
