@@ -1,0 +1,9 @@
+altgraph
+docutils
+future
+macholib
+numpy
+requests
+gemmi
+gunicorn
+xlsxwriter

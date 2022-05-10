@@ -2,4 +2,4 @@
 
 source venv/bin/activate
 export PYTHONPATH=.
-python structurefinder/strf_cmd.py
+python3 structurefinder/strf_cmd.py
