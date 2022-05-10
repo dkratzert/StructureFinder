@@ -248,7 +248,6 @@ def download_currently_selected_cif(structure_id):
     doc = cif_data_to_document(cif_data)
     file = doc.as_string(style=Style.Indent35)
     headers['Content-Type'] = 'text/plain'
-    # headers['Content-Type'] = 'application/octet-stream'
     headers['Content-Encoding'] = 'ascii'
     headers['Content-Length'] = len(file)
     now = datetime.datetime.now()
@@ -272,12 +271,9 @@ def show_cellcheck():
             centering = cif_dic['_space_group_centring_type']
         except KeyError:
             centering = ''
-        # formula = structures.get_calc_sum_formula(str_id)
-        # print(formula)
         cellstr = '{:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f}'.format(*cell)
     else:
         cellstr = ''
-        # formula = ''
     if centering:
         try:
             cent = centering_letter_2_num[centering]
@@ -303,7 +299,6 @@ def search_cellcheck_csd():
     """
     cmd = request.POST.cmd
     cell = request.POST.cell
-    elements: List = []
     str_id = request.POST.str_id
     if not cell:
         return {}
@@ -321,17 +316,6 @@ def search_cellcheck_csd():
         # print(results)
         if str_id:
             structures = StructureTable(dbfilename)
-            elements = formula_dict_to_elements(structures.get_calc_sum_formula(str_id)).split()
-            # TODO: filter by above elements
-            # something like this:
-            """for r in results:
-                formula = r['formula']
-                for e in formula:
-                    if e not in elements:
-                        continue
-                    else
-                        filtered.append(r)
-                        """
         print(len(results), 'Structures found...')
         return {"total": len(results), "records": results, "status": "success"}
     else:
@@ -363,18 +347,12 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
     """
     Returns the next package of table rows for continuos scrolling.
     """
-    failure: Dict[str, str] = {
-        "status" : "error",
-        "message": "Nothing found."
-    }
     if not ids and not show_all:
-        # return json.dumps(failure)
         return {}
     dic = structures.get_all_structures_as_dict(ids)
     number = len(dic)
     print("--> Got {} structures from actual search.".format(number))
     if number == 0:
-        # return json.dumps(failure)
         return {}
     return {"total": number, "records": dic, "status": "success"}
 
@@ -456,7 +434,6 @@ def get_residuals_table2(cif_dic: dict) -> str:
     """
     Returns a table with the most important residuals of a structure.
     """
-    # cell = structures.get_cell_by_id(structure_id)
     if not cif_dic:
         return ""
     wavelen = cif_dic['_diffrn_radiation_wavelength']
@@ -615,9 +592,8 @@ def search_text(structures: StructureTable, search_string: str) -> tuple:
     idlist = []
     if len(search_string) == 0:
         return ()
-    if len(search_string) >= 2:
-        if "*" not in search_string:
-            search_string = "{}{}{}".format('*', search_string, '*')
+    if len(search_string) >= 2 and "*" not in search_string:
+        search_string = "{}{}{}".format('*', search_string, '*')
     try:
         #  bad hack, should make this return ids like cell search
         idlist = tuple([x[0] for x in structures.find_by_strings(search_string)])
@@ -646,7 +622,6 @@ def search_elements(structures: StructureTable, elements: str, excluding: str = 
         res = structures.find_by_elements(formula, excluding=formula_ex, onlyincluded=onlyelem)
     except AttributeError:
         print('Element search error! Wrong list of elements..')
-        pass
     return list(res)
 
 
