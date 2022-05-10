@@ -3,6 +3,7 @@ Creates a zip file with the content of the StructureDB program.
 """
 import shutil
 import tempfile
+from pathlib import Path
 from zipfile import ZipFile
 
 import os
@@ -13,19 +14,8 @@ from structurefinder.searcher.misc import copy_file, remove_file, walkdir
 version = VERSION
 
 files = [
-    "strf.py",
-    "strf_cmd.py",
-    "apex",
-    "searcher",
-    "shelxfile",
-    "pymatgen",
-    "ccdc",
-    "lattice",
-    "pg8000",
-    "p4pfile",
-    "misc",
+    "structurefinder",
     "cgi_ui",
-    "displaymol",
     "icons"
     ]
 
@@ -38,6 +28,7 @@ def make_zip(filelist):
     tmpdir = tempfile.mkdtemp()
     fulldir = os.path.abspath(os.path.join(tmpdir, maindir))
     os.makedirs(fulldir)
+    Path('./scripts/Output').mkdir(exist_ok=True)
     zipfilen = './scripts/Output/strf_cmd-v{}.zip'.format(version)
     remove_file(zipfilen)
     for f in filelist:
