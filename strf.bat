@@ -1,6 +1,6 @@
 @ECHO OFF
 
-REM Runs the structurefinder desktop application
+REM Runs the StructureFinder desktop application
 
 REM Before running this script, you probably need to run this one time,
 REM in order to install e virtual environment (venv):
@@ -17,5 +17,5 @@ TITLE "Structurefinder"
 CALL venv\Scripts\activate.bat
 set PYTHONPATH=.
 
-start pythonw.exe structurefinder/strf.py
+venv\Scripts\python.exe structurefinder/strf.py
 
