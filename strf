@@ -1,15 +1,8 @@
 #!/bin/bash
 
-REM REM Runs the structurefinder desktop application
+REM Runs the StructureFinder Linux/MacOS desktop application
 
-# Before running this script, you probably need to run this one time,
-# in order to install e virtual environment (venv):
-#
-# python3.9 -m venv venv
-# source venv/bin/activate
-# venv/bin/python3.9 -m pip install pip -U
-# venv/bin/pip3 install -r requirements-cmd.txt
-#
+# Before running this script, you probably need to run './install_all_requirements'
 
 source venv/bin/activate
 export PYTHONPATH=.

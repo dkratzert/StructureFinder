@@ -20,7 +20,7 @@ filelist = [
     'strf_web',
     'requirements-cmd.txt',
     'install_min_requirements',
-    'install_all_requirements'
+    'install_all_requirements',
 ]
 
 excludes = ['.pyc', ]

@@ -1,15 +1,8 @@
 #!/bin/bash
 
-# Runs the structurefinder web service
+# Runs the StructureFinder web service in Linux/MacOS
 
-# Before running this script, you probably need to run this one time,
-# in order to install e virtual environment (venv):
-#
-# python3.9 -m venv venv
-# source venv/bin/activate
-# venv/bin/python3.9 -m pip install pip -U
-# venv/bin/pip3 install -r requirements-cmd.txt
-#
+# Before running this script, you probably need to run './install_min_requirements.bat'
 
 
 source venv/bin/activate

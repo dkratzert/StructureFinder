@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Installs the required packages to run the desktop application
+# Installs the required packages to run the Linux/MacOS desktop application
 
 python3.9 -m venv venv
 source venv/bin/activate

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Installs the required packages to run the commandline indexer and web server
+# Installs the required packages to run the commandline indexer and web server in Linux/MacOS
 
 python3.9 -m venv venv
 source venv/bin/activate
