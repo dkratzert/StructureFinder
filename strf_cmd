@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Runs the structurefinder commandline indexer
+
+# Before running this script, you probably need to run this one time,
+# in order to install e virtual environment (venv):
+#
+# python3.9 -m venv venv
+# source venv/bin/activate
+# venv/bin/python3.9 -m pip install pip -U
+# venv/bin/pip3 install -r requirements-cmd.txt
+#
+
 source venv/bin/activate
 export PYTHONPATH=.
-python3 structurefinder/strf_cmd.py
+python3 structurefinder/strf_cmd.py "$@"

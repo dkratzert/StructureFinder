@@ -17,7 +17,10 @@ filelist = [
     "icons",
     'strf_cmd.bat',
     'strf_cmd',
-    'requirements-cmd.txt'
+    'strf_web',
+    'requirements-cmd.txt',
+    'install_min_requirements',
+    'install_all_requirements'
 ]
 
 excludes = ['.pyc', ]

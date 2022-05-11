@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REM REM Runs the structurefinder desktop application
+# Runs the structurefinder web service
 
 # Before running this script, you probably need to run this one time,
 # in order to install e virtual environment (venv):
@@ -11,6 +11,8 @@ REM REM Runs the structurefinder desktop application
 # venv/bin/pip3 install -r requirements-cmd.txt
 #
 
+
 source venv/bin/activate
 export PYTHONPATH=.
-python3 structurefinder/strf.py
+python3 cgi_ui/cgi-bin/strf_web.py
+

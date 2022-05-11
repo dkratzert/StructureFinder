@@ -7,3 +7,4 @@ requests
 gemmi
 gunicorn
 xlsxwriter
+PyQt5==5.15.6
