@@ -1,4 +1,4 @@
-#REM execute me from the main directory
+# execute me from the main directory
 git pull
 
 source venv/bin/activate

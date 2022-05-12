@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REM Runs the StructureFinder Linux/MacOS desktop application
+# Runs the StructureFinder Linux/MacOS desktop application
 
 # Before running this script, you probably need to run './install_all_requirements'
 
