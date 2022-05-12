@@ -1,5 +1,7 @@
 Changelog
 ---------
+* v62 Adds modification time to text search results. Fixes reading of multi-CIFs.
+      'Update Now' button works again. Adds start scripts for Linux and Windows.
 * v61 Fixed unit cell search. It had a much too high threshold.
       Added background indexing without blocking GUI. Indexing can be aborted now.
       Other smaller improvements.
