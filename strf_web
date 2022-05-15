@@ -7,5 +7,5 @@
 
 source venv/bin/activate
 export PYTHONPATH=.
-python3 cgi_ui/cgi-bin/strf_web.py
+python3 cgi_ui/cgi-bin/strf_web.py "$@"
 
