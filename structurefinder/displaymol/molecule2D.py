@@ -18,7 +18,7 @@ type:    Atom type as string like 'C'
 x, y, z: Atom position in cartesian coordinates
 part:    Disorder part in SHELX notation like 1, 2, -1
 """
-atom = namedtuple('Atom', ('label', 'type', 'x', 'y', 'z', 'part'))
+Atomtuple = namedtuple('Atomtuple', ('label', 'type', 'x', 'y', 'z', 'part'))
 
 
 class MoleculeWidget(QtWidgets.QWidget):
@@ -27,7 +27,7 @@ class MoleculeWidget(QtWidgets.QWidget):
     def __init__(self, parent):
         super().__init__(parent=parent)
         self.factor = None
-        self.atoms_size = 15
+        self.atoms_size = 12
         self.bond_width = 2
         self.labels = False
         self.molecule_center = np.array([0, 0, 0])
@@ -53,12 +53,16 @@ class MoleculeWidget(QtWidgets.QWidget):
         self.projection_matrix = np.array([[1, 0, 0],
                                            [0, 1, 0]], dtype=np.float32)
         self.projected_points = []
-        self.zoom = 1.0
+        self.zoom = 1.1
 
     def clear(self):
         self.open_molecule(atoms=[])
 
-    def open_molecule(self, atoms: List[atom], labels=False):
+    def show_labels(self, value: bool):
+        self.labels = value
+        self.update()
+
+    def open_molecule(self, atoms: List['Atomtuple'], labels=False):
         self.labels = labels
         self.atoms.clear()
         for at in atoms:
@@ -254,19 +258,19 @@ class Atom(object):
         self.name = name
         self.part = part
         self.type_ = type_
-        self.screenx = None
-        self.screeny = None
+        self.screenx = 0
+        self.screeny = 0
         self.radius = get_radius_from_element(type_)
 
     @property
-    def color(self):
+    def color(self) -> QColor:
         return QColor(element2color.get(self.type_))
 
     def __repr__(self) -> str:
         return str((self.name, self.type_, self.coordinate))
 
 
-def display(atoms: List[atom]):
+def display(atoms: List[Atomtuple]):
     """
     This function is for testing purposes. 
     """
