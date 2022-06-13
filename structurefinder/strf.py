@@ -922,7 +922,7 @@ class StartStructureDB(QMainWindow):
             self.show_full_list()
             return False
         if len(search_string) >= 2 and "*" not in search_string:
-            search_string = "{}{}{}".format('*', search_string, '*')
+            search_string = f"{'*'}{search_string}{'*'}"
         try:
             searchresult = self.structures.find_by_strings(search_string)
         except AttributeError as e:

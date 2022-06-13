@@ -34,6 +34,7 @@ from math import log
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 from typing import List, Union, Tuple
 
+from structurefinder.searcher.fileparser import Cif
 from structurefinder.shelxfile.elements import sorted_atoms
 
 DEBUG = False
@@ -107,14 +108,14 @@ class DatabaseRequest():
                         StructureId    INTEGER NOT NULL,
                         Name       TEXT,
                         element    TEXT,
-                        x          FLOAT,
-                        y          FLOAT,
-                        z          FLOAT,
-                        occupancy  FLOAT,
+                        x          REAL,
+                        y          REAL,
+                        z          REAL,
+                        occupancy  REAL,
                         part       INTEGER,
-                        xc         FLOAT,
-                        yc         FLOAT,
-                        zc         FLOAT,
+                        xc         REAL,
+                        yc         REAL,
+                        zc         REAL,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
                         REFERENCES Structure(Id)
@@ -193,21 +194,39 @@ class DatabaseRequest():
         self.cur.execute(
             '''
             CREATE TABLE IF NOT EXISTS cell (
-                Id        INTEGER NOT NULL,
-                StructureId    INTEGER NOT NULL,
-                a    FLOAT,
-                b    FLOAT,
-                c    FLOAT,
-                alpha   FLOAT,
-                beta    FLOAT,
-                gamma   FLOAT,
-                volume     FLOAT,
+                Id              INTEGER NOT NULL,
+                StructureId     INTEGER NOT NULL,
+                a               REAL,
+                b               REAL,
+                c               REAL,
+                alpha           REAL,
+                beta            REAL,
+                gamma           REAL,
+                volume          REAL,
             PRIMARY KEY(Id),
               FOREIGN KEY(StructureId)
                 REFERENCES Structure(Id)
                   ON DELETE CASCADE
                   ON UPDATE NO ACTION);
             '''
+        )
+
+        self.cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS authors (
+                Id                          INTEGER NOT NULL,
+                StructureId                 INTEGER NOT NULL,
+                _audit_author_name          TEXT,
+                _audit_contact_author_name  TEXT,
+                _publ_contact_author_name   TEXT,
+                _publ_contact_author        TEXT,
+                _publ_author_name           TEXT,
+            PRIMARY KEY(Id),
+                FOREIGN KEY(StructureId)
+                REFERENCES Structure(Id)
+                    ON DELETE CASCADE 
+                    ON UPDATE NO ACTION);
+            """
         )
 
         """self.cur.execute(
@@ -235,7 +254,7 @@ class DatabaseRequest():
             CREATE TABLE IF NOT EXISTS sum_formula (
                     Id             INTEGER NOT NULL,
                     StructureId    INTEGER NOT NULL,
-                    {}             FLOAT,
+                    {}             REAL,
                     PRIMARY KEY(Id),
                       FOREIGN KEY (StructureId)
                         REFERENCES Structure(Id)
@@ -460,6 +479,24 @@ class StructureTable():
         if self.database.db_request(req, (structure_id, a, b, c, alpha, beta, gamma, volume)):
             return True
 
+    def fill_authors_table(self, structure_id: int, cif: Cif):
+        req = '''INSERT INTO authors (StructureId, 
+                                      _audit_author_name, 
+                                      _audit_contact_author_name, 
+                                      _publ_contact_author_name,
+                                      _publ_contact_author, 
+                                      _publ_author_name) 
+                            VALUES(?, ?, ?, ?, ?, ?)
+        '''
+        if self.database.db_request(req, (structure_id,
+                                          cif.cif_data.get('_audit_author_name'),
+                                          cif.cif_data.get('_audit_contact_author_name'),
+                                          cif.cif_data.get('_publ_contact_author_name'),
+                                          cif.cif_data.get('_publ_contact_author'),
+                                          cif.cif_data.get('_publ_author_name'))):
+            return True
+
+
     def fill_niggli_cell_table(self, structure_id: int, a: float, b: float, c: float, alpha: float, beta: float,
                                gamma: float, volume: float):
         """
@@ -515,7 +552,7 @@ class StructureTable():
             return []
         columns = ', '.join(['Elem_' + x.capitalize() for x in formula.keys()])
         placeholders = ', '.join('?' * (len(formula) + 1))
-        req = '''INSERT INTO sum_formula (StructureId, {}) VALUES ({});'''.format(columns, placeholders)
+        req = f'''INSERT INTO sum_formula (StructureId, {columns}) VALUES ({placeholders});'''
         result = self.database.db_request(req, [structure_id] + list(formula.values()))
         return result
 
@@ -862,27 +899,25 @@ class StructureTable():
         result = self.database.db_request(req, ('%' + ccdc + '%',))
         return self.result_to_list(result)
 
-    def find_by_strings(self, text):
+    def find_by_strings(self, text) -> Tuple:
         """
         Searches cells with volume between upper and lower limit
         :param text: Volume uncertaincy where to search
         id, name, data, path
         """
-        req = '''
-        SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx 
-            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId 
+        select = """SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx 
+            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId """
+        req = f'''
+        {select}
             WHERE filename MATCH ? 
           UNION
-        SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx
-            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId  
+        {select}  
             WHERE dataname MATCH ?
           UNION
-        SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx 
-            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId 
+        {select} 
             WHERE path MATCH ?
           UNION
-        SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx
-            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId  
+        {select} 
             WHERE shelx_res_file MATCH ?
         '''
         try:
@@ -890,6 +925,32 @@ class StructureTable():
         except (TypeError, ProgrammingError, OperationalError) as e:
             print('DB request error in find_by_strings().', e)
             return tuple([])
+        return res
+
+    def find_authors(self, text: str) -> Tuple:
+        search = f"{'*'}{text}{'*'}"
+        select = """SELECT auth.StructureId from authors as auth"""
+        req = f'''
+            {select}
+                WHERE _audit_author_name MATCH ? 
+                UNION
+            {select}
+                WHERE _audit_contact_author_name MATCH ?
+                UNION
+            {select}
+                WHERE _publ_contact_author_name MATCH ?
+                UNION
+            {select}
+                WHERE _publ_contact_author MATCH ?
+                UNION
+            {select}
+                WHERE _publ_author_name MATCH ?
+        '''
+        try:
+            res = self.database.db_request(req, (search, search, search, search, search))
+        except (TypeError, ProgrammingError, OperationalError) as e:
+            print('DB request error in find_by_strings().', e)
+            return ()
         return res
 
     def find_by_it_number(self, number: int) -> List[int]:
@@ -1035,9 +1096,9 @@ class StructureTable():
 
 if __name__ == '__main__':
     # searcher.filecrawler.put_cifs_in_db(searchpath='../')
-    # db = DatabaseRequest('./test3.sqlite')
+    db = StructureTable('./test.sqlite')
     # db.initialize_db()
-    db = StructureTable(r'C:\Program Files (x86)\CCDC\CellCheckCSD\cell_check.csdsql')
+    # db = StructureTable(r'C:\Program Files (x86)\CCDC\CellCheckCSD\cell_check.csdsql')
     # db.initialize_db()
     # db = StructureTable('../structurefinder.sqlite')
     # db.database.initialize_db()
@@ -1045,7 +1106,7 @@ if __name__ == '__main__':
     # out = db.get_cell_by_id(12)
     # out = db.find_by_strings('dk')
     ############################################
-    elinclude = ['C', 'O', 'N', 'F']
+    #elinclude = ['C', 'O', 'N', 'F']
     # elexclude = ['Tm']
     # inc = db.find_by_elements(elinclude, excluding=False)
     # exc = db.find_by_elements(elinclude, ['Al'])
@@ -1058,7 +1119,9 @@ if __name__ == '__main__':
     # db.fill_formula(1, {'StructureId': 1, 'C': 34.0, 'H': 24.0, 'O': 4.0, 'F': 35.99999999999999, 'AL': 1.0, 'GA': 1.0})
     # form = db.get_sum_formula(5)
     # print(exc)
-    req = """SELECT Id FROM NORMALISED_REDUCED_CELLS WHERE Volume >= ? AND Volume <= ?"""
-    result = db.database.db_request(req, (1473.46, 1564.76))
+    #req = """SELECT Id FROM NORMALISED_REDUCED_CELLS WHERE Volume >= ? AND Volume <= ?"""
+    #result = db.database.db_request(req, (1473.46, 1564.76))
+    result = db.find_authors('kra')
+    #result = db.find_by_strings('SADI')
     print(result)
     # lattice1 = Lattice.from_parameters_niggli_reduced(*cell)

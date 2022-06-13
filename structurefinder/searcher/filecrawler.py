@@ -222,6 +222,7 @@ def fill_db_with_cif_data(cif: Cif, filename: str, path: str, structure_id: int,
             pass
     cif.cif_data['calculated_formula_sum'] = sum_formula_dict
     structures.fill_residuals_table(structure_id, cif)
+    structures.fill_authors_table(structure_id, cif)
     return True
 
 

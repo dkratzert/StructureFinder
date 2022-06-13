@@ -31,7 +31,6 @@ class Cif(object):
         # This is a set of keys that are already there:
         self.cif_data: Dict[str, Union[str, Any]] = {
             "data"                                : '',
-            "_audit_contact_author_name"          : '',
             "_cell_length_a"                      : '',
             '_cell_length_b'                      : '',
             '_cell_length_c'                      : '',
@@ -97,6 +96,13 @@ class Cif(object):
             "_diffrn_reflns_av_unetI_netI"        : '',
             "_database_code_depnum_ccdc_archive"  : '',
             "_shelx_res_file"                     : '',
+            "_audit_author_name"                  : '',
+            "_audit_contact_author_name"          : '',
+            "_citation_author_name"               : '',
+            "_citation_editor_name"               : '',
+            "_publ_contact_author_name"           : '',
+            "_publ_contact_author"                : '',
+            "_publ_author_name"                   : '',
             "modification_time"                   : options['modification_time'],
             "file_size"                           : options['file_size']
         }
@@ -549,16 +555,16 @@ class Cif(object):
 if __name__ == '__main__':
     cif = Cif()
     cifok = cif.parsefile(Path(r'/Users/daniel/Downloads/j9uwm9c3tmp.cif').read_text().splitlines(keepends=True))
-    #pprint(cif.cif_data)
-    #pprint(cif._space_group_centring_type)
+    # pprint(cif.cif_data)
+    # pprint(cif._space_group_centring_type)
     # sys.exit()
     # TODO: "_space_group_symop_operation_xyz" or '_symmetry_equiv_pos_as_xyz':
     print(len(list([x for x in cif.atoms])))
     #    pass
     #    print(x)
     print(cifok)
-    #import doctest
+    # import doctest
 
-    #failed, attempted = doctest.testmod()  # verbose=True)
-    #if failed == 0:
+    # failed, attempted = doctest.testmod()  # verbose=True)
+    # if failed == 0:
     #    print('passed all {} tests!'.format(attempted))
