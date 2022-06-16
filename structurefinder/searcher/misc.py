@@ -460,9 +460,14 @@ def is_valid_cell(cell: str = None) -> List[float]:
     return cell
 
 
-def combine_results(cell_results: List, date_results: List, elincl_results: List, results: Union[List, set],
+def combine_results(cell_results: List,
+                    date_results: List,
+                    elincl_results: List,
+                    results: Union[List, set],
                     spgr_results: List,
-                    txt_ex_results: List, txt_results: List, rval_results: List, states: dict) -> Union[set, List]:
+                    txt_ex_results: Union[List, Tuple],
+                    txt_results: Union[List, Tuple],
+                    rval_results: List, states: dict) -> Union[set, List]:
     """
     Combines all search results together. Returns a list with database ids from found structures.
     """

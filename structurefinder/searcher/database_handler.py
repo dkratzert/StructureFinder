@@ -278,8 +278,25 @@ class DatabaseRequest():
                          path           TEXT,
                          shelx_res_file TEXT,
                             tokenize=simple "tokenchars= .=-_");
-                          """
-                         )
+                          """)
+
+    def init_author_search(self):
+        """
+        Initializes the full text search (fts) table for author search.
+        """
+        self.cur.execute("DROP TABLE IF EXISTS authortxtsearch")
+
+        # The simple tokenizer is best for my purposes (A self-written tokenizer would even be better):
+        self.cur.execute("""
+            CREATE VIRTUAL TABLE authortxtsearch USING
+                    fts4(StructureId                   INTEGER,
+                         _audit_author_name            TEXT,
+                         _audit_contact_author_name    TEXT,
+                         _publ_contact_author_name     TEXT,
+                         _publ_contact_author          TEXT,
+                         _publ_author_name             TEXT,
+                            tokenize=simple "tokenchars= .=-_");
+                          """)
 
     def get_lastrowid(self) -> int:
         """
@@ -417,6 +434,9 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return rows
 
+    def get_structures_by_idlist(self, ids: Union[List, Tuple]):
+        return self.get_all_structure_names(ids)
+
     def get_all_structure_names(self, ids: list = None) -> List:
         """
         returns all fragment names in the database, sorted by name
@@ -478,24 +498,6 @@ class StructureTable():
                             VALUES(?, ?, ?, ?, ?, ?, ?, ?)'''
         if self.database.db_request(req, (structure_id, a, b, c, alpha, beta, gamma, volume)):
             return True
-
-    def fill_authors_table(self, structure_id: int, cif: Cif):
-        req = '''INSERT INTO authors (StructureId, 
-                                      _audit_author_name, 
-                                      _audit_contact_author_name, 
-                                      _publ_contact_author_name,
-                                      _publ_contact_author, 
-                                      _publ_author_name) 
-                            VALUES(?, ?, ?, ?, ?, ?)
-        '''
-        if self.database.db_request(req, (structure_id,
-                                          cif.cif_data.get('_audit_author_name'),
-                                          cif.cif_data.get('_audit_contact_author_name'),
-                                          cif.cif_data.get('_publ_contact_author_name'),
-                                          cif.cif_data.get('_publ_contact_author'),
-                                          cif.cif_data.get('_publ_author_name'))):
-            return True
-
 
     def fill_niggli_cell_table(self, structure_id: int, a: float, b: float, c: float, alpha: float, beta: float,
                                gamma: float, volume: float):
@@ -754,13 +756,11 @@ class StructureTable():
         _publ_contact_author_name
         """
         populate_index = """
-                    INSERT INTO txtsearch (
-                                StructureId,
-                                filename,
-                                dataname,
-                                path,
-                                shelx_res_file
-                                )
+                    INSERT INTO txtsearch (StructureId,
+                                            filename,
+                                            dataname,
+                                            path,
+                                            shelx_res_file)
             SELECT  str.Id,
                     str.filename,
                     str.dataname,
@@ -771,6 +771,44 @@ class StructureTable():
         optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize'); """
         self.database.cur.execute(populate_index)
         self.database.cur.execute(optimize_queries)
+
+    def populate_author_fulltext_search(self):
+        index = """
+            INSERT INTO authortxtsearch (StructureId,
+                                    _audit_author_name,
+                                    _audit_contact_author_name,
+                                    _publ_contact_author_name,
+                                    _publ_contact_author,
+                                    _publ_author_name)
+            SELECT  aut.StructureId,
+                    aut._audit_author_name,
+                    aut._audit_contact_author_name,
+                    aut._publ_contact_author_name,
+                    aut._publ_contact_author,
+                    aut._publ_author_name
+                        FROM authors AS aut; """
+        self.database.db_request(index)
+        self.database.db_request("""INSERT INTO authortxtsearch(authortxtsearch) VALUES('optimize'); """)
+
+    def fill_authors_table(self, structure_id: int, cif: Cif):
+        """
+        This is the table where the direct values from the authors of the CIF are stored.
+        The virtual table "authortxtsearch" conteins the fts data.
+        """
+        req = '''INSERT INTO authors (StructureId,
+                                      _audit_author_name, 
+                                      _audit_contact_author_name, 
+                                      _publ_contact_author_name,
+                                      _publ_contact_author, 
+                                      _publ_author_name) 
+                            VALUES(?, ?, ?, ?, ?, ?)
+        '''
+        self.database.db_request(req, (structure_id,
+                                       cif.cif_data.get('_audit_author_name'),
+                                       cif.cif_data.get('_audit_contact_author_name'),
+                                       cif.cif_data.get('_publ_contact_author_name'),
+                                       cif.cif_data.get('_publ_contact_author'),
+                                       cif.cif_data.get('_publ_author_name')))
 
     def get_row_as_dict(self, structure_id):
         """
@@ -899,14 +937,13 @@ class StructureTable():
         result = self.database.db_request(req, ('%' + ccdc + '%',))
         return self.result_to_list(result)
 
-    def find_by_strings(self, text) -> Tuple:
+    def find_by_strings(self, text: str) -> Tuple:
         """
         Searches cells with volume between upper and lower limit
         :param text: Volume uncertaincy where to search
         id, name, data, path
         """
-        select = """SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx 
-            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId """
+        select = """SELECT StructureId FROM txtsearch """
         req = f'''
         {select}
             WHERE filename MATCH ? 
@@ -925,11 +962,11 @@ class StructureTable():
         except (TypeError, ProgrammingError, OperationalError) as e:
             print('DB request error in find_by_strings().', e)
             return tuple([])
-        return res
+        return tuple(self.result_to_list(res))
 
     def find_authors(self, text: str) -> Tuple:
         search = f"{'*'}{text}{'*'}"
-        select = """SELECT auth.StructureId from authors as auth"""
+        select = """SELECT StructureId from authortxtsearch """
         req = f'''
             {select}
                 WHERE _audit_author_name MATCH ? 
@@ -951,7 +988,14 @@ class StructureTable():
         except (TypeError, ProgrammingError, OperationalError) as e:
             print('DB request error in find_by_strings().', e)
             return ()
-        return res
+        return tuple(self.result_to_list(res))
+
+    def find_text_and_authors(self, txt: str) -> tuple:
+        result_txt = self.find_authors(txt)
+        result_authors = self.find_by_strings(txt)
+        result_txt = set(result_txt)
+        result_txt.update(result_authors)
+        return tuple(result_txt)
 
     def find_by_it_number(self, number: int) -> List[int]:
         """
@@ -1106,7 +1150,7 @@ if __name__ == '__main__':
     # out = db.get_cell_by_id(12)
     # out = db.find_by_strings('dk')
     ############################################
-    #elinclude = ['C', 'O', 'N', 'F']
+    # elinclude = ['C', 'O', 'N', 'F']
     # elexclude = ['Tm']
     # inc = db.find_by_elements(elinclude, excluding=False)
     # exc = db.find_by_elements(elinclude, ['Al'])
@@ -1119,9 +1163,9 @@ if __name__ == '__main__':
     # db.fill_formula(1, {'StructureId': 1, 'C': 34.0, 'H': 24.0, 'O': 4.0, 'F': 35.99999999999999, 'AL': 1.0, 'GA': 1.0})
     # form = db.get_sum_formula(5)
     # print(exc)
-    #req = """SELECT Id FROM NORMALISED_REDUCED_CELLS WHERE Volume >= ? AND Volume <= ?"""
-    #result = db.database.db_request(req, (1473.46, 1564.76))
-    result = db.find_authors('kra')
-    #result = db.find_by_strings('SADI')
-    print(result)
+    # req = """SELECT Id FROM NORMALISED_REDUCED_CELLS WHERE Volume >= ? AND Volume <= ?"""
+    # result = db.database.db_request(req, (1473.46, 1564.76))
+    #result = db.find_authors('herb')
+    # result = db.find_by_strings('SADI')
+    print(db.get_row_as_dict(2))
     # lattice1 = Lattice.from_parameters_niggli_reduced(*cell)
