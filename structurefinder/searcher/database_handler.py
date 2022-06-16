@@ -32,7 +32,7 @@ QSqlDatabase::removeDatabase("sales")
 import sys
 from math import log
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Dict
 
 from structurefinder.searcher.fileparser import Cif
 from structurefinder.shelxfile.elements import sorted_atoms
@@ -435,7 +435,7 @@ class StructureTable():
         return rows
 
     def get_structures_by_idlist(self, ids: Union[List, Tuple]):
-        return self.get_all_structure_names(ids)
+        return self.get_all_structure_names(ids) if ids else []
 
     def get_all_structure_names(self, ids: list = None) -> List:
         """
@@ -817,9 +817,12 @@ class StructureTable():
         request = """select * from residuals where StructureId = ?"""
         # setting row_factory to dict for the cif keys:
         dic = self.get_dict_from_request(request, structure_id)
+        authors = self.get_dict_from_request('''SELECT * FROM authors WHERE StructureId = ?''', structure_id)
+        if authors and dic:
+            dic.update(authors)
         return dic
 
-    def get_dict_from_request(self, request, structure_id):
+    def get_dict_from_request(self, request: str, structure_id: int) -> Dict:
         """
         Retruns the result of the given database request as dictionary.
         """
@@ -943,28 +946,26 @@ class StructureTable():
         :param text: Volume uncertaincy where to search
         id, name, data, path
         """
-        select = """SELECT StructureId FROM txtsearch """
-        req = f'''
-        {select}
+        select = """"""
+        req = '''
+        SELECT StructureId FROM txtsearch 
             WHERE filename MATCH ? 
-          UNION
-        {select}  
-            WHERE dataname MATCH ?
-          UNION
-        {select} 
-            WHERE path MATCH ?
-          UNION
-        {select} 
-            WHERE shelx_res_file MATCH ?
+                OR dataname MATCH ? 
+                OR path MATCH ?
+                OR shelx_res_file MATCH ?
         '''
         try:
             res = self.database.db_request(req, (text, text, text, text))
         except (TypeError, ProgrammingError, OperationalError) as e:
             print('DB request error in find_by_strings().', e)
-            return tuple([])
+            return tuple()
         return tuple(self.result_to_list(res))
 
     def find_authors(self, text: str) -> Tuple:
+        author_table_exists = self.database.db_request("""SELECT name FROM sqlite_master WHERE 
+                        type='table' AND name='authortxtsearch';""")
+        if not author_table_exists:
+            return tuple()
         search = f"{'*'}{text}{'*'}"
         select = """SELECT StructureId from authortxtsearch """
         req = f'''
@@ -1075,9 +1076,12 @@ class StructureTable():
             return False
 
     def get_largest_id(self):
-        req = """SELECT Id FROM Structure ORDER BY id DESC LIMIT 1"""
+        req = """SELECT max(Id) FROM Structure"""
         result = self.database.db_request(req)
-        return result[-1][-1]
+        if result:
+            return result[-1][-1]
+        else:
+            return 0
 
     def get_database_version(self) -> int:
         """
@@ -1141,6 +1145,8 @@ class StructureTable():
 if __name__ == '__main__':
     # searcher.filecrawler.put_cifs_in_db(searchpath='../')
     db = StructureTable('./test.sqlite')
+    f = db.database.db_request("""SELECT name FROM sqlite_master WHERE type='table' AND name='authortxtsearch';""")
+    print(f)
     # db.initialize_db()
     # db = StructureTable(r'C:\Program Files (x86)\CCDC\CellCheckCSD\cell_check.csdsql')
     # db.initialize_db()
@@ -1165,7 +1171,7 @@ if __name__ == '__main__':
     # print(exc)
     # req = """SELECT Id FROM NORMALISED_REDUCED_CELLS WHERE Volume >= ? AND Volume <= ?"""
     # result = db.database.db_request(req, (1473.46, 1564.76))
-    #result = db.find_authors('herb')
+    # result = db.find_authors('herb')
     # result = db.find_by_strings('SADI')
     print(db.get_row_as_dict(2))
     # lattice1 = Lattice.from_parameters_niggli_reduced(*cell)
