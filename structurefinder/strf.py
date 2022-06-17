@@ -574,11 +574,13 @@ class StartStructureDB(QMainWindow):
         #TODO: Do I need this here? It is already done in worker.py?
         try:
             self.structures.database.init_textsearch()
+            self.structures.database.init_author_search()
         except OperationalError as e:
             print(e)
             print('No fulltext search module found.')
         try:
             self.structures.populate_fulltext_search_table()
+            self.structures.populate_author_fulltext_search()
         except OperationalError as e:
             print(e)
             print('No fulltext search compiled into sqlite.')
