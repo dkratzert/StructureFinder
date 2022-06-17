@@ -141,9 +141,9 @@ def run_index(args=None):
                 lastid += 1
             try:
                 worker = Worker(searchpath=p, excludes=args.ex,
-                               structures=structures, lastid=lastid,
-                               add_res_files=args.fillres, add_cif_files=args.fillcif,
-                               standalone=True)
+                                structures=structures, lastid=lastid,
+                                add_res_files=args.fillres, add_cif_files=args.fillcif,
+                                standalone=True)
             except OSError as e:
                 print("Unable to collect files:")
                 print(e)
@@ -153,7 +153,9 @@ def run_index(args=None):
         try:
             if db and structures:
                 db.init_textsearch()
+                db.init_author_search()
                 structures.populate_fulltext_search_table()
+                structures.populate_author_fulltext_search()
                 structures.make_indexes()
         except TypeError:
             print('No valid files found. They might be in excluded subdirectories.')
@@ -170,7 +172,8 @@ def get_database(dbfilename):
     db = DatabaseRequest(dbfilename)
     try:
         db.initialize_db()
-    except DatabaseError:
+    except DatabaseError as e:
+        print(e)
         print('Database is corrupt! Delete the file first.')
         sys.exit()
     structures = StructureTable(dbfilename)

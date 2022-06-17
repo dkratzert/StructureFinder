@@ -7,7 +7,7 @@ import math
 import os
 import sys
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Union, Tuple
 from xml.etree.ElementTree import ParseError
 
 from gemmi.cif import Style
@@ -45,8 +45,9 @@ from structurefinder.displaymol.mol_file_writer import MolFile
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher.database_handler import StructureTable
-from structurefinder.searcher.misc import is_valid_cell, get_list_of_elements, vol_unitcell, is_a_nonzero_file, format_sum_formula, \
-    combine_results, formula_dict_to_elements, more_results_parameters, regular_results_parameters
+from structurefinder.searcher.misc import is_valid_cell, get_list_of_elements, vol_unitcell, is_a_nonzero_file, \
+    format_sum_formula, \
+    combine_results, more_results_parameters, regular_results_parameters
 
 app = application = Bottle()
 
@@ -226,7 +227,7 @@ def cellsearch():
     else:
         try:
             if which('ccdc_searcher') or \
-                Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
+                    Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
                 print('CellCheckCSD found')
                 return 'true'
         except TypeError:
@@ -596,7 +597,7 @@ def search_text(structures: StructureTable, search_string: str) -> tuple:
         search_string = "{}{}{}".format('*', search_string, '*')
     try:
         #  bad hack, should make this return ids like cell search
-        idlist = tuple([x[0] for x in structures.find_by_strings(search_string)])
+        idlist = structures.find_by_strings(search_string)
     except AttributeError as e:
         print("Exception in search_text:")
         print(e)
@@ -649,8 +650,8 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     cell_results: List = []
     spgr_results: List = []
     elincl_results: List = []
-    txt_results: List = []
-    txt_ex_results: List = []
+    txt_results: Union[List, Tuple] = []
+    txt_ex_results: Union[List, Tuple] = []
     date_results: List = []
     ccdc_num_results: List = []
     states: Dict[str, bool] = {'date'    : False,
@@ -691,10 +692,10 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
         elincl_results = search_elements(structures, elincl, elexcl, onlythese)
     if txt:
         states['txt'] = True
-        txt_results = [i[0] for i in structures.find_by_strings(txt)]
+        txt_results = structures.find_by_strings(txt)
     if txt_ex:
         states['txt_ex'] = True
-        txt_ex_results: List = [i[0] for i in structures.find_by_strings(txt_ex)]
+        txt_ex_results = structures.find_by_strings(txt_ex)
     if date1 != date2:
         states['date'] = True
         date_results = find_dates(structures, date1, date2)
@@ -702,8 +703,15 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     if rval > 0.0:
         rval_results = structures.find_by_rvalue(rval / 100)
     ####################
-    results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                              txt_ex_results, txt_results, rval_results, states)
+    results = combine_results(cell_results=cell_results,
+                              date_results=date_results,
+                              elincl_results=elincl_results,
+                              results=results,
+                              spgr_results=spgr_results,
+                              txt_ex_results=txt_ex_results,
+                              txt_results=txt_results,
+                              rval_results=rval_results,
+                              states=states)
     return list(results)
 
 

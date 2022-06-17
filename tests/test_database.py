@@ -10,12 +10,10 @@ class TestDatabase(unittest.TestCase):
 
     def test_text_search(self):
         by_strings = self.db.find_by_strings('NTD51a')
-        self.assertEqual([(237, b'p21c', b'DK_NTD51a-final.cif', '2017-05-18',
-                           b'/Users/daniel/GitHub/StructureFinder/test-data/051a')], by_strings)
+        self.assertEqual((237,), by_strings)
         # and also case insensitive:
         by_strings = self.db.find_by_strings('ntd51A')
-        self.assertEqual([(237, b'p21c', b'DK_NTD51a-final.cif', '2017-05-18',
-                           b'/Users/daniel/GitHub/StructureFinder/test-data/051a')], by_strings)
+        self.assertEqual((237,), by_strings)
 
     def test_find_by_it_number(self):
         self.assertEqual([33], self.db.find_by_it_number(1))

@@ -32,8 +32,9 @@ QSqlDatabase::removeDatabase("sales")
 import sys
 from math import log
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Dict
 
+from structurefinder.searcher.fileparser import Cif
 from structurefinder.shelxfile.elements import sorted_atoms
 
 DEBUG = False
@@ -107,14 +108,14 @@ class DatabaseRequest():
                         StructureId    INTEGER NOT NULL,
                         Name       TEXT,
                         element    TEXT,
-                        x          FLOAT,
-                        y          FLOAT,
-                        z          FLOAT,
-                        occupancy  FLOAT,
+                        x          REAL,
+                        y          REAL,
+                        z          REAL,
+                        occupancy  REAL,
                         part       INTEGER,
-                        xc         FLOAT,
-                        yc         FLOAT,
-                        zc         FLOAT,
+                        xc         REAL,
+                        yc         REAL,
+                        zc         REAL,
                     PRIMARY KEY(Id),
                       FOREIGN KEY(StructureId)
                         REFERENCES Structure(Id)
@@ -193,21 +194,39 @@ class DatabaseRequest():
         self.cur.execute(
             '''
             CREATE TABLE IF NOT EXISTS cell (
-                Id        INTEGER NOT NULL,
-                StructureId    INTEGER NOT NULL,
-                a    FLOAT,
-                b    FLOAT,
-                c    FLOAT,
-                alpha   FLOAT,
-                beta    FLOAT,
-                gamma   FLOAT,
-                volume     FLOAT,
+                Id              INTEGER NOT NULL,
+                StructureId     INTEGER NOT NULL,
+                a               REAL,
+                b               REAL,
+                c               REAL,
+                alpha           REAL,
+                beta            REAL,
+                gamma           REAL,
+                volume          REAL,
             PRIMARY KEY(Id),
               FOREIGN KEY(StructureId)
                 REFERENCES Structure(Id)
                   ON DELETE CASCADE
                   ON UPDATE NO ACTION);
             '''
+        )
+
+        self.cur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS authors (
+                Id                          INTEGER NOT NULL,
+                StructureId                 INTEGER NOT NULL,
+                _audit_author_name          TEXT,
+                _audit_contact_author_name  TEXT,
+                _publ_contact_author_name   TEXT,
+                _publ_contact_author        TEXT,
+                _publ_author_name           TEXT,
+            PRIMARY KEY(Id),
+                FOREIGN KEY(StructureId)
+                REFERENCES Structure(Id)
+                    ON DELETE CASCADE 
+                    ON UPDATE NO ACTION);
+            """
         )
 
         """self.cur.execute(
@@ -235,7 +254,7 @@ class DatabaseRequest():
             CREATE TABLE IF NOT EXISTS sum_formula (
                     Id             INTEGER NOT NULL,
                     StructureId    INTEGER NOT NULL,
-                    {}             FLOAT,
+                    {}             REAL,
                     PRIMARY KEY(Id),
                       FOREIGN KEY (StructureId)
                         REFERENCES Structure(Id)
@@ -259,8 +278,25 @@ class DatabaseRequest():
                          path           TEXT,
                          shelx_res_file TEXT,
                             tokenize=simple "tokenchars= .=-_");
-                          """
-                         )
+                          """)
+
+    def init_author_search(self):
+        """
+        Initializes the full text search (fts) table for author search.
+        """
+        self.cur.execute("DROP TABLE IF EXISTS authortxtsearch")
+
+        # The simple tokenizer is best for my purposes (A self-written tokenizer would even be better):
+        self.cur.execute("""
+            CREATE VIRTUAL TABLE authortxtsearch USING
+                    fts4(StructureId                   INTEGER,
+                         _audit_author_name            TEXT,
+                         _audit_contact_author_name    TEXT,
+                         _publ_contact_author_name     TEXT,
+                         _publ_contact_author          TEXT,
+                         _publ_author_name             TEXT,
+                            tokenize=simple "tokenchars= .=-_");
+                          """)
 
     def get_lastrowid(self) -> int:
         """
@@ -398,6 +434,9 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return rows
 
+    def get_structures_by_idlist(self, ids: Union[List, Tuple]):
+        return self.get_all_structure_names(ids) if ids else []
+
     def get_all_structure_names(self, ids: list = None) -> List:
         """
         returns all fragment names in the database, sorted by name
@@ -515,7 +554,7 @@ class StructureTable():
             return []
         columns = ', '.join(['Elem_' + x.capitalize() for x in formula.keys()])
         placeholders = ', '.join('?' * (len(formula) + 1))
-        req = '''INSERT INTO sum_formula (StructureId, {}) VALUES ({});'''.format(columns, placeholders)
+        req = f'''INSERT INTO sum_formula (StructureId, {columns}) VALUES ({placeholders});'''
         result = self.database.db_request(req, [structure_id] + list(formula.values()))
         return result
 
@@ -717,13 +756,11 @@ class StructureTable():
         _publ_contact_author_name
         """
         populate_index = """
-                    INSERT INTO txtsearch (
-                                StructureId,
-                                filename,
-                                dataname,
-                                path,
-                                shelx_res_file
-                                )
+                    INSERT INTO txtsearch (StructureId,
+                                            filename,
+                                            dataname,
+                                            path,
+                                            shelx_res_file)
             SELECT  str.Id,
                     str.filename,
                     str.dataname,
@@ -735,6 +772,44 @@ class StructureTable():
         self.database.cur.execute(populate_index)
         self.database.cur.execute(optimize_queries)
 
+    def populate_author_fulltext_search(self):
+        index = """
+            INSERT INTO authortxtsearch (StructureId,
+                                    _audit_author_name,
+                                    _audit_contact_author_name,
+                                    _publ_contact_author_name,
+                                    _publ_contact_author,
+                                    _publ_author_name)
+            SELECT  aut.StructureId,
+                    aut._audit_author_name,
+                    aut._audit_contact_author_name,
+                    aut._publ_contact_author_name,
+                    aut._publ_contact_author,
+                    aut._publ_author_name
+                        FROM authors AS aut; """
+        self.database.db_request(index)
+        self.database.db_request("""INSERT INTO authortxtsearch(authortxtsearch) VALUES('optimize'); """)
+
+    def fill_authors_table(self, structure_id: int, cif: Cif):
+        """
+        This is the table where the direct values from the authors of the CIF are stored.
+        The virtual table "authortxtsearch" conteins the fts data.
+        """
+        req = '''INSERT INTO authors (StructureId,
+                                      _audit_author_name, 
+                                      _audit_contact_author_name, 
+                                      _publ_contact_author_name,
+                                      _publ_contact_author, 
+                                      _publ_author_name) 
+                            VALUES(?, ?, ?, ?, ?, ?)
+        '''
+        self.database.db_request(req, (structure_id,
+                                       cif.cif_data.get('_audit_author_name'),
+                                       cif.cif_data.get('_audit_contact_author_name'),
+                                       cif.cif_data.get('_publ_contact_author_name'),
+                                       cif.cif_data.get('_publ_contact_author'),
+                                       cif.cif_data.get('_publ_author_name')))
+
     def get_row_as_dict(self, structure_id):
         """
         Returns a database row from residuals table as dictionary.
@@ -742,9 +817,12 @@ class StructureTable():
         request = """select * from residuals where StructureId = ?"""
         # setting row_factory to dict for the cif keys:
         dic = self.get_dict_from_request(request, structure_id)
+        authors = self.get_dict_from_request('''SELECT * FROM authors WHERE StructureId = ?''', structure_id)
+        if authors and dic:
+            dic.update(authors)
         return dic
 
-    def get_dict_from_request(self, request, structure_id):
+    def get_dict_from_request(self, request: str, structure_id: int) -> Dict:
         """
         Retruns the result of the given database request as dictionary.
         """
@@ -862,35 +940,63 @@ class StructureTable():
         result = self.database.db_request(req, ('%' + ccdc + '%',))
         return self.result_to_list(result)
 
-    def find_by_strings(self, text):
+    def find_by_strings(self, text: str) -> Tuple:
         """
         Searches cells with volume between upper and lower limit
         :param text: Volume uncertaincy where to search
         id, name, data, path
         """
+        select = """"""
         req = '''
-        SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx 
-            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId 
+        SELECT StructureId FROM txtsearch 
             WHERE filename MATCH ? 
-          UNION
-        SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx
-            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId  
-            WHERE dataname MATCH ?
-          UNION
-        SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx 
-            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId 
-            WHERE path MATCH ?
-          UNION
-        SELECT tx.StructureId, tx.dataname, tx.filename, res.modification_time, tx.path FROM txtsearch as tx
-            LEFT JOIN Residuals as res ON res.StructureId == tx.StructureId  
-            WHERE shelx_res_file MATCH ?
+                OR dataname MATCH ? 
+                OR path MATCH ?
+                OR shelx_res_file MATCH ?
         '''
         try:
             res = self.database.db_request(req, (text, text, text, text))
         except (TypeError, ProgrammingError, OperationalError) as e:
             print('DB request error in find_by_strings().', e)
-            return tuple([])
-        return res
+            return tuple()
+        return tuple(self.result_to_list(res))
+
+    def find_authors(self, text: str) -> Tuple:
+        author_table_exists = self.database.db_request("""SELECT name FROM sqlite_master WHERE 
+                        type='table' AND name='authortxtsearch';""")
+        if not author_table_exists:
+            return tuple()
+        search = f"{'*'}{text}{'*'}"
+        select = """SELECT StructureId from authortxtsearch """
+        req = f'''
+            {select}
+                WHERE _audit_author_name MATCH ? 
+                UNION
+            {select}
+                WHERE _audit_contact_author_name MATCH ?
+                UNION
+            {select}
+                WHERE _publ_contact_author_name MATCH ?
+                UNION
+            {select}
+                WHERE _publ_contact_author MATCH ?
+                UNION
+            {select}
+                WHERE _publ_author_name MATCH ?
+        '''
+        try:
+            res = self.database.db_request(req, (search, search, search, search, search))
+        except (TypeError, ProgrammingError, OperationalError) as e:
+            print('DB request error in find_by_strings().', e)
+            return ()
+        return tuple(self.result_to_list(res))
+
+    def find_text_and_authors(self, txt: str) -> tuple:
+        result_txt = self.find_authors(txt)
+        result_authors = self.find_by_strings(txt)
+        result_txt = set(result_txt)
+        result_txt.update(result_authors)
+        return tuple(result_txt)
 
     def find_by_it_number(self, number: int) -> List[int]:
         """
@@ -970,9 +1076,12 @@ class StructureTable():
             return False
 
     def get_largest_id(self):
-        req = """SELECT Id FROM Structure ORDER BY id DESC LIMIT 1"""
+        req = """SELECT max(Id) FROM Structure"""
         result = self.database.db_request(req)
-        return result[-1][-1]
+        if result:
+            return result[-1][-1]
+        else:
+            return 0
 
     def get_database_version(self) -> int:
         """
@@ -1035,9 +1144,11 @@ class StructureTable():
 
 if __name__ == '__main__':
     # searcher.filecrawler.put_cifs_in_db(searchpath='../')
-    # db = DatabaseRequest('./test3.sqlite')
+    db = StructureTable('./test.sqlite')
+    f = db.database.db_request("""SELECT name FROM sqlite_master WHERE type='table' AND name='authortxtsearch';""")
+    print(f)
     # db.initialize_db()
-    db = StructureTable(r'C:\Program Files (x86)\CCDC\CellCheckCSD\cell_check.csdsql')
+    # db = StructureTable(r'C:\Program Files (x86)\CCDC\CellCheckCSD\cell_check.csdsql')
     # db.initialize_db()
     # db = StructureTable('../structurefinder.sqlite')
     # db.database.initialize_db()
@@ -1045,7 +1156,7 @@ if __name__ == '__main__':
     # out = db.get_cell_by_id(12)
     # out = db.find_by_strings('dk')
     ############################################
-    elinclude = ['C', 'O', 'N', 'F']
+    # elinclude = ['C', 'O', 'N', 'F']
     # elexclude = ['Tm']
     # inc = db.find_by_elements(elinclude, excluding=False)
     # exc = db.find_by_elements(elinclude, ['Al'])
@@ -1058,7 +1169,9 @@ if __name__ == '__main__':
     # db.fill_formula(1, {'StructureId': 1, 'C': 34.0, 'H': 24.0, 'O': 4.0, 'F': 35.99999999999999, 'AL': 1.0, 'GA': 1.0})
     # form = db.get_sum_formula(5)
     # print(exc)
-    req = """SELECT Id FROM NORMALISED_REDUCED_CELLS WHERE Volume >= ? AND Volume <= ?"""
-    result = db.database.db_request(req, (1473.46, 1564.76))
-    print(result)
+    # req = """SELECT Id FROM NORMALISED_REDUCED_CELLS WHERE Volume >= ? AND Volume <= ?"""
+    # result = db.database.db_request(req, (1473.46, 1564.76))
+    # result = db.find_authors('herb')
+    # result = db.find_by_strings('SADI')
+    print(db.get_row_as_dict(2))
     # lattice1 = Lattice.from_parameters_niggli_reduced(*cell)

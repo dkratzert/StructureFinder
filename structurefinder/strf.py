@@ -466,10 +466,10 @@ class StartStructureDB(QMainWindow):
             elincl_results = self.search_elements(elincl, elexcl, onlythese)
         if txt:
             states['txt'] = True
-            txt_results = [i[0] for i in self.structures.find_by_strings(txt)]
+            txt_results = self.structures.find_by_strings(txt)
         if txt_ex:
             states['txt_ex'] = True
-            txt_ex_results = [i[0] for i in self.structures.find_by_strings(txt_ex)]
+            txt_ex_results = self.structures.find_by_strings(txt_ex)
         if date1 != date2:
             states['date'] = True
             date_results = self.find_dates(date1, date2)
@@ -571,6 +571,7 @@ class StartStructureDB(QMainWindow):
 
     def do_work_after_indexing(self, startdir: str):
         self.progress.hide()
+        #TODO: Do I need this here? It is already done in worker.py?
         try:
             self.structures.database.init_textsearch()
         except OperationalError as e:
@@ -922,14 +923,14 @@ class StartStructureDB(QMainWindow):
             self.show_full_list()
             return False
         if len(search_string) >= 2 and "*" not in search_string:
-            search_string = "{}{}{}".format('*', search_string, '*')
+            search_string = f"{'*'}{search_string}{'*'}"
         try:
-            searchresult = self.structures.find_by_strings(search_string)
+            searchresult = self.structures.find_text_and_authors(search_string)
         except AttributeError as e:
             print(e)
         try:
             self.statusBar().showMessage("Found {} structures.".format(len(searchresult)))
-            self.set_model_from_data(searchresult)
+            self.set_model_from_data(self.structures.get_structures_by_idlist(searchresult))
         except Exception:
             self.statusBar().showMessage("Nothing found.")
 
