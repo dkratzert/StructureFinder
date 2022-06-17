@@ -466,10 +466,10 @@ class StartStructureDB(QMainWindow):
             elincl_results = self.search_elements(elincl, elexcl, onlythese)
         if txt:
             states['txt'] = True
-            txt_results = self.structures.find_by_strings(txt)
+            txt_results = self.structures.find_text_and_authors(txt)
         if txt_ex:
             states['txt_ex'] = True
-            txt_ex_results = self.structures.find_by_strings(txt_ex)
+            txt_ex_results = self.structures.find_text_and_authors(txt_ex)
         if date1 != date2:
             states['date'] = True
             date_results = self.find_dates(date1, date2)

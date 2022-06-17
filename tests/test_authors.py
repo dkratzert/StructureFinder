@@ -16,6 +16,14 @@ class TestDatabase(unittest.TestCase):
         res = self.db.find_authors('takano')
         self.assertEqual((8,), res)
 
+    def test_find_text_and_authors(self):
+        res = self.db.find_text_and_authors('takano')
+        self.assertEqual((8,), res)
+
+    def test_find_text_and_authors_2(self):
+        res = self.db.find_text_and_authors('res')
+        self.assertEqual((224, 226, 163, 255, 10, 173, 144, 218, 222, 223), res)
+
     def test_text_search(self):
         by_strings = self.db.find_by_strings('NTD51a')
         self.assertEqual((225,), by_strings)

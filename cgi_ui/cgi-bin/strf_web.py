@@ -597,7 +597,7 @@ def search_text(structures: StructureTable, search_string: str) -> tuple:
         search_string = "{}{}{}".format('*', search_string, '*')
     try:
         #  bad hack, should make this return ids like cell search
-        idlist = structures.find_by_strings(search_string)
+        idlist = structures.find_text_and_authors(search_string)
     except AttributeError as e:
         print("Exception in search_text:")
         print(e)
@@ -692,10 +692,10 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
         elincl_results = search_elements(structures, elincl, elexcl, onlythese)
     if txt:
         states['txt'] = True
-        txt_results = structures.find_by_strings(txt)
+        txt_results = structures.find_text_and_authors(txt)
     if txt_ex:
         states['txt_ex'] = True
-        txt_ex_results = structures.find_by_strings(txt_ex)
+        txt_ex_results = structures.find_text_and_authors(txt_ex)
     if date1 != date2:
         states['date'] = True
         date_results = find_dates(structures, date1, date2)
