@@ -571,7 +571,7 @@ class StartStructureDB(QMainWindow):
 
     def do_work_after_indexing(self, startdir: str):
         self.progress.hide()
-        #TODO: Do I need this here? It is already done in worker.py?
+        # TODO: Do I need this here? It is already done in worker.py?
         try:
             self.structures.database.init_textsearch()
             self.structures.database.init_author_search()
@@ -941,7 +941,10 @@ class StartStructureDB(QMainWindow):
         Searches for a unit cell and resturns a list of found database ids.
         This method does not validate the cell. This has to be done before!
         """
-        volume = misc.vol_unitcell(*cell)
+        try:
+            volume = misc.vol_unitcell(*cell)
+        except ValueError:
+            return []
         if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
             # more results:
             print('more results activated')
@@ -1009,6 +1012,7 @@ class StartStructureDB(QMainWindow):
         if not idlist:
             self.ui.cifList_tableView.model().resetInternalData()
             self.statusBar().showMessage('Found 0 structures.', msecs=0)
+            self.set_model_from_data([])
             return False
         print(f'Found {len(idlist)} results.')
         searchresult = self.structures.get_all_structure_names(idlist)

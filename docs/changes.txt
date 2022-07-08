@@ -3,6 +3,8 @@ Changelog
 * v63 Added author search in text search fields where these CIF keys are taken into account:
       _audit_author_name, _audit_contact_author_name, _publ_contact_author_name,
       _publ_contact_author, _publ_author_name
+      Fixes reset of state when nothing is found. Text search is much faster for large databases.
+      Fixes display of disordered molecules.
 * v62 Adds modification time to text search results. Fixes reading of multi-CIFs.
       'Update Now' button works again. Adds start scripts for Linux and Windows.
 * v61 Fixed unit cell search. It had a much too high threshold.
