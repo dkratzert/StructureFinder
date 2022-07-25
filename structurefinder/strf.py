@@ -943,6 +943,8 @@ class StartStructureDB(QMainWindow):
         """
         try:
             volume = misc.vol_unitcell(*cell)
+            if volume < 0:
+                return []
         except ValueError:
             return []
         if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
