@@ -5,6 +5,7 @@ Changelog
       _publ_contact_author, _publ_author_name
       Fixes reset of state when nothing is found. Text search is much faster for large databases.
       Fixes display of disordered molecules.
+      Fixes crash with malformed unit cell input.s
 * v62 Adds modification time to text search results. Fixes reading of multi-CIFs.
       'Update Now' button works again. Adds start scripts for Linux and Windows.
 * v61 Fixed unit cell search. It had a much too high threshold.
