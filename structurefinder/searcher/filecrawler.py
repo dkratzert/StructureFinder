@@ -97,20 +97,6 @@ class MyTarReader(MyZipBase):
             yield []
 
 
-def create_file_list(searchpath='None', ending='cif'):
-    """
-    walks through the file system and collects cells from res/cif files.
-    Pathlib is nice, but does not allow me to do rglob for more than one file type.
-    """
-    if not os.path.isdir(searchpath):
-        print('search path {0} not found! Or no directory!'.format(searchpath))
-        sys.exit()
-    print('collecting files... (may take some minutes)')
-    p = pathlib.Path(searchpath)
-    paths = p.rglob("*.{}".format(ending))
-    return paths
-
-
 def filewalker_walk(startdir: str, patterns: list):
     """
     walks through the filesystem starting from startdir and searches
@@ -127,6 +113,7 @@ def filewalker_walk(startdir: str, patterns: list):
                 for ex in excluded_names:
                     if re.search(ex, root, re.I):
                         omit = True
+                        break
                 if omit:
                     continue
                 fullpath = os.path.abspath(os.path.join(root, filen))
