@@ -18,7 +18,6 @@ jobs:
     - run: pip install pip -U
     - run: pip install -r requirements.txt
     - run: pip install pyinstaller
-    - run: rmdir /S dist /Q
     - run: pyinstaller StructureFinder.spec --clean -y
     - uses: actions/upload-artifact@v2
       with:
