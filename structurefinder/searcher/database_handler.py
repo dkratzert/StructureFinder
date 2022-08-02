@@ -34,7 +34,7 @@ from math import log
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 from typing import List, Union, Tuple, Dict
 
-from structurefinder.searcher.fileparser import Cif
+from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.elements import sorted_atoms
 
 DEBUG = False
@@ -790,7 +790,7 @@ class StructureTable():
         self.database.db_request(index)
         self.database.db_request("""INSERT INTO authortxtsearch(authortxtsearch) VALUES('optimize'); """)
 
-    def fill_authors_table(self, structure_id: int, cif: Cif):
+    def fill_authors_table(self, structure_id: int, cif: CifFile):
         """
         This is the table where the direct values from the authors of the CIF are stored.
         The virtual table "authortxtsearch" conteins the fts data.

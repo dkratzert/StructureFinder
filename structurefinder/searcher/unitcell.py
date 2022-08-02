@@ -12,7 +12,7 @@ Created on 03.10.2017
 @author: Daniel Kratzert
 """
 from structurefinder.searcher.database_handler import StructureTable
-from structurefinder.searcher.fileparser import Cif
+from structurefinder.searcher.fileparser import CifFile
 
 
 class Lattice(object):
@@ -81,7 +81,7 @@ class Lattice(object):
 
 
 if __name__ == '__main__':
-    cif = Cif()
+    cif = CifFile()
     with open('tests/test-data/p-1_a.cif', 'r') as f:
         cifok = cif.parsefile(f.readlines())
     # pprint(cif.cif_data)

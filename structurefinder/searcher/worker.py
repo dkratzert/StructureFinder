@@ -3,13 +3,13 @@ import re
 import time
 from typing import Optional
 
+import gemmi
 from PyQt5 import QtCore
 
 from structurefinder.searcher.database_handler import StructureTable
 from structurefinder.searcher.filecrawler import excluded_names, filewalker_walk, fill_db_with_cif_data, MyZipReader, \
-    MyTarReader, \
-    fill_db_with_res_data
-from structurefinder.searcher.fileparser import Cif
+    MyTarReader, fill_db_with_res_data
+from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.shelx import ShelXFile
 
 DEBUG = False
@@ -69,39 +69,42 @@ class Worker(QtCore.QObject):
             fullpath = os.path.join(filepth, name)
             options['modification_time'] = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(fullpath)))
             options['file_size'] = int(os.stat(str(fullpath)).st_size)
-            cif = Cif(options=options)
+            cif = CifFile(options=options)
             self.progress.emit(filecount)
             self.number_of_files.emit(filecount)
             # This is really ugly copy&pase code. TODO: refractor this:
             if name.endswith('.cif') and fillcif:
-                with open(fullpath, mode='r', encoding='ascii', errors="ignore") as f:
+                #print(fullpath, '###')
+                doc = gemmi.cif.Document()
+                doc.source = fullpath
+                try:
+                    doc.parse_file(fullpath)
+                except ValueError:
+                    continue
+                cifok = cif.parsefile(doc)
+                if not cifok:
+                    if DEBUG:
+                        print(f"Could not parse: {fullpath.encode('ascii', 'ignore')}.")
+                    continue
+                if cif:  # means cif object has data inside (cif could be parsed)
+                    tst = None
                     try:
-                        cifok = cif.parsefile(f.readlines())
-                        if not cifok:
-                            if DEBUG:
-                                print(f"Could not parse: {fullpath.encode('ascii', 'ignore')}.")
-                            continue
-                    except IndexError:
-                        continue
-                    if cif:  # means cif object has data inside (cif could be parsed)
-                        tst = None
-                        try:
-                            tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid,
-                                                        structures=structures)
-                        except Exception as err:
-                            if DEBUG:
-                                print(
-                                    str(err) + f"\nIndexing error in file {filepth}{os.path.sep}{name} - Id: {lastid}")
-                                raise
-                            continue
-                        if not tst:
-                            continue
-                        cifcount += 1
+                        tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid,
+                                                    structures=structures)
                         lastid += 1
-                        num += 1
-                        if lastid % 1000 == 0:
-                            print(f'{num} files ...')
-                            structures.database.commit_db()
+                    except Exception as err:
+                        if DEBUG:
+                            print(
+                                str(err) + f"\nIndexing error in file {filepth}{os.path.sep}{name} - Id: {lastid}")
+                            raise
+                        continue
+                    if not tst:
+                        continue
+                    cifcount += 1
+                    num += 1
+                    if lastid % 1000 == 0:
+                        print(f'{num} files ...')
+                        structures.database.commit_db()
                 continue
             if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2')
                 or name.endswith('.tgz')) and fillcif:
@@ -111,8 +114,12 @@ class Worker(QtCore.QObject):
                 else:
                     z = MyTarReader(fullpath)
                 for zippedfile in z:  # the list of cif files in the zip file
+                    if not zippedfile:
+                        lastid += 1
+                        continue
                     # Important here to re-initialize empty cif dictionary:
-                    cif = Cif(options=options)
+                    cif = CifFile(options=options)
+                    #print(zippedfile, 'z#i#p')
                     omit = False
                     for ex in excluded_names:  # remove excludes
                         if re.search(ex, z.cifpath, re.I):
@@ -132,6 +139,7 @@ class Worker(QtCore.QObject):
                         try:
                             tst = fill_db_with_cif_data(cif, filename=z.cifname, path=fullpath, structure_id=lastid,
                                                         structures=structures)
+                            lastid += 1
                         except Exception as err:
                             if DEBUG:
                                 print(
@@ -143,7 +151,6 @@ class Worker(QtCore.QObject):
                             continue
                         zipcifs += 1
                         cifcount += 1
-                        lastid += 1
                         num += 1
                         if lastid % 1000 == 0:
                             print(f'{num} files ...')
@@ -153,6 +160,7 @@ class Worker(QtCore.QObject):
                 tst = None
                 try:
                     res = ShelXFile(fullpath)
+                    lastid += 1
                 except Exception as e:
                     if DEBUG:
                         print(e)
@@ -165,9 +173,6 @@ class Worker(QtCore.QObject):
                     if DEBUG:
                         print('res file not added:', fullpath)
                     continue
-                #            if self:
-                #                self.add_table_row(filename=name, path=filepth, data=name, structure_id=str(lastid))
-                lastid += 1
                 num += 1
                 rescount += 1
                 if lastid % 1000 == 0:

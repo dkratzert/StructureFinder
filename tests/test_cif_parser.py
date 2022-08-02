@@ -1,12 +1,12 @@
 import unittest
 from pathlib import Path
 
-from structurefinder.searcher.fileparser import Cif
+from structurefinder.searcher.fileparser import CifFile
 
 
 class TestParser(unittest.TestCase):
     def setUp(self) -> None:
-        self.cif = Cif()
+        self.cif = CifFile()
 
     def test_file1(self):
         cifok = self.cif.parsefile(Path('tests/test-data/668839.cif').read_text().splitlines(keepends=True))

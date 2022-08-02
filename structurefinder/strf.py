@@ -26,6 +26,7 @@ from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from typing import Union
 
+import gemmi.cif
 from PyQt5 import QtGui
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
@@ -51,7 +52,7 @@ from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import misc
 from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
-from structurefinder.searcher.fileparser import Cif
+from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, \
     regular_results_parameters
 
@@ -1136,7 +1137,7 @@ class StartStructureDB(QMainWindow):
 
     def search_for_cif_cell(self, fname):
         if fname:
-            cif = Cif()
+            cif = CifFile()
             try:
                 cif.parsefile(Path(fname).read_text(encoding='utf-8',
                                                     errors='ignore').splitlines(keepends=True))

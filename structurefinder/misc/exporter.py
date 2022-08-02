@@ -3,7 +3,7 @@ from typing import Dict, List
 
 import gemmi as gemmi
 
-from structurefinder.searcher.fileparser import Cif
+from structurefinder.searcher.fileparser import CifFile
 
 
 def export_to_cif_file(cif: Dict, filename: str):
@@ -68,7 +68,7 @@ def add_loop_to_block(block: 'gemmi.cif.Block', value: List[Dict]) -> None:
 
 
 if __name__ == '__main__':
-    cif = Cif()
+    cif = CifFile()
     for num, file in enumerate(Path('./test-data').rglob('*.cif')):
         cifok = cif.parsefile(file.read_text().splitlines(keepends=True))
         export_to_cif_file(cif.cif_data, 'test{}.cif'.format(num))

@@ -22,8 +22,10 @@ import tarfile
 import zipfile
 from typing import Generator
 
+from gemmi import cif
+
 from structurefinder.searcher import database_handler
-from structurefinder.searcher.fileparser import Cif
+from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import vol_unitcell, get_value
 from structurefinder.shelxfile.dsrmath import frac_to_cart
 from structurefinder.shelxfile.shelx import ShelXFile
@@ -67,11 +69,17 @@ class MyZipReader(MyZipBase):
                 (self.cifpath, self.cifname) = os.path.split(name)
                 if self.cifname.endswith('.cif'):
                     if not self.cifname.startswith('__') and zfile.NameToInfo[name].file_size < 150000000:
-                        yield zfile.read(name).decode('utf-8', 'ignore').splitlines(keepends=True)
+                        doc = cif.Document()
+                        doc.source = name
+                        doc.parse_string(zfile.read(name).decode('ascii', 'ignore'))
+                        if doc:
+                            yield doc
+                        else:
+                            continue
         except Exception as e:
             # print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
             # print(e, self.filepath)  # filepath is not utf-8 save
-            yield []
+            yield None
 
 
 class MyTarReader(MyZipBase):
@@ -90,11 +98,17 @@ class MyTarReader(MyZipBase):
             for name in tfile.getnames():
                 self.cifpath, self.cifname = os.path.split(name)
                 if self.cifname.endswith('.cif'):
-                    yield tfile.extractfile(name).read().decode('utf-8', 'ignore').splitlines(keepends=True)
+                    doc = cif.Document()
+                    doc.source = name
+                    doc.parse_string(tfile.extractfile(name).read().decode('ascii', 'ignore'))
+                    if doc:
+                        yield doc
+                    else:
+                        continue
         except Exception as e:
             # print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
             # print(e, self.filepath)  # filepath is not utf-8 save
-            yield []
+            yield None
 
 
 def filewalker_walk(startdir: str, patterns: list):
@@ -133,7 +147,7 @@ def filewalker_walk(startdir: str, patterns: list):
     return filelist
 
 
-def fill_db_with_cif_data(cif: Cif, filename: str, path: str, structure_id: int,
+def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: int,
                           structures: database_handler.StructureTable):
     """
     Fill all info from cif file into the database tables
@@ -153,59 +167,28 @@ def fill_db_with_cif_data(cif: Cif, filename: str, path: str, structure_id: int,
     _atom_site_disorder_assembly
     _atom_site_disorder_group
     """
-    a = get_value(cif._cell_length_a)
-    b = get_value(cif._cell_length_b)
-    c = get_value(cif._cell_length_c)
-    alpha = get_value(cif._cell_angle_alpha)
-    beta = get_value(cif._cell_angle_beta)
-    gamma = get_value(cif._cell_angle_gamma)
-    volume = get_value(cif._cell_volume)
-    if not all((a, b, c, alpha, beta, gamma)):
-        return False
-    if not volume or volume == "?":
-        try:
-            volume = str(vol_unitcell(a, b, c, alpha, beta, gamma))
-        except ValueError:
-            volume = ''
     # Unused value:
     measurement_id = 1
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
-    structures.fill_cell_table(structure_id, a, b, c, alpha, beta, gamma, volume)
+    structures.fill_cell_table(structure_id, *cif.cell, cif.volume)
     sum_formula_dict = {}
-    for x in cif.atoms:
+    print(filename)
+    for at, orth in zip(cif.atoms, cif.atoms_orth):
         #  0     1   2 3 4    5       6
         # [Name type x y z occupancy part]
         try:
             try:
-                disord = int(x[6])
-            except (KeyError, ValueError, IndexError):
-                disord = 0
-            try:
-                occu = x[5]
-            except (KeyError, ValueError, IndexError):
-                occu = 1.0
-            try:
-                atom_type_symbol = x[1]
-            except (KeyError, IndexError):
-                continue
-            elem = atom_type_symbol.capitalize()
-            try:
-                name = x[0]
-            except IndexError:
-                continue
-            try:
-                xc, yc, zc = frac_to_cart([x[2], x[3], x[4]], [a, b, c, alpha, beta, gamma])
-                structures.fill_atoms_table(structure_id, name, atom_type_symbol,
-                                            x[2], x[3], x[4], occu, disord, round(xc, 5), round(yc, 5), round(zc, 5))
+                structures.fill_atoms_table(structure_id, at.name, at.type,
+                                            at.x, at.y, at.z, at.occ, at.part, orth.x, orth.y, orth.z)
             except ValueError:
                 pass
-                # print(cif.cif_data['data'], path, filename)
-            if elem in sum_formula_dict:
-                sum_formula_dict[elem] += occu
+                print(cif.cif_data['data'], path, filename)
+            if at.type in sum_formula_dict:
+                sum_formula_dict[at.type] += at.occ
             else:
-                sum_formula_dict[elem] = occu
+                sum_formula_dict[at.type] = at.occ
         except KeyError as e:
-            # print(x, filename, e)
+            print(at, filename, e)
             pass
     cif.cif_data['calculated_formula_sum'] = sum_formula_dict
     structures.fill_residuals_table(structure_id, cif)
@@ -240,7 +223,7 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
                                     at.sof,
                                     at.part.n,
                                     round(at.xc, 5), round(at.yc, 5), round(at.zc, 5))
-    cif = Cif(options=options)
+    cif = CifFile(options=options)
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     try:
         cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([repr(x) for x in res.symmcards])
