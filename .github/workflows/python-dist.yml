@@ -19,6 +19,8 @@ jobs:
     - run: pip install -r requirements.txt
     - run: pip install pyinstaller
     - run: pyinstaller StructureFinder.spec --clean -y
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         path: dist/*
+        name: structurefinder-test-release
+        retention-days: 7
