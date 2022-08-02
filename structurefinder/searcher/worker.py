@@ -84,20 +84,20 @@ class Worker(QtCore.QObject):
                 cifok = cif.parsefile(doc)
                 if not cifok:
                     if DEBUG:
-                        print(f"Could not parse: {fullpath.encode('ascii', 'ignore')}.")
+                        print(f"Could not parse: {fullpath}.")
                     continue
                 if cif:  # means cif object has data inside (cif could be parsed)
                     tst = None
                     try:
                         tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid,
                                                     structures=structures)
-                        lastid += 1
                     except Exception as err:
                         if DEBUG:
                             print(
                                 str(err) + f"\nIndexing error in file {filepth}{os.path.sep}{name} - Id: {lastid}")
                             raise
                         continue
+                    lastid += 1
                     if not tst:
                         continue
                     cifcount += 1
@@ -115,7 +115,7 @@ class Worker(QtCore.QObject):
                     z = MyTarReader(fullpath)
                 for zippedfile in z:  # the list of cif files in the zip file
                     if not zippedfile:
-                        lastid += 1
+                        #lastid += 1
                         continue
                     # Important here to re-initialize empty cif dictionary:
                     cif = CifFile(options=options)
@@ -130,7 +130,7 @@ class Worker(QtCore.QObject):
                         cifok = cif.parsefile(zippedfile)
                         if not cifok:
                             if DEBUG:
-                                print(f"Could not parse: {fullpath.encode('ascii', 'ignore')}.")
+                                print(f"Could not parse: {fullpath}.")
                             continue
                     except IndexError:
                         continue
@@ -160,15 +160,15 @@ class Worker(QtCore.QObject):
                 tst = None
                 try:
                     res = ShelXFile(fullpath)
-                    lastid += 1
                 except Exception as e:
                     if DEBUG:
                         print(e)
-                        print(f"Could not parse: {fullpath.encode('ascii', 'ignore')}.")
+                        print(f"Could not parse: {fullpath}.")
                     continue
                 if res:
                     tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=lastid,
                                                 structures=structures, options=options)
+                    lastid += 1
                 if not tst:
                     if DEBUG:
                         print('res file not added:', fullpath)

@@ -133,6 +133,8 @@ class CifFile(object):
             return False
         self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(self.symm)
         # self.cif_data['file_length_lines']: int = num + 1
+        if not self.cell or len(self.cell) < 6:
+            return False
         # TODO: implement detection of self.cif_data["_space_group_centring_type"] by symmcards.
         self.handle_deprecates()
         return True
@@ -222,7 +224,10 @@ class CifFile(object):
         if vol:
             return cif.as_number(vol)
         else:
-            return vol_unitcell(*self.cell)
+            try:
+                return vol_unitcell(*self.cell)
+            except TypeError:
+                return 0
 
     @property
     def volume_error_tuple(self):
@@ -278,7 +283,10 @@ class CifFile(object):
     @property
     def atoms_orth(self):
         atom = namedtuple('Atom', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
-        cell = self.block.atomic_struct.cell
+        try:
+            cell = self.block.atomic_struct.cell
+        except AttributeError:
+            yield atom(label='', type='', x=0.0, y=0.0, z=0.0, part=0.0, occ=0.0, u_eq=0.0)
         for at in self.block.atomic_struct.sites:
             x, y, z = at.orth(cell)
             yield atom(label=at.label, type=at.type_symbol, x=x, y=y, z=z,

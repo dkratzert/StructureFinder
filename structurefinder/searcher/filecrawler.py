@@ -30,7 +30,7 @@ from structurefinder.searcher.misc import vol_unitcell, get_value
 from structurefinder.shelxfile.dsrmath import frac_to_cart
 from structurefinder.shelxfile.shelx import ShelXFile
 
-DEBUG = False
+DEBUG = True
 
 excluded_names = ['ROOT',
                   '.OLEX',
@@ -169,10 +169,21 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
     """
     # Unused value:
     measurement_id = 1
-    structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.cif_data['data'])
+    structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.block.name)
     structures.fill_cell_table(structure_id, *cif.cell, cif.volume)
     sum_formula_dict = {}
-    print(filename)
+    #print(filename)
+    try:
+        add_atoms(cif, structure_id, structures, sum_formula_dict)
+    except AttributeError:
+        pass
+    cif.cif_data['calculated_formula_sum'] = sum_formula_dict
+    structures.fill_residuals_table(structure_id, cif)
+    structures.fill_authors_table(structure_id, cif)
+    return True
+
+
+def add_atoms(cif, structure_id, structures, sum_formula_dict):
     for at, orth in zip(cif.atoms, cif.atoms_orth):
         #  0     1   2 3 4    5       6
         # [Name type x y z occupancy part]
@@ -182,18 +193,14 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
                                             at.x, at.y, at.z, at.occ, at.part, orth.x, orth.y, orth.z)
             except ValueError:
                 pass
-                print(cif.cif_data['data'], path, filename)
+                # print(cif.cif_data['data'], path, filename)
             if at.type in sum_formula_dict:
                 sum_formula_dict[at.type] += at.occ
             else:
                 sum_formula_dict[at.type] = at.occ
         except KeyError as e:
-            print(at, filename, e)
+            # print(at, filename, e)
             pass
-    cif.cif_data['calculated_formula_sum'] = sum_formula_dict
-    structures.fill_residuals_table(structure_id, cif)
-    structures.fill_authors_table(structure_id, cif)
-    return True
 
 
 def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: int,
