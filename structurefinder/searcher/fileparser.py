@@ -18,9 +18,6 @@ from typing import List, Dict, Union, Any
 import gemmi.cif
 from gemmi import cif
 
-from structurefinder.searcher.misc import get_error_from_value
-from structurefinder.shelxfile.elements import sorted_atoms
-
 DEBUG = False
 
 
@@ -286,17 +283,6 @@ class CifFile(object):
 
     @property
     def _cell(self) -> gemmi.UnitCell:
-        """
-        [12.092, 28.5736, 15.4221, 90.0, 107.365, 90.0]
-
-        _cell_angle_alpha                90.0
-        _cell_angle_beta                 107.365(1)
-        _cell_angle_gamma                90.00
-        _cell_formula_units_Z            4
-        _cell_length_a                   12.0920(1)
-        _cell_length_b                   28.5736(3)
-        _cell_length_c                   15.4221(2)
-        """
         a = self['_cell_length_a']
         b = self['_cell_length_b']
         c = self['_cell_length_c']
@@ -311,31 +297,6 @@ class CifFile(object):
     @property
     def volume(self) -> float:
         return self.cell.volume
-
-    @property
-    def volume_error_tuple(self):
-        return get_error_from_value(self['_cell_volume'])
-
-    @property
-    def cell_errors(self):
-        a = self['_cell_length_a']
-        b = self['_cell_length_b']
-        c = self['_cell_length_c']
-        alpha = self['_cell_angle_alpha']
-        beta = self['_cell_angle_beta']
-        gamma = self['_cell_angle_gamma']
-        if not all((a, b, c, alpha, beta, gamma)):
-            return []
-        a = get_error_from_value(a)[1]
-        b = get_error_from_value(b)[1]
-        c = get_error_from_value(c)[1]
-        alpha = get_error_from_value(alpha)[1]
-        beta = get_error_from_value(beta)[1]
-        gamma = get_error_from_value(gamma)[1]
-        return [a, b, c, alpha, beta, gamma]
-
-    def loop_items(self, item: str) -> List[str]:
-        return self.block.find_values(item)
 
     @property
     def atoms(self):
@@ -355,36 +316,16 @@ class CifFile(object):
                                                          part if part else ('0',) * len(labels),
                                                          occ if occ else ('1.000000',) * len(labels),
                                                          u_eq):
-            #         0    1   2  3  4   5   6     7
-            # yield label, type, x, y, z, part, occ, ueq
             yield atom(label=label, type=type, x=x, y=y, z=z, part=part, occ=occ, u_eq=u_eq)
 
     @property
     def atoms_orth(self):
         atom = namedtuple('Atom', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
-        # try:
-        #    cell = self.cell
-        # except AttributeError:
-        #    yield atom(label='', type='', x=0.0, y=0.0, z=0.0, part=0.0, occ=0.0, u_eq=0.0)
         for at in self.atoms:
             x, y, z = self.cell.orthogonalize(
                 gemmi.Fractional(cif.as_number(at.x), cif.as_number(at.y), cif.as_number(at.z)))
             yield atom(label=at.label, type=at.type, x=x, y=y, z=z,
                        part=at.part, occ=at.occ, u_eq=at.u_eq)
-
-    @staticmethod
-    def _atom_from_symbol(type_symbol: str) -> str:
-        """
-        Tries to get an element name from a string like Na1+
-        :param type_symbol: a string starting with an element name.
-        :return: a real element name
-        """
-        if type_symbol not in sorted_atoms:
-            for n in [2, 1]:
-                if type_symbol[:n] in sorted_atoms:
-                    type_symbol = type_symbol[:n]
-                    break
-        return type_symbol
 
     @property
     def symm(self) -> List[str]:

@@ -1085,7 +1085,7 @@ class StartStructureDB(QMainWindow):
         self.ui.saveDatabaseButton.setEnabled(True)
         self.ui.appendDirButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
-        self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(file_name))
+        self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(str(Path(file_name).resolve())))
         self.display_number_of_structures()
         return True
 
