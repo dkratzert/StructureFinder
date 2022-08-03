@@ -12,14 +12,15 @@ Created on 09.02.2015
 @author: daniel
 """
 from collections import namedtuple
-from pathlib import Path
-from typing import List, Dict, Union, Any, Generator
+from typing import List, Dict, Union, Any
 
 import gemmi.cif
 from gemmi import cif
 
-from structurefinder.searcher.misc import get_error_from_value, vol_unitcell
+from structurefinder.searcher.misc import get_error_from_value
 from structurefinder.shelxfile.elements import sorted_atoms
+
+DEBUG = False
 
 
 class CifFile(object):
@@ -37,13 +38,6 @@ class CifFile(object):
         # This is a set of keys that are already there:
         self.cif_data: Dict[str, Union[str, Any]] = {
             "data"                                : '',
-            "_cell_length_a"                      : '',
-            '_cell_length_b'                      : '',
-            '_cell_length_c'                      : '',
-            '_cell_angle_alpha'                   : '',
-            '_cell_angle_beta'                    : '',
-            '_cell_angle_gamma'                   : '',
-            "_cell_volume"                        : '',
             "_cell_formula_units_Z"               : '',
             "_space_group_name_H-M_alt"           : '',
             "_space_group_name_Hall"              : '',
@@ -124,56 +118,141 @@ class CifFile(object):
         if self.doc.find_block('global'):
             self.block = self.doc.find_block('global')
             # get data from global
-            self.block = self.doc.find_block(str(self.doc[-1]))
+            self.block = self.doc.find_block(str(self.doc[1]))
         else:
             try:
                 self.block = self.doc[0]
-            except IndexError:
+            except IndexError as e:
+                print(e)
                 return False
         if not self.block:
+            print('No block found!')
             return False
-        self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(self.symm)
+        # self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(self.symm)
         # self.cif_data['file_length_lines']: int = num + 1
         self.cell = self._cell
         if not self.cell:
+            print('No cell in cif!')
             return False
         # TODO: implement detection of self.cif_data["_space_group_centring_type"] by symmcards.
+        self.fill_data_dict()
         self.handle_deprecates()
         return True
+
+    def fill_data_dict(self):
+        self.cif_data['_cell_formula_units_Z'] = self['_cell_formula_units_Z']
+        self.cif_data['_space_group_name_H-M_alt'] = self.as_string('_space_group_name_H-M_alt')
+        self.cif_data['_space_group_name_Hall'] = self.as_string('_space_group_name_Hall')
+        self.cif_data['_space_group_centring_type'] = self.as_string('_space_group_centring_type')
+        self.cif_data['_space_group_IT_number'] = self.as_int('_space_group_IT_number')
+        self.cif_data['_space_group_crystal_system'] = self.as_string('_space_group_crystal_system')
+        self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(self.symm)
+        self.cif_data['_audit_creation_method'] = self.as_string('_audit_creation_method')
+        self.cif_data['_chemical_formula_sum'] = self.as_string('_chemical_formula_sum')
+        self.cif_data['_chemical_formula_weight'] = self.as_number('_chemical_formula_weight')
+        self.cif_data['_exptl_crystal_description'] = self.as_string('_exptl_crystal_description')
+        self.cif_data['_exptl_crystal_colour'] = self.as_string('_exptl_crystal_colour')
+        self.cif_data['_exptl_crystal_size_max'] = self.as_string('_exptl_crystal_size_max')
+        self.cif_data['_exptl_crystal_size_mid'] = self.as_string('_exptl_crystal_size_mid')
+        self.cif_data['_exptl_crystal_size_min'] = self.as_string('_exptl_crystal_size_min')
+        self.cif_data['_exptl_absorpt_coefficient_mu'] = self.as_number('_exptl_absorpt_coefficient_mu')
+        self.cif_data['_exptl_absorpt_correction_type'] = self.as_string('_exptl_absorpt_correction_type')
+        self.cif_data['_exptl_special_details'] = self.as_string('_exptl_special_details')
+        self.cif_data['_diffrn_ambient_temperature'] = self.as_number('_diffrn_ambient_temperature')
+        self.cif_data['_diffrn_radiation_wavelength'] = self.as_number('_diffrn_radiation_wavelength')
+        self.cif_data['_diffrn_radiation_type'] = self.as_string('_diffrn_radiation_type')
+        self.cif_data['_diffrn_source'] = self.as_string('_diffrn_source')
+        self.cif_data['_diffrn_measurement_device_type'] = self.as_string('_diffrn_measurement_device_type')
+        self.cif_data['_diffrn_reflns_number'] = self.as_int('_diffrn_reflns_number')
+        self.cif_data['_diffrn_reflns_av_R_equivalents'] = self.as_number('_diffrn_reflns_av_R_equivalents')
+        self.cif_data['_diffrn_reflns_av_unetI/netI'] = self.as_number('_diffrn_reflns_av_unetI/netI')
+        self.cif_data['_diffrn_reflns_theta_min'] = self.as_number('_diffrn_reflns_theta_min')
+        self.cif_data['_diffrn_reflns_theta_max'] = self.as_number('_diffrn_reflns_theta_max')
+        self.cif_data['_diffrn_reflns_theta_full'] = self.as_number('_diffrn_reflns_theta_full')
+        self.cif_data['_diffrn_measured_fraction_theta_max'] = self.as_number('_diffrn_measured_fraction_theta_max')
+        self.cif_data['_diffrn_measured_fraction_theta_full'] = self.as_number('_diffrn_measured_fraction_theta_full')
+        self.cif_data['_reflns_number_total'] = self.as_int('_reflns_number_total')
+        self.cif_data['_reflns_number_gt'] = self.as_int('_reflns_number_gt')
+        self.cif_data['_reflns_threshold_expression'] = self.as_string('_reflns_threshold_expression')
+        self.cif_data['_reflns_Friedel_coverage'] = self.as_number('_reflns_Friedel_coverage')
+        self.cif_data['_computing_structure_solution'] = self.as_string('_computing_structure_solution')
+        self.cif_data['_computing_structure_refinement'] = self.as_string('_computing_structure_refinement')
+        self.cif_data['_refine_special_details'] = self.as_string('_refine_special_details')
+        self.cif_data['_refine_ls_abs_structure_Flack'] = self.as_number('_refine_ls_abs_structure_Flack')
+        self.cif_data['_refine_ls_structure_factor_coef'] = self.as_string('_refine_ls_structure_factor_coef')
+        self.cif_data['_refine_ls_hydrogen_treatment'] = self.as_string('_refine_ls_hydrogen_treatment')
+        self.cif_data['_refine_ls_weighting_details'] = self.as_string('_refine_ls_weighting_details')
+        self.cif_data['_refine_ls_number_reflns'] = self.as_int('_refine_ls_number_reflns')
+        self.cif_data['_refine_ls_number_parameters'] = self.as_int('_refine_ls_number_parameters')
+        self.cif_data['_refine_ls_number_restraints'] = self.as_int('_refine_ls_number_restraints')
+        self.cif_data['_refine_ls_R_factor_all'] = self.as_number('_refine_ls_R_factor_all')
+        self.cif_data['_refine_ls_R_factor_gt'] = self.as_number('_refine_ls_R_factor_gt')
+        self.cif_data['_refine_ls_wR_factor_ref'] = self.as_number('_refine_ls_wR_factor_ref')
+        self.cif_data['_refine_ls_wR_factor_gt'] = self.as_number('_refine_ls_wR_factor_gt')
+        self.cif_data['_refine_ls_goodness_of_fit_ref'] = self.as_number('_refine_ls_goodness_of_fit_ref')
+        self.cif_data['_refine_ls_restrained_S_all'] = self.as_number('_refine_ls_restrained_S_all')
+        self.cif_data['_refine_ls_shift/su_max'] = self.as_number('_refine_ls_shift/su_max')
+        self.cif_data['_refine_ls_shift/su_mean'] = self.as_number('_refine_ls_shift/su_mean')
+        self.cif_data['_refine_diff_density_max'] = self.as_number('_refine_diff_density_max')
+        self.cif_data['_refine_diff_density_min'] = self.as_number('_refine_diff_density_min')
+        self.cif_data['_diffrn_reflns_av_unetI_netI'] = self.as_number('_diffrn_reflns_av_unetI_netI')
+        self.cif_data['_database_code_depnum_ccdc_archive'] = self.as_string('_database_code_depnum_ccdc_archive')
+        self.cif_data['_shelx_res_file'] = self.as_string('_shelx_res_file')
+        self.cif_data['_audit_author_name'] = self.as_string('_audit_author_name')
+        self.cif_data['_audit_contact_author_name'] = self.as_string('_audit_contact_author_name')
+        self.cif_data['_citation_author_name'] = self.as_string('_citation_author_name')
+        self.cif_data['_citation_editor_name'] = self.as_string('_citation_editor_name')
+        self.cif_data['_publ_contact_author_name'] = self.as_string('_publ_contact_author_name')
+        self.cif_data['_publ_contact_author'] = self.as_string('_publ_contact_author')
+        self.cif_data['_publ_author_name'] = self.as_string('_publ_author_name')
+
+    def as_string(self, cif_key: str) -> str:
+        return cif.as_string(self[cif_key]) if self[cif_key] else ''
+
+    def as_int(self, cif_key: str) -> Union[int, None]:
+        if self[cif_key]:
+            try:
+                return cif.as_int(self[cif_key])
+            except ValueError as e:
+                if DEBUG:
+                    print(e, self[cif_key])
+                    raise
+                return None
+        else:
+            return None
+
+    def as_number(self, cif_key: str) -> Union[float, None]:
+        return cif.as_number(self[cif_key]) if self[cif_key] else ''
 
     def handle_deprecates(self):
         """
         Makes the old and new cif values equal.
         """
         if self["_symmetry_space_group_name_H-M"]:
-            self.cif_data["_space_group_name_H-M_alt"] = self["_symmetry_space_group_name_H-M"]
+            self.cif_data["_space_group_name_H-M_alt"] = self.as_string("_symmetry_space_group_name_H-M")
         if self["_diffrn_measurement_device"]:
-            self.cif_data["_diffrn_measurement_device_type"] = self["_diffrn_measurement_device"]
+            self.cif_data["_diffrn_measurement_device_type"] = self.as_string("_diffrn_measurement_device")
         if self["_refine_ls_shift/esd_max"]:
-            self.cif_data["_refine_ls_shift/su_max"] = self["_refine_ls_shift/esd_max"]
-        if self["_diffrn_measurement_device"]:
-            self.cif_data["_diffrn_measurement_device_type"] = self["_diffrn_measurement_device"]
+            self.cif_data["_refine_ls_shift/su_max"] = self.as_number("_refine_ls_shift/esd_max")
         if self['_symmetry_space_group_name_Hall']:
-            self.cif_data['_space_group_name_Hall'] = self['_symmetry_space_group_name_Hall']
+            self.cif_data['_space_group_name_Hall'] = self.as_string('_symmetry_space_group_name_Hall')
         if self['_symmetry_Int_Tables_number']:
-            self.cif_data['_space_group_IT_number'] = self['_symmetry_Int_Tables_number']
+            self.cif_data['_space_group_IT_number'] = self.as_int('_symmetry_Int_Tables_number')
         if self['_diffrn_reflns_av_sigmaI/netI']:
-            self.cif_data['_diffrn_reflns_av_unetI/netI'] = self['_diffrn_reflns_av_sigmaI/netI']
+            self.cif_data['_diffrn_reflns_av_unetI/netI'] = self.as_number('_diffrn_reflns_av_sigmaI/netI')
         if self["_space_group_name_H-M_alt"] and not self['_space_group_centring_type']:
             try:
-                self.cif_data["_space_group_centring_type"] = self["_space_group_name_H-M_alt"].split()[0][0]
+                self.cif_data["_space_group_centring_type"] = self.as_string("_space_group_name_H-M_alt").split()[0][0]
             except IndexError:
                 pass
         elif self['_space_group_name_Hall'] and not self['_space_group_centring_type']:
             try:
-                self.cif_data["_space_group_centring_type"] = self['_space_group_name_Hall'].split()[0].lstrip('-')[0]
+                self.cif_data["_space_group_centring_type"] = \
+                self.as_string('_space_group_name_Hall').split()[0].lstrip('-')[0]
             except IndexError:
                 pass
         if self['_symmetry_cell_setting']:
-            self.cif_data['_space_group_crystal_system'] = self['_symmetry_cell_setting']
-
-    def __hash__(self):
-        return hash(self.cif_data)
+            self.cif_data['_space_group_crystal_system'] = self.as_string('_symmetry_cell_setting')
 
     def __getitem__(self, item) -> str:
         """
@@ -183,18 +262,6 @@ class CifFile(object):
             return self.block.find_value(item)
         except (KeyError):
             return ''
-
-    def __str__(self) -> str:
-        """
-        The string representation for print(self)
-        """
-        out = ''
-        for item in self.cif_data:
-            if item == '_atom':
-                out += "Atoms:         \t\t\t" + str(len(self.cif_data['_atom'])) + '\n'
-                continue
-            out += item + ':  \t' + "'" + str(self.cif_data[item]) + "'" + '\n'
-        return out
 
     @property
     def _cell(self) -> gemmi.UnitCell:
@@ -218,7 +285,7 @@ class CifFile(object):
         if not all((a, b, c, alpha, beta, gamma)):
             return gemmi.UnitCell()
         return gemmi.UnitCell(cif.as_number(a), cif.as_number(b), cif.as_number(c),
-                cif.as_number(alpha), cif.as_number(beta), cif.as_number(gamma))
+                              cif.as_number(alpha), cif.as_number(beta), cif.as_number(gamma))
 
     @property
     def volume(self) -> float:
@@ -230,12 +297,12 @@ class CifFile(object):
 
     @property
     def cell_errors(self):
-        a = self.cif_data['_cell_length_a']
-        b = self.cif_data['_cell_length_b']
-        c = self.cif_data['_cell_length_c']
-        alpha = self.cif_data['_cell_angle_alpha']
-        beta = self.cif_data['_cell_angle_beta']
-        gamma = self.cif_data['_cell_angle_gamma']
+        a = self['_cell_length_a']
+        b = self['_cell_length_b']
+        c = self['_cell_length_c']
+        alpha = self['_cell_angle_alpha']
+        beta = self['_cell_angle_beta']
+        gamma = self['_cell_angle_gamma']
         if not all((a, b, c, alpha, beta, gamma)):
             return []
         a = get_error_from_value(a)[1]
@@ -245,10 +312,6 @@ class CifFile(object):
         beta = get_error_from_value(beta)[1]
         gamma = get_error_from_value(gamma)[1]
         return [a, b, c, alpha, beta, gamma]
-
-    @property
-    def loops(self) -> List[Dict]:
-        return self.cif_data['_loop']
 
     def loop_items(self, item: str) -> List[str]:
         return self.block.find_values(item)
@@ -278,12 +341,13 @@ class CifFile(object):
     @property
     def atoms_orth(self):
         atom = namedtuple('Atom', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
-        #try:
+        # try:
         #    cell = self.cell
-        #except AttributeError:
+        # except AttributeError:
         #    yield atom(label='', type='', x=0.0, y=0.0, z=0.0, part=0.0, occ=0.0, u_eq=0.0)
         for at in self.atoms:
-            x, y, z = self.cell.orthogonalize(gemmi.Fractional(cif.as_number(at.x), cif.as_number(at.y), cif.as_number(at.z)))
+            x, y, z = self.cell.orthogonalize(
+                gemmi.Fractional(cif.as_number(at.x), cif.as_number(at.y), cif.as_number(at.z)))
             yield atom(label=at.label, type=at.type, x=x, y=y, z=z,
                        part=at.part, occ=at.occ, u_eq=at.u_eq)
 
@@ -305,9 +369,6 @@ class CifFile(object):
     def symm(self) -> List[str]:
         """
         Yields symmetry operations.
-        >>> c = CifFile()
-        >>> ok = c.parsefile(r'./tests/test-data/COD/4060314.cif')
-        >>> c.symm
         ['x, y, z', '-x+1/2, y+1/2, -z+1/2', '-x, -y, -z', 'x-1/2, -y-1/2, z-1/2']
         """
         symm1 = self.block.find_values('_space_group_symop_operation_xyz')
