@@ -26,6 +26,7 @@ from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from typing import Union
 
+import gemmi.cif
 from PyQt5 import QtGui
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
@@ -51,7 +52,7 @@ from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import misc
 from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
-from structurefinder.searcher.fileparser import Cif
+from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, \
     regular_results_parameters
 
@@ -160,7 +161,7 @@ class StartStructureDB(QMainWindow):
         if self.structures:
             self.set_model_from_data(self.structures.get_all_structure_names())
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
-        if not "PYTEST_CURRENT_TEST" in os.environ:
+        if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
 
     def set_model_from_data(self, data: Union[list, tuple]):
@@ -1084,7 +1085,7 @@ class StartStructureDB(QMainWindow):
         self.ui.saveDatabaseButton.setEnabled(True)
         self.ui.appendDirButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
-        self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(file_name))
+        self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(str(Path(file_name).resolve())))
         self.display_number_of_structures()
         return True
 
@@ -1136,18 +1137,24 @@ class StartStructureDB(QMainWindow):
 
     def search_for_cif_cell(self, fname):
         if fname:
-            cif = Cif()
+            doc = gemmi.cif.Document()
+            doc.source = fname
             try:
-                cif.parsefile(Path(fname).read_text(encoding='utf-8',
-                                                    errors='ignore').splitlines(keepends=True))
+                doc.parse_file(fname)
+            except ValueError:
+                return
+            cif = CifFile()
+            try:
+                cif.parsefile(doc)
             except FileNotFoundError:
                 self.moving_message('File not found.')
         else:
             return
         if cif and cif.cell:
             with suppress(TypeError):
-                self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
-                                                   '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*cif.cell[:6]))
+                self.ui.searchCellLineEDit.setText(
+                    f'{cif.cell.a:<6.3f} {cif.cell.b:<6.3f} {cif.cell.c:<6.3f} '
+                    f'{cif.cell.alpha:<6.3f} {cif.cell.beta:<6.3f} {cif.cell.gamma:<6.3f}')
         else:
             self.moving_message('Could not read cif file!')
 
