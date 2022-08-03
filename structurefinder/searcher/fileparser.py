@@ -117,21 +117,22 @@ class CifFile(object):
         """
         self.doc: gemmi.cif.Document = doc
         if self.doc.find_block('global'):
-            return False
             self.block = self.doc.find_block('global')
-            # get data from global
-            self.block = self.doc.find_block(str(self.doc[1]))
+            self.fill_data_dict()
+            self.handle_deprecates()
+            try:
+                self.block: gemmi.cif.Block = self.doc.find_block(self.doc[1].name)
+            except IndexError:
+                # print('BLock index not found')
+                pass
         else:
             try:
                 self.block = self.doc[0]
             except IndexError as e:
-                print(e)
                 return False
         if not self.block:
             print('No block found!')
             return False
-        # self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(self.symm)
-        # self.cif_data['file_length_lines']: int = num + 1
         self.cell = self._cell
         if not self.cell:
             print('No cell in cif!')
