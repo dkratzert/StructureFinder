@@ -1137,18 +1137,24 @@ class StartStructureDB(QMainWindow):
 
     def search_for_cif_cell(self, fname):
         if fname:
+            doc = gemmi.cif.Document()
+            doc.source = fname
+            try:
+                doc.parse_file(fname)
+            except ValueError:
+                return
             cif = CifFile()
             try:
-                cif.parsefile(Path(fname).read_text(encoding='utf-8',
-                                                    errors='ignore').splitlines(keepends=True))
+                cif.parsefile(doc)
             except FileNotFoundError:
                 self.moving_message('File not found.')
         else:
             return
         if cif and cif.cell:
             with suppress(TypeError):
-                self.ui.searchCellLineEDit.setText('{:<6.3f} {:<6.3f} {:<6.3f} '
-                                                   '{:<6.3f} {:<6.3f} {:<6.3f}'.format(*cif.cell[:6]))
+                self.ui.searchCellLineEDit.setText(
+                    f'{cif.cell.a:<6.3f} {cif.cell.b:<6.3f} {cif.cell.c:<6.3f} '
+                    f'{cif.cell.alpha:<6.3f} {cif.cell.beta:<6.3f} {cif.cell.gamma:<6.3f}')
         else:
             self.moving_message('Could not read cif file!')
 

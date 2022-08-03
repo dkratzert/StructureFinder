@@ -339,8 +339,12 @@ class CifFile(object):
 
 
 if __name__ == '__main__':
+    fullpath = r'./tests/test-data/COD/4060314.cif'
+    doc = gemmi.cif.Document()
+    doc.source = fullpath
+    doc.parse_file(fullpath)
     c = CifFile()
-    c.parsefile(r'./tests/test-data/COD/4060314.cif')
+    c.parsefile(doc)
     print(list(c.symm))
 
     # c = CifFile()

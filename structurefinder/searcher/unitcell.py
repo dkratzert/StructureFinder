@@ -81,9 +81,13 @@ class Lattice(object):
 
 
 if __name__ == '__main__':
+    import gemmi
     cif = CifFile()
-    with open('tests/test-data/p-1_a.cif', 'r') as f:
-        cifok = cif.parsefile(f.readlines())
+    fullpath = 'tests/test-data/p-1_a.cif'
+    doc = gemmi.cif.Document()
+    doc.source = fullpath
+    doc.parse_file(fullpath)
+    cifok = cif.parsefile(doc)
     # pprint(cif.cif_data)
     # print(cifok)
     db = StructureTable('./structuredb.sqlite')
@@ -91,7 +95,7 @@ if __name__ == '__main__':
     ats = db.get_atoms_table(263, cartesian=False)
     cards = db.get_row_as_dict(263)['_space_group_symop_operation_xyz'].replace("'", "").split("\n")
     print(cards)
-    l = Lattice(ats, cards)
+    l = Lattice(ats, cards, cif.cell)
     gr = l.pack_structure()
     for i in gr:
         print(i)
