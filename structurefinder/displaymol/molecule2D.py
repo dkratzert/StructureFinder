@@ -91,6 +91,7 @@ class MoleculeWidget(QtWidgets.QWidget):
                 self.draw()
             except ValueError as e:
                 print(f'Draw structure crashed: {e}')
+                self.painter.end()
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         self.lastPos = event.pos()

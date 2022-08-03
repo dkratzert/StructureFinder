@@ -545,7 +545,7 @@ class StructureTable():
         """
         out = []
         for x in formula:
-            if not x.capitalize() in sorted_atoms:
+            if x.capitalize() not in sorted_atoms:
                 out.append(x)
         # Delete non-existing atoms from formula:
         for x in out:

@@ -104,7 +104,8 @@ class CifFile(object):
             "_publ_contact_author"                : '',
             "_publ_author_name"                   : '',
             "modification_time"                   : options['modification_time'],
-            "file_size"                           : options['file_size']
+            "file_size"                           : options['file_size'],
+            "calculated_formula_sum"              : '',
         }
 
     def parsefile(self, doc: cif.Document) -> bool:
@@ -116,6 +117,7 @@ class CifFile(object):
         """
         self.doc: gemmi.cif.Document = doc
         if self.doc.find_block('global'):
+            return False
             self.block = self.doc.find_block('global')
             # get data from global
             self.block = self.doc.find_block(str(self.doc[1]))
@@ -134,7 +136,6 @@ class CifFile(object):
         if not self.cell:
             print('No cell in cif!')
             return False
-        # TODO: implement detection of self.cif_data["_space_group_centring_type"] by symmcards.
         self.fill_data_dict()
         self.handle_deprecates()
         return True
@@ -163,16 +164,16 @@ class CifFile(object):
         self.cif_data['_diffrn_radiation_type'] = self.as_string('_diffrn_radiation_type')
         self.cif_data['_diffrn_source'] = self.as_string('_diffrn_source')
         self.cif_data['_diffrn_measurement_device_type'] = self.as_string('_diffrn_measurement_device_type')
-        self.cif_data['_diffrn_reflns_number'] = self.as_int('_diffrn_reflns_number')
-        self.cif_data['_diffrn_reflns_av_R_equivalents'] = self.as_number('_diffrn_reflns_av_R_equivalents')
-        self.cif_data['_diffrn_reflns_av_unetI/netI'] = self.as_number('_diffrn_reflns_av_unetI/netI')
-        self.cif_data['_diffrn_reflns_theta_min'] = self.as_number('_diffrn_reflns_theta_min')
-        self.cif_data['_diffrn_reflns_theta_max'] = self.as_number('_diffrn_reflns_theta_max')
-        self.cif_data['_diffrn_reflns_theta_full'] = self.as_number('_diffrn_reflns_theta_full')
+        self.cif_data['_diffrn_reflns_number'] = self.as_string('_diffrn_reflns_number')
+        self.cif_data['_diffrn_reflns_av_R_equivalents'] = self.as_string('_diffrn_reflns_av_R_equivalents')
+        self.cif_data['_diffrn_reflns_av_unetI/netI'] = self.as_string('_diffrn_reflns_av_unetI/netI')
+        self.cif_data['_diffrn_reflns_theta_min'] = self.as_string('_diffrn_reflns_theta_min')
+        self.cif_data['_diffrn_reflns_theta_max'] = self.as_string('_diffrn_reflns_theta_max')
+        self.cif_data['_diffrn_reflns_theta_full'] = self.as_string('_diffrn_reflns_theta_full')
         self.cif_data['_diffrn_measured_fraction_theta_max'] = self.as_number('_diffrn_measured_fraction_theta_max')
         self.cif_data['_diffrn_measured_fraction_theta_full'] = self.as_number('_diffrn_measured_fraction_theta_full')
-        self.cif_data['_reflns_number_total'] = self.as_int('_reflns_number_total')
-        self.cif_data['_reflns_number_gt'] = self.as_int('_reflns_number_gt')
+        self.cif_data['_reflns_number_total'] = self.as_string('_reflns_number_total')
+        self.cif_data['_reflns_number_gt'] = self.as_string('_reflns_number_gt')
         self.cif_data['_reflns_threshold_expression'] = self.as_string('_reflns_threshold_expression')
         self.cif_data['_reflns_Friedel_coverage'] = self.as_number('_reflns_Friedel_coverage')
         self.cif_data['_computing_structure_solution'] = self.as_string('_computing_structure_solution')
@@ -182,7 +183,7 @@ class CifFile(object):
         self.cif_data['_refine_ls_structure_factor_coef'] = self.as_string('_refine_ls_structure_factor_coef')
         self.cif_data['_refine_ls_hydrogen_treatment'] = self.as_string('_refine_ls_hydrogen_treatment')
         self.cif_data['_refine_ls_weighting_details'] = self.as_string('_refine_ls_weighting_details')
-        self.cif_data['_refine_ls_number_reflns'] = self.as_int('_refine_ls_number_reflns')
+        self.cif_data['_refine_ls_number_reflns'] = self.as_string('_refine_ls_number_reflns')
         self.cif_data['_refine_ls_number_parameters'] = self.as_int('_refine_ls_number_parameters')
         self.cif_data['_refine_ls_number_restraints'] = self.as_int('_refine_ls_number_restraints')
         self.cif_data['_refine_ls_R_factor_all'] = self.as_number('_refine_ls_R_factor_all')
@@ -195,7 +196,7 @@ class CifFile(object):
         self.cif_data['_refine_ls_shift/su_mean'] = self.as_number('_refine_ls_shift/su_mean')
         self.cif_data['_refine_diff_density_max'] = self.as_number('_refine_diff_density_max')
         self.cif_data['_refine_diff_density_min'] = self.as_number('_refine_diff_density_min')
-        self.cif_data['_diffrn_reflns_av_unetI_netI'] = self.as_number('_diffrn_reflns_av_unetI_netI')
+        self.cif_data['_diffrn_reflns_av_unetI_netI'] = self.as_string('_diffrn_reflns_av_unetI_netI')
         self.cif_data['_database_code_depnum_ccdc_archive'] = self.as_string('_database_code_depnum_ccdc_archive')
         self.cif_data['_shelx_res_file'] = self.as_string('_shelx_res_file')
         self.cif_data['_audit_author_name'] = self.as_string('_audit_author_name')
@@ -248,7 +249,7 @@ class CifFile(object):
         elif self['_space_group_name_Hall'] and not self['_space_group_centring_type']:
             try:
                 self.cif_data["_space_group_centring_type"] = \
-                self.as_string('_space_group_name_Hall').split()[0].lstrip('-')[0]
+                    self.as_string('_space_group_name_Hall').split()[0].lstrip('-')[0]
             except IndexError:
                 pass
         if self['_symmetry_cell_setting']:
@@ -260,7 +261,7 @@ class CifFile(object):
         """
         try:
             return self.block.find_value(item)
-        except (KeyError):
+        except (KeyError, UnicodeDecodeError):
             return ''
 
     @property

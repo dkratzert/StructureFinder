@@ -15,9 +15,7 @@ Created on 09.02.2015
 
 import fnmatch
 import os
-import pathlib
 import re
-import sys
 import tarfile
 import zipfile
 from typing import Generator
@@ -26,8 +24,7 @@ from gemmi import cif
 
 from structurefinder.searcher import database_handler
 from structurefinder.searcher.fileparser import CifFile
-from structurefinder.searcher.misc import vol_unitcell, get_value
-from structurefinder.shelxfile.dsrmath import frac_to_cart
+from structurefinder.searcher.misc import get_value
 from structurefinder.shelxfile.shelx import ShelXFile
 
 DEBUG = True
@@ -167,42 +164,45 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
     _atom_site_disorder_assembly
     _atom_site_disorder_group
     """
-    # Unused value:
+    sum_formula_dict = {}
     measurement_id = 1
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.block.name)
     structures.fill_cell_table(structure_id, cif.cell.a, cif.cell.b, cif.cell.c,
                                cif.cell.alpha, cif.cell.beta, cif.cell.gamma, cif.cell.volume)
-    sum_formula_dict = {}
-    #print(filename)
     try:
-        add_atoms(cif, structure_id, structures, sum_formula_dict)
+        sum_formula_dict = add_atoms(cif, structure_id, structures)
     except AttributeError as e:
         print('Atoms crashed', e, structure_id)
-        pass
     cif.cif_data['calculated_formula_sum'] = sum_formula_dict
     structures.fill_residuals_table(structure_id, cif)
     structures.fill_authors_table(structure_id, cif)
     return True
 
 
-def add_atoms(cif, structure_id, structures, sum_formula_dict):
+def add_atoms(cif, structure_id, structures):
+    sum_formula_dict = {}
     for at, orth in zip(cif.atoms, cif.atoms_orth):
         #  0     1   2 3 4    5       6
         # [Name type x y z occupancy part]
+        part = cif.as_int(at.part)
+        part = part or 0
         try:
             try:
                 structures.fill_atoms_table(structure_id, at.label, at.type,
-                                            at.x, at.y, at.z, at.occ, at.part, orth.x, orth.y, orth.z)
+                                            get_value(at.x), get_value(at.y), get_value(at.z),
+                                            get_value(at.occ), part,
+                                            orth.x, orth.y, orth.z)
             except ValueError:
                 pass
-                # print(cif.cif_data['data'], path, filename)
+                # print(cif.cif_data['data'], structure_id)
             if at.type in sum_formula_dict:
-                sum_formula_dict[at.type] += at.occ
+                sum_formula_dict[at.type] += get_value(at.occ)
             else:
-                sum_formula_dict[at.type] = at.occ
+                sum_formula_dict[at.type] = get_value(at.occ)
         except KeyError as e:
-            # print(at, filename, e)
+            # print(at, structure_id, e)
             pass
+    return sum_formula_dict
 
 
 def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: int,
