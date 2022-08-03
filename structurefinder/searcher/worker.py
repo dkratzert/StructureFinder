@@ -84,7 +84,7 @@ class Worker(QtCore.QObject):
                 cifok = cif.parsefile(doc)
                 if not cifok:
                     if DEBUG:
-                        print(f"Could not parse: {fullpath}.")
+                        print(f"Could not parse (.cif): {fullpath}")
                     continue
                 if cif:  # means cif object has data inside (cif could be parsed)
                     tst = None
@@ -130,7 +130,7 @@ class Worker(QtCore.QObject):
                         cifok = cif.parsefile(zippedfile)
                         if not cifok:
                             if DEBUG:
-                                print(f"Could not parse: {fullpath}.")
+                                print(f"Could not parse (zipped): {fullpath}")
                             continue
                     except IndexError:
                         continue
@@ -163,7 +163,7 @@ class Worker(QtCore.QObject):
                 except Exception as e:
                     if DEBUG:
                         print(e)
-                        print(f"Could not parse: {fullpath}.")
+                        print(f"Could not parse (.res): {fullpath}")
                     continue
                 if res:
                     tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=lastid,

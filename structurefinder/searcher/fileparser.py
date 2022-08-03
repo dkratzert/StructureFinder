@@ -31,6 +31,7 @@ class CifFile(object):
         """
         self.doc: Union[None, gemmi.cif.Document] = None
         self.block: Union[None, gemmi.cif.Block] = None
+        self.cell: Union[None, gemmi.UnitCell] = None
         if options is None:
             options = {'modification_time': "", 'file_size': ""}
         # This is a set of keys that are already there:
@@ -133,7 +134,8 @@ class CifFile(object):
             return False
         self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(self.symm)
         # self.cif_data['file_length_lines']: int = num + 1
-        if not self.cell or len(self.cell) < 6:
+        self.cell = self._cell
+        if not self.cell:
             return False
         # TODO: implement detection of self.cif_data["_space_group_centring_type"] by symmcards.
         self.handle_deprecates()
@@ -195,7 +197,7 @@ class CifFile(object):
         return out
 
     @property
-    def cell(self) -> List[float]:
+    def _cell(self) -> gemmi.UnitCell:
         """
         [12.092, 28.5736, 15.4221, 90.0, 107.365, 90.0]
 
@@ -214,24 +216,17 @@ class CifFile(object):
         beta = self['_cell_angle_beta']
         gamma = self['_cell_angle_gamma']
         if not all((a, b, c, alpha, beta, gamma)):
-            return []
-        return [cif.as_number(a), cif.as_number(b), cif.as_number(c),
-                cif.as_number(alpha), cif.as_number(beta), cif.as_number(gamma)]
+            return gemmi.UnitCell()
+        return gemmi.UnitCell(cif.as_number(a), cif.as_number(b), cif.as_number(c),
+                cif.as_number(alpha), cif.as_number(beta), cif.as_number(gamma))
 
     @property
-    def volume(self):
-        vol = self['_cell_volume']
-        if vol:
-            return cif.as_number(vol)
-        else:
-            try:
-                return vol_unitcell(*self.cell)
-            except TypeError:
-                return 0
+    def volume(self) -> float:
+        return self.cell.volume
 
     @property
     def volume_error_tuple(self):
-        return get_error_from_value(self.volume)
+        return get_error_from_value(self['_cell_volume'])
 
     @property
     def cell_errors(self):
@@ -283,14 +278,14 @@ class CifFile(object):
     @property
     def atoms_orth(self):
         atom = namedtuple('Atom', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
-        try:
-            cell = self.block.atomic_struct.cell
-        except AttributeError:
-            yield atom(label='', type='', x=0.0, y=0.0, z=0.0, part=0.0, occ=0.0, u_eq=0.0)
-        for at in self.block.atomic_struct.sites:
-            x, y, z = at.orth(cell)
-            yield atom(label=at.label, type=at.type_symbol, x=x, y=y, z=z,
-                       part=at.disorder_group, occ=at.occ, u_eq=at.u_iso)
+        #try:
+        #    cell = self.cell
+        #except AttributeError:
+        #    yield atom(label='', type='', x=0.0, y=0.0, z=0.0, part=0.0, occ=0.0, u_eq=0.0)
+        for at in self.atoms:
+            x, y, z = self.cell.orthogonalize(gemmi.Fractional(cif.as_number(at.x), cif.as_number(at.y), cif.as_number(at.z)))
+            yield atom(label=at.label, type=at.type, x=x, y=y, z=z,
+                       part=at.part, occ=at.occ, u_eq=at.u_eq)
 
     @staticmethod
     def _atom_from_symbol(type_symbol: str) -> str:

@@ -170,12 +170,14 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
     # Unused value:
     measurement_id = 1
     structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.block.name)
-    structures.fill_cell_table(structure_id, *cif.cell, cif.volume)
+    structures.fill_cell_table(structure_id, cif.cell.a, cif.cell.b, cif.cell.c,
+                               cif.cell.alpha, cif.cell.beta, cif.cell.gamma, cif.cell.volume)
     sum_formula_dict = {}
     #print(filename)
     try:
         add_atoms(cif, structure_id, structures, sum_formula_dict)
-    except AttributeError:
+    except AttributeError as e:
+        print('Atoms crashed', e, structure_id)
         pass
     cif.cif_data['calculated_formula_sum'] = sum_formula_dict
     structures.fill_residuals_table(structure_id, cif)
@@ -189,7 +191,7 @@ def add_atoms(cif, structure_id, structures, sum_formula_dict):
         # [Name type x y z occupancy part]
         try:
             try:
-                structures.fill_atoms_table(structure_id, at.name, at.type,
+                structures.fill_atoms_table(structure_id, at.label, at.type,
                                             at.x, at.y, at.z, at.occ, at.part, orth.x, orth.y, orth.z)
             except ValueError:
                 pass
