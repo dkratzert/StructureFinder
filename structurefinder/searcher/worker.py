@@ -139,7 +139,6 @@ class Worker(QtCore.QObject):
                         try:
                             tst = fill_db_with_cif_data(cif, filename=z.cifname, path=fullpath, structure_id=lastid,
                                                         structures=structures)
-                            lastid += 1
                         except Exception as err:
                             if DEBUG:
                                 print(
@@ -149,6 +148,7 @@ class Worker(QtCore.QObject):
                             if DEBUG:
                                 print('cif file not added:', fullpath)
                             continue
+                        lastid += 1
                         zipcifs += 1
                         cifcount += 1
                         num += 1
@@ -168,11 +168,11 @@ class Worker(QtCore.QObject):
                 if res:
                     tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=lastid,
                                                 structures=structures, options=options)
-                    lastid += 1
                 if not tst:
                     if DEBUG:
                         print('res file not added:', fullpath)
                     continue
+                lastid += 1
                 num += 1
                 rescount += 1
                 if lastid % 1000 == 0:

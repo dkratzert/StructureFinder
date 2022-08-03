@@ -20,14 +20,14 @@ import tarfile
 import zipfile
 from typing import Generator
 
-from gemmi import cif
+import gemmi
 
 from structurefinder.searcher import database_handler
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import get_value
 from structurefinder.shelxfile.shelx import ShelXFile
 
-DEBUG = True
+DEBUG = False
 
 excluded_names = ['ROOT',
                   '.OLEX',
@@ -66,7 +66,7 @@ class MyZipReader(MyZipBase):
                 (self.cifpath, self.cifname) = os.path.split(name)
                 if self.cifname.endswith('.cif'):
                     if not self.cifname.startswith('__') and zfile.NameToInfo[name].file_size < 150000000:
-                        doc = cif.Document()
+                        doc = gemmi.cif.Document()
                         doc.source = name
                         doc.parse_string(zfile.read(name).decode('ascii', 'ignore'))
                         if doc:
@@ -95,7 +95,7 @@ class MyTarReader(MyZipBase):
             for name in tfile.getnames():
                 self.cifpath, self.cifname = os.path.split(name)
                 if self.cifname.endswith('.cif'):
-                    doc = cif.Document()
+                    doc = gemmi.cif.Document()
                     doc.source = name
                     doc.parse_string(tfile.extractfile(name).read().decode('ascii', 'ignore'))
                     if doc:
@@ -182,15 +182,11 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
 def add_atoms(cif, structure_id, structures):
     sum_formula_dict = {}
     for at, orth in zip(cif.atoms, cif.atoms_orth):
-        #  0     1   2 3 4    5       6
-        # [Name type x y z occupancy part]
-        part = cif.as_int(at.part)
-        part = part or 0
         try:
             try:
                 structures.fill_atoms_table(structure_id, at.label, at.type,
                                             get_value(at.x), get_value(at.y), get_value(at.z),
-                                            get_value(at.occ), part,
+                                            get_value(at.occ), at.part,
                                             orth.x, orth.y, orth.z)
             except ValueError:
                 pass

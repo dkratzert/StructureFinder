@@ -12,6 +12,7 @@ Created on 09.02.2015
 @author: daniel
 """
 from collections import namedtuple
+from contextlib import suppress
 from typing import List, Dict, Union, Any
 
 import gemmi.cif
@@ -115,31 +116,43 @@ class CifFile(object):
         :return: cif file content
         :rtype: dict
         """
+        self.global_data = None
         self.doc: gemmi.cif.Document = doc
         if self.doc.find_block('global'):
-            self.block = self.doc.find_block('global')
-            self.fill_data_dict()
-            self.handle_deprecates()
-            try:
+            self.store_global_values()
+            with suppress(IndexError):
                 self.block: gemmi.cif.Block = self.doc.find_block(self.doc[1].name)
-            except IndexError:
-                # print('BLock index not found')
-                pass
         else:
             try:
                 self.block = self.doc[0]
-            except IndexError as e:
+            except IndexError:
                 return False
         if not self.block:
-            print('No block found!')
+            if DEBUG:
+                print('No block found!')
             return False
         self.cell = self._cell
+        if self.cell.volume < 2.0:
+            return False
         if not self.cell:
-            print('No cell in cif!')
+            if DEBUG:
+                print('No cell in cif!')
             return False
         self.fill_data_dict()
+        self.update_from_global_values()
         self.handle_deprecates()
         return True
+
+    def store_global_values(self):
+        self.block = self.doc.find_block('global')
+        self.fill_data_dict()
+        self.global_data = self.cif_data.copy()
+
+    def update_from_global_values(self):
+        if self.global_data:
+            for key, value in self.global_data.items():
+                if value:
+                    self.cif_data[key] = value
 
     def fill_data_dict(self):
         self.cif_data['_cell_formula_units_Z'] = self['_cell_formula_units_Z']
@@ -200,13 +213,19 @@ class CifFile(object):
         self.cif_data['_diffrn_reflns_av_unetI_netI'] = self.as_string('_diffrn_reflns_av_unetI_netI')
         self.cif_data['_database_code_depnum_ccdc_archive'] = self.as_string('_database_code_depnum_ccdc_archive')
         self.cif_data['_shelx_res_file'] = self.as_string('_shelx_res_file')
-        self.cif_data['_audit_author_name'] = self.as_string('_audit_author_name')
-        self.cif_data['_audit_contact_author_name'] = self.as_string('_audit_contact_author_name')
-        self.cif_data['_citation_author_name'] = self.as_string('_citation_author_name')
-        self.cif_data['_citation_editor_name'] = self.as_string('_citation_editor_name')
-        self.cif_data['_publ_contact_author_name'] = self.as_string('_publ_contact_author_name')
-        self.cif_data['_publ_contact_author'] = self.as_string('_publ_contact_author')
-        self.cif_data['_publ_author_name'] = self.as_string('_publ_author_name')
+        self.cif_data['_audit_author_name'] = self.as_list('_audit_author_name')
+        self.cif_data['_audit_contact_author_name'] = self.as_list('_audit_contact_author_name')
+        self.cif_data['_citation_author_name'] = self.as_list('_citation_author_name')
+        self.cif_data['_citation_editor_name'] = self.as_list('_citation_editor_name')
+        self.cif_data['_publ_contact_author_name'] = self.as_list('_publ_contact_author_name')
+        self.cif_data['_publ_contact_author'] = self.as_list('_publ_contact_author')
+        self.cif_data['_publ_author_name'] = self.as_list('_publ_author_name')
+
+    def as_list(self, cif_key: str):
+        try:
+            return '\n'.join([cif.as_string(x) for x in self.block.find_values(cif_key)])
+        except UnicodeDecodeError:
+            return ''
 
     def as_string(self, cif_key: str) -> str:
         return cif.as_string(self[cif_key]) if self[cif_key] else ''
