@@ -303,8 +303,8 @@ class CifFile(object):
         """
         Atoms from the CIF where values are returned as string like in the CIF with esds.
         """
-        labels = self.block.find_loop('_atom_site_label')
-        types = self.block.find_loop('_atom_site_type_symbol')
+        labels: List[str] = self.block.find_loop('_atom_site_label')
+        types: List[str] = self.block.find_loop('_atom_site_type_symbol')
         x = self.block.find_loop('_atom_site_fract_x')
         y = self.block.find_loop('_atom_site_fract_y')
         z = self.block.find_loop('_atom_site_fract_z')

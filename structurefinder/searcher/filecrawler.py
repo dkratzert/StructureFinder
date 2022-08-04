@@ -184,17 +184,29 @@ def add_atoms(cif, structure_id, structures):
     for at, orth in zip(cif.atoms, cif.atoms_orth):
         try:
             try:
+                part = at.part
+                if part in {'.', '', '?'}:
+                    part = 0
+            except (KeyError, ValueError, IndexError):
+                part = 0
+            try:
+                occu = get_value(at.occ)
+                if not occu:
+                    occu = 1.0
+            except (KeyError, ValueError, IndexError):
+                occu = 1.0
+            try:
                 structures.fill_atoms_table(structure_id, at.label, at.type,
                                             get_value(at.x), get_value(at.y), get_value(at.z),
-                                            get_value(at.occ), at.part,
+                                            occu, part,
                                             orth.x, orth.y, orth.z)
             except ValueError:
                 pass
                 # print(cif.cif_data['data'], structure_id)
             if at.type in sum_formula_dict:
-                sum_formula_dict[at.type] += get_value(at.occ)
+                sum_formula_dict[at.type] += occu
             else:
-                sum_formula_dict[at.type] = get_value(at.occ)
+                sum_formula_dict[at.type] = occu
         except KeyError as e:
             # print(at, structure_id, e)
             pass
