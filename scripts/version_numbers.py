@@ -17,6 +17,7 @@ pypath = ["structurefinder/shelxfile/shelx.py",
           "structurefinder/shelxfile/misc.py",
           "structurefinder/searcher/database_handler.py",
           'structurefinder/searcher/filecrawler.py',
+          'structurefinder/searcher/worker.py',
           "structurefinder/displaymol/sdm.py"]
 
 
