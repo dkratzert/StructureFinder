@@ -86,3 +86,5 @@ if __name__ == '__main__':
 
     print('\nCreated version: {}'.format(VERSION))
     print(datetime.now().strftime("%d.%m.%Y %H:%M:%S"))
+
+    subprocess.call("scripts/Output/StructureFinder-setup-x64-v{}.exe".format(VERSION))
