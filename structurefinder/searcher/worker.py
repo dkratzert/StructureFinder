@@ -1,7 +1,7 @@
 import os
 import re
 import time
-from typing import Optional
+from typing import Optional, Union
 
 import gemmi
 from PyQt5 import QtCore
@@ -39,7 +39,7 @@ class Worker(QtCore.QObject):
                                     fillres=self.add_res_files, excludes=None,
                                     fillcif=self.add_cif_files, lastid=self.lastid)
 
-    def put_files_in_db(self, searchpath: str = '', excludes: list = None, lastid: int = 1,
+    def put_files_in_db(self, searchpath: str = '', excludes: Union[list, None] = None, lastid: int = 1,
                         structures=None, fillcif=True, fillres=True) -> int:
         """
         Imports files from a certain directory
@@ -97,7 +97,6 @@ class Worker(QtCore.QObject):
                                 str(err) + f"\nIndexing error in file {filepth}{os.path.sep}{name} - Id: {lastid}")
                             raise
                         continue
-                    lastid += 1
                     if not tst:
                         continue
                     cifcount += 1
@@ -105,6 +104,7 @@ class Worker(QtCore.QObject):
                     if lastid % 1000 == 0:
                         print(f'{num} files ...')
                         structures.database.commit_db()
+                lastid += 1
                 continue
             if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2')
                 or name.endswith('.tgz')) and fillcif:
@@ -115,7 +115,6 @@ class Worker(QtCore.QObject):
                     z = MyTarReader(fullpath)
                 for zippedfile in z:  # the list of cif files in the zip file
                     if not zippedfile:
-                        #lastid += 1
                         continue
                     # Important here to re-initialize empty cif dictionary:
                     cif = CifFile(options=options)
@@ -144,17 +143,18 @@ class Worker(QtCore.QObject):
                                 print(
                                     str(err) + f"\nIndexing error in file {filepth}{os.path.sep}{name} - Id: {lastid}")
                                 raise
+                            continue
                         if not tst:
                             if DEBUG:
                                 print('cif file not added:', fullpath)
                             continue
-                        lastid += 1
                         zipcifs += 1
                         cifcount += 1
                         num += 1
                         if lastid % 1000 == 0:
                             print(f'{num} files ...')
                             structures.database.commit_db()
+                        lastid += 1
                 continue
             if name.endswith('.res') and fillres:
                 tst = None
@@ -172,12 +172,12 @@ class Worker(QtCore.QObject):
                     if DEBUG:
                         print('res file not added:', fullpath)
                     continue
-                lastid += 1
                 num += 1
                 rescount += 1
                 if lastid % 1000 == 0:
                     print(f'{num} files ...')
                     structures.database.commit_db()
+                lastid += 1
         structures.database.commit_db()
         time2 = time.perf_counter()
         self.progress.emit(filecount)
@@ -188,4 +188,3 @@ class Worker(QtCore.QObject):
         print(f'      {filecount} files considered.')
         print(tmessage)
         self.finished.emit(tmessage)
-        return lastid - 1

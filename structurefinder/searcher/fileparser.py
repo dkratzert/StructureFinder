@@ -151,12 +151,31 @@ class CifFile(object):
                 if value:
                     self.cif_data[key] = value
 
+    def get_itnum(self):
+        it_num = self.as_int('_space_group_IT_number')
+        if not it_num:
+            if self.space_group:
+                return self.space_group.number
+            else:
+                return None
+        return it_num
+
+    def get_space_group(self):
+        space_group = self.as_string('_space_group_name_H-M_alt')
+        if space_group and space_group != '?' and space_group != '.':
+            return space_group
+        else:
+            if self.space_group:
+                return self.space_group.hm
+            else:
+                return None
+
     def fill_data_dict(self):
         self.cif_data['_cell_formula_units_Z'] = self['_cell_formula_units_Z']
-        self.cif_data['_space_group_name_H-M_alt'] = self.as_string('_space_group_name_H-M_alt')
+        self.cif_data['_space_group_name_H-M_alt'] = self.get_space_group()
         self.cif_data['_space_group_name_Hall'] = self.as_string('_space_group_name_Hall')
         self.cif_data['_space_group_centring_type'] = self.as_string('_space_group_centring_type')
-        self.cif_data['_space_group_IT_number'] = self.as_int('_space_group_IT_number')
+        self.cif_data['_space_group_IT_number'] = self.get_itnum()
         self.cif_data['_space_group_crystal_system'] = self.as_string('_space_group_crystal_system')
         self.cif_data['_space_group_symop_operation_xyz'] = '\n'.join(self.symm)
         self.cif_data['_audit_creation_method'] = self.as_string('_audit_creation_method')
@@ -233,8 +252,9 @@ class CifFile(object):
                 return cif.as_int(self[cif_key])
             except ValueError as e:
                 if DEBUG:
+                    print('Failed to convert to int:')
                     print(e, self[cif_key])
-                    raise
+                    # raise
                 return None
         else:
             return None
@@ -258,17 +278,22 @@ class CifFile(object):
             self.cif_data['_space_group_IT_number'] = self.as_int('_symmetry_Int_Tables_number')
         if self['_diffrn_reflns_av_sigmaI/netI']:
             self.cif_data['_diffrn_reflns_av_unetI/netI'] = self.as_number('_diffrn_reflns_av_sigmaI/netI')
-        if self["_space_group_name_H-M_alt"] and not self['_space_group_centring_type']:
+
+        if self.as_string("_space_group_name_H-M_alt") and not self.as_string('_space_group_centring_type') or \
+            self['_space_group_centring_type'] == '?':
             try:
                 self.cif_data["_space_group_centring_type"] = self.as_string("_space_group_name_H-M_alt").split()[0][0]
-            except IndexError:
-                pass
-        elif self['_space_group_name_Hall'] and not self['_space_group_centring_type']:
+            except IndexError as e:
+                print(self.as_string("_space_group_name_H-M_alt"))
+                raise
+        elif self.as_string('_space_group_name_Hall') and not self.as_string('_space_group_centring_type'):
             try:
                 self.cif_data["_space_group_centring_type"] = \
                     self.as_string('_space_group_name_Hall').split()[0].lstrip('-')[0]
             except IndexError:
                 pass
+        else:
+            self.cif_data["_space_group_centring_type"] = self.space_group.centring_type() if self.space_group else '?'
         if self['_symmetry_cell_setting']:
             self.cif_data['_space_group_crystal_system'] = self.as_string('_symmetry_cell_setting')
 
@@ -297,6 +322,17 @@ class CifFile(object):
     @property
     def volume(self) -> float:
         return self.cell.volume
+
+    @property
+    def space_group(self) -> Union[gemmi.SpaceGroup, None]:
+        try:
+            gops = gemmi.GroupOps([gemmi.Op(o) for o in self.symm])
+            spgr = gemmi.find_spacegroup_by_ops(gops)
+        except RuntimeError as e:
+            if DEBUG:
+                print('Space group not found:', e)
+            return None
+        return spgr
 
     @property
     def atoms(self):

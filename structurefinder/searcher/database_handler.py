@@ -833,7 +833,7 @@ class StructureTable():
         try:
             dic = self.database.db_fetchone(request, (structure_id,))
         except (ValueError, InterfaceError) as e:
-            print(e)
+            print(e, '###')
         self.database.cur.close()
         # setting row_factory back to regular touple base requests:
         self.database.con.row_factory = None
