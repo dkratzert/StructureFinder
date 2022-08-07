@@ -275,6 +275,11 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         cif.cif_data['_space_group_centring_type'] = res.latt.N_str
     if res.space_group:
         cif.cif_data["_space_group_name_H-M_alt"] = res.space_group
+        try:
+            spgr = gemmi.find_spacegroup_by_name(str(res.space_group).replace(')', '').replace('(', ''))
+            cif.cif_data['_space_group_IT_number'] = spgr.number
+        except AttributeError:
+            pass
     if res.goof:
         cif.cif_data["_refine_ls_goodness_of_fit_ref"] = res.goof
     if res.rgoof:
