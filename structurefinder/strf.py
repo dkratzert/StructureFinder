@@ -92,13 +92,13 @@ if getattr(sys, 'frozen', False):
     # path into variable _MEIPASS'.
     application_path = sys._MEIPASS
 else:
-    application_path = os.path.dirname(os.path.abspath(__file__))
+    application_path = Path(os.path.abspath(__file__)).parent.parent
 
 if DEBUG:
     try:
         from PyQt5 import uic, QtGui
 
-        uic.compileUiDir(os.path.join(application_path, 'gui'))
+        uic.compileUiDir(os.path.join(application_path, 'structurefinder/gui'))
         print('recompiled ui')
     except:
         print("Unable to compile UI!")
@@ -151,7 +151,7 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
-        self.setWindowIcon(QtGui.QIcon(os.path.join(application_path, '../icons/strf.png')))
+        #self.setWindowIcon(QtGui.QIcon(str(Path(application_path, 'icons/strf.png').resolve())))
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         # self.ui.cifList_tableView.addAction(self.ui.actionGo_to_All_CIF_Tab)
@@ -1257,7 +1257,7 @@ if __name__ == "__main__":
     if not DEBUG:
         sys.excepthook = my_exception_hook
 
-    app.setWindowIcon(QtGui.QIcon('../icons/strf.png'))
+    app.setWindowIcon(QtGui.QIcon(str(Path(application_path, 'icons/strf.png').resolve())))
     # Has to be without version number, because QWebengine stores data in ApplicationName directory:
     app.setApplicationName('StructureFinder')
     db_filename = ''

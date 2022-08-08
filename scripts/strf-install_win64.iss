@@ -15,8 +15,8 @@ AppId={{FD3791DD-E642-47A6-8434-FBD976271019}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-DefaultDirName={pf}\StructureFinder
-OutputBaseFilename=StructureFinder-setup-x64-v{#MyAppVersion}
+DefaultDirName={commonpf}\{#MyAppName}
+OutputBaseFilename={#MyAppName}-setup-x64-v{#MyAppVersion}
 Compression=lzma2/fast
 SolidCompression=yes
 SetupLogging=True
@@ -37,16 +37,17 @@ DirExistsWarning=no
 UninstallLogMode=new
 VersionInfoVersion={#MyAppVersion}
 MinVersion=0,6.1
-DefaultGroupName=StructureFinder
+DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 AppendDefaultGroupName=True
 AppContact=dkratzert@gmx.de
 AppCopyright=Daniel Kratzert
 AppSupportPhone=+49 761 203 6156
-VersionInfoProductName=StructureFinder
+VersionInfoProductName={#MyAppName}
 AlwaysShowComponentsList=False
 ShowComponentSizes=False
 SetupIconFile="..\icons\strf.ico"
+UninstallDisplayIcon={app}\{#MyAppName}.exe
 ;SignTool=signtool
 SignTool=sign_sha256
 
@@ -63,7 +64,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; IconFilename: "{app}\icons\strf.ico"
-Name: "{group}\StructureFinder"; Filename: "{app}\StructureFinder.exe"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"; Check: IsWin64
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"; Check: IsWin64
 
 [UninstallDelete]
 Type: files; Name: "{app}\*.pyc"
@@ -76,8 +77,8 @@ Type: filesandordirs; Name: "{app}\*"
 [Tasks]
 
 [Files]
-Source: "..\dist\StructureFinder\*"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "StructureFinder-crash.txt"; DestDir: "{app}"; Permissions: everyone-full
+Source: "..\dist\{#MyAppName}\*"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "{#MyAppName}-crash.txt"; DestDir: "{app}"; Permissions: everyone-full
 
 [Dirs]
 Name: "{app}\displaymol"; Permissions: everyone-full
