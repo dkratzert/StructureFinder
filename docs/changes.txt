@@ -1,5 +1,7 @@
 Changelog
 ---------
+* v65 Improved determination of space group type and IT-Number from available information of 
+      CIF and res files.
 * v64 Adds new CIF parser. CIFs with data_global are now recognized and the values of 
       the first gobal as well as the first data block are used for indexing.
       Indexing should be slightly faster now and might recognize different CIFs sometimes. 

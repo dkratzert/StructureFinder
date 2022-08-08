@@ -243,7 +243,8 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
     cif = CifFile(options=options)
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     try:
-        cif.cif_data["_space_group_symop_operation_xyz"] = "\n".join([repr(x) for x in res.symmcards])
+        symmops = "\n".join([x.to_fractional() for x in res.symmcards])
+        cif.cif_data["_space_group_symop_operation_xyz"] = symmops
     except IndexError:
         pass
     try:
@@ -273,11 +274,23 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         cif.cif_data['_refine_diff_density_max'] = res.hpeak
     if res.latt:
         cif.cif_data['_space_group_centring_type'] = res.latt.N_str
-    if res.space_group:
+    if cif.cif_data["_space_group_symop_operation_xyz"]:
+        try:
+            symm_ops = cif.cif_data["_space_group_symop_operation_xyz"].splitlines(keepends=False)
+            spgr: gemmi.SpaceGroup = gemmi.find_spacegroup_by_ops(gemmi.GroupOps([gemmi.Op(o) for o in symm_ops]))
+            if spgr:
+                cif.cif_data["_space_group_name_H-M_alt"] = spgr.short_name()
+                cif.cif_data['_space_group_IT_number'] = spgr.number
+                cif.cif_data["_space_group_centring_type"] = spgr.centring_type()
+        except RuntimeError as e:
+            # print(e, filename)
+            pass
+    if res.space_group and not cif.cif_data["_space_group_name_H-M_alt"]:
         cif.cif_data["_space_group_name_H-M_alt"] = res.space_group
         try:
             spgr = gemmi.find_spacegroup_by_name(str(res.space_group).replace(')', '').replace('(', ''))
-            cif.cif_data['_space_group_IT_number'] = spgr.number
+            if not cif.cif_data['_space_group_IT_number']:
+                cif.cif_data['_space_group_IT_number'] = spgr.number
         except AttributeError:
             pass
     if res.goof:

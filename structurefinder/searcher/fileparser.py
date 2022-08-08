@@ -166,7 +166,7 @@ class CifFile(object):
             return space_group
         else:
             if self.space_group:
-                return self.space_group.hm
+                return self.space_group.short_name()
             else:
                 return None
 
