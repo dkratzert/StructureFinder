@@ -29,8 +29,9 @@ class MyDownloader(QThread):
         print('Failed to download: {}'.format(self.url))
         print('HTTP status was {}'.format(status_code))
 
-    def download(self, full_url: str, user_agent=None) -> bytes:
-        user_agent = user_agent if user_agent else 'StructureFinder v{}'.format(VERSION)
+    def download(self, full_url: str) -> bytes:
+        OS = sys.platform
+        user_agent = f'StructureFinder v{VERSION} ({OS})'
         headers = {
             'User-Agent': user_agent,
         }
