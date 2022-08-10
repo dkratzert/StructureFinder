@@ -3251,13 +3251,13 @@ p, li { white-space: pre-wrap; }
   <customwidget>
    <class>MoleculeWidget</class>
    <extends>QWidget</extends>
-   <header>displaymol.molecule2D.h</header>
+   <header>structurefinder.displaymol.molecule2D.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>StructuresListTableView</class>
    <extends>QTableView</extends>
-   <header>gui/table_view.h</header>
+   <header>structurefinder.gui.table_view.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>
