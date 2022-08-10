@@ -244,6 +244,8 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     try:
         symmops = "\n".join([x.to_fractional() for x in res.symmcards])
+        # gemmi needs integer ratio instead of float values in symmcards:
+        # symmops = "\n".join([x.toShelxl() for x in res.symmcards])
         cif.cif_data["_space_group_symop_operation_xyz"] = symmops
     except IndexError:
         pass

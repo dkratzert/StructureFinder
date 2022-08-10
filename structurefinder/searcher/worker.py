@@ -105,6 +105,8 @@ class Worker(QtCore.QObject):
                         print(f'{num} files ...')
                         structures.database.commit_db()
                 lastid += 1
+                self.progress.emit(filecount)
+                self.number_of_files.emit(filecount)
                 continue
             if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2')
                 or name.endswith('.tgz')) and fillcif:
@@ -155,6 +157,8 @@ class Worker(QtCore.QObject):
                             print(f'{num} files ...')
                             structures.database.commit_db()
                         lastid += 1
+                        self.progress.emit(filecount)
+                        self.number_of_files.emit(filecount)
                 continue
             if name.endswith('.res') and fillres:
                 tst = None
@@ -178,6 +182,8 @@ class Worker(QtCore.QObject):
                     print(f'{num} files ...')
                     structures.database.commit_db()
                 lastid += 1
+                self.progress.emit(filecount)
+                self.number_of_files.emit(filecount)
         structures.database.commit_db()
         time2 = time.perf_counter()
         self.progress.emit(filecount)

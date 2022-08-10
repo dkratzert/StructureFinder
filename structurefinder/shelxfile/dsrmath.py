@@ -685,6 +685,8 @@ class SymmetryElement(object):
                 text = f'{sign}2/3'
             elif trans_abs and (0.74 < trans_abs < 0.76):
                 text = f'{sign}3/4'
+            elif trans_abs and (1.24 < trans_abs < 1.26):
+                text = f'{sign}5/4'
             elif trans_abs == 1.0:
                 text = ''
             for j in range(3):

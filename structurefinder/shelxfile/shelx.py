@@ -23,6 +23,7 @@ import os
 import re
 import sys
 from math import cos, sin
+from typing import List
 
 from structurefinder.shelxfile.atoms import Atoms, Atom
 from structurefinder.shelxfile.cards import ACTA, FVAR, FVARs, REM, BOND, Restraints, DEFS, NCSY, ISOR, FLAT, \
@@ -30,7 +31,7 @@ from structurefinder.shelxfile.cards import ACTA, FVAR, FVARs, REM, BOND, Restra
     SFACTable, UNIT, BASF, TWIN, WGHT, BLOC, SymmCards, CONN, CONF, BIND, DISP, GRID, HTAB, MERG, FRAG, FREE, FMAP, \
     MOVE, PLAN, PRIG, RTAB, SHEL, SIZE, SPEC, STIR, TWST, WIGL, WPDB, XNPD, ZERR, CELL, LATT, MORE, MPLA, AFIX, PART, \
     RESI, ABIN, ANIS, Residues
-from structurefinder.shelxfile.dsrmath import Matrix
+from structurefinder.shelxfile.dsrmath import Matrix, SymmetryElement
 from structurefinder.shelxfile.misc import DEBUG, ParseOrderError, ParseNumError, ParseUnknownParam, \
     multiline_test, dsr_regex, wrap_line, ParseSyntaxError
 

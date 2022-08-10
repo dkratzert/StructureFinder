@@ -547,6 +547,7 @@ class StartStructureDB(QMainWindow):
         self.worker.finished.connect(self.worker.deleteLater)
         self.worker.finished.connect(lambda x: self.statusBar().showMessage(x))
         self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.finished.connect(self.abort_import_button.hide)
         self.worker.progress.connect(self.report_progress)
         self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
@@ -558,6 +559,7 @@ class StartStructureDB(QMainWindow):
     def abort_indexing(self):
         self.worker.stop = True
         self.enable_buttons()
+        self.abort_import_button.hide()
         self.progress.hide()
         self.statusBar().showMessage("Indexing aborted")
         self.progress.hide()

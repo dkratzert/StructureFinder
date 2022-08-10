@@ -2,6 +2,7 @@
 
 import re
 from math import cos, radians, sqrt
+from typing import List
 
 from structurefinder.shelxfile.dsrmath import my_isnumeric, SymmetryElement
 from structurefinder.shelxfile.misc import chunks, ParseParamError, ParseNumError, \
@@ -1568,7 +1569,7 @@ class SymmCards():
 
     def __init__(self, shx):
         self.shx = shx
-        self._symmcards = [SymmetryElement(['X', 'Y', 'Z'])]
+        self._symmcards: List[SymmetryElement] = [SymmetryElement(['X', 'Y', 'Z'])]
         self.lattOps = []
 
     def _as_str(self) -> str:

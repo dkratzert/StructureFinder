@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/daniel/Documents/GitHub/StructureFinder/structurefinder/gui/strf_main.ui'
+# Form implementation generated from reading ui file 'C:\_DEV\GitHub\StructureFinder\structurefinder/gui\strf_main.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -575,6 +575,7 @@ class Ui_stdbMainwindow(object):
         self.allCifTreeWidget = QtWidgets.QTreeWidget(self.allEntrysTab)
         self.allCifTreeWidget.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
         self.allCifTreeWidget.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+        self.allCifTreeWidget.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.allCifTreeWidget.setAllColumnsShowFocus(False)
         self.allCifTreeWidget.setObjectName("allCifTreeWidget")
         self.verticalLayout_7.addWidget(self.allCifTreeWidget)
@@ -1157,7 +1158,7 @@ class Ui_stdbMainwindow(object):
         self.actionGo_to_All_CIF_Tab.setObjectName("actionGo_to_All_CIF_Tab")
 
         self.retranslateUi(stdbMainwindow)
-        self.MaintabWidget.setCurrentIndex(0)
+        self.MaintabWidget.setCurrentIndex(1)
         self.actionExit.triggered.connect(stdbMainwindow.close) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(stdbMainwindow)
         stdbMainwindow.setTabOrder(self.importDirButton, self.importDatabaseButton)

@@ -246,7 +246,7 @@
          <string notr="true"/>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="maintab">
          <attribute name="title">
@@ -1253,6 +1253,9 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="selectionMode">
                <enum>QAbstractItemView::MultiSelection</enum>
+              </property>
+              <property name="verticalScrollMode">
+               <enum>QAbstractItemView::ScrollPerPixel</enum>
               </property>
               <property name="allColumnsShowFocus">
                <bool>false</bool>
