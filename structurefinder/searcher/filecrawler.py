@@ -247,8 +247,12 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         # gemmi needs integer ratio instead of float values in symmcards:
         # symmops = "\n".join([x.toShelxl() for x in res.symmcards])
         cif.cif_data["_space_group_symop_operation_xyz"] = symmops
-    except IndexError:
-        pass
+    except Exception:
+        try:
+            symmops = "\n".join([x.toShelxl() for x in res.symmcards])
+            cif.cif_data["_space_group_symop_operation_xyz"] = symmops
+        except Exception:
+            pass
     try:
         cif.cif_data["calculated_formula_sum"] = res.sum_formula_ex_dict()
     except ZeroDivisionError:
