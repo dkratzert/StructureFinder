@@ -1233,16 +1233,16 @@ if __name__ == "__main__":
         """
         Hooks into Exceptions to create debug reports.
         """
-        errortext = 'StructureFinder V{} crash report\n\n'.format(VERSION)
-        errortext += 'Please send also the corresponding CIF file, if possible.'
-        errortext += 'Python ' + sys.version + '\n'
-        errortext += sys.platform + '\n'
-        errortext += time.asctime(time.localtime(time.time())) + '\n'
-        errortext += "StructureFinder crashed during the following operation:" + '\n'
+        errortext = f'StructureFinder V{VERSION} crash report\n\n'
+        errortext += 'Please send also the corresponding CIF file, if possible.\n\n'
+        errortext += f'Python {sys.version}\n'
+        errortext += f'{sys.platform} \n'
+        errortext += f'{time.asctime(time.localtime(time.time()))} \n'
+        errortext += f'StructureFinder crashed during the following operation: \n'
         errortext += '-' * 80 + '\n'
         errortext += ''.join(traceback.format_tb(error_traceback)) + '\n'
-        errortext += str(exctype.__name__) + ': '
-        errortext += str(value) + '\n'
+        errortext += f'{str(exctype.__name__)} : '
+        errortext += f'{str(value)} \n'
         errortext += '-' * 80 + '\n'
         logfile = Path.home().joinpath(Path(r'StructureFinder-crash.txt'))
         try:
