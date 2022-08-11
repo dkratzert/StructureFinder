@@ -1,5 +1,7 @@
 Changelog
 ---------
+* v66 Some small fixes. Improved determination of space group type of .res files.
+      Fixed crash by malformed symm cards during indexing.
 * v65 Improved determination of space group type and IT-Number from available information of 
       CIF and res files.
 * v64 Adds new CIF parser. CIFs with data_global are now recognized and the values of 
