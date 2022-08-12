@@ -11,8 +11,24 @@
 #
 import random
 import string
+from collections import namedtuple
 from math import sqrt, radians, cos, sin, acos, degrees, floor
 from operator import sub, add
+from typing import Union
+
+frac = namedtuple('Frac', "num, den")
+
+
+def fraction_of(input_number: float, precision: int = 3) -> Union[frac, None]:
+    """
+    Calculates a fraction from
+    """
+    for denominator in (1, 2, 3, 4, 6):
+        numerator = round(input_number * denominator)
+        dec_input = round(input_number - numerator / denominator, precision)
+        if dec_input == 0:
+            return frac(num=numerator, den=denominator)
+    return None
 
 
 class Array(object):
@@ -663,31 +679,21 @@ class SymmetryElement(object):
             lines.append(text)
         return ', '.join(lines)
 
-    def to_fractional(self) -> str:
+    def to_fractional(self, precision: int = 3) -> str:
         """
         '-X, 1/2+Y, 1/2-Z'
         """
         axes = ('X', 'Y', 'Z')
         lines = []
         for i in range(3):
-            text = str(self.trans[i]) if self.trans[i] else ''
-            trans_abs = abs(self.trans[i])
-            sign = '-' if self.trans[i] and self.trans[i] < 0 else ''
-            if trans_abs and (0.49 < trans_abs < 0.51):
-                text = f'{sign}1/2'
-            elif trans_abs and (0.31 < trans_abs < 0.35):
-                text = f'{sign}1/3'
-            elif trans_abs and (0.24 < trans_abs < 0.26):
-                text = f'{sign}1/4'
-            elif trans_abs and (0.15 < trans_abs < 0.17):
-                text = f'{sign}1/6'
-            elif trans_abs and (0.6 < trans_abs < 0.7):
-                text = f'{sign}2/3'
-            elif trans_abs and (0.74 < trans_abs < 0.76):
-                text = f'{sign}3/4'
-            elif trans_abs and (1.24 < trans_abs < 1.26):
-                text = f'{sign}5/4'
-            elif trans_abs == 1.0:
+            frac = fraction_of(self.trans[i], precision=precision)
+            if frac and frac.num != 0:
+                text = f'{frac.num}/{frac.den}'
+            elif frac and frac.num == frac.den:
+                text = ''
+            elif frac and frac.num == 0:
+                text = ''
+            else:
                 text = ''
             for j in range(3):
                 s = '' if not self.matrix[i, j] else axes[j]
