@@ -10,6 +10,8 @@ from typing import Union
 
 from pkg_resources import parse_version
 
+DEBUG = False
+
 try:
     from winreg import OpenKey, HKEY_CURRENT_USER, EnumKey, QueryInfoKey, EnumValue
 except ImportError:
@@ -51,11 +53,14 @@ def get_cccsd_path() -> Union[Path, None]:
         if QueryInfoKey(path)[1] > 0:  # subkey with content
             if latest < ver:
                 csd_path = Path(EnumValue(path, 0)[1], 'ccdc_searcher.bat')
-    if csd_path.is_file():
+    if csd_path and csd_path.is_file():
         return csd_path
     else:
         try:
-            return Path(which('ccdc_searcher.bat'))
+            if which('ccdc_searcher.bat'):
+                return Path(which('ccdc_searcher.bat'))
+            else:
+                return Path(which('ccdc_searcher'))
         except TypeError:
             return None
 
@@ -112,7 +117,7 @@ def parse_results(xmlinput: str) -> list:
     return results
 
 
-def search_csd(cell: list, centering: str) -> str:
+def search_csd(cell: list, centering: str, searcher_executable: str = '') -> str:
     querystring = set_unitcell(cell, centering).decode('utf-8')
     # prepare the temporary queryfile:
     querydescriptor, queryfile = mkstemp(suffix='xml')
@@ -121,19 +126,23 @@ def search_csd(cell: list, centering: str) -> str:
     # write query to file:
     Path(queryfile).write_text(querystring)
     if sys.platform == 'win32':
-        # Either use the path from the text field or from get_cccsd_path()
-        p = get_cccsd_path()
         shell = True
     else:
-        p = Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher')
         shell = False
-    rf = ''
+    # Either use the path from the text field or from get_cccsd_path()
+    if searcher_executable and Path(searcher_executable).exists() and Path(searcher_executable).is_file():
+        path_to_exe = Path(searcher_executable)
+    else:
+        path_to_exe = get_cccsd_path()
+    result_file = ''
     try:
+        if DEBUG:
+            print(f'Running CCDC query: {path_to_exe}')
         # run the search:
         # shell=True disables the output window of the process
-        subprocess.run([str(p.absolute()), '-query', queryfile, '-results', resultfile], shell=shell)
+        subprocess.run([str(path_to_exe.absolute()), '-query', queryfile, '-results', resultfile], shell=shell)
         # read the result:
-        rf = Path(resultfile).read_text(encoding='utf-8', errors='ignore')
+        result_file = Path(resultfile).read_text(encoding='utf-8', errors='ignore')
     except Exception as e:
         print('Could not search cell:')
         print(e)
@@ -144,7 +153,7 @@ def search_csd(cell: list, centering: str) -> str:
         os.remove(resultfile)
     except Exception:
         pass
-    return rf
+    return result_file
 
 
 if __name__ == '__main__':

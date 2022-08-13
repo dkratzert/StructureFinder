@@ -3183,7 +3183,7 @@ p, li { white-space: pre-wrap; }
                <number>14</number>
               </property>
               <item>
-               <widget class="QLineEdit" name="cellcheckLineEdit">
+               <widget class="QLineEdit" name="cellcheckExeLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                   <horstretch>2</horstretch>
@@ -3193,10 +3193,13 @@ p, li { white-space: pre-wrap; }
                 <property name="readOnly">
                  <bool>true</bool>
                 </property>
+                <property name="placeholderText">
+                 <string>Locate the CellCheckCSD executable here</string>
+                </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="cellcheckPushButton">
+               <widget class="QPushButton" name="cellcheckExePushButton">
                 <property name="text">
                  <string>CellcheckCSD Executable</string>
                 </property>
