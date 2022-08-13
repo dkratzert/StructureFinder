@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\_DEV\GitHub\StructureFinder\structurefinder/gui\strf_main.ui'
+# Form implementation generated from reading ui file '/Users/daniel/Documents/GitHub/StructureFinder/structurefinder/gui/strf_main.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -1054,8 +1054,11 @@ class Ui_stdbMainwindow(object):
         self.CCDCSearchTab.setSizePolicy(sizePolicy)
         self.CCDCSearchTab.setObjectName("CCDCSearchTab")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.CCDCSearchTab)
+        self.verticalLayout_5.setContentsMargins(-1, -1, -1, 10)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_4.setContentsMargins(-1, 0, -1, -1)
+        self.verticalLayout_4.setSpacing(3)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.gridLayout_5 = QtWidgets.QGridLayout()
         self.gridLayout_5.setObjectName("gridLayout_5")
@@ -1121,6 +1124,32 @@ class Ui_stdbMainwindow(object):
         self.CSDtreeWidget.header().setSortIndicatorShown(False)
         self.CSDtreeWidget.header().setStretchLastSection(True)
         self.verticalLayout_4.addWidget(self.CSDtreeWidget)
+        self.ccdc_exe_HorizontalLayout = QtWidgets.QHBoxLayout()
+        self.ccdc_exe_HorizontalLayout.setContentsMargins(-1, 14, -1, -1)
+        self.ccdc_exe_HorizontalLayout.setObjectName("ccdc_exe_HorizontalLayout")
+        self.cellcheckLineEdit = QtWidgets.QLineEdit(self.CCDCSearchTab)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(2)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.cellcheckLineEdit.sizePolicy().hasHeightForWidth())
+        self.cellcheckLineEdit.setSizePolicy(sizePolicy)
+        self.cellcheckLineEdit.setReadOnly(True)
+        self.cellcheckLineEdit.setObjectName("cellcheckLineEdit")
+        self.ccdc_exe_HorizontalLayout.addWidget(self.cellcheckLineEdit)
+        self.cellcheckPushButton = QtWidgets.QPushButton(self.CCDCSearchTab)
+        self.cellcheckPushButton.setObjectName("cellcheckPushButton")
+        self.ccdc_exe_HorizontalLayout.addWidget(self.cellcheckPushButton)
+        self.cellcheckLabel = QtWidgets.QLabel(self.CCDCSearchTab)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.cellcheckLabel.sizePolicy().hasHeightForWidth())
+        self.cellcheckLabel.setSizePolicy(sizePolicy)
+        self.cellcheckLabel.setOpenExternalLinks(True)
+        self.cellcheckLabel.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByKeyboard|QtCore.Qt.LinksAccessibleByMouse)
+        self.cellcheckLabel.setObjectName("cellcheckLabel")
+        self.ccdc_exe_HorizontalLayout.addWidget(self.cellcheckLabel)
+        self.verticalLayout_4.addLayout(self.ccdc_exe_HorizontalLayout)
         self.verticalLayout_5.addLayout(self.verticalLayout_4)
         self.MaintabWidget.addTab(self.CCDCSearchTab, "")
         self.verticalLayout_6.addWidget(self.MaintabWidget)
@@ -1158,7 +1187,7 @@ class Ui_stdbMainwindow(object):
         self.actionGo_to_All_CIF_Tab.setObjectName("actionGo_to_All_CIF_Tab")
 
         self.retranslateUi(stdbMainwindow)
-        self.MaintabWidget.setCurrentIndex(1)
+        self.MaintabWidget.setCurrentIndex(4)
         self.actionExit.triggered.connect(stdbMainwindow.close) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(stdbMainwindow)
         stdbMainwindow.setTabOrder(self.importDirButton, self.importDatabaseButton)
@@ -1535,6 +1564,8 @@ class Ui_stdbMainwindow(object):
         self.CSDtreeWidget.headerItem().setText(6, _translate("stdbMainwindow", "gamma"))
         self.CSDtreeWidget.headerItem().setText(7, _translate("stdbMainwindow", "Space Group"))
         self.CSDtreeWidget.headerItem().setText(8, _translate("stdbMainwindow", "Identifier"))
+        self.cellcheckPushButton.setText(_translate("stdbMainwindow", "CellcheckCSD Executable"))
+        self.cellcheckLabel.setText(_translate("stdbMainwindow", "<html><head/><body><p>You need to <a href=\"https://www.ccdc.cam.ac.uk/community/csd-community/cellcheckcsd/\"><span style=\" text-decoration: underline; color:#0068da;\">download CellCheckCSD</span></a> in order to make this work.</p></body></html>"))
         self.MaintabWidget.setTabText(self.MaintabWidget.indexOf(self.CCDCSearchTab), _translate("stdbMainwindow", "CellCheckCSD"))
         self.actionExit.setText(_translate("stdbMainwindow", "Exit Program"))
         self.actionExit.setShortcut(_translate("stdbMainwindow", "Ctrl+Q"))

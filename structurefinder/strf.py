@@ -135,7 +135,7 @@ class StartStructureDB(QMainWindow):
         self.passwd = ''
         if is_windows:  # Not valid for MacOS
             # Check for CellCheckCSD:
-            if not get_cccsd_path():
+            if not get_cccsd_path() and not self.ui.cellcheckLineEdit.text():
                 self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
                 self.ui.cellSearchCSDLineEdit.setDisabled(True)
                 self.ui.CSDpushButton.setDisabled(True)

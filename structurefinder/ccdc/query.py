@@ -121,6 +121,7 @@ def search_csd(cell: list, centering: str) -> str:
     # write query to file:
     Path(queryfile).write_text(querystring)
     if sys.platform == 'win32':
+        # Either use the path from the text field or from get_cccsd_path()
         p = get_cccsd_path()
         shell = True
     else:
