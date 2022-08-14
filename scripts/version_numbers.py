@@ -18,7 +18,9 @@ pypath = ["structurefinder/shelxfile/shelx.py",
           "structurefinder/searcher/database_handler.py",
           'structurefinder/searcher/filecrawler.py',
           'structurefinder/searcher/worker.py',
-          "structurefinder/displaymol/sdm.py"]
+          "structurefinder/displaymol/sdm.py",
+          'structurefinder/ccdc/query.py'
+          ]
 
 
 def process_iss(filepath):
