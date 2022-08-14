@@ -41,3 +41,19 @@ class StructureFinderSettings():
             lastdir = './'
         self.settings.endGroup()
         return lastdir
+
+    def save_ccdc_exe_path(self, path: str) -> None:
+        """
+        Saves the last directory where we saved a database.
+        """
+        self.settings.beginGroup("CCDC")
+        self.settings.setValue('exepath', path)
+        self.settings.endGroup()
+
+    def load_ccdc_exe_path(self) -> str:
+        self.settings.beginGroup('CCDC')
+        exe_path = self.settings.value("exepath", type=str)
+        if not Path(exe_path).exists() or not Path(exe_path).is_file():
+            exe_path = ''
+        self.settings.endGroup()
+        return exe_path

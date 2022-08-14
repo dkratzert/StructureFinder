@@ -133,20 +133,12 @@ class StartStructureDB(QMainWindow):
         self.apx = None
         self.structureId = 0
         self.passwd = ''
-        if is_windows:  # Not valid for MacOS
-            # Check for CellCheckCSD:
-            if not get_cccsd_path():
-                self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
-                self.ui.cellSearchCSDLineEdit.setDisabled(True)
-                self.ui.CSDpushButton.setDisabled(True)
-        else:
-            self.ui.cellSearchCSDLineEdit.setText('You need to install CellCheckCSD in order to search here.')
-            self.ui.cellSearchCSDLineEdit.setDisabled(True)
-            self.ui.CSDpushButton.setDisabled(True)
         self.show()
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
+        self.settings = StructureFinderSettings()
+        self.ui.cellcheckExeLineEdit.setText(self.settings.load_ccdc_exe_path())
         self.connect_signals_and_slots()
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
@@ -154,7 +146,6 @@ class StartStructureDB(QMainWindow):
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         # self.ui.cifList_tableView.addAction(self.ui.actionGo_to_All_CIF_Tab)
-        self.settings = StructureFinderSettings()
         if db_file_name:
             self.open_database_file(db_file_name)
         if self.structures:
@@ -186,8 +177,7 @@ class StartStructureDB(QMainWindow):
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
         self.ui.adv_SearchPushButton.clicked.connect(self.advanced_search)
         self.ui.adv_ClearSearchButton.clicked.connect(self.show_full_list)
-        if is_windows:
-            self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
+        self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
         # Actions:
         self.ui.actionClose_Database.triggered.connect(self.close_db)
         self.ui.actionImport_directory.triggered.connect(self.import_file_dirs)
@@ -207,6 +197,8 @@ class StartStructureDB(QMainWindow):
         self.ui.add_cif.clicked.connect(self.cif_checkbox_clicked)
         self.ui.growCheckBox.toggled.connect(self.redraw_molecule)
         self.ui.ExportAsCIFpushButton.clicked.connect(self.export_current_cif)
+        self.ui.cellcheckExeLineEdit.textChanged.connect(self.save_cellcheck_exe_path)
+        self.ui.cellcheckExePushButton.clicked.connect(self.browse_for_ccdc_exe)
 
     def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
         super(StartStructureDB, self).resizeEvent(a0)
@@ -243,6 +235,14 @@ class StartStructureDB(QMainWindow):
                 update_button.clicked.connect(lambda: do_update_program(str(remote_version)))
             box.setText(warn_text.format(remote_version))
             box.exec()
+
+    def save_cellcheck_exe_path(self, text: str):
+        self.settings.save_ccdc_exe_path(text)
+
+    def browse_for_ccdc_exe(self):
+        exe = QFileDialog.getOpenFileName(self, caption='CellCheckCSD executable', filter="ccdc_searcher.bat;ccdc_searcher")[0]
+        if exe:
+            self.ui.cellcheckExeLineEdit.setText(exe)
 
     def res_checkbox_clicked(self, click):
         if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
@@ -345,7 +345,7 @@ class StartStructureDB(QMainWindow):
             return None
         center = centering_num_2_letter[self.ui.lattCentComboBox.currentIndex()]
         # search the csd:
-        xml = search_csd(cell, centering=center)
+        xml = search_csd(cell, centering=center, searcher_executable=self.ui.cellcheckExeLineEdit.text())
         try:
             results = parse_results(xml)
         except ParseError as e:
