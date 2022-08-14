@@ -18,6 +18,7 @@ fi
 venv/bin/pip install pip -U
 
 venv/bin/pip install -r requirements.txt -U
+venv/bin/pip install pyinstaller  -U
 
 venv/bin/pyinstaller StructureFinder_linux.spec --clean -y
 
