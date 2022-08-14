@@ -194,3 +194,4 @@ class Worker(QtCore.QObject):
         print(f'      {filecount} files considered.')
         print(tmessage)
         self.finished.emit(tmessage)
+        return len(structures)

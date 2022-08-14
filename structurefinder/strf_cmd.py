@@ -163,8 +163,8 @@ def run_index(args=None):
         diff = time2 - time1
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
-        tmessage = "\nTotal {3} cif/res files in '{4}'. \nDuration: {0:>2d} h, {1:>2d} m, {2:>3.2f} s"
-        print(tmessage.format(int(h), int(m), s, worker.files_indexed, str(Path(dbfilename).resolve())))
+        print(f"\nTotal {worker.files_indexed} cif/res files in '{str(Path(dbfilename).resolve())}'. "
+              f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
         check_update()
 
 

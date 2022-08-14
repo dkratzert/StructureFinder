@@ -392,9 +392,9 @@ class StructureTable():
 
     def __len__(self):
         """
-        Number of database entries.
+        Number of structures in the database.
         """
-        return self.database.get_lastrowid()
+        return self.database.db_fetchone('SELECT COUNT(*) FROM Structure')[0]
 
     def __getitem__(self, str_id):
         try:
