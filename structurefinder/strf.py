@@ -25,6 +25,7 @@ from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from typing import Union
+import qtawesome as qta
 
 import gemmi.cif
 from PyQt5 import QtGui
@@ -133,6 +134,7 @@ class StartStructureDB(QMainWindow):
         self.apx = None
         self.structureId = 0
         self.passwd = ''
+        self.set_icons()
         self.show()
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
@@ -153,6 +155,14 @@ class StartStructureDB(QMainWindow):
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
+
+    def set_icons(self):
+        self.ui.importDatabaseButton.setIcon(qta.icon('fa5s.database'))
+        self.ui.saveDatabaseButton.setIcon(qta.icon('fa.hdd-o'))
+        self.ui.importDirButton.setIcon(qta.icon('fa5s.download'))
+        self.ui.appendDirButton.setIcon(qta.icon('fa5s.plus'))
+        self.ui.p4pCellButton.setIcon(qta.icon('fa.cube'))
+        self.ui.closeDatabaseButton.setIcon(qta.icon('fa.times-circle-o'))
 
     def set_model_from_data(self, data: Union[list, tuple]):
         self.table_model = TableModel(structures=data)
