@@ -68,6 +68,28 @@ class DatabaseRequest():
             # set the database cursor
             self.cur = self.con.cursor()
 
+    def merge_databases(self, db2: str):
+
+        temp_view = """SELECT "CREATE VIEW my_view AS SELECT " || 
+        (SELECT group_concat(name, ', ') FROM 
+        pragma_table_info('{}') WHERE  name != 'Id') || " FROM {}";"""
+
+        print(f'Old length: {self.get_lastrowid()}')
+        self.con.execute(f"ATTACH '{db2}' as dba")
+        self.con.execute("BEGIN")
+        for num, row in enumerate(self.con.execute("SELECT * FROM dba.sqlite_master WHERE type='table'")):
+            table_name = row[1]
+            if table_name in ('database_format', 'measurement'):
+                continue
+            self.con.execute(temp_view.format(table_name, table_name))
+            combine = f"INSERT INTO {table_name} SELECT * FROM my_view"
+            print(combine, '#')
+            self.con.execute(combine)
+        self.con.commit()
+        self.con.execute("detach database dba")
+        print('Finished datbabase merge')
+        print(f'New length: {self.get_lastrowid()}')
+
     def initialize_db(self):
         """
         initializtes the db
@@ -76,21 +98,21 @@ class DatabaseRequest():
         # Format: 1 == APEX
         self.cur.execute('''
                     CREATE TABLE IF NOT EXISTS database_format (
-                        Id                  INTEGER NOT NULL,
+                        Id                  INTEGER PRIMARY KEY NOT NULL,
                         Format              INTEGER,              
                         PRIMARY KEY(Id));
                     ''')
 
         self.cur.execute('''
                     CREATE TABLE IF NOT EXISTS measurement (
-                        Id    INTEGER NOT NULL,
+                        Id    INTEGER  PRIMARY KEY NOT NULL,
                         name    VARCHAR(255),
                         PRIMARY KEY(Id));
                     ''')
 
         self.cur.execute('''
                     CREATE TABLE IF NOT EXISTS Structure (
-                        Id    INTEGER NOT NULL,
+                        Id    INTEGER  PRIMARY KEY NOT NULL,
                         measurement INTEGER NOT NULL,
                         path          TEXT,
                         filename      TEXT,
@@ -104,7 +126,7 @@ class DatabaseRequest():
 
         self.cur.execute('''
                     CREATE TABLE IF NOT EXISTS Atoms (
-                        Id    INTEGER NOT NULL,
+                        Id    INTEGER  PRIMARY KEY NOT NULL,
                         StructureId    INTEGER NOT NULL,
                         Name       TEXT,
                         element    TEXT,
@@ -125,7 +147,7 @@ class DatabaseRequest():
 
         self.cur.execute('''
                     CREATE TABLE IF NOT EXISTS Residuals (
-                        Id                                      INTEGER NOT NULL,
+                        Id                                      INTEGER  PRIMARY KEY NOT NULL,
                         StructureId                             INTEGER NOT NULL,
                         _cell_formula_units_Z                   INTEGER,
                         _space_group_name_H_M_alt               TEXT,
@@ -194,7 +216,7 @@ class DatabaseRequest():
         self.cur.execute(
             '''
             CREATE TABLE IF NOT EXISTS cell (
-                Id              INTEGER NOT NULL,
+                Id              INTEGER  PRIMARY KEY NOT NULL,
                 StructureId     INTEGER NOT NULL,
                 a               REAL,
                 b               REAL,
@@ -214,7 +236,7 @@ class DatabaseRequest():
         self.cur.execute(
             """
             CREATE TABLE IF NOT EXISTS authors (
-                Id                          INTEGER NOT NULL,
+                Id                          INTEGER  PRIMARY KEY NOT NULL,
                 StructureId                 INTEGER NOT NULL,
                 _audit_author_name          TEXT,
                 _audit_contact_author_name  TEXT,
@@ -252,7 +274,7 @@ class DatabaseRequest():
         self.cur.execute(
             '''
             CREATE TABLE IF NOT EXISTS sum_formula (
-                    Id             INTEGER NOT NULL,
+                    Id             INTEGER  PRIMARY KEY NOT NULL,
                     StructureId    INTEGER NOT NULL,
                     {}             REAL,
                     PRIMARY KEY(Id),
