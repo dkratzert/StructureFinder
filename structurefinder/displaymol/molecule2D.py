@@ -1,6 +1,6 @@
 import sys
 from collections import namedtuple
-from math import sqrt, cos, sin
+from math import sqrt, cos, sin, dist
 from pathlib import Path
 from typing import List, Union
 
@@ -207,7 +207,7 @@ class MoleculeWidget(QtWidgets.QWidget):
             c[j] = (max_[j] + min_[j]) / 2
         r = 0
         for atom in self.atoms:
-            d = self.distance(atom.coordinate, c) + 1.5
+            d = dist(atom.coordinate, c) + 1.5
             if d > r:
                 r = d
         self.molecule_center = np.array(c, dtype=np.float32)
@@ -241,7 +241,7 @@ class MoleculeWidget(QtWidgets.QWidget):
                     continue
                 if at1.name == at2.name:  # name1 = name2
                     continue
-                d = self.distance(at1.coordinate, at2.coordinate)
+                d = dist(at1.coordinate, at2.coordinate)
                 if d > 4.0:  # makes bonding faster (longer bonds do not exist)
                     continue
                 if (at1.radius + at2.radius) * extra_param > d:
