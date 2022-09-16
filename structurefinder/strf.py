@@ -591,12 +591,12 @@ class StartStructureDB(QMainWindow):
             print(e)
             print('No fulltext search module found.')
         try:
-            self.structures.populate_fulltext_search_table()
-            self.structures.populate_author_fulltext_search()
+            self.structures.database.populate_fulltext_search_table()
+            self.structures.database.populate_author_fulltext_search()
         except OperationalError as e:
             print(e)
             print('No fulltext search compiled into sqlite.')
-        self.structures.make_indexes()
+        self.structures.database.make_indexes()
         self.structures.database.commit_db()
         self.ui.cifList_tableView.show()
         self.show_full_list()

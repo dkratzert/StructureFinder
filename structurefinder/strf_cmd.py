@@ -154,9 +154,9 @@ def run_index(args=None):
             if db and structures:
                 db.init_textsearch()
                 db.init_author_search()
-                structures.populate_fulltext_search_table()
-                structures.populate_author_fulltext_search()
-                structures.make_indexes()
+                db.populate_fulltext_search_table()
+                db.populate_author_fulltext_search()
+                db.make_indexes()
         except TypeError:
             print('No valid files found. They might be in excluded subdirectories.')
         time2 = time.perf_counter()
