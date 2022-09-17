@@ -53,6 +53,7 @@ class DatabaseRequest():
         :type dbfile: str
         """
         # open the database
+        self.dbfile = dbfile
         self.con = connect(dbfile, check_same_thread=False)
         self.con.execute("PRAGMA foreign_keys = ON")
         ## These make requests faster: ###
@@ -68,24 +69,27 @@ class DatabaseRequest():
             # set the database cursor
             self.cur = self.con.cursor()
 
-    def merge_databases(self, db2: str):
-        print(f'Old length: {self.get_lastrowid()}')
+    def merge_databases(self, db2: str) -> None:
+        """
+        Merges db2 into the current database.
+        """
+        tables = ('Structure', 'Residuals', 'cell', 'atoms', 'sum_formula', 'authors')
+        print(f'Old database size: {self.get_lastrowid()} structures.')
         self.con.execute(f"ATTACH '{db2}' as dba")
         self.con.execute("BEGIN")
-        tables = ('Structure', 'Residuals', 'cell', 'atoms', 'sum_formula', 'authors')
         for table in tables:
             print(f'Merging table: {table}')
             self.merge_table(table)
-            print('------> finished')
         self.con.commit()
         self.con.execute("detach database dba")
-        print('Finished database merge')
-        print(f'New length: {self.get_lastrowid()}')
         self.init_textsearch()
-        self.init_author_search()
         self.populate_fulltext_search_table()
+        self.init_author_search()
         self.populate_author_fulltext_search()
         self.make_indexes()
+        self.con.commit()
+        print(f'\nMerging databases finished.\n'
+              f'Database {self.dbfile} contains {self.get_lastrowid()} structures now.')
 
     def merge_table(self, table_name: str):
         table_size = len(self.con.execute(f"SELECT * from dba.{table_name}").fetchone())
@@ -95,7 +99,8 @@ class DatabaseRequest():
         for row in self.con.execute(f"select * FROM dba.{table_name}"):
             self.con.execute(f"INSERT INTO {table_name} VALUES ({placeholders})", (next_id, *row[1:]))
             next_id += 1
-            self.con.commit()
+            if next_id % 500 == 0:
+                self.con.commit()
 
     def initialize_db(self):
         """
@@ -353,6 +358,7 @@ class DatabaseRequest():
         self.cur.execute("""CREATE INDEX idx_modiftime ON Residuals (modification_time)""")
         self.cur.execute("""CREATE INDEX idx_itnum ON Residuals (_space_group_IT_number)""")
         self.cur.execute("""CREATE INDEX idx_ccd ON Residuals (_database_code_depnum_ccdc_archive)""")
+        self.con.commit()
 
     def populate_author_fulltext_search(self):
         index = """
