@@ -28,7 +28,6 @@ con.isOpen()
 - False
 QSqlDatabase::removeDatabase("sales")
 """
-
 import sys
 from math import log
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
@@ -79,7 +78,10 @@ class DatabaseRequest():
         self.con.execute("BEGIN")
         for table in tables:
             print(f'Merging table: {table}')
-            self.merge_table(table)
+            try:
+                self.merge_table(table)
+            except OperationalError:
+                print(f'\nMerging of table {table} failed!! Resulting database may be damaged!\n')
         self.con.commit()
         self.con.execute("detach database dba")
         self.init_textsearch()
@@ -92,15 +94,18 @@ class DatabaseRequest():
               f'Database {self.dbfile} contains {self.get_lastrowid()} structures now.')
 
     def merge_table(self, table_name: str):
+        # noinspection SqlResolve
         table_size = len(self.con.execute(f"SELECT * from dba.{table_name}").fetchone())
         placeholders = ', '.join('?' * table_size)
         last_row_id = self.db_fetchone(f"""SELECT max(id) FROM {table_name}""")[0]
         next_id = last_row_id + 1
+        # noinspection SqlResolve
         for row in self.con.execute(f"select * FROM dba.{table_name}"):
             self.con.execute(f"INSERT INTO {table_name} VALUES ({placeholders})", (next_id, *row[1:]))
             next_id += 1
             if next_id % 500 == 0:
                 self.con.commit()
+        self.con.commit()
 
     def initialize_db(self):
         """

@@ -1084,7 +1084,7 @@ class StartStructureDB(QMainWindow):
     def get_import_filename_from_dialog(self, directory: str = ''):
         if not directory:
             directory = self.settings.load_last_workdir()
-        return QFileDialog.getOpenFileName(self, caption='Open File', directory=directory, filter="*.sqlite")[0]
+        return QFileDialog.getOpenFileName(self, caption='Open File', directory=directory, filter="*.sqlite; *.sql")[0]
 
     def get_excel_export_filename_from_dialog(self, directory: str = ''):
         if not directory:
