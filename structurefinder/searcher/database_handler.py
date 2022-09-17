@@ -31,7 +31,7 @@ QSqlDatabase::removeDatabase("sales")
 import sys
 from math import log
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
-from typing import List, Union, Tuple, Dict
+from typing import List, Union, Tuple, Dict, Optional
 
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.elements import sorted_atoms
@@ -52,6 +52,7 @@ class DatabaseRequest():
         :type dbfile: str
         """
         # open the database
+        self.id_translate_table: Optional[Dict[int, int]] = None
         self.dbfile = dbfile
         self.con = connect(dbfile, check_same_thread=False)
         self.con.execute("PRAGMA foreign_keys = ON")
@@ -73,6 +74,7 @@ class DatabaseRequest():
         Merges db2 into the current database.
         """
         tables = ('Structure', 'Residuals', 'cell', 'atoms', 'sum_formula', 'authors')
+        self.id_translate_table = dict()
         print(f'Old database size: {self.get_lastrowid()} structures.')
         self.con.execute(f"ATTACH '{db2}' as dba")
         self.con.execute("BEGIN")
@@ -93,7 +95,7 @@ class DatabaseRequest():
         print(f'\nMerging databases finished.\n'
               f'Database {self.dbfile} contains {self.get_lastrowid()} structures now.')
 
-    def merge_table(self, table_name: str):
+    def merge_table(self, table_name: str) -> None:
         # noinspection SqlResolve
         table_size = len(self.con.execute(f"SELECT * from dba.{table_name}").fetchone())
         placeholders = ', '.join('?' * table_size)
@@ -101,7 +103,13 @@ class DatabaseRequest():
         next_id = last_row_id + 1
         # noinspection SqlResolve
         for row in self.con.execute(f"select * FROM dba.{table_name}"):
-            self.con.execute(f"INSERT INTO {table_name} VALUES ({placeholders})", (next_id, *row[1:]))
+            if table_name != 'Structure':
+                # row[1] is the structure(id)
+                self.con.execute(f"INSERT INTO {table_name} VALUES ({placeholders})",
+                                 (next_id, self.id_translate_table[row[1]], *row[2:]))
+            else:
+                self.id_translate_table[row[0]] = next_id
+                self.con.execute(f"INSERT INTO {table_name} VALUES ({placeholders})", (next_id, *row[1:]))
             next_id += 1
             if next_id % 500 == 0:
                 self.con.commit()
