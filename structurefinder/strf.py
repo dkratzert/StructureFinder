@@ -20,18 +20,18 @@ import time
 import traceback
 from contextlib import suppress
 from datetime import date
-from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
-from typing import Union
-import qtawesome as qta
 
 import gemmi.cif
+import qtawesome as qta
 from PyQt5 import QtGui
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox, QPushButton
+from math import sin, radians
+from typing import Union, Optional
 
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.table_model import TableModel
@@ -130,7 +130,7 @@ class StartStructureDB(QMainWindow):
         self.ui.statusbar.addWidget(self.progress)
         self.ui.appendDirButton.setDisabled(True)
         self.ui.statusbar.addWidget(self.abort_import_button)
-        self.structures = None
+        self.structures: Optional[database_handler.StructureTable] = None
         self.apx = None
         self.structureId = 0
         self.passwd = ''
@@ -163,6 +163,7 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDirButton.setIcon(qta.icon('fa5s.plus'))
         self.ui.p4pCellButton.setIcon(qta.icon('fa.cube'))
         self.ui.closeDatabaseButton.setIcon(qta.icon('fa.times-circle-o'))
+        self.ui.appendDatabasePushButton.setIcon(qta.icon('fa.plus'))
 
     def set_model_from_data(self, data: Union[list, tuple]):
         self.table_model = TableModel(structures=data)
@@ -209,6 +210,7 @@ class StartStructureDB(QMainWindow):
         self.ui.ExportAsCIFpushButton.clicked.connect(self.export_current_cif)
         self.ui.cellcheckExeLineEdit.textChanged.connect(self.save_cellcheck_exe_path)
         self.ui.cellcheckExePushButton.clicked.connect(self.browse_for_ccdc_exe)
+        self.ui.appendDatabasePushButton.clicked.connect(self.append_database)
 
     def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
         super(StartStructureDB, self).resizeEvent(a0)
@@ -250,9 +252,31 @@ class StartStructureDB(QMainWindow):
         self.settings.save_ccdc_exe_path(text)
 
     def browse_for_ccdc_exe(self):
-        exe = QFileDialog.getOpenFileName(self, caption='CellCheckCSD executable', filter="ccdc_searcher.bat;ccdc_searcher")[0]
+        exe = \
+            QFileDialog.getOpenFileName(self, caption='CellCheckCSD executable',
+                                        filter="ccdc_searcher.bat;ccdc_searcher")[
+                0]
         if exe:
             self.ui.cellcheckExeLineEdit.setText(exe)
+
+    def append_database(self) -> None:
+        file_name = self.get_import_filename_from_dialog()
+        if not file_name or not Path(file_name).is_file():
+            return
+        try:
+            tst = database_handler.StructureTable(file_name)
+            if len(tst) < 1:
+                print('New database has no entries, aborting.')
+                return None
+            del tst
+        except Exception as e:
+            print(f'Unable to append database: {e}')
+        self.structures.database.merge_databases(file_name)
+        dbfile = self.structures.dbfilename
+        self.close_db()
+        self.open_database_file(dbfile)
+        self.ui.statusbar.showMessage(f'Merging databases finished. '
+                                      f'New database has {len(self.structures)} structures now.')
 
     def res_checkbox_clicked(self, click):
         if not any([self.ui.add_res.isChecked(), self.ui.add_cif.isChecked()]):
@@ -405,7 +429,7 @@ class StartStructureDB(QMainWindow):
                 return False
             clipboard = QApplication.clipboard()
             clipboard.setText(cell)
-            self.ui.statusbar.showMessage('Copied unit cell {} to clip board.'.format(cell))
+            self.ui.statusbar.showMessage(f'Copied unit cell {cell} to clip board.')
         return True
 
     def advanced_search(self):
@@ -497,10 +521,10 @@ class StartStructureDB(QMainWindow):
         """
         self.clear_fields()
         if not idlist:
-            self.statusBar().showMessage('Found {} structures.'.format(0))
+            self.statusBar().showMessage(f'Found {0} structures.')
             return
         searchresult = self.structures.get_all_structure_names(idlist)
-        self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
+        self.statusBar().showMessage(f'Found {len(idlist)} structures.')
         self.full_list = False
         self.set_model_from_data(searchresult)
         if idlist:
@@ -591,12 +615,12 @@ class StartStructureDB(QMainWindow):
             print(e)
             print('No fulltext search module found.')
         try:
-            self.structures.populate_fulltext_search_table()
-            self.structures.populate_author_fulltext_search()
+            self.structures.database.populate_fulltext_search_table()
+            self.structures.database.populate_author_fulltext_search()
         except OperationalError as e:
             print(e)
             print('No fulltext search compiled into sqlite.')
-        self.structures.make_indexes()
+        self.structures.database.make_indexes()
         self.structures.database.commit_db()
         self.ui.cifList_tableView.show()
         self.show_full_list()
@@ -822,17 +846,17 @@ class StartStructureDB(QMainWindow):
         # wR2:
         with suppress(ValueError, TypeError):
             if cif_dic['_refine_ls_wR_factor_ref']:
-                self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_ref']))
+                self.ui.wR2LineEdit.setText(f"{cif_dic['_refine_ls_wR_factor_ref']:>5.4f}")
             else:
-                self.ui.wR2LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_wR_factor_gt']))
+                self.ui.wR2LineEdit.setText(f"{cif_dic['_refine_ls_wR_factor_gt']:>5.4f}")
         try:  # R1:
             if cif_dic['_refine_ls_R_factor_gt']:
-                self.ui.r1LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_R_factor_gt']))
+                self.ui.r1LineEdit.setText(f"{cif_dic['_refine_ls_R_factor_gt']:>5.4f}")
             else:
-                self.ui.r1LineEdit.setText("{:>5.4f}".format(cif_dic['_refine_ls_R_factor_all']))
+                self.ui.r1LineEdit.setText(f"{cif_dic['_refine_ls_R_factor_all']:>5.4f}")
         except (ValueError, TypeError):
             pass
-        self.ui.zLineEdit.setText("{}".format(cif_dic['_cell_formula_units_Z']))
+        self.ui.zLineEdit.setText(f"{cif_dic['_cell_formula_units_Z']}")
         try:
             sumform = misc.format_sum_formula(self.structures.get_calc_sum_formula(structure_id))
         except KeyError:
@@ -841,33 +865,33 @@ class StartStructureDB(QMainWindow):
             # Display this as last resort:
             sumform = cif_dic['_chemical_formula_sum']
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
-        self.ui.SumformLabel.setText("{}".format(sumform))
-        self.ui.reflTotalLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_number']))
-        self.ui.uniqReflLineEdit.setText("{}".format(cif_dic['_refine_ls_number_reflns']))
-        self.ui.refl2sigmaLineEdit.setText("{}".format(cif_dic['_reflns_number_gt']))
-        self.ui.goofLineEdit.setText("{}".format(cif_dic['_refine_ls_goodness_of_fit_ref']))
+        self.ui.SumformLabel.setText(f"{sumform}")
+        self.ui.reflTotalLineEdit.setText(f"{cif_dic['_diffrn_reflns_number']}")
+        self.ui.uniqReflLineEdit.setText(f"{cif_dic['_refine_ls_number_reflns']}")
+        self.ui.refl2sigmaLineEdit.setText(f"{cif_dic['_reflns_number_gt']}")
+        self.ui.goofLineEdit.setText(f"{cif_dic['_refine_ls_goodness_of_fit_ref']}")
         it_num = cif_dic['_space_group_IT_number']
         if it_num:
-            it_num = "({})".format(it_num)
-        self.ui.SpaceGroupLineEdit.setText("{} {}".format(cif_dic['_space_group_name_H_M_alt'], it_num))
-        self.ui.temperatureLineEdit.setText("{}".format(cif_dic['_diffrn_ambient_temperature']))
-        self.ui.maxShiftLineEdit.setText("{}".format(cif_dic['_refine_ls_shift_su_max']))
+            it_num = f"({it_num})"
+        self.ui.SpaceGroupLineEdit.setText(f"{cif_dic['_space_group_name_H_M_alt']} {it_num}")
+        self.ui.temperatureLineEdit.setText(f"{cif_dic['_diffrn_ambient_temperature']}")
+        self.ui.maxShiftLineEdit.setText(f"{cif_dic['_refine_ls_shift_su_max']}")
         peak = cif_dic['_refine_diff_density_max']
         if peak:
-            self.ui.peakLineEdit.setText("{} / {}".format(peak, cif_dic['_refine_diff_density_min']))
-        self.ui.rintLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_av_R_equivalents']))
-        self.ui.rsigmaLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_av_unetI_netI']))
-        self.ui.cCDCNumberLineEdit.setText("{}".format(cif_dic['_database_code_depnum_ccdc_archive']))
+            self.ui.peakLineEdit.setText(f"{peak} / {cif_dic['_refine_diff_density_min']}")
+        self.ui.rintLineEdit.setText(f"{cif_dic['_diffrn_reflns_av_R_equivalents']}")
+        self.ui.rsigmaLineEdit.setText(f"{cif_dic['_diffrn_reflns_av_unetI_netI']}")
+        self.ui.cCDCNumberLineEdit.setText(f"{cif_dic['_database_code_depnum_ccdc_archive']}")
         try:
-            self.ui.flackXLineEdit.setText("{}".format(cif_dic['_refine_ls_abs_structure_Flack']))
+            self.ui.flackXLineEdit.setText(f"{cif_dic['_refine_ls_abs_structure_Flack']}")
         except KeyError:
             pass
         try:
             dat_param = cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters']
         except (ValueError, ZeroDivisionError, TypeError):
             dat_param = 0.0
-        self.ui.dataReflnsLineEdit.setText("{:<5.1f}".format(dat_param))
-        self.ui.numParametersLineEdit.setText("{}".format(cif_dic['_refine_ls_number_parameters']))
+        self.ui.dataReflnsLineEdit.setText(f"{dat_param:<5.1f}")
+        self.ui.numParametersLineEdit.setText(f"{cif_dic['_refine_ls_number_parameters']}")
         wavelen = cif_dic['_diffrn_radiation_wavelength']
         thetamax = cif_dic['_diffrn_reflns_theta_max']
         # d = lambda/2sin(theta):
@@ -875,10 +899,10 @@ class StartStructureDB(QMainWindow):
             d = wavelen / (2 * sin(radians(thetamax)))
         except(ZeroDivisionError, TypeError):
             d = 0.0
-        self.ui.numRestraintsLineEdit.setText("{}".format(cif_dic['_refine_ls_number_restraints']))
-        self.ui.thetaMaxLineEdit.setText("{}".format(thetamax))
-        self.ui.thetaFullLineEdit.setText("{}".format(cif_dic['_diffrn_reflns_theta_full']))
-        self.ui.dLineEdit.setText("{:5.3f}".format(d))
+        self.ui.numRestraintsLineEdit.setText(f"{cif_dic['_refine_ls_number_restraints']}")
+        self.ui.thetaMaxLineEdit.setText(f"{thetamax}")
+        self.ui.thetaFullLineEdit.setText(f"{cif_dic['_diffrn_reflns_theta_full']}")
+        self.ui.dLineEdit.setText(f"{d:5.3f}")
         self.ui.lastModifiedLineEdit.setText(cif_dic['modification_time'])
         try:
             compl = cif_dic['_diffrn_measured_fraction_theta_max'] * 100
@@ -887,10 +911,10 @@ class StartStructureDB(QMainWindow):
         except TypeError:
             compl = 0.0
         try:
-            self.ui.completeLineEdit.setText("{:<5.1f}".format(compl))
+            self.ui.completeLineEdit.setText(f"{compl:<5.1f}")
         except ValueError:
             pass
-        self.ui.wavelengthLineEdit.setText("{}".format(wavelen))
+        self.ui.wavelengthLineEdit.setText(f"{wavelen}")
         self.ui.allCifTreeWidget.clear()
         # This makes selection slow and is not really needed:
         # atoms_item = QtWidgets.QTreeWidgetItem()
@@ -1060,7 +1084,7 @@ class StartStructureDB(QMainWindow):
     def get_import_filename_from_dialog(self, directory: str = ''):
         if not directory:
             directory = self.settings.load_last_workdir()
-        return QFileDialog.getOpenFileName(self, caption='Open File', directory=directory, filter="*.sqlite")[0]
+        return QFileDialog.getOpenFileName(self, caption='Open File', directory=directory, filter="*.sqlite; *.sql")[0]
 
     def get_excel_export_filename_from_dialog(self, directory: str = ''):
         if not directory:

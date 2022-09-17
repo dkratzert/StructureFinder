@@ -28,11 +28,10 @@ con.isOpen()
 - False
 QSqlDatabase::removeDatabase("sales")
 """
-
 import sys
 from math import log
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
-from typing import List, Union, Tuple, Dict
+from typing import List, Union, Tuple, Dict, Optional
 
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.elements import sorted_atoms
@@ -53,6 +52,8 @@ class DatabaseRequest():
         :type dbfile: str
         """
         # open the database
+        self.id_translate_table: Optional[Dict[int, int]] = None
+        self.dbfile = dbfile
         self.con = connect(dbfile, check_same_thread=False)
         self.con.execute("PRAGMA foreign_keys = ON")
         ## These make requests faster: ###
@@ -67,6 +68,52 @@ class DatabaseRequest():
         with self.con:
             # set the database cursor
             self.cur = self.con.cursor()
+
+    def merge_databases(self, db2: str) -> None:
+        """
+        Merges db2 into the current database.
+        """
+        tables = ('Structure', 'Residuals', 'cell', 'atoms', 'sum_formula', 'authors')
+        self.id_translate_table = dict()
+        print(f'Old database size: {self.get_lastrowid()} structures.')
+        self.con.execute(f"ATTACH '{db2}' as dba")
+        self.con.execute("BEGIN")
+        for table in tables:
+            print(f'Merging table: {table}')
+            try:
+                self.merge_table(table)
+            except OperationalError:
+                print(f'\nMerging of table {table} failed!! Resulting database may be damaged!\n')
+        self.con.commit()
+        self.con.execute("detach database dba")
+        self.init_textsearch()
+        self.populate_fulltext_search_table()
+        self.init_author_search()
+        self.populate_author_fulltext_search()
+        self.make_indexes()
+        self.con.commit()
+        print(f'\nMerging databases finished.\n'
+              f'Database {self.dbfile} contains {self.get_lastrowid()} structures now.')
+
+    def merge_table(self, table_name: str) -> None:
+        # noinspection SqlResolve
+        table_size = len(self.con.execute(f"SELECT * from dba.{table_name}").fetchone())
+        placeholders = ', '.join('?' * table_size)
+        last_row_id = self.db_fetchone(f"""SELECT max(id) FROM {table_name}""")[0]
+        next_id = last_row_id + 1
+        # noinspection SqlResolve
+        for row in self.con.execute(f"select * FROM dba.{table_name}"):
+            if table_name != 'Structure':
+                # row[1] is the structure(id)
+                self.con.execute(f"INSERT INTO {table_name} VALUES ({placeholders})",
+                                 (next_id, self.id_translate_table[row[1]], *row[2:]))
+            else:
+                self.id_translate_table[row[0]] = next_id
+                self.con.execute(f"INSERT INTO {table_name} VALUES ({placeholders})", (next_id, *row[1:]))
+            next_id += 1
+            if next_id % 500 == 0:
+                self.con.commit()
+        self.con.commit()
 
     def initialize_db(self):
         """
@@ -297,6 +344,74 @@ class DatabaseRequest():
                          _publ_author_name             TEXT,
                             tokenize=simple "tokenchars= .=-_");
                           """)
+
+    def make_indexes(self):
+        """ Databse indexes for faster searching
+        """
+        self.cur.execute("""DROP INDEX if exists idx_a""")
+        self.cur.execute("""DROP INDEX if exists idx_b""")
+        self.cur.execute("""DROP INDEX if exists idx_c""")
+        self.cur.execute("""DROP INDEX if exists idx_al""")
+        self.cur.execute("""DROP INDEX if exists idx_be""")
+        self.cur.execute("""DROP INDEX if exists idx_ga""")
+        self.cur.execute("""DROP INDEX if exists idx_volume""")
+        self.cur.execute("""DROP INDEX if exists idx_sumform""")
+        self.cur.execute("""DROP INDEX if exists idx_spgr""")
+        self.cur.execute("""DROP INDEX if exists idx_modiftime""")
+        self.cur.execute("""DROP INDEX if exists idx_itnum""")
+        self.cur.execute("""DROP INDEX if exists idx_ccd""")
+        self.cur.execute("""CREATE INDEX idx_volume ON cell (volume)""")
+        self.cur.execute("""CREATE INDEX idx_a ON cell (a)""")
+        self.cur.execute("""CREATE INDEX idx_b ON cell (b)""")
+        self.cur.execute("""CREATE INDEX idx_c ON cell (c)""")
+        self.cur.execute("""CREATE INDEX idx_al ON cell (alpha)""")
+        self.cur.execute("""CREATE INDEX idx_be ON cell (beta)""")
+        self.cur.execute("""CREATE INDEX idx_ga ON cell (gamma)""")
+        self.cur.execute("""CREATE INDEX idx_spgr ON Residuals (_space_group_IT_number)""")
+        self.cur.execute("""CREATE INDEX idx_modiftime ON Residuals (modification_time)""")
+        self.cur.execute("""CREATE INDEX idx_itnum ON Residuals (_space_group_IT_number)""")
+        self.cur.execute("""CREATE INDEX idx_ccd ON Residuals (_database_code_depnum_ccdc_archive)""")
+        self.con.commit()
+
+    def populate_author_fulltext_search(self):
+        index = """
+            INSERT INTO authortxtsearch (StructureId,
+                                    _audit_author_name,
+                                    _audit_contact_author_name,
+                                    _publ_contact_author_name,
+                                    _publ_contact_author,
+                                    _publ_author_name)
+            SELECT  aut.StructureId,
+                    aut._audit_author_name,
+                    aut._audit_contact_author_name,
+                    aut._publ_contact_author_name,
+                    aut._publ_contact_author,
+                    aut._publ_author_name
+                        FROM authors AS aut; """
+        self.db_request(index)
+        self.db_request("""INSERT INTO authortxtsearch(authortxtsearch) VALUES('optimize'); """)
+
+    def populate_fulltext_search_table(self):
+        """
+        Populates the fts4 table with data to search for text.
+        _publ_contact_author_name
+        """
+        populate_index = """
+                    INSERT INTO txtsearch (StructureId,
+                                            filename,
+                                            dataname,
+                                            path,
+                                            shelx_res_file)
+            SELECT  str.Id,
+                    str.filename,
+                    str.dataname,
+                    str.path,
+                    res._shelx_res_file
+                        FROM Structure AS str
+                            INNER JOIN Residuals AS res WHERE str.Id = res.Id; """
+        optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize'); """
+        self.cur.execute(populate_index)
+        self.cur.execute(optimize_queries)
 
     def get_lastrowid(self) -> int:
         """
@@ -722,73 +837,6 @@ class StructureTable():
         )
                                           )
         return result
-
-    def make_indexes(self):
-        """ Databse indexes for faster searching
-        """
-        self.database.cur.execute("""DROP INDEX if exists idx_a""")
-        self.database.cur.execute("""DROP INDEX if exists idx_b""")
-        self.database.cur.execute("""DROP INDEX if exists idx_c""")
-        self.database.cur.execute("""DROP INDEX if exists idx_al""")
-        self.database.cur.execute("""DROP INDEX if exists idx_be""")
-        self.database.cur.execute("""DROP INDEX if exists idx_ga""")
-        self.database.cur.execute("""DROP INDEX if exists idx_volume""")
-        self.database.cur.execute("""DROP INDEX if exists idx_sumform""")
-        self.database.cur.execute("""DROP INDEX if exists idx_spgr""")
-        self.database.cur.execute("""DROP INDEX if exists idx_modiftime""")
-        self.database.cur.execute("""DROP INDEX if exists idx_itnum""")
-        self.database.cur.execute("""DROP INDEX if exists idx_ccd""")
-        self.database.cur.execute("""CREATE INDEX idx_volume ON cell (volume)""")
-        self.database.cur.execute("""CREATE INDEX idx_a ON cell (a)""")
-        self.database.cur.execute("""CREATE INDEX idx_b ON cell (b)""")
-        self.database.cur.execute("""CREATE INDEX idx_c ON cell (c)""")
-        self.database.cur.execute("""CREATE INDEX idx_al ON cell (alpha)""")
-        self.database.cur.execute("""CREATE INDEX idx_be ON cell (beta)""")
-        self.database.cur.execute("""CREATE INDEX idx_ga ON cell (gamma)""")
-        self.database.cur.execute("""CREATE INDEX idx_spgr ON Residuals (_space_group_IT_number)""")
-        self.database.cur.execute("""CREATE INDEX idx_modiftime ON Residuals (modification_time)""")
-        self.database.cur.execute("""CREATE INDEX idx_itnum ON Residuals (_space_group_IT_number)""")
-        self.database.cur.execute("""CREATE INDEX idx_ccd ON Residuals (_database_code_depnum_ccdc_archive)""")
-
-    def populate_fulltext_search_table(self):
-        """
-        Populates the fts4 table with data to search for text.
-        _publ_contact_author_name
-        """
-        populate_index = """
-                    INSERT INTO txtsearch (StructureId,
-                                            filename,
-                                            dataname,
-                                            path,
-                                            shelx_res_file)
-            SELECT  str.Id,
-                    str.filename,
-                    str.dataname,
-                    str.path,
-                    res._shelx_res_file
-                        FROM Structure AS str
-                            INNER JOIN Residuals AS res WHERE str.Id = res.Id; """
-        optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize'); """
-        self.database.cur.execute(populate_index)
-        self.database.cur.execute(optimize_queries)
-
-    def populate_author_fulltext_search(self):
-        index = """
-            INSERT INTO authortxtsearch (StructureId,
-                                    _audit_author_name,
-                                    _audit_contact_author_name,
-                                    _publ_contact_author_name,
-                                    _publ_contact_author,
-                                    _publ_author_name)
-            SELECT  aut.StructureId,
-                    aut._audit_author_name,
-                    aut._audit_contact_author_name,
-                    aut._publ_contact_author_name,
-                    aut._publ_contact_author,
-                    aut._publ_author_name
-                        FROM authors AS aut; """
-        self.database.db_request(index)
-        self.database.db_request("""INSERT INTO authortxtsearch(authortxtsearch) VALUES('optimize'); """)
 
     def fill_authors_table(self, structure_id: int, cif: CifFile):
         """

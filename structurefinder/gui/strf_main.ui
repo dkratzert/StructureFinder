@@ -32,7 +32,7 @@
         <widget class="QPushButton" name="importDirButton">
          <property name="minimumSize">
           <size>
-           <width>170</width>
+           <width>185</width>
            <height>0</height>
           </size>
          </property>
@@ -54,7 +54,7 @@
         <widget class="QPushButton" name="appendDirButton">
          <property name="minimumSize">
           <size>
-           <width>170</width>
+           <width>185</width>
            <height>0</height>
           </size>
          </property>
@@ -118,7 +118,7 @@
         <widget class="QPushButton" name="importDatabaseButton">
          <property name="minimumSize">
           <size>
-           <width>170</width>
+           <width>185</width>
            <height>0</height>
           </size>
          </property>
@@ -153,7 +153,7 @@
         <widget class="QPushButton" name="saveDatabaseButton">
          <property name="minimumSize">
           <size>
-           <width>170</width>
+           <width>185</width>
            <height>0</height>
           </size>
          </property>
@@ -184,11 +184,40 @@
          </property>
         </spacer>
        </item>
+       <item>
+        <widget class="QPushButton" name="appendDatabasePushButton">
+         <property name="minimumSize">
+          <size>
+           <width>185</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Append a Database</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Preferred</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
        <item alignment="Qt::AlignLeft">
         <widget class="QPushButton" name="p4pCellButton">
          <property name="minimumSize">
           <size>
-           <width>170</width>
+           <width>185</width>
            <height>0</height>
           </size>
          </property>
@@ -220,7 +249,7 @@
          </property>
          <property name="minimumSize">
           <size>
-           <width>170</width>
+           <width>185</width>
            <height>0</height>
           </size>
          </property>

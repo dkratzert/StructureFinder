@@ -1,6 +1,7 @@
 import argparse
 import sys
 import time
+from argparse import Namespace
 from pathlib import Path
 from sqlite3 import DatabaseError
 
@@ -57,7 +58,12 @@ parser.add_argument("-f",
                     help='Search for the specified unit cell. \n'
                          'The cell values have to be enclosed in brackets.'
                     )
-
+parser.add_argument("-m",
+                    dest='merge',
+                    default=False,
+                    type=str,
+                    help="Merges a database file into the file of '-o' option."
+                    )
 
 def check_update():
     if is_update_needed(VERSION=VERSION):
@@ -154,9 +160,9 @@ def run_index(args=None):
             if db and structures:
                 db.init_textsearch()
                 db.init_author_search()
-                structures.populate_fulltext_search_table()
-                structures.populate_author_fulltext_search()
-                structures.make_indexes()
+                db.populate_fulltext_search_table()
+                db.populate_author_fulltext_search()
+                db.make_indexes()
         except TypeError:
             print('No valid files found. They might be in excluded subdirectories.')
         time2 = time.perf_counter()
@@ -167,6 +173,14 @@ def run_index(args=None):
               f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
         check_update()
 
+def merge_database(args: Namespace):
+    merge_file_name = args.merge
+    dbfile = args.outfile
+    if not merge_file_name or not Path(merge_file_name).is_file():
+        return
+    db, structures = get_database(dbfile)
+    db.merge_databases(merge_file_name)
+
 
 def get_database(dbfilename):
     db = DatabaseRequest(dbfilename)
@@ -174,10 +188,9 @@ def get_database(dbfilename):
         db.initialize_db()
     except DatabaseError as e:
         print(e)
-        print('Database is corrupt! Delete the file first.')
+        print(f'The Database {dbfilename} is corrupt. Unable to open it!')
         sys.exit()
     structures = StructureTable(dbfilename)
-    structures.set_database_version(0)  # not an APEX db
     return db, structures
 
 
@@ -185,6 +198,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.cell:
         find_cell(args.cell)
+    elif args.merge:
+        merge_database(args)
     else:
         try:
             if not args.dir:
