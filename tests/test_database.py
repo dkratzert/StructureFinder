@@ -1,6 +1,9 @@
 import unittest
+from collections import namedtuple
+from pathlib import Path
 
 from structurefinder.searcher import database_handler
+from structurefinder.strf_cmd import run_index
 
 
 class TestDatabase(unittest.TestCase):
@@ -103,6 +106,54 @@ class TestDatabase(unittest.TestCase):
     def test_get_filepath(self):
         self.assertEqual((b'p-1', b'/Users/daniel/GitHub/StructureFinder/test-data/106c.tgz'),
                          self.db.get_filepath(16))
+
+
+class TestMerging(unittest.TestCase):
+    def setUp(self) -> None:
+        self.test_dir = 'tests/merge_test'
+        Path(self.test_dir).mkdir(exist_ok=True)
+        Args = namedtuple('Args', 'dir, outfile, fillcif, fillres, delete, ex')
+        args1 = Args(dir=['tests/test-data/051a'], outfile=f'{self.test_dir}/db1.sqlite', fillcif=True, fillres=True,
+                     delete=True, ex='')
+        args2 = Args(dir=['tests/test-data/106c'], outfile=f'{self.test_dir}/db2.sqlite', fillcif=True, fillres=True,
+                     delete=True, ex='')
+        run_index(args1)
+        run_index(args2)
+        self.db1 = database_handler.StructureTable(f'{self.test_dir}/db1.sqlite')
+        self.db2 = database_handler.StructureTable(f'{self.test_dir}/db2.sqlite')
+
+    def tearDown(self) -> None:
+        Path(self.test_dir).joinpath(Path('db1.sqlite')).unlink(missing_ok=True)
+        Path(self.test_dir).joinpath(Path('db2.sqlite')).unlink(missing_ok=True)
+        Path(self.test_dir).rmdir()
+
+    def test_number_of_entries(self):
+        self.assertEqual(2, len(self.db1))
+        self.assertEqual(2, len(self.db2))
+
+    def test_merge_number_of_entries(self):
+        self.db1.database.merge_databases(self.db2.dbfilename)
+        self.assertEqual(4, self.db1.database.get_lastrowid())
+        self.assertEqual(2, self.db2.database.get_lastrowid())
+
+    def test_merge_ids(self):
+        self.db1.database.merge_databases(self.db2.dbfilename)
+        self.assertEqual([1, 2, 3, 4], [x[0] for x in self.db1.get_all_structure_names()])
+
+    def test_merge_cell_ids(self):
+        self.db1.database.merge_databases(self.db2.dbfilename)
+        self.assertEqual((10.6456, 11.033, 19.9214, 90.0, 98.938, 90.0, 2311.4138821278034), self.db1.get_cell_by_id(1))
+        # The third id of db1 has the same id
+        self.assertEqual((7.9492, 8.9757, 11.3745, 106.974, 91.963, 103.456, 750.3353530415042),
+                         self.db1.get_cell_by_id(3))
+        # as the first row of db2, because db2 is merged into db1
+        self.assertEqual((7.9492, 8.9757, 11.3745, 106.974, 91.963, 103.456, 750.3353530415042),
+                         self.db2.get_cell_by_id(1))
+
+    def test_merge_atoms(self):
+        self.db1.database.merge_databases(self.db2.dbfilename)
+        self.assertListEqual(self.db2.get_atoms_table(1), self.db1.get_atoms_table(3))
+        self.assertListEqual(self.db2.get_atoms_table(2), self.db1.get_atoms_table(4))
 
 
 if __name__ == '__main__':
