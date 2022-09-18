@@ -131,7 +131,7 @@ class TestMerging(unittest.TestCase):
             print('\nUnable to delete all test files (db1.sqlite, db2.sqlite).')
         try:
             Path(self.test_dir).rmdir()
-        except (PermissionError, FileNotFoundError):
+        except (OSError):
             print('\nUnable to delete merge_test directory.')
 
     def test_number_of_entries(self):
