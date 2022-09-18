@@ -1,5 +1,6 @@
 Changelog
 ---------
+* v69 Add merging of two databases.
 * v68 New icons and small bugfix.
 * v67 Gives the user the possibility to set the path of the CellCheckCSD executable itself.
 * v66 Some small fixes. Improved determination of space group type of .res files.
