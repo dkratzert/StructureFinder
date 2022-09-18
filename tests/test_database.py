@@ -110,8 +110,8 @@ class TestDatabase(unittest.TestCase):
 
 class TestMerging(unittest.TestCase):
     def setUp(self) -> None:
-        self.tearDown()
         self.test_dir = 'tests/merge_test'
+        self.tearDown()
         Path(self.test_dir).mkdir(exist_ok=True)
         Args = namedtuple('Args', 'dir, outfile, fillcif, fillres, delete, ex')
         args1 = Args(dir=['tests/test-data/051a'], outfile=f'{self.test_dir}/db1.sqlite', fillcif=True, fillres=True,
