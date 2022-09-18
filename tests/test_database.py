@@ -126,6 +126,8 @@ class TestMerging(unittest.TestCase):
         self.db2 = database_handler.StructureTable(f'{self.test_dir}/{self.db2_file}')
 
     def tearDown(self) -> None:
+        del self.db1
+        del self.db2
         Path(self.test_dir).joinpath(Path(self.db1_file)).unlink(missing_ok=True)
         Path(self.test_dir).joinpath(Path(self.db2_file)).unlink(missing_ok=True)
         Path(self.test_dir).rmdir()
