@@ -110,6 +110,7 @@ class TestDatabase(unittest.TestCase):
 
 class TestMerging(unittest.TestCase):
     def setUp(self) -> None:
+        self.tearDown()
         self.test_dir = 'tests/merge_test'
         Path(self.test_dir).mkdir(exist_ok=True)
         Args = namedtuple('Args', 'dir, outfile, fillcif, fillres, delete, ex')
@@ -123,9 +124,12 @@ class TestMerging(unittest.TestCase):
         self.db2 = database_handler.StructureTable(f'{self.test_dir}/db2.sqlite')
 
     def tearDown(self) -> None:
-        Path(self.test_dir).joinpath(Path('db1.sqlite')).unlink(missing_ok=True)
-        Path(self.test_dir).joinpath(Path('db2.sqlite')).unlink(missing_ok=True)
-        Path(self.test_dir).rmdir()
+        try:
+            Path(self.test_dir).joinpath(Path('db1.sqlite')).unlink(missing_ok=True)
+            Path(self.test_dir).joinpath(Path('db2.sqlite')).unlink(missing_ok=True)
+            Path(self.test_dir).rmdir()
+        except PermissionError:
+            print('\nUnable to delete all test files (db1.sqlite, db2.sqlite).')
 
     def test_number_of_entries(self):
         self.assertEqual(2, len(self.db1))
