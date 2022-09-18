@@ -509,7 +509,10 @@ class StructureTable():
         """
         Number of structures in the database.
         """
-        return self.database.db_fetchone('SELECT COUNT(*) FROM Structure')[0]
+        try:
+            return self.database.db_fetchone('SELECT COUNT(*) FROM Structure')[0]
+        except TypeError:
+            return 0
 
     def __getitem__(self, str_id):
         try:
