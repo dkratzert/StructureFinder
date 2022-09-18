@@ -65,6 +65,7 @@ parser.add_argument("-m",
                     help="Merges a database file into the file of '-o' option."
                     )
 
+
 def check_update():
     if is_update_needed(VERSION=VERSION):
         print('A new Version of StructureFinder is available at '
@@ -171,7 +172,10 @@ def run_index(args=None):
         h, m = divmod(m, 60)
         print(f"\nTotal {worker.files_indexed} cif/res files in '{str(Path(dbfilename).resolve())}'. "
               f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
-        check_update()
+        import os
+        if "PYTEST_CURRENT_TEST" not in os.environ:
+            check_update()
+
 
 def merge_database(args: Namespace):
     merge_file_name = args.merge
