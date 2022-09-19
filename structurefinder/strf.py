@@ -20,9 +20,11 @@ import time
 import traceback
 from contextlib import suppress
 from datetime import date
+from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
+from typing import Union, Optional
 
 import gemmi.cif
 import qtawesome as qta
@@ -30,8 +32,6 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox, QPushButton
-from math import sin, radians
-from typing import Union, Optional
 
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.table_model import TableModel
@@ -263,6 +263,9 @@ class StartStructureDB(QMainWindow):
         file_name = self.get_import_filename_from_dialog()
         if not file_name or not Path(file_name).is_file():
             return
+        if Path(file_name).samefile(self.structures.dbfilename):
+            QMessageBox.information(self, 'This is the same file', f'Can not merge same files.')
+            return
         try:
             tst = database_handler.StructureTable(file_name)
             if len(tst) < 1:
@@ -271,6 +274,8 @@ class StartStructureDB(QMainWindow):
             del tst
         except Exception as e:
             print(f'Unable to append database: {e}')
+            self.ui.statusbar.showMessage(f'Unable to merge databases.')
+            return
         self.structures.database.merge_databases(file_name)
         dbfile = self.structures.dbfilename
         self.close_db()

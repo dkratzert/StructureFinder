@@ -182,6 +182,9 @@ def merge_database(args: Namespace):
     dbfile = args.outfile
     if not merge_file_name or not Path(merge_file_name).is_file():
         return
+    if Path(merge_file_name).samefile(dbfile):
+        print('\nCan not merge same file together!\n')
+        return
     db, structures = get_database(dbfile)
     db.merge_databases(merge_file_name)
 
