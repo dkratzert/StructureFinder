@@ -116,9 +116,11 @@ class TestMerging(unittest.TestCase):
         self.db2_file = str(uuid.uuid4()) + '.sqlite'
         Path(self.test_dir).mkdir(exist_ok=True)
         Args = namedtuple('Args', 'dir, outfile, fillcif, fillres, delete, ex')
-        args1 = Args(dir=['tests/test-data/051a'], outfile=f'{self.test_dir}/{self.db1_file}', fillcif=True, fillres=True,
+        args1 = Args(dir=['tests/test-data/051a'], outfile=f'{self.test_dir}/{self.db1_file}', fillcif=True,
+                     fillres=True,
                      delete=True, ex='')
-        args2 = Args(dir=['tests/test-data/106c'], outfile=f'{self.test_dir}/{self.db2_file}', fillcif=True, fillres=True,
+        args2 = Args(dir=['tests/test-data/106c'], outfile=f'{self.test_dir}/{self.db2_file}', fillcif=True,
+                     fillres=True,
                      delete=True, ex='')
         run_index(args1)
         run_index(args2)
@@ -159,6 +161,28 @@ class TestMerging(unittest.TestCase):
         self.db1.database.merge_databases(self.db2.dbfilename)
         self.assertListEqual(self.db2.get_atoms_table(1), self.db1.get_atoms_table(3))
         self.assertListEqual(self.db2.get_atoms_table(2), self.db1.get_atoms_table(4))
+
+    def test_merge_residuals(self):
+        self.maxDiff = None
+        self.db1.database.merge_databases(self.db2.dbfilename)
+        db2_row1 = self.db2.get_row_as_dict(1)
+        self.assertEqual(1, db2_row1.get('Id'))
+        self.assertEqual(1, db2_row1.get('StructureId'))
+        db2_row1.pop('Id')
+        db2_row1.pop('StructureId')
+        db1_row3 = self.db1.get_row_as_dict(3)
+        self.assertEqual(2, db1_row3.get('Id'))
+        self.assertEqual(3, db1_row3.get('StructureId'))
+        db1_row3.pop('Id')
+        db1_row3.pop('StructureId')
+        self.assertDictEqual(db2_row1, db1_row3)
+        db2_row2 = self.db2.get_row_as_dict(2)
+        db2_row2.pop('Id')
+        db2_row2.pop('StructureId')
+        db1_row4 = self.db1.get_row_as_dict(4)
+        db1_row4.pop('Id')
+        db1_row4.pop('StructureId')
+        self.assertDictEqual(db2_row2, db1_row4)
 
 
 if __name__ == '__main__':
