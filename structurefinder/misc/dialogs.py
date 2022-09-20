@@ -1,4 +1,5 @@
 import ctypes
+import os
 from pathlib import Path
 
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
@@ -8,12 +9,17 @@ from structurefinder.misc.version import VERSION
 
 def bug_found_warning(logfile) -> None:
     window = QMainWindow()
-    text = 'Congratulations, you found a bug in ' \
-           'StructureFinder!<br>Please send the file <br>"{}" <br>to Daniel Kratzert:  ' \
-           '<a href="mailto:dkratzert@gmx.de?subject=StructureFinder version {} crash report">' \
-           'dkratzert@gmx.de</a><br>' \
-           'If possible, the corresponding CIF file is also desired.'.format(logfile.absolute(), VERSION)
-    QMessageBox.warning(window, 'Warning', text)
+    title = f'Congratulations, you found a bug in StructureFinder!'
+    text = (f'<br>Please send the file <br><br>'
+            f'<a href=file:{os.sep * 2}{logfile.resolve()}>{logfile.resolve()}</a> '
+            f'<br><br>to Daniel Kratzert: '
+            f'<a href="mailto:dkratzert@gmx.de?subject=StructureFinder version {VERSION} crash report">'
+            f'dkratzert@gmx.de</a><br>')
+    box = QMessageBox(parent=window)
+    box.setWindowTitle('Warning')
+    box.setText(title)
+    box.setInformativeText(text)
+    box.exec()
     window.show()
 
 
