@@ -54,12 +54,14 @@ parser.add_argument("--delete",
 parser.add_argument("-f",
                     dest='cell',
                     # nargs=6,
+                    metavar='"unit cell"',
                     type=lambda s: [float(item) for item in s.split()],
                     help='Search for the specified unit cell. \n'
                          'The cell values have to be enclosed in brackets.'
                     )
 parser.add_argument("-m",
                     dest='merge',
+                    metavar='"sqlite file name"',
                     default=False,
                     type=str,
                     help="Merges a database file into the file of '-o' option."
