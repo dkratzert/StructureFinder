@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '/Users/daniel/Documents/GitHub/StructureFinder/structurefinder/gui/strf_main.ui'
+# Form implementation generated from reading ui file 'C:\_DEV\GitHub\StructureFinder\structurefinder/gui\strf_main.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_stdbMainwindow(object):
     def setupUi(self, stdbMainwindow):
         stdbMainwindow.setObjectName("stdbMainwindow")
-        stdbMainwindow.resize(1280, 950)
+        stdbMainwindow.resize(1291, 853)
         self.centralwidget = QtWidgets.QWidget(stdbMainwindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self.centralwidget)
