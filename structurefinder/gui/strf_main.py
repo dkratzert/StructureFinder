@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\_DEV\GitHub\StructureFinder\structurefinder/gui\strf_main.ui'
+# Form implementation generated from reading ui file '/Users/daniel/Documents/GitHub/StructureFinder/structurefinder/gui/strf_main.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.7
 #
@@ -365,11 +365,22 @@ class Ui_stdbMainwindow(object):
         self.ogllayout.setSpacing(6)
         self.ogllayout.setObjectName("ogllayout")
         self.render_widget = MoleculeWidget(self.molGroupBox)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(1)
+        sizePolicy.setHeightForWidth(self.render_widget.sizePolicy().hasHeightForWidth())
+        self.render_widget.setSizePolicy(sizePolicy)
         self.render_widget.setObjectName("render_widget")
         self.ogllayout.addWidget(self.render_widget)
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.growCheckBox = QtWidgets.QCheckBox(self.molGroupBox)
         self.growCheckBox.setObjectName("growCheckBox")
-        self.ogllayout.addWidget(self.growCheckBox)
+        self.horizontalLayout_6.addWidget(self.growCheckBox)
+        self.labelsCheckBox = QtWidgets.QCheckBox(self.molGroupBox)
+        self.labelsCheckBox.setObjectName("labelsCheckBox")
+        self.horizontalLayout_6.addWidget(self.labelsCheckBox)
+        self.ogllayout.addLayout(self.horizontalLayout_6)
         self.importResults.addWidget(self.molGroupBox, 2, 6, 1, 1)
         self.groupBox_3 = QtWidgets.QGroupBox(self.maintab)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
@@ -1177,7 +1188,7 @@ class Ui_stdbMainwindow(object):
         self.actionGo_to_All_CIF_Tab.setObjectName("actionGo_to_All_CIF_Tab")
 
         self.retranslateUi(stdbMainwindow)
-        self.MaintabWidget.setCurrentIndex(4)
+        self.MaintabWidget.setCurrentIndex(0)
         self.actionExit.triggered.connect(stdbMainwindow.close) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(stdbMainwindow)
         stdbMainwindow.setTabOrder(self.importDirButton, self.importDatabaseButton)
@@ -1246,6 +1257,7 @@ class Ui_stdbMainwindow(object):
         self.ExportAsCIFpushButton.setText(_translate("stdbMainwindow", "Export as CIF"))
         self.molGroupBox.setTitle(_translate("stdbMainwindow", "Asymmetric Unit"))
         self.growCheckBox.setText(_translate("stdbMainwindow", "Grow Structure"))
+        self.labelsCheckBox.setText(_translate("stdbMainwindow", "Show Labels"))
         self.numParametersLabel.setText(_translate("stdbMainwindow", "Parameters"))
         self.dataReflnsLabel.setText(_translate("stdbMainwindow", "data/param"))
         self.numRestraintsLabel.setText(_translate("stdbMainwindow", "Restraints"))

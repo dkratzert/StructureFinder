@@ -211,6 +211,10 @@ class StartStructureDB(QMainWindow):
         self.ui.cellcheckExeLineEdit.textChanged.connect(self.save_cellcheck_exe_path)
         self.ui.cellcheckExePushButton.clicked.connect(self.browse_for_ccdc_exe)
         self.ui.appendDatabasePushButton.clicked.connect(self.append_database)
+        self.ui.labelsCheckBox.toggled.connect(self.show_labels)
+
+    def show_labels(self, value: bool):
+        self.ui.render_widget.show_labels(value)
 
     def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
         super(StartStructureDB, self).resizeEvent(a0)
@@ -802,7 +806,7 @@ class StartStructureDB(QMainWindow):
                 sdm = SDM(atoms, symmcards, cell)
                 needsymm = sdm.calc_sdm()
                 atoms = sdm.packer(sdm, needsymm)
-                self.ui.render_widget.open_molecule(atoms)
+                self.ui.render_widget.open_molecule(atoms, labels=self.ui.labelsCheckBox.isChecked())
         else:
             self.show_asymmetric_unit()
 
@@ -810,7 +814,7 @@ class StartStructureDB(QMainWindow):
         self.ui.molGroupBox.setTitle('Asymmetric Unit')
         atoms = self.structures.get_atoms_table(self.structureId, cartesian=True, as_list=False)
         if atoms:
-            self.ui.render_widget.open_molecule(atoms)
+            self.ui.render_widget.open_molecule(atoms, labels=self.ui.labelsCheckBox.isChecked())
 
     def redraw_molecule(self) -> None:
         self.view_molecule()

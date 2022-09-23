@@ -281,7 +281,7 @@
          <string notr="true"/>
         </property>
         <property name="currentIndex">
-         <number>4</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="maintab">
          <attribute name="title">
@@ -856,14 +856,32 @@
                 <number>1</number>
                </property>
                <item>
-                <widget class="MoleculeWidget" name="render_widget" native="true"/>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="growCheckBox">
-                 <property name="text">
-                  <string>Grow Structure</string>
+                <widget class="MoleculeWidget" name="render_widget" native="true">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                   <horstretch>0</horstretch>
+                   <verstretch>1</verstretch>
+                  </sizepolicy>
                  </property>
                 </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_6">
+                 <item>
+                  <widget class="QCheckBox" name="growCheckBox">
+                   <property name="text">
+                    <string>Grow Structure</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="labelsCheckBox">
+                   <property name="text">
+                    <string>Show Labels</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>
