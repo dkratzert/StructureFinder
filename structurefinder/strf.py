@@ -142,6 +142,7 @@ class StartStructureDB(QMainWindow):
         self.settings = StructureFinderSettings()
         self.ui.cellcheckExeLineEdit.setText(self.settings.load_ccdc_exe_path())
         self.connect_signals_and_slots()
+        self.set_initial_button_states()
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
@@ -155,6 +156,10 @@ class StartStructureDB(QMainWindow):
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
+
+    def set_initial_button_states(self):
+        self.ui.appendDatabasePushButton.setDisabled(True)
+        self.ui.saveDatabaseButton.setDisabled(True)
 
     def set_icons(self):
         self.ui.importDatabaseButton.setIcon(qta.icon('fa5s.database'))
@@ -579,6 +584,7 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDirButton.setDisabled(True)
         self.ui.closeDatabaseButton.setDisabled(True)
         self.ui.p4pCellButton.setDisabled(True)
+        self.ui.appendDatabasePushButton.setDisabled(True)
         self.ui.importDatabaseButton.setDisabled(True)
         self.thread = QThread()
         self.worker = Worker(searchpath=startdir, add_res_files=self.ui.add_res.isChecked(),
@@ -638,6 +644,7 @@ class StartStructureDB(QMainWindow):
         # self.statusBar().showMessage(f'Found {self.maxfiles} files.')
 
     def enable_buttons(self):
+        self.ui.appendDatabasePushButton.setEnabled(True)
         self.ui.saveDatabaseButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
         self.ui.importDirButton.setEnabled(True)
@@ -665,6 +672,7 @@ class StartStructureDB(QMainWindow):
         :param copy_on_close: Path to where the file should be copied after close()
         """
         self.ui.appendDirButton.setDisabled(True)
+        self.ui.appendDatabasePushButton.setDisabled(True)
         self.ui.saveDatabaseButton.setDisabled(True)
         self.ui.ExportAsCIFpushButton.setDisabled(True)
         with suppress(Exception):
@@ -1131,6 +1139,7 @@ class StartStructureDB(QMainWindow):
         self.ui.ExportAsCIFpushButton.setEnabled(True)
         self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(str(Path(file_name).resolve())))
         self.display_number_of_structures()
+        self.ui.appendDatabasePushButton.setEnabled(True)
         return True
 
     def display_number_of_structures(self):
