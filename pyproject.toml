@@ -25,8 +25,8 @@ classifiers = [
 "Bug Tracker" = "https://github.com/dkratzert/StructureFinder/issues"
 
 [tool.hatch.build.targets.sdist]
-only-include = ["structurefinder"]
-sources = ["structurefinder"]
+only-include = ["src/structurefinder"]
+sources = ["src"]
 exclude = [
     "/.github",
     "/pictures",
@@ -42,4 +42,4 @@ exclude = [
 ]
 
 [project.scripts]
-dsr = "dstructurefinder:strf"
+strf = "structurefinder.strf:main"

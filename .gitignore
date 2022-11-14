@@ -63,11 +63,11 @@ uploads/
 stdb_main.py
 <tmpfile>
 test.sqlite
-structurefinder/displaymol/jsmol.htm
+src/structurefinder/displaymol/jsmol.htm
 jsmol.htm
 *.sqlite-journal
 structuredb.sqlite
-structurefinder/displaymol/jsmol.htm
+src/structurefinder/displaymol/jsmol.htm
 scripts/Output/*
 test.ins
 venv/

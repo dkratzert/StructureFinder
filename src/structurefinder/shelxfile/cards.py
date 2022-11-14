@@ -353,7 +353,7 @@ class CELL(Command):
         """
         calculates the volume of a unit cell
 
-        >>> from structurefinder.shelxfile import ShelXFile
+        >>> from structurefinder import ShelXFile
         >>> shx = ShelXFile('./tests/p21c.res')
         >>> round(shx.cell.volume, 4)
         4493.0474
@@ -803,7 +803,7 @@ class FREE(Command):
 class FMAP(Command):
     """
     FMAP code[2] axis[#] nl[53]
-    >>> from structurefinder.shelxfile import ShelXFile
+    >>> from structurefinder import ShelXFile
     >>> shx = ShelXFile('./tests/p21c.res')
     >>> shx.fmap.code
     2.0
@@ -888,7 +888,7 @@ class GRID(Command):
 
 class ACTA(Command):
     """
-    >>> from structurefinder.shelxfile import ShelXFile
+    >>> from structurefinder import ShelXFile
     >>> from refine import ShelxlRefine
     >>> shx = ShelXFile('./tests/p21c.res')
     >>> ref = ShelxlRefine(shx, './tests/p21c.res')
@@ -1664,7 +1664,7 @@ class LSCycles(Command):
     def set_refine_cycles(self, number: int):
         """
         Sets the number of refinement cycles for the current res file.
-        >>> from structurefinder.shelxfile import ShelXFile
+        >>> from structurefinder import ShelXFile
         >>> shx = ShelXFile('./tests/p21c.res')
         >>> shx.cycles.set_refine_cycles(44)
         >>> shx._reslist[shx.cycles.index]
@@ -1741,7 +1741,7 @@ class SFACTable():
     def parse_element_line(self, spline: list):
         """
         Adds a new SFAC card to the list of cards.
-        >>> from structurefinder.shelxfile import ShelXFile
+        >>> from structurefinder import ShelXFile
         >>> shx = ShelXFile('./tests/p21c.res')
         >>> shx.sfac_table
         SFAC C  H  O  F  Al  Ga

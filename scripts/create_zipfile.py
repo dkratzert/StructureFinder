@@ -7,7 +7,7 @@ from pathlib import Path
 from zipfile import ZipFile
 
 from structurefinder.misc.version import VERSION
-from structurefinder.searcher.misc import remove_file
+from structurefinder.searcher import remove_file
 
 version = VERSION
 

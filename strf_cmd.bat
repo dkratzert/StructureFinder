@@ -9,5 +9,5 @@ TITLE "Structurefinder"
 CALL venv\Scripts\activate.bat
 set PYTHONPATH=.
 
-venv\Scripts\python.exe structurefinder/strf_cmd.py %*
+venv\Scripts\python.exe src\structurefinder/strf_cmd.py %*
 

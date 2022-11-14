@@ -23,7 +23,8 @@ class MyDownloader(QThread):
             print(e)
 
     def print_status(self, status: str) -> None:
-        print(status)
+        #print(status)
+        pass
 
     def failed_to_download(self, status_code: int):
         print('Failed to download: {}'.format(self.url))

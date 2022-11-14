@@ -1280,36 +1280,35 @@ class StartStructureDB(QMainWindow):
         self.table_model.clear()
 
 
-if __name__ == "__main__":
-    def my_exception_hook(exctype, value, error_traceback):
-        """
-        Hooks into Exceptions to create debug reports.
-        """
-        errortext = f'StructureFinder V{VERSION} crash report\n\n'
-        errortext += 'Please send also the corresponding CIF file, if possible.\n\n'
-        errortext += f'Python {sys.version}\n'
-        errortext += f'{sys.platform} \n'
-        errortext += f'{time.asctime(time.localtime(time.time()))} \n'
-        errortext += f'StructureFinder crashed during the following operation: \n'
-        errortext += '-' * 80 + '\n'
-        errortext += ''.join(traceback.format_tb(error_traceback)) + '\n'
-        errortext += f'{str(exctype.__name__)} : '
-        errortext += f'{str(value)} \n'
-        errortext += '-' * 80 + '\n'
-        logfile = Path.home().joinpath(Path(r'StructureFinder-crash.txt'))
-        try:
-            logfile.write_text(errortext)
-        except PermissionError:
-            pass
-        sys.__excepthook__(exctype, value, error_traceback)
-        # Hier Fenster für meldung öffnen
-        bug_found_warning(logfile)
-        sys.exit(1)
+def my_exception_hook(exctype, value, error_traceback):
+    """
+    Hooks into Exceptions to create debug reports.
+    """
+    errortext = f'StructureFinder V{VERSION} crash report\n\n'
+    errortext += 'Please send also the corresponding CIF file, if possible.\n\n'
+    errortext += f'Python {sys.version}\n'
+    errortext += f'{sys.platform} \n'
+    errortext += f'{time.asctime(time.localtime(time.time()))} \n'
+    errortext += f'StructureFinder crashed during the following operation: \n'
+    errortext += '-' * 80 + '\n'
+    errortext += ''.join(traceback.format_tb(error_traceback)) + '\n'
+    errortext += f'{str(exctype.__name__)} : '
+    errortext += f'{str(value)} \n'
+    errortext += '-' * 80 + '\n'
+    logfile = Path.home().joinpath(Path(r'StructureFinder-crash.txt'))
+    try:
+        logfile.write_text(errortext)
+    except PermissionError:
+        pass
+    sys.__excepthook__(exctype, value, error_traceback)
+    # Hier Fenster für meldung öffnen
+    bug_found_warning(logfile)
+    sys.exit(1)
 
 
+def main():
     if not DEBUG:
         sys.excepthook = my_exception_hook
-
     app.setWindowIcon(QtGui.QIcon(str(Path(application_path, 'icons/strf.png').resolve())))
     # Has to be without version number, because QWebengine stores data in ApplicationName directory:
     app.setApplicationName('StructureFinder')
@@ -1324,3 +1323,7 @@ if __name__ == "__main__":
         sys.exit(app.exec_())
     except KeyboardInterrupt:
         sys.exit()
+
+
+if __name__ == "__main__":
+    main()

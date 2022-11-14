@@ -38,14 +38,14 @@ if pyver[0] == 3 and pyver[1] < 4:
     sys.exit()
 
 from shutil import which
-from structurefinder.searcher.constants import centering_letter_2_num, centering_num_2_letter
-from structurefinder.ccdc.query import get_cccsd_path, search_csd, parse_results
+from structurefinder.searcher import centering_letter_2_num, centering_num_2_letter
+from structurefinder.ccdc import get_cccsd_path, search_csd, parse_results
 from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response, HTTPResponse
 from structurefinder.displaymol.mol_file_writer import MolFile
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.pymatgen.core import lattice
-from structurefinder.searcher.database_handler import StructureTable
-from structurefinder.searcher.misc import is_valid_cell, get_list_of_elements, vol_unitcell, is_a_nonzero_file, \
+from structurefinder.searcher import StructureTable
+from structurefinder.searcher import is_valid_cell, get_list_of_elements, vol_unitcell, is_a_nonzero_file, \
     format_sum_formula, \
     combine_results, more_results_parameters, regular_results_parameters
 

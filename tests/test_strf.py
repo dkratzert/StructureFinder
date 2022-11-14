@@ -7,7 +7,6 @@ from contextlib import suppress
 from pathlib import Path
 from time import sleep
 
-import pytest as pytest
 from PyQt5.QtCore import Qt, QDate, QEventLoop
 from PyQt5.QtGui import QIcon
 from PyQt5.QtTest import QTest

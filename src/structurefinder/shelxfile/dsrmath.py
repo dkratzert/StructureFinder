@@ -553,7 +553,7 @@ class Matrix(object):
 class SymmetryElement(object):
     """
     Class representing a symmetry operation.
-    >>> from structurefinder.shelxfile import ShelXFile
+    >>> from structurefinder import ShelXFile
     >>> shx = ShelXFile('./test-data/p21c.res')
     >>> shx.symmcards[1]  # __repr__()
     -X, -Y, -Z

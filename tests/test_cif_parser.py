@@ -1,7 +1,6 @@
 import unittest
 import gemmi
-
-from structurefinder.searcher.fileparser import CifFile
+from searcher.fileparser import CifFile
 
 
 class TestParser(unittest.TestCase):
