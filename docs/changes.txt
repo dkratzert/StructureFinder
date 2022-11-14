@@ -1,5 +1,6 @@
 Changelog
 ---------
+* v71 Fixed crash when appending a database while no database is opened. Show labels in structure view.
 * v70 Small improvements.
 * v69 Add merging of two databases.
 * v68 New icons and small bugfix.
