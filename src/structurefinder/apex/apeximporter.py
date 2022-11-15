@@ -86,7 +86,9 @@ ORDER BY samples_id;
 
 """
 import pprint
-from structurefinder import pg8000
+
+import pg8000
+
 
 
 class ApexDB():
@@ -106,7 +108,7 @@ class ApexDB():
             host = 'localhost'
         try:
             self.conn = pg8000.connect(user=user, password=password, ssl=False, database="BAXSdb", host=host)
-        except structurefinder.pg8000.core.ProgrammingError as e:
+        except pg8000.core.ProgrammingError as e:
             self.conn = None
             print(e)
             return False
