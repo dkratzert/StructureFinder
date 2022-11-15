@@ -20,13 +20,11 @@ jobs:
 
     env:
       DISPLAY: ':99.0'
-      #NO_NETWORK: 'True'
-      FINALCIF_NO_3D: 'True'
 
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.9", "3.10"]  # Pyqt5.15.2 does not install on python3.10 "3.10" ] #[ "3.8", "3.9", "3.10" ]
+        python-version: [ "3.9", "3.10"]
         os: [ windows-latest, macos-latest, ubuntu-latest ]  # Ubuntu has problems atm
         include:
           - os: ubuntu-latest
@@ -37,9 +35,9 @@ jobs:
             path: ~\AppData\Local\pip\Cache
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           architecture: x64
