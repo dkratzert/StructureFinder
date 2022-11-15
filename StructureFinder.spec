@@ -3,11 +3,11 @@
 block_cipher = None
 
 
-a = Analysis(['structurefinder/strf.py'],
-             pathex=['structurefinder'],
+a = Analysis(['src/structurefinder/strf.py'],
+             pathex=['src/structurefinder'],
              binaries=[('update.exe', '.')],
-             datas=[('structurefinder/gui', 'gui'),
-                    ('structurefinder/displaymol', 'displaymol'),
+             datas=[('src/structurefinder/gui', 'gui'),
+                    ('src/structurefinder/displaymol', 'displaymol'),
                     ('icons', 'icons'),
 			 ],
              hiddenimports=['pg8000.__init__', 'decimal', 'six', 'uuid', 'distutils', 'gemmi',
