@@ -10,17 +10,18 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from structurefinder.misc.version import VERSION
-
-app_path = str(Path(os.path.dirname(os.path.abspath(__file__))).parent)
-main_path = str(Path(os.path.dirname(os.path.abspath(__file__))))
+app_path = str(Path(__file__).resolve().parent.parent)
+main_path = str(Path(__file__).resolve().parent)
 sys.path.extend([app_path, main_path])
+
 import subprocess
 
+# noinspection PyUnresolvedReferences
 from PyQt5 import uic
 
 from scripts.create_zipfile import make_zip
 from scripts.version_numbers import process_iss, disable_debug, isspath, pypath
+from structurefinder.misc.version import VERSION
 
 print("Updating version numbers to version {} ...".format(VERSION))
 
