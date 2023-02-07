@@ -229,6 +229,8 @@ class CifFile(object):
         self.cif_data['_diffrn_reflns_av_unetI_netI'] = self.as_string('_diffrn_reflns_av_unetI_netI')
         self.cif_data['_database_code_depnum_ccdc_archive'] = self.as_string('_database_code_depnum_ccdc_archive')
         self.cif_data['_shelx_res_file'] = self.as_string('_shelx_res_file')
+        if not self.cif_data['_shelx_res_file']:
+            self.cif_data['_shelx_res_file'] = self.as_string('_iucr_refine_instructions_details')
         self.cif_data['_audit_author_name'] = self.as_list('_audit_author_name')
         self.cif_data['_audit_contact_author_name'] = self.as_list('_audit_contact_author_name')
         self.cif_data['_citation_author_name'] = self.as_list('_citation_author_name')
