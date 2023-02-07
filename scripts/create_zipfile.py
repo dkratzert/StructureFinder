@@ -7,7 +7,6 @@ from pathlib import Path
 from zipfile import ZipFile
 
 from structurefinder.misc.version import VERSION
-from structurefinder.searcher import remove_file
 
 version = VERSION
 
@@ -45,7 +44,7 @@ def make_zip():
     os.makedirs(fulldir)
     Path('./scripts/Output').mkdir(exist_ok=True)
     zipfilen = './scripts/Output/strf_cmd-v{}.zip'.format(version)
-    remove_file(zipfilen)
+    Path(zipfilen).unlink(missing_ok=True)
     with ZipFile(zipfilen, mode='w', allowZip64=False) as myzip:
         for file in Path('.').parent.parent.rglob('*'):
             if not is_valid(file):
