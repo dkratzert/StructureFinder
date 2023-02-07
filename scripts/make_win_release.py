@@ -12,7 +12,8 @@ from pathlib import Path
 
 app_path = str(Path(__file__).resolve().parent.parent)
 main_path = str(Path(__file__).resolve().parent)
-sys.path.extend([app_path, main_path])
+pathadd = [app_path, main_path, str(Path(app_path) / 'src')]
+sys.path.extend(pathadd)
 
 import subprocess
 
