@@ -10,6 +10,8 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+from structurefinder.misc.version import VERSION
+
 app_path = str(Path(os.path.dirname(os.path.abspath(__file__))).parent)
 main_path = str(Path(os.path.dirname(os.path.abspath(__file__))))
 sys.path.extend([app_path, main_path])
@@ -17,7 +19,6 @@ import subprocess
 
 from PyQt5 import uic
 
-from structurefinder.misc.version import VERSION
 from scripts.create_zipfile import make_zip
 from scripts.version_numbers import process_iss, disable_debug, isspath, pypath
 
