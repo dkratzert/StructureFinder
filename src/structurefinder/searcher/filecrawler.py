@@ -18,7 +18,7 @@ import os
 import re
 import tarfile
 import zipfile
-from typing import Generator
+from typing import Generator, Tuple
 
 import gemmi
 
@@ -108,7 +108,7 @@ class MyTarReader(MyZipBase):
             yield None
 
 
-def filewalker_walk(startdir: str, patterns: list):
+def filewalker_walk(startdir: str, patterns: list) -> Tuple[Tuple[str, str]]:
     """
     walks through the filesystem starting from startdir and searches
     for files with ending endings.
@@ -138,10 +138,10 @@ def filewalker_walk(startdir: str, patterns: list):
                 if filen == 'xd_four.cif':  # Exclude xdfourier cif files
                     continue
                 # This is much faster than yield():
-                filelist.append([root, filen])
+                filelist.append((root, filen))
             else:
                 continue
-    return filelist
+    return tuple(filelist)
 
 
 def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: int,
