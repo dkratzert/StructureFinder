@@ -1,17 +1,2 @@
-altgraph
-docutils
-future
-macholib
-numpy
-pefile
 PyInstaller
-PyQt5==5.15.7
-PyQt5-sip==12.11.0
-PyQt5-stubs==5.15.6.0
-pywin32-ctypes==0.2.0
-six
-requests
-gemmi
-gunicorn
-xlsxwriter
 pytest
