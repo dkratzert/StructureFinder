@@ -760,8 +760,8 @@ class StartStructureDB(QMainWindow):
         if not hasattr(self.structures, 'database'):
             return False
         self.structures.database.commit_db()
-        if self.structures.database.con.total_changes > 0:
-            self.structures.set_database_version(0)
+        #if self.structures.database.con.total_changes > 0:
+        #    self.structures.set_database_version(0)
         status = False
         if not save_name:
             save_name, _ = self.get_save_name_from_dialog()
