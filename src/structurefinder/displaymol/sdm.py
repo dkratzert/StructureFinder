@@ -95,7 +95,7 @@ class SDMItem(object):
     def __lt__(self, a2):
         return True if self.dist < a2.dist else False
 
-    def __eq__(self, other: 'SDMItem'):
+    def __eq__(self, other: 'SDMItem') -> bool:
         if other.a1 == self.a2 and other.a2 == self.a1:
             return True
         return False
