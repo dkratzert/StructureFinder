@@ -3,8 +3,8 @@
 ![Contributions](https://img.shields.io/badge/contributions-welcome-blue)
 
 # StructureFinder
-A crystal structure finder written in PyQt5 and Python3
+A crystal structure finder written in PyQt5 and Python3 with SQlite.
 
-[https://dkratzert.de/structurefinder.html](https://dkratzert.de/structurefinder.html)
+[Homepage: https://dkratzert.de/structurefinder.html](https://dkratzert.de/structurefinder.html)
 
 ![Program Window](https://github.com/dkratzert/StructureFinder/blob/master/docs/strf_1.png?raw=true)
