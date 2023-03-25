@@ -31,9 +31,9 @@ download_button = False
 ###########################################################
 
 site_ip = host + ':' + port
-os.chdir(Path(__file__).parent.parent.parent)
+os.chdir(Path(__file__).parent.parent)
 try:  # Adding local path to PATH
-    sys.path.insert(0, os.path.abspath('./'))
+    sys.path.insert(0, os.path.abspath('.'))
 except(KeyError, ValueError):
     print('Unable to set PATH properly. strf_web.py might not work.')
 

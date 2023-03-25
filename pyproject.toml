@@ -61,4 +61,4 @@ exclude = [
 [project.scripts]
 strf = "structurefinder.strf:main"
 strf_cmd = "structurefinder.strf_cmd:main"
-strf_web = "structurefinder.cgi_ui.cgi_bin.strf_web:run"
+strf_web = "structurefinder.cgi_ui.strf_web:run"
