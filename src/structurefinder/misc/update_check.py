@@ -18,17 +18,13 @@ import requests
 urlprefix = "https://dkratzert.de/files/structurefinder/"
 
 
-def get_current_strf_version(silent=True):
+def get_current_strf_version(silent=True) -> str:
     """
-    determines the current version of DSR on the web server
-
-    #>>> get_current_strf_version()
-    #'41'
+    determines the current version on the web server
 
     Returns
     -------
     version number
-    :type: str
     """
     try:
         response = requests.get(url='{}version.txt'.format(urlprefix), timeout=2)
@@ -44,10 +40,9 @@ def get_current_strf_version(silent=True):
     return version
 
 
-def is_update_needed(VERSION=0, silent=True):
+def is_update_needed(VERSION=0) -> bool:
     """
-    Decides if an update of DSR is needed.
-    :return: bool
+    Decides if an update is needed.
     """
     version = get_current_strf_version(silent=True)
     if int(VERSION) < int(version):

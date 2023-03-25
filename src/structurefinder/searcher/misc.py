@@ -14,6 +14,7 @@ Created on 09.02.2015
 import os
 import shutil
 from math import sqrt, cos, radians, log
+from pathlib import Path
 from typing import List, Union, Dict, Optional, Tuple, Any
 
 from structurefinder.searcher import constants
@@ -127,7 +128,7 @@ def open_file_read(filename: str, asci: bool = True) -> Union[str, List]:
             return binary
 
 
-def is_a_nonzero_file(filename: str) -> bool:
+def is_a_nonzero_file(filename: Union[str, Path]) -> bool:
     """
     Check if a file exists and has some content.
 

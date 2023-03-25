@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-# !C:\tools\Python-3.6.2_64\pythonw.exe
-# !/usr/local/bin/python3.6
-
 import datetime
 import math
 import os
@@ -22,11 +18,12 @@ from structurefinder.searcher.misc import is_valid_cell, format_sum_formula, reg
     get_list_of_elements, more_results_parameters, is_a_nonzero_file, combine_results
 
 parser = ArgumentParser(prog='strf_web',
-                        description='StructureFinder Web Server v{VERSION}')
+                        description=f'StructureFinder Web Server v{VERSION}')
 parser.add_argument('-n', '--host', default='127.0.0.1', type=str, dest='host')
 parser.add_argument('-p', '--port', default='8080', type=str, dest='port')
 parser.add_argument('-f', '--dbfile', default='structuredb.sqlite', dest='dbfilename')
-parser.add_argument('-d', '--download', dest='download_button', action='store_true', help='Shows a download link in the page bottom')
+parser.add_argument('-d', '--download', dest='download_button', action='store_true',
+                    help='Shows a download link in the page bottom')
 args = parser.parse_args()
 
 host = args.host
@@ -727,13 +724,13 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
 
 
 def run():
-    global server
-    print("Running on Python version {}".format(sys.version))
+    print(f"----- StructureFinder web application version {sys.version} --------------")
+    print(f" Running on Python version {sys.version}")
     if not is_a_nonzero_file(dbfilename):
         print("Unable to start!")
-        print("The database file '{}' does not exist.".format(os.path.abspath(dbfilename)))
+        print(f"The database file '{os.path.abspath(dbfilename)}' does not exist.")
         sys.exit()
-    print('### Running with database "{}" ###'.format(os.path.abspath(dbfilename)))
+    print(f'### Running with database "{os.path.abspath(dbfilename)}" ###')
     # plain python wsgiref server (gunicorn doesnt run on windows):
     # app.run(host=host, port=port, server='wsgiref', reloader=True)
     # gunicorn server: Best used behind an nginx proxy server: http://docs.gunicorn.org/en/stable/deploy.html

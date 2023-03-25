@@ -4,7 +4,6 @@ import time
 from argparse import Namespace
 from pathlib import Path
 from sqlite3 import DatabaseError
-from typing import Sequence
 
 from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
@@ -13,7 +12,7 @@ from structurefinder.searcher.database_handler import DatabaseRequest, Structure
 from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
 from structurefinder.searcher.worker import Worker
 
-parser = argparse.ArgumentParser(description='Command line version of StructureFinder to collect .cif/.res files to a '
+parser = argparse.ArgumentParser(description=f'Command line version {VERSION} of StructureFinder to collect .cif/.res files to a '
                                              'database.\n'
                                              'StructureFinder will search for cif files in the given directory(s) '
                                              'recursively.  (Either -c, -r or both options must be active!)')
@@ -75,7 +74,7 @@ def check_update():
               'https://dkratzert.de/structurefinder.html')
 
 
-def find_cell(args: Sequence[str]):
+def find_cell(args: Namespace):
     """
     Searches for unit cells by command line parameters
     """
@@ -211,15 +210,10 @@ def main():
     elif args.merge:
         merge_database(args)
     else:
-        try:
-            if not args.dir:
-                parser.print_help()
-                check_update()
-                sys.exit()
-        except IndexError:
-            print("No valid search directory given.\n")
-            print("Please run this as 'python3 stdb_cmd.py -d [directory]'\n")
-            print("stdb_cmd will search for .cif files in [directory] recoursively.")
+        if not args.dir:
+            parser.print_help()
+            print("\n --> No valid search directory given.\n")
+            sys.exit()
         run_index(args)
 
 
