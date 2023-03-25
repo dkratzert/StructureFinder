@@ -1,5 +1,6 @@
 Changelog
 ---------
+* v73 Minor bugs fixed. New pypi package added: https://pypi.org/project/structurefinder
 * v72 Use _iucr_refine_instructions_details if _shelx_res_file is not found in CIF.
 * v71 Fixed crash when appending a database while no database is opened. Show labels in structure view.
 * v70 Small improvements.
