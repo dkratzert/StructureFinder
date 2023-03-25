@@ -2,6 +2,7 @@
 Thumbs.db
 ehthumbs.db
 cctbx
+docs/_build
 venv
 venv2
 venv27

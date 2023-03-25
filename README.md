@@ -7,4 +7,4 @@ A crystal structure finder written in PyQt5 and Python3 with SQlite.
 
 [Homepage: https://dkratzert.de/structurefinder.html](https://dkratzert.de/structurefinder.html)
 
-![Program Window](https://github.com/dkratzert/StructureFinder/blob/master/docs/strf_1.png?raw=true)
+![Program Window](https://github.com/dkratzert/StructureFinder/blob/master/docs/pics/strf_1.png?raw=true)
