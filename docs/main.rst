@@ -72,10 +72,12 @@ Be aware that the indexing on a network drive is very slow!
 Installation
 ------------
 
-*Windows*
+Windows
+"""""""
 The windows version installs like any other Windows installer.
 
-*Linux / Mac / Windows*
+Linux / Mac / Windows
+"""""""""""""""""""""
 Since version 73, there is a `pypi <https://pypi.org/project/structurefinder >`_ package for installation in a Python environment.
 Do the following steps in order to install and run StructureFinder in any Python environment:
 
