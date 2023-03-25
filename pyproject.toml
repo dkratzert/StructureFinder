@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "structurefinder"
-version = "71"
+version = "72"
 authors = [
     { name = "Daniel Kratzert", email = "dkratzert@gmx.de" },
 ]
@@ -56,8 +56,9 @@ exclude = [
     "/requirements.txt",
     "/make_release.sh",
     "/venv*",
-    "/cgi_ui",
 ]
 
 [project.scripts]
 strf = "structurefinder.strf:main"
+strf_cmd = "structurefinder.strf_cmd:main"
+strf_web = "structurefinder.cgi_ui.cgi_bin.strf_web:run"

@@ -12,7 +12,12 @@ from xml.etree.ElementTree import ParseError
 
 from gemmi.cif import Style
 
+from structurefinder.ccdc.query import get_cccsd_path, search_csd, parse_results
 from structurefinder.misc.exporter import cif_data_to_document
+from structurefinder.searcher.constants import centering_letter_2_num, centering_num_2_letter
+from structurefinder.searcher.database_handler import StructureTable
+from structurefinder.searcher.misc import is_valid_cell, format_sum_formula, regular_results_parameters, vol_unitcell, \
+    get_list_of_elements, more_results_parameters, is_a_nonzero_file, combine_results
 
 ###########################################################
 ###  Configure the web server here:   #####################
@@ -38,16 +43,11 @@ if pyver[0] == 3 and pyver[1] < 4:
     sys.exit()
 
 from shutil import which
-from structurefinder.searcher import centering_letter_2_num, centering_num_2_letter
-from structurefinder.ccdc import get_cccsd_path, search_csd, parse_results
-from cgi_ui.bottle import Bottle, static_file, template, redirect, request, response, HTTPResponse
+
+from structurefinder.cgi_ui.bottle import Bottle, static_file, template, redirect, request, response, HTTPResponse
 from structurefinder.displaymol.mol_file_writer import MolFile
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.pymatgen.core import lattice
-from structurefinder.searcher import StructureTable
-from structurefinder.searcher import is_valid_cell, get_list_of_elements, vol_unitcell, is_a_nonzero_file, \
-    format_sum_formula, \
-    combine_results, more_results_parameters, regular_results_parameters
 
 app = application = Bottle()
 
@@ -715,7 +715,8 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     return list(results)
 
 
-if __name__ == "__main__":
+def run():
+    global server
     print("Running on Python version {}".format(sys.version))
     if not is_a_nonzero_file(dbfilename):
         print("Unable to start!")
@@ -733,3 +734,7 @@ if __name__ == "__main__":
         server = 'gunicorn'
     app.run(host=host, port=port, reload=True, server=server, accesslog='-', errorlog='-', workers=1,
             access_log_format='%(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s"')
+
+
+if __name__ == "__main__":
+    run()

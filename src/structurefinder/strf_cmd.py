@@ -4,6 +4,7 @@ import time
 from argparse import Namespace
 from pathlib import Path
 from sqlite3 import DatabaseError
+from typing import Sequence
 
 from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
@@ -74,11 +75,11 @@ def check_update():
               'https://dkratzert.de/structurefinder.html')
 
 
-def find_cell(cell: list):
+def find_cell(args: Sequence[str]):
     """
     Searches for unit cells by command line parameters
     """
-    cell = [float(x) for x in cell]
+    cell = [float(x) for x in args.cell]
     no_result = '\nNo similar unit cell found.'
     if args.outfile:
         dbfilename = args.outfile
@@ -203,10 +204,10 @@ def get_database(dbfilename):
     return db, structures
 
 
-if __name__ == '__main__':
+def main():
     args = parser.parse_args()
     if args.cell:
-        find_cell(args.cell)
+        find_cell(args)
     elif args.merge:
         merge_database(args)
     else:
@@ -220,4 +221,8 @@ if __name__ == '__main__':
             print("Please run this as 'python3 stdb_cmd.py -d [directory]'\n")
             print("stdb_cmd will search for .cif files in [directory] recoursively.")
         run_index(args)
+
+
+if __name__ == '__main__':
+    main()
     # find_cell('10.5086  20.9035  20.5072   90.000   94.130   90.000'.split())
