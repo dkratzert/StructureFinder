@@ -85,7 +85,7 @@ def get_dbfile():
     if download_button:
         return Path(dbfilename).read_bytes()
     else:
-        app.error(404)
+        return error404('File not found.')
 
 
 @app.get("/cellsrch")
@@ -231,7 +231,7 @@ def cellsearch():
     else:
         try:
             if which('ccdc_searcher') or \
-                    Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
+                Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
                 print('CellCheckCSD found')
                 return 'true'
         except TypeError:
@@ -328,17 +328,17 @@ def search_cellcheck_csd():
 
 
 @app.error(404)
-def error404(error):
+def error404(error='Nothing here, sorry.'):
     """
     Redefine 404 message.
     """
-    return '''<div style="text-align: center;">
-                <b>Nothing here, sorry.</b><br>
+    return f'''<div style="text-align: center;">
+                <b>{error}</b><br>
                 <p>
-                <a href="http://{}{}/">Back to main page</a>
+                <a href="http://{host}:{port}/">Back to main page</a>
                 </p>
               </div>
-            '''.format(host, ':' + port)
+            '''
 
 
 def is_ajax():
