@@ -6,6 +6,7 @@ import datetime
 import math
 import os
 import sys
+from argparse import ArgumentParser
 from pathlib import Path
 from typing import List, Dict, Union, Tuple
 from xml.etree.ElementTree import ParseError
@@ -14,19 +15,25 @@ from gemmi.cif import Style
 
 from structurefinder.ccdc.query import get_cccsd_path, search_csd, parse_results
 from structurefinder.misc.exporter import cif_data_to_document
+from structurefinder.misc.version import VERSION
 from structurefinder.searcher.constants import centering_letter_2_num, centering_num_2_letter
 from structurefinder.searcher.database_handler import StructureTable
 from structurefinder.searcher.misc import is_valid_cell, format_sum_formula, regular_results_parameters, vol_unitcell, \
     get_list_of_elements, more_results_parameters, is_a_nonzero_file, combine_results
 
-###########################################################
-###  Configure the web server here:   #####################
+parser = ArgumentParser(prog='strf_web',
+                        description='StructureFinder Web Server v{VERSION}')
+parser.add_argument('-n', '--host', default='127.0.0.1', type=str, dest='host')
+parser.add_argument('-p', '--port', default='8080', type=str, dest='port')
+parser.add_argument('-f', '--dbfile', default='structuredb.sqlite', dest='dbfilename')
+parser.add_argument('-d', '--download', dest='download_button', action='store_true', help='Shows a download link in the page bottom')
+args = parser.parse_args()
 
-host = "127.0.0.1"
-port = "8080"
+host = args.host
+port = args.port
 # Give an absolute path:
-dbfilename = "structuredb.sqlite"
-download_button = False
+dbfilename = Path(args.dbfilename).resolve()
+download_button = args.download_button
 
 ###########################################################
 

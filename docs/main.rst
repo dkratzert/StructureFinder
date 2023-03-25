@@ -126,24 +126,27 @@ StructureFinder is able to search for unit cells in the CSD with the CellCheckCS
 Web interface
 -------------
 
-Instead of the regular user interface, you can run StructureFinder as web service. First, create a database with ./strf_cmd This can be automated with a cron job to do it regularly. The zip file strf_cmd_version.zip above contains all you need to start the web service or use the Git repository.
+Instead of the regular user interface, you can run StructureFinder as web service. First, create a database with ./strf_cmd This can be automated with a
+cron job to do it regularly. The zip file strf_cmd_version.zip above contains all you need to start the web service or
+use the Git repository.
 
-The required Python packages can be installed with the 'install_all_requirements' script.
 
 
-Change the variables
---------------------
 .. code-block::
 
-   host = "127.0.0.1"
-   port = "80"
-   dbfilename = "/path/to/database.sqlite"
+   usage: strf_web [-h] [-n HOST] [-p PORT] [-f DBFILENAME] [-d]
 
-in cgi_ui/strf_web.py to your desired webserver address and database path. Some operating systems do not allow users to run services at port 80. You might use port 8080 instead.
+    StructureFinder Web Server v{VERSION}
 
-Go into the StructureFinder main directory and run
+    options:
+      -h, --help            show this help message and exit
+      -n HOST, --host HOST
+      -p PORT, --port PORT
+      -f DBFILENAME, --dbfile DBFILENAME
+      -d, --download        Shows a download link in the page bottom
 
-./strf_web
+The easiest way is to run 'strf_web' from a diretory with a database file: strf_web -f structuredb.sqlite
+
 Be aware that running a web server has security implications. Do not expose this server to the internet unless you know what you are doing!
 
 The web site should look like this after clicking on a table row:
