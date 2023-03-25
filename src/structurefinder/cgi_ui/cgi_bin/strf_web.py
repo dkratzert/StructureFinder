@@ -24,13 +24,14 @@ from structurefinder.searcher.misc import is_valid_cell, format_sum_formula, reg
 
 host = "127.0.0.1"
 port = "8080"
+# Give an absolute path:
 dbfilename = "structuredb.sqlite"
 download_button = False
 
 ###########################################################
 
 site_ip = host + ':' + port
-
+os.chdir(Path(__file__).parent.parent.parent)
 try:  # Adding local path to PATH
     sys.path.insert(0, os.path.abspath('./'))
 except(KeyError, ValueError):
@@ -75,13 +76,16 @@ def main():
                                      type="application/*">Download
                                     database file</a></p>""".format(site_ip) if download_button else ''
             }
-    output = template('./cgi_ui/views/strf_web', data)
+    output = template('cgi_ui/views/strf_web', data)
     return output
 
 
 @app.get('/dbfile.sqlite')
 def get_dbfile():
-    return Path(dbfilename).read_bytes()
+    if download_button:
+        return Path(dbfilename).read_bytes()
+    else:
+        app.error(404)
 
 
 @app.get("/cellsrch")
@@ -289,7 +293,7 @@ def show_cellcheck():
             'strid'  : str_id,
             'cent'   : cent,
             'host'   : host, }
-    output = template('./cgi_ui/views/cellcheckcsd', data)
+    output = template('cgi_ui/views/cellcheckcsd', data)
     return output
 
 
