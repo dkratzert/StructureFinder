@@ -12,7 +12,15 @@ Do the following steps in order to install and run StructureFinder in any Python
 
 .. code-block::
 
-    >> python -m venv venv
-    >> source venv/bin/activate   (Windows: venv\Scripts\activate.bat)
+    >> python -m venv venv        <-- creates a virtual environment
+    >> source venv/bin/activate   (Windows: venv\Scripts\activate.bat)  <-- Activates the environment
     >> pip install structurefinder
     >> strf  or strf_cmd  or  strf_web
+
+Next time, only
+
+.. code-block::
+
+    >> source venv/bin/activate   (Windows: venv\Scripts\activate.bat)
+    >> strf  or strf_cmd  or  strf_web
+is necessary.
