@@ -43,6 +43,22 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+html_theme_options = {
+    #'titles_only': True,
+    'collapse_navigation': False,
+    'includehidden': True,
+}
+#toctree_only = False
+#html_split_index = True
+html_baseurl = 'https://dkratzert.de/files/structurefinder/docs/index.html'
+
+html_use_index = True
+
+
+#html_sidebars = {
+#   '**': ['globaltoc.html', 'sourcelink.html', 'searchbox.html'],
+#   'using/windows': ['windowssidebar.html', 'searchbox.html'],
+#}
 
 # -- Options for HTML output -------------------------------------------------
 
