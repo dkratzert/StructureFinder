@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "structurefinder"
-version = "73.post1"
+version = "73.post2"
 
 authors = [
     { name = "Daniel Kratzert", email = "dkratzert@gmx.de" },
