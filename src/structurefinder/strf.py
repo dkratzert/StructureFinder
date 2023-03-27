@@ -41,6 +41,7 @@ from structurefinder.misc.exporter import export_to_cif_file
 from structurefinder.misc.settings import StructureFinderSettings
 from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
 from structurefinder.searcher import database_handler, constants
+from structurefinder.searcher.filecrawler import excluded_names
 from structurefinder.searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
 
@@ -587,7 +588,7 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDatabasePushButton.setDisabled(True)
         self.ui.importDatabaseButton.setDisabled(True)
         self.thread = QThread()
-        self.worker = Worker(searchpath=startdir, add_res_files=self.ui.add_res.isChecked(),
+        self.worker = Worker(searchpath=startdir, add_res_files=self.ui.add_res.isChecked(), excludes=excluded_names,
                              add_cif_files=self.ui.add_cif.isChecked(), lastid=lastid, structures=self.structures)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.index_files)

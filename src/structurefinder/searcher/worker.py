@@ -29,14 +29,14 @@ class Worker(QtCore.QObject):
         self.add_cif_files = add_cif_files
         self.structures = structures
         self.lastid = lastid
-        self.excludes = excludes
+        self.excludes = [] if not excludes else excludes
         self.files_indexed = 0
         if standalone:
             self.files_indexed = self.index_files()
 
     def index_files(self):
         return self.put_files_in_db(searchpath=self.searchpath, structures=self.structures,
-                                    fillres=self.add_res_files, excludes=None,
+                                    fillres=self.add_res_files, excludes=self.excludes,
                                     fillcif=self.add_cif_files, lastid=self.lastid)
 
     def put_files_in_db(self, searchpath: str = '', excludes: Union[list, None] = None, lastid: int = 1,
@@ -44,8 +44,7 @@ class Worker(QtCore.QObject):
         """
         Imports files from a certain directory
         """
-        if self.excludes:
-            excluded_names.extend(excludes)
+        excludes = [] if not excludes else excludes
         if not searchpath:
             return 0
         if lastid <= 1:
@@ -56,7 +55,7 @@ class Worker(QtCore.QObject):
         cifcount = 0
         time1 = time.perf_counter()
         patterns = ['*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '*.res']
-        filelist = filewalker_walk(str(searchpath), patterns)
+        filelist = filewalker_walk(str(searchpath), patterns, excludes=excludes)
         self.number_of_files.emit(len(filelist))
         options = {}
         filecount = 1
@@ -122,7 +121,7 @@ class Worker(QtCore.QObject):
                     cif = CifFile(options=options)
                     #print(zippedfile, 'z#i#p')
                     omit = False
-                    for ex in excluded_names:  # remove excludes
+                    for ex in excludes:  # remove excludes
                         if re.search(ex, z.cifpath, re.I):
                             omit = True
                     if omit:

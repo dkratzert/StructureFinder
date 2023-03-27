@@ -18,7 +18,7 @@ import os
 import re
 import tarfile
 import zipfile
-from typing import Generator, Tuple
+from typing import Generator, Tuple, List
 
 import gemmi
 
@@ -29,7 +29,7 @@ from structurefinder.shelxfile.shelx import ShelXFile
 
 DEBUG = False
 
-excluded_names = ['ROOT',
+excluded_names = ('ROOT',
                   '.OLEX',
                   'olex',
                   'TMP',
@@ -38,8 +38,7 @@ excluded_names = ['ROOT',
                   'Recycle.Bin',
                   'dsrsaves',
                   'BrukerShelXlesaves',
-                  'shelXlesaves'
-                  ]
+                  'shelXlesaves')
 
 
 class MyZipBase(object):
@@ -108,7 +107,7 @@ class MyTarReader(MyZipBase):
             yield None
 
 
-def filewalker_walk(startdir: str, patterns: list) -> Tuple[Tuple[str, str]]:
+def filewalker_walk(startdir: str, patterns: list, excludes: List[str]) -> Tuple[Tuple[str, str]]:
     """
     walks through the filesystem starting from startdir and searches
     for files with ending endings.
@@ -121,7 +120,7 @@ def filewalker_walk(startdir: str, patterns: list) -> Tuple[Tuple[str, str]]:
         for filen in files:
             omit = False
             if any(fnmatch.fnmatch(filen, pattern) for pattern in patterns):
-                for ex in excluded_names:
+                for ex in excludes:
                     if re.search(ex, root, re.I):
                         omit = True
                         break

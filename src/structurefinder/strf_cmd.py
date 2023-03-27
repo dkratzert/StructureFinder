@@ -9,13 +9,15 @@ from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core.lattice import Lattice
 from structurefinder.searcher.database_handler import DatabaseRequest, StructureTable
+from structurefinder.searcher.filecrawler import excluded_names
 from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
 from structurefinder.searcher.worker import Worker
 
-parser = argparse.ArgumentParser(description=f'Command line version {VERSION} of StructureFinder to collect .cif/.res files to a '
-                                             'database.\n'
-                                             'StructureFinder will search for cif files in the given directory(s) '
-                                             'recursively.  (Either -c, -r or both options must be active!)')
+parser = argparse.ArgumentParser(
+    description=f'Command line version {VERSION} of StructureFinder to collect .cif/.res files to a '
+                'database.\n'
+                'StructureFinder will search for cif files in the given directory(s) '
+                'recursively.  (Either -c, -r or both options must be active!)')
 parser.add_argument("-d",
                     dest="dir",
                     metavar='"directory"',
@@ -149,9 +151,12 @@ def run_index(args=None):
             else:
                 lastid += 1
             try:
-                worker = Worker(searchpath=p, excludes=args.ex,
-                                structures=structures, lastid=lastid,
-                                add_res_files=args.fillres, add_cif_files=args.fillcif,
+                worker = Worker(searchpath=p,
+                                excludes=args.ex if args.ex else excluded_names,
+                                structures=structures,
+                                lastid=lastid,
+                                add_res_files=args.fillres,
+                                add_cif_files=args.fillcif,
                                 standalone=True)
             except OSError as e:
                 print("Unable to collect files:")
