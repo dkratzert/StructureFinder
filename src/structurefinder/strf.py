@@ -805,6 +805,7 @@ class StartStructureDB(QMainWindow):
             super().keyPressEvent(q_key_event)
 
     def view_molecule(self) -> None:
+        return
         cell = self.structures.get_cell_by_id(self.structureId)
         if not cell:
             print('No cell found')
@@ -843,11 +844,12 @@ class StartStructureDB(QMainWindow):
         """
         self.clear_fields()
         cell: Cell = struct.cell  # self.structures.get_cell_by_id(structure_id)
+        residuals = struct.Residuals
         if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
             self.ui.cellSearchCSDLineEdit.setText(f"{cell.a:.5f}{cell.b:.5f}{cell.c:.5f}"
                                                   f"{cell.alpha:.5f}{cell.beta:.5f}{cell.gamma:.5f}")
             with suppress(KeyError, TypeError):
-                cstring = struct.Residuals._space_group_centring_type
+                cstring = residuals._space_group_centring_type
                 self.ui.lattCentComboBox.setCurrentIndex(centering_letter_2_num[cstring])
         if not cell:
             return False
@@ -860,7 +862,7 @@ class StartStructureDB(QMainWindow):
             self.ui.cellField.setText('            ')
             return False
         try:
-            cent = struct.Residuals._space_group_centring_type
+            cent = residuals._space_group_centring_type
         except KeyError:
             cent = ''
         self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, cent))
@@ -868,67 +870,67 @@ class StartStructureDB(QMainWindow):
         self.ui.cellField.setToolTip("Double click on 'Unit Cell' to copy to clipboard.")
         # wR2:
         with suppress(ValueError, TypeError):
-            if struct.Residuals._refine_ls_wR_factor_ref:
-                self.ui.wR2LineEdit.setText(f"{struct.Residuals._refine_ls_wR_factor_ref:>5.4f}")
+            if residuals._refine_ls_wR_factor_ref:
+                self.ui.wR2LineEdit.setText(f"{residuals._refine_ls_wR_factor_ref:>5.4f}")
             else:
-                self.ui.wR2LineEdit.setText(f"{struct.Residuals._refine_ls_wR_factor_gt:>5.4f}")
+                self.ui.wR2LineEdit.setText(f"{residuals._refine_ls_wR_factor_gt:>5.4f}")
         try:  # R1:
-            if struct._refine_ls_R_factor_gt:
-                self.ui.r1LineEdit.setText(f"{struct._refine_ls_R_factor_gt:>5.4f}")
+            if residuals._refine_ls_R_factor_gt:
+                self.ui.r1LineEdit.setText(f"{residuals._refine_ls_R_factor_gt:>5.4f}")
             else:
-                self.ui.r1LineEdit.setText(f"{struct._refine_ls_R_factor_all:>5.4f}")
+                self.ui.r1LineEdit.setText(f"{residuals._refine_ls_R_factor_all:>5.4f}")
         except (ValueError, TypeError):
             pass
-        self.ui.zLineEdit.setText(f"{struct._cell_formula_units_Z}")
+        self.ui.zLineEdit.setText(f"{residuals._cell_formula_units_Z}")
         try:
-            sumform = misc.format_sum_formula(self.structures.get_calc_sum_formula(structure_id))
+            sumform = ''#misc.format_sum_formula(self.structures.get_calc_sum_formula(structure_id))
         except KeyError:
             sumform = ''
         if sumform == '':
             # Display this as last resort:
-            sumform = struct['_chemical_formula_sum']
+            sumform = residuals._chemical_formula_sum
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         self.ui.SumformLabel.setText(f"{sumform}")
-        self.ui.reflTotalLineEdit.setText(f"{struct['_diffrn_reflns_number']}")
-        self.ui.uniqReflLineEdit.setText(f"{struct['_refine_ls_number_reflns']}")
-        self.ui.refl2sigmaLineEdit.setText(f"{struct['_reflns_number_gt']}")
-        self.ui.goofLineEdit.setText(f"{struct['_refine_ls_goodness_of_fit_ref']}")
-        it_num = struct['_space_group_IT_number']
+        self.ui.reflTotalLineEdit.setText(f"{residuals._diffrn_reflns_number}")
+        self.ui.uniqReflLineEdit.setText(f"{residuals._refine_ls_number_reflns}")
+        self.ui.refl2sigmaLineEdit.setText(f"{residuals._reflns_number_gt}")
+        self.ui.goofLineEdit.setText(f"{residuals._refine_ls_goodness_of_fit_ref}")
+        it_num = residuals._space_group_IT_number
         if it_num:
             it_num = f"({it_num})"
-        self.ui.SpaceGroupLineEdit.setText(f"{struct['_space_group_name_H_M_alt']} {it_num}")
-        self.ui.temperatureLineEdit.setText(f"{struct['_diffrn_ambient_temperature']}")
-        self.ui.maxShiftLineEdit.setText(f"{struct['_refine_ls_shift_su_max']}")
-        peak = struct['_refine_diff_density_max']
+        self.ui.SpaceGroupLineEdit.setText(f"{residuals._space_group_name_H_M_alt} {it_num}")
+        self.ui.temperatureLineEdit.setText(f"{residuals._diffrn_ambient_temperature}")
+        self.ui.maxShiftLineEdit.setText(f"{residuals._refine_ls_shift_su_max}")
+        peak = residuals._refine_diff_density_max
         if peak:
-            self.ui.peakLineEdit.setText(f"{peak} / {struct['_refine_diff_density_min']}")
-        self.ui.rintLineEdit.setText(f"{struct['_diffrn_reflns_av_R_equivalents']}")
-        self.ui.rsigmaLineEdit.setText(f"{struct['_diffrn_reflns_av_unetI_netI']}")
-        self.ui.cCDCNumberLineEdit.setText(f"{struct['_database_code_depnum_ccdc_archive']}")
+            self.ui.peakLineEdit.setText(f"{peak} / {residuals._refine_diff_density_min}")
+        self.ui.rintLineEdit.setText(f"{residuals._diffrn_reflns_av_R_equivalents}")
+        self.ui.rsigmaLineEdit.setText(f"{residuals._diffrn_reflns_av_unetI_netI}")
+        self.ui.cCDCNumberLineEdit.setText(f"{residuals._database_code_depnum_ccdc_archive}")
         try:
-            self.ui.flackXLineEdit.setText(f"{struct['_refine_ls_abs_structure_Flack']}")
+            self.ui.flackXLineEdit.setText(f"{residuals._refine_ls_abs_structure_Flack}")
         except KeyError:
             pass
         try:
-            dat_param = struct['_refine_ls_number_reflns'] / struct['_refine_ls_number_parameters']
+            dat_param = residuals._refine_ls_number_reflns / residuals._refine_ls_number_parameters
         except (ValueError, ZeroDivisionError, TypeError):
             dat_param = 0.0
         self.ui.dataReflnsLineEdit.setText(f"{dat_param:<5.1f}")
-        self.ui.numParametersLineEdit.setText(f"{struct['_refine_ls_number_parameters']}")
-        wavelen = struct['_diffrn_radiation_wavelength']
-        thetamax = struct['_diffrn_reflns_theta_max']
+        self.ui.numParametersLineEdit.setText(f"{residuals._refine_ls_number_parameters}")
+        wavelen = residuals._diffrn_radiation_wavelength
+        thetamax = residuals._diffrn_reflns_theta_max
         # d = lambda/2sin(theta):
         try:
             d = wavelen / (2 * sin(radians(thetamax)))
         except(ZeroDivisionError, TypeError):
             d = 0.0
-        self.ui.numRestraintsLineEdit.setText(f"{struct['_refine_ls_number_restraints']}")
+        self.ui.numRestraintsLineEdit.setText(f"{residuals._refine_ls_number_restraints}")
         self.ui.thetaMaxLineEdit.setText(f"{thetamax}")
-        self.ui.thetaFullLineEdit.setText(f"{struct['_diffrn_reflns_theta_full']}")
+        self.ui.thetaFullLineEdit.setText(f"{residuals._diffrn_reflns_theta_full}")
         self.ui.dLineEdit.setText(f"{d:5.3f}")
-        self.ui.lastModifiedLineEdit.setText(struct['modification_time'])
+        self.ui.lastModifiedLineEdit.setText(str(residuals.modification_time))
         try:
-            compl = struct['_diffrn_measured_fraction_theta_max'] * 100
+            compl = residuals._diffrn_measured_fraction_theta_max * 100
             if not compl:
                 compl = 0.0
         except TypeError:
@@ -941,15 +943,15 @@ class StartStructureDB(QMainWindow):
         self.ui.allCifTreeWidget.clear()
         # This makes selection slow and is not really needed:
         # atoms_item = QtWidgets.QTreeWidgetItem()
-        for key, value in struct.items():
+        for key, value in residuals._asdict().items():
             if key == "_shelx_res_file":
-                self.ui.SHELXplainTextEdit.setPlainText(struct['_shelx_res_file'])
+                self.ui.SHELXplainTextEdit.setPlainText(residuals._shelx_res_file)
                 continue
             cif_tree_item = QTreeWidgetItem()
             self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
             cif_tree_item.setText(0, str(key))
             cif_tree_item.setText(1, str(value))
-        if not struct['_shelx_res_file']:
+        if not residuals._shelx_res_file:
             self.ui.SHELXplainTextEdit.setPlainText("No SHELXL res file in cif found.")
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.allCifTreeWidget.resizeColumnToContents(0)

@@ -1,9 +1,14 @@
-from sqlalchemy import Column, Date, Float, ForeignKey, Index, Integer, String, Text
+from typing import Any
+
+from sqlalchemy import Column, Date, Float, ForeignKey, Index, Integer, String, Text, inspect
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped
 
 
 class Base(DeclarativeBase):
-    pass
+    def _asdict(self) -> dict[str, Any]:
+        return {c.key: getattr(self, c.key)
+                for c in inspect(self).mapper.column_attrs}
+
 
 metadata = Base.metadata
 
