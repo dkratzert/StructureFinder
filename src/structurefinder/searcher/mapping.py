@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Date, Float, ForeignKey, Index, Integer, String, Text
-from sqlalchemy.orm import relationship, DeclarativeBase
+from sqlalchemy.orm import relationship, DeclarativeBase, Mapped
 
 
 class Base(DeclarativeBase):
@@ -19,11 +19,11 @@ class Structure(Base):
 
     Structure = relationship('Structure', remote_side=[Id], back_populates='Structure_reverse')
     Structure_reverse = relationship('Structure', remote_side=[measurement], back_populates='Structure')
-    Atoms = relationship('Atoms', back_populates='Structure_')
-    Residuals = relationship('Residuals', back_populates='Structure_')
-    authors = relationship('Authors', back_populates='Structure_')
-    cell = relationship('Cell', back_populates='Structure_')
-    sum_formula = relationship('SumFormula', back_populates='Structure_')
+    Atoms: Mapped['Atoms'] = relationship('Atoms', back_populates='Structure_')
+    Residuals: Mapped['Residuals'] = relationship('Residuals', back_populates='Structure_')
+    authors: Mapped['Authors'] = relationship('Authors', back_populates='Structure_')
+    cell: Mapped['Cell'] = relationship('Cell', back_populates='Structure_', uselist=False)
+    sum_formula: Mapped['SumFormula'] = relationship('SumFormula', back_populates='Structure_')
 
 
 class DatabaseFormat(Base):

@@ -32,6 +32,9 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox, QPushButton
+import sqlalchemy as sa
+from sqlalchemy.orm import sessionmaker, load_only
+from sqlalchemy.sql.functions import count
 
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.table_model import TableModel
@@ -42,6 +45,7 @@ from structurefinder.misc.settings import StructureFinderSettings
 from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
 from structurefinder.searcher import database_handler, constants
 from structurefinder.searcher.filecrawler import excluded_names
+from structurefinder.searcher.mapping import Structure, Residuals, Cell
 from structurefinder.searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
 
@@ -147,6 +151,8 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
+        self.engine = None
+        self.Session: Optional[sessionmaker] = None
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         # self.ui.cifList_tableView.addAction(self.ui.actionGo_to_All_CIF_Tab)
@@ -737,8 +743,9 @@ class StartStructureDB(QMainWindow):
         except IndexError:
             return False
         self.structureId = structure_id
-        dic = self.structures.get_row_as_dict(structure_id)
-        self.display_properties(structure_id, dic)
+        with self.Session() as session:
+            stmt = sa.select(Structure).filter_by(Id=self.structureId)
+            self.display_properties(structure_id, session.scalar(stmt))
         return True
 
     def export_current_cif(self):
@@ -761,7 +768,7 @@ class StartStructureDB(QMainWindow):
         if not hasattr(self.structures, 'database'):
             return False
         self.structures.database.commit_db()
-        #if self.structures.database.con.total_changes > 0:
+        # if self.structures.database.con.total_changes > 0:
         #    self.structures.set_database_version(0)
         status = False
         if not save_name:
@@ -828,34 +835,32 @@ class StartStructureDB(QMainWindow):
     def redraw_molecule(self) -> None:
         self.view_molecule()
 
-    def display_properties(self, structure_id, cif_dic):
+    def display_properties(self, structure_id, struct: Structure):
         """
         Displays the residuals from the cif file
         _refine_ls_number_reflns -> unique reflect. (Independent reflections)
         _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
         self.clear_fields()
-        cell = self.structures.get_cell_by_id(structure_id)
+        cell: Cell = struct.cell  # self.structures.get_cell_by_id(structure_id)
         if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
-            self.ui.cellSearchCSDLineEdit.setText("  ".join([str(round(x, 5)) for x in cell[:6]]))
+            self.ui.cellSearchCSDLineEdit.setText(f"{cell.a:.5f}{cell.b:.5f}{cell.c:.5f}"
+                                                  f"{cell.alpha:.5f}{cell.beta:.5f}{cell.gamma:.5f}")
             with suppress(KeyError, TypeError):
-                cstring = cif_dic['_space_group_centring_type']
+                cstring = struct.Residuals._space_group_centring_type
                 self.ui.lattCentComboBox.setCurrentIndex(centering_letter_2_num[cstring])
         if not cell:
             return False
         self.redraw_molecule()
         self.ui.cifList_tableView.setFocus()
-        if not cif_dic:
+        if not struct:
             return False
-        a, b, c, alpha, beta, gamma, volume = 0, 0, 0, 0, 0, 0, 0
-        if cell:
-            a, b, c, alpha, beta, gamma, volume = cell[0], cell[1], cell[2], cell[3], cell[4], cell[5], cell[6]
+        a, b, c, alpha, beta, gamma, volume = cell.a, cell.b, cell.c, cell.alpha, cell.beta, cell.gamma, cell.volume
         if not all((a, b, c, alpha, beta, gamma, volume)):
             self.ui.cellField.setText('            ')
             return False
-        # self.ui.cellField.setMinimumWidth(180)
         try:
-            cent = cif_dic['_space_group_centring_type']
+            cent = struct.Residuals._space_group_centring_type
         except KeyError:
             cent = ''
         self.ui.cellField.setText(constants.celltxt.format(a, alpha, b, beta, c, gamma, volume, cent))
@@ -863,67 +868,67 @@ class StartStructureDB(QMainWindow):
         self.ui.cellField.setToolTip("Double click on 'Unit Cell' to copy to clipboard.")
         # wR2:
         with suppress(ValueError, TypeError):
-            if cif_dic['_refine_ls_wR_factor_ref']:
-                self.ui.wR2LineEdit.setText(f"{cif_dic['_refine_ls_wR_factor_ref']:>5.4f}")
+            if struct.Residuals._refine_ls_wR_factor_ref:
+                self.ui.wR2LineEdit.setText(f"{struct.Residuals._refine_ls_wR_factor_ref:>5.4f}")
             else:
-                self.ui.wR2LineEdit.setText(f"{cif_dic['_refine_ls_wR_factor_gt']:>5.4f}")
+                self.ui.wR2LineEdit.setText(f"{struct.Residuals._refine_ls_wR_factor_gt:>5.4f}")
         try:  # R1:
-            if cif_dic['_refine_ls_R_factor_gt']:
-                self.ui.r1LineEdit.setText(f"{cif_dic['_refine_ls_R_factor_gt']:>5.4f}")
+            if struct._refine_ls_R_factor_gt:
+                self.ui.r1LineEdit.setText(f"{struct._refine_ls_R_factor_gt:>5.4f}")
             else:
-                self.ui.r1LineEdit.setText(f"{cif_dic['_refine_ls_R_factor_all']:>5.4f}")
+                self.ui.r1LineEdit.setText(f"{struct._refine_ls_R_factor_all:>5.4f}")
         except (ValueError, TypeError):
             pass
-        self.ui.zLineEdit.setText(f"{cif_dic['_cell_formula_units_Z']}")
+        self.ui.zLineEdit.setText(f"{struct._cell_formula_units_Z}")
         try:
             sumform = misc.format_sum_formula(self.structures.get_calc_sum_formula(structure_id))
         except KeyError:
             sumform = ''
         if sumform == '':
             # Display this as last resort:
-            sumform = cif_dic['_chemical_formula_sum']
+            sumform = struct['_chemical_formula_sum']
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         self.ui.SumformLabel.setText(f"{sumform}")
-        self.ui.reflTotalLineEdit.setText(f"{cif_dic['_diffrn_reflns_number']}")
-        self.ui.uniqReflLineEdit.setText(f"{cif_dic['_refine_ls_number_reflns']}")
-        self.ui.refl2sigmaLineEdit.setText(f"{cif_dic['_reflns_number_gt']}")
-        self.ui.goofLineEdit.setText(f"{cif_dic['_refine_ls_goodness_of_fit_ref']}")
-        it_num = cif_dic['_space_group_IT_number']
+        self.ui.reflTotalLineEdit.setText(f"{struct['_diffrn_reflns_number']}")
+        self.ui.uniqReflLineEdit.setText(f"{struct['_refine_ls_number_reflns']}")
+        self.ui.refl2sigmaLineEdit.setText(f"{struct['_reflns_number_gt']}")
+        self.ui.goofLineEdit.setText(f"{struct['_refine_ls_goodness_of_fit_ref']}")
+        it_num = struct['_space_group_IT_number']
         if it_num:
             it_num = f"({it_num})"
-        self.ui.SpaceGroupLineEdit.setText(f"{cif_dic['_space_group_name_H_M_alt']} {it_num}")
-        self.ui.temperatureLineEdit.setText(f"{cif_dic['_diffrn_ambient_temperature']}")
-        self.ui.maxShiftLineEdit.setText(f"{cif_dic['_refine_ls_shift_su_max']}")
-        peak = cif_dic['_refine_diff_density_max']
+        self.ui.SpaceGroupLineEdit.setText(f"{struct['_space_group_name_H_M_alt']} {it_num}")
+        self.ui.temperatureLineEdit.setText(f"{struct['_diffrn_ambient_temperature']}")
+        self.ui.maxShiftLineEdit.setText(f"{struct['_refine_ls_shift_su_max']}")
+        peak = struct['_refine_diff_density_max']
         if peak:
-            self.ui.peakLineEdit.setText(f"{peak} / {cif_dic['_refine_diff_density_min']}")
-        self.ui.rintLineEdit.setText(f"{cif_dic['_diffrn_reflns_av_R_equivalents']}")
-        self.ui.rsigmaLineEdit.setText(f"{cif_dic['_diffrn_reflns_av_unetI_netI']}")
-        self.ui.cCDCNumberLineEdit.setText(f"{cif_dic['_database_code_depnum_ccdc_archive']}")
+            self.ui.peakLineEdit.setText(f"{peak} / {struct['_refine_diff_density_min']}")
+        self.ui.rintLineEdit.setText(f"{struct['_diffrn_reflns_av_R_equivalents']}")
+        self.ui.rsigmaLineEdit.setText(f"{struct['_diffrn_reflns_av_unetI_netI']}")
+        self.ui.cCDCNumberLineEdit.setText(f"{struct['_database_code_depnum_ccdc_archive']}")
         try:
-            self.ui.flackXLineEdit.setText(f"{cif_dic['_refine_ls_abs_structure_Flack']}")
+            self.ui.flackXLineEdit.setText(f"{struct['_refine_ls_abs_structure_Flack']}")
         except KeyError:
             pass
         try:
-            dat_param = cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters']
+            dat_param = struct['_refine_ls_number_reflns'] / struct['_refine_ls_number_parameters']
         except (ValueError, ZeroDivisionError, TypeError):
             dat_param = 0.0
         self.ui.dataReflnsLineEdit.setText(f"{dat_param:<5.1f}")
-        self.ui.numParametersLineEdit.setText(f"{cif_dic['_refine_ls_number_parameters']}")
-        wavelen = cif_dic['_diffrn_radiation_wavelength']
-        thetamax = cif_dic['_diffrn_reflns_theta_max']
+        self.ui.numParametersLineEdit.setText(f"{struct['_refine_ls_number_parameters']}")
+        wavelen = struct['_diffrn_radiation_wavelength']
+        thetamax = struct['_diffrn_reflns_theta_max']
         # d = lambda/2sin(theta):
         try:
             d = wavelen / (2 * sin(radians(thetamax)))
         except(ZeroDivisionError, TypeError):
             d = 0.0
-        self.ui.numRestraintsLineEdit.setText(f"{cif_dic['_refine_ls_number_restraints']}")
+        self.ui.numRestraintsLineEdit.setText(f"{struct['_refine_ls_number_restraints']}")
         self.ui.thetaMaxLineEdit.setText(f"{thetamax}")
-        self.ui.thetaFullLineEdit.setText(f"{cif_dic['_diffrn_reflns_theta_full']}")
+        self.ui.thetaFullLineEdit.setText(f"{struct['_diffrn_reflns_theta_full']}")
         self.ui.dLineEdit.setText(f"{d:5.3f}")
-        self.ui.lastModifiedLineEdit.setText(cif_dic['modification_time'])
+        self.ui.lastModifiedLineEdit.setText(struct['modification_time'])
         try:
-            compl = cif_dic['_diffrn_measured_fraction_theta_max'] * 100
+            compl = struct['_diffrn_measured_fraction_theta_max'] * 100
             if not compl:
                 compl = 0.0
         except TypeError:
@@ -936,15 +941,15 @@ class StartStructureDB(QMainWindow):
         self.ui.allCifTreeWidget.clear()
         # This makes selection slow and is not really needed:
         # atoms_item = QtWidgets.QTreeWidgetItem()
-        for key, value in cif_dic.items():
+        for key, value in struct.items():
             if key == "_shelx_res_file":
-                self.ui.SHELXplainTextEdit.setPlainText(cif_dic['_shelx_res_file'])
+                self.ui.SHELXplainTextEdit.setPlainText(struct['_shelx_res_file'])
                 continue
             cif_tree_item = QTreeWidgetItem()
             self.ui.allCifTreeWidget.addTopLevelItem(cif_tree_item)
             cif_tree_item.setText(0, str(key))
             cif_tree_item.setText(1, str(value))
-        if not cif_dic['_shelx_res_file']:
+        if not struct['_shelx_res_file']:
             self.ui.SHELXplainTextEdit.setPlainText("No SHELXL res file in cif found.")
         # self.ui.cifList_treeWidget.sortByColumn(0, 0)
         self.ui.allCifTreeWidget.resizeColumnToContents(0)
@@ -1121,7 +1126,9 @@ class StartStructureDB(QMainWindow):
         self.close_db()
         self.clear_fields()
         self.dbfilename = file_name
-        self.structures = database_handler.StructureTable(self.dbfilename)
+        url_object = sa.URL.create("sqlite", database=self.dbfilename)
+        self.engine = sa.create_engine(url_object, echo=True)
+        self.Session: sessionmaker = sessionmaker(self.engine)
         try:
             self.show_full_list()
         except DatabaseError:
@@ -1144,8 +1151,9 @@ class StartStructureDB(QMainWindow):
         return True
 
     def display_number_of_structures(self):
-        number = self.structures.get_largest_id()
-        self.ui.statusbar.showMessage(f'Database with {number} structures loaded.')
+        with self.Session() as session:
+            num = session.query(Structure).count()
+            self.ui.statusbar.showMessage(f'Database with {num} structures loaded.')
 
     def get_name_from_p4p(self):
         """
@@ -1222,15 +1230,12 @@ class StartStructureDB(QMainWindow):
         Displays the complete list of structures
         [structure_id, meas, path, filename, data]
         """
-        data = []
-        try:
-            if not self.structures:
-                return None
-        except Exception:
-            return None
-        if self.structures:
-            data = self.structures.get_all_structure_names()
-            self.set_model_from_data(data)
+        connection = self.engine.connect()
+        req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
+                        FROM Structure AS str
+                        INNER JOIN Residuals AS res ON res.StructureId == str.Id '''
+        data = connection.execute(sa.text(req)).fetchall()
+        self.set_model_from_data(data)
         self.full_list = True
         self.ui.SpGrpComboBox.setCurrentIndex(0)
         self.ui.adv_elementsIncLineEdit.clear()
