@@ -9,6 +9,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPalette, QImage, QResizeEvent
 
+from structurefinder.searcher.mapping import Atoms
 from structurefinder.shelxfile.elements import get_radius_from_element, element2color
 
 """
@@ -62,13 +63,13 @@ class MoleculeWidget(QtWidgets.QWidget):
         self.labels = value
         self.update()
 
-    def open_molecule(self, atoms: List['Atomtuple'], labels=False):
+    def open_molecule(self, atoms: List[Atoms], labels=False):
         self.labels = labels
         self.atoms.clear()
         for at in atoms:
-            if at[0].startswith('Q'):
+            if at.Name.startswith('Q'):
                 continue
-            self.atoms.append(Atom(at[2], at[3], at[4], at[0], at[1], at[5]))
+            self.atoms.append(Atom(at.xc, at.yc, at.zc, at.Name, at.element, at.part))
         if len(self.atoms) > 400:
             self.bond_width = 1
         self.connections = self.get_conntable_from_atoms()

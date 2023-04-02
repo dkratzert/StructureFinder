@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from sqlalchemy import Column, Date, Float, ForeignKey, Index, Integer, String, Text, inspect
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped
@@ -17,14 +17,14 @@ class Structure(Base):
     __tablename__ = 'Structure'
 
     Id = Column(Integer, primary_key=True)
-    measurement = Column(ForeignKey('Structure.Id'), nullable=False)
+    measurement = Column(ForeignKey('Structure.Id'), nullable=True)
     path = Column(Text)
     filename = Column(Text)
     dataname = Column(Text)
 
     Structure = relationship('Structure', remote_side=[Id], back_populates='Structure_reverse')
     Structure_reverse = relationship('Structure', remote_side=[measurement], back_populates='Structure')
-    Atoms: Mapped['Atoms'] = relationship('Atoms', back_populates='Structure_')
+    Atoms: Mapped[List['Atoms']] = relationship('Atoms')
     Residuals: Mapped['Residuals'] = relationship('Residuals', back_populates='Structure_')
     authors: Mapped['Authors'] = relationship('Authors', back_populates='Structure_')
     cell: Mapped['Cell'] = relationship('Cell', back_populates='Structure_', uselist=False)
@@ -61,7 +61,7 @@ class Atoms(Base):
     yc = Column(Float)
     zc = Column(Float)
 
-    Structure_ = relationship('Structure', back_populates='Atoms')
+    Structure_: Mapped["Structure"] = relationship('Structure', back_populates='Atoms')
 
 
 class Residuals(Base):
@@ -81,7 +81,7 @@ class Residuals(Base):
     _space_group_centring_type = Column(Text)
     _space_group_IT_number = Column(Integer)
     _space_group_crystal_system = Column(Text)
-    _space_group_symop_operation_xyz = Column(Text)
+    _space_group_symop_operation_xyz: Mapped[str] = Column(Text)
     _audit_creation_method = Column(Text)
     _chemical_formula_sum = Column(Text)
     _chemical_formula_weight = Column(Text)

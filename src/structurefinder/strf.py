@@ -33,7 +33,7 @@ from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelectio
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox, QPushButton
 import sqlalchemy as sa
-from sqlalchemy.orm import sessionmaker, load_only
+from sqlalchemy.orm import sessionmaker, load_only, joinedload, subqueryload
 from sqlalchemy.sql.functions import count
 
 from structurefinder.displaymol.sdm import SDM
@@ -45,7 +45,7 @@ from structurefinder.misc.settings import StructureFinderSettings
 from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
 from structurefinder.searcher import database_handler, constants
 from structurefinder.searcher.filecrawler import excluded_names
-from structurefinder.searcher.mapping import Structure, Residuals, Cell
+from structurefinder.searcher.mapping import Structure, Residuals, Cell, Atoms
 from structurefinder.searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
 
@@ -85,7 +85,6 @@ TODO:
 - Use spellfix for text search: https://www.sqlite.org/spellfix1.html
 
 Search for:
-- draw structure (with JSME? Acros? Kekule?, https://github.com/ggasoftware/ketcher)
 - compare  molecules https://groups.google.com/forum/#!msg/networkx-discuss/gC_-Wc0bRWw/ISRZYFsPCQAJ
   - search algorithms
   http://chemmine.ucr.edu/help/#similarity, https://en.wikipedia.org/wiki/Jaccard_index
@@ -118,6 +117,7 @@ from structurefinder.gui.strf_main import Ui_stdbMainwindow
 class StartStructureDB(QMainWindow):
     def __init__(self, db_file_name: str = '', *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.structure: Optional[Structure] = None
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
         font = QtGui.QFont()
@@ -135,7 +135,6 @@ class StartStructureDB(QMainWindow):
         self.ui.statusbar.addWidget(self.progress)
         self.ui.appendDirButton.setDisabled(True)
         self.ui.statusbar.addWidget(self.abort_import_button)
-        self.structures: Optional[database_handler.StructureTable] = None
         self.apx = None
         self.structureId = 0
         self.passwd = ''
@@ -158,8 +157,8 @@ class StartStructureDB(QMainWindow):
         # self.ui.cifList_tableView.addAction(self.ui.actionGo_to_All_CIF_Tab)
         if db_file_name:
             self.open_database_file(db_file_name)
-        if self.structures:
-            self.set_model_from_data(self.structures.get_all_structure_names())
+        data = self.get_all_structures()
+        self.set_model_from_data(data)
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
@@ -745,7 +744,8 @@ class StartStructureDB(QMainWindow):
         self.structureId = structure_id
         with self.Session() as session:
             stmt = sa.select(Structure).filter_by(Id=self.structureId)
-            self.display_properties(structure_id, session.scalar(stmt))
+            self.structure = session.scalar(stmt)
+            self.display_properties(structure_id, self.structure)
         return True
 
     def export_current_cif(self):
@@ -805,20 +805,20 @@ class StartStructureDB(QMainWindow):
             super().keyPressEvent(q_key_event)
 
     def view_molecule(self) -> None:
-        return
-        cell = self.structures.get_cell_by_id(self.structureId)
+        cell = self.structure.cell
         if not cell:
             print('No cell found')
             return
         if self.ui.growCheckBox.isChecked():
-            symmcards = [x.split(',') for x in self.structures.get_row_as_dict(self.structureId)
-            ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+            symstring = self.structure.Residuals._space_group_symop_operation_xyz
+            symmcards = [x.split(',') for x in symstring.replace("'", "").replace(" ", "").split("\n")]
+            #
             if symmcards[0] == ['']:
                 print('Cif file has no symmcards, unable to grow structure.')
                 self.show_asymmetric_unit()
                 return
             self.ui.molGroupBox.setTitle('Completed Molecule')
-            atoms = self.structures.get_atoms_table(self.structureId, cartesian=False, as_list=True)
+            atoms = self.structure.Atoms
             if atoms:
                 sdm = SDM(atoms, symmcards, cell)
                 needsymm = sdm.calc_sdm()
@@ -829,9 +829,11 @@ class StartStructureDB(QMainWindow):
 
     def show_asymmetric_unit(self):
         self.ui.molGroupBox.setTitle('Asymmetric Unit')
-        atoms = self.structures.get_atoms_table(self.structureId, cartesian=True, as_list=False)
+        # atoms = self.structures.get_atoms_table(self.structureId, cartesian=True, as_list=False)
+        atoms = self.structure.Atoms
         if atoms:
-            self.ui.render_widget.open_molecule(atoms, labels=self.ui.labelsCheckBox.isChecked())
+            self.ui.render_widget.open_molecule(atoms,
+                                                labels=self.ui.labelsCheckBox.isChecked())
 
     def redraw_molecule(self) -> None:
         self.view_molecule()
@@ -883,7 +885,7 @@ class StartStructureDB(QMainWindow):
             pass
         self.ui.zLineEdit.setText(f"{residuals._cell_formula_units_Z}")
         try:
-            sumform = ''#misc.format_sum_formula(self.structures.get_calc_sum_formula(structure_id))
+            sumform = ''  # misc.format_sum_formula(self.structures.get_calc_sum_formula(structure_id))
         except KeyError:
             sumform = ''
         if sumform == '':
@@ -1131,17 +1133,7 @@ class StartStructureDB(QMainWindow):
         url_object = sa.URL.create("sqlite", database=self.dbfilename)
         self.engine = sa.create_engine(url_object, echo=True)
         self.Session: sessionmaker = sessionmaker(self.engine)
-        try:
-            self.show_full_list()
-        except DatabaseError:
-            self.moving_message('Database file is corrupt!')
-            self.close_db()
-            return False
-        try:
-            if self.structures:
-                pass
-        except (TypeError, ProgrammingError):
-            return False
+        self.show_full_list()
         print("Opened {}.".format(file_name))
         self.settings.save_current_work_dir(str(Path(file_name).resolve().parent))
         self.ui.saveDatabaseButton.setEnabled(True)
@@ -1232,11 +1224,7 @@ class StartStructureDB(QMainWindow):
         Displays the complete list of structures
         [structure_id, meas, path, filename, data]
         """
-        connection = self.engine.connect()
-        req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
-                        FROM Structure AS str
-                        INNER JOIN Residuals AS res ON res.StructureId == str.Id '''
-        data = connection.execute(sa.text(req)).fetchall()
+        data = self.get_all_structures()
         self.set_model_from_data(data)
         self.full_list = True
         self.ui.SpGrpComboBox.setCurrentIndex(0)
@@ -1252,6 +1240,14 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
+
+    def get_all_structures(self):
+        connection = self.engine.connect()
+        req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
+                        FROM Structure AS str
+                        INNER JOIN Residuals AS res ON res.StructureId == str.Id '''
+        data = connection.execute(sa.text(req)).fetchall()
+        return data
 
     def clear_fields(self) -> None:
         """

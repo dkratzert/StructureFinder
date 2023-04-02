@@ -12,33 +12,29 @@
 
 
 import time
+from dataclasses import dataclass
 from math import sqrt, cos, radians, sin
-from typing import Union
+from typing import List, Optional
 
 from numpy.random._common import namedtuple
 
+from structurefinder.searcher.mapping import Cell, Atoms
 from structurefinder.shelxfile.dsrmath import SymmetryElement, Matrix, Array, frac_to_cart
 from structurefinder.shelxfile.elements import get_radius_from_element
 
 DEBUG = False
 
 
-class Atom():
-    def __init__(self, name, element, x, z, y, part):
-        self._dict = {'name': name, 'element': element, 'x': x, 'y': y, 'z': z,
-                      'part': part, 'molindex': None}
-
-    def __getitem__(self, key):
-        return self._dict[key]
-
-    def __repr__(self):
-        return "Atom: " + repr(self._dict)
-
-    def __setitem__(self, key, val):
-        self._dict[key] = val
-
-    def __iter__(self):
-        return iter(['name', 'element', 'x', 'y', 'z', 'part', 'molindex'])
+@dataclass(frozen=False)
+class Atom:
+    name: str
+    element: str
+    x: float
+    y: float
+    z: float
+    part: int
+    occ: float
+    maxmol: int
 
 
 class SymmCards():
@@ -75,7 +71,7 @@ class SymmCards():
         :return: None
         """
         newSymm = SymmetryElement(symmData)
-        if not newSymm in self._symmcards:
+        if newSymm not in self._symmcards:
             self._symmcards.append(newSymm)
 
 
@@ -84,9 +80,9 @@ class SDMItem(object):
 
     def __init__(self):
         self.dist = 0.0
-        self.atom1 = None
+        self.atom1: Optional['Atoms'] = None
         self.a1 = 0
-        self.atom2 = None
+        self.atom2: Optional['Atoms'] = None
         self.a2 = 0
         self.symmetry_number = 0
         self.covalent = True
@@ -101,13 +97,12 @@ class SDMItem(object):
         return False
 
     def __repr__(self):
-        return '{} {} {} {} dist: {} coval: {} sn: {} {}'.format(self.atom1.name, self.atom2.name, self.a1, self.a2,
-                                                                 self.dist, self.covalent,
-                                                                 self.symmetry_number, self.dddd)
+        return f'{self.atom1.Name} {self.atom2.Name} {self.a1} {self.a2} ' \
+               f'dist: {self.dist} coval: {self.covalent} sn: {self.symmetry_number} {self.dddd}'
 
 
 class SDM():
-    def __init__(self, atoms: Union[list, tuple], symmlist: list, cell: list, centric=False):
+    def __init__(self, atoms: List[Atoms], symmlist: list, cell: Cell, centric=False):
         """
         Calculates the shortest distance matrix
                         0      1      2  3  4   5     6          7
@@ -123,15 +118,15 @@ class SDM():
         for s in symmlist:
             self.symmcards.append(s)
         self.cell = cell
-        self.cosal = cos(radians(cell[3]))
-        self.cosbe = cos(radians(cell[4]))
-        self.cosga = cos(radians(cell[5]))
-        self.aga = self.cell[0] * self.cell[1] * self.cosga
-        self.bbe = self.cell[0] * self.cell[2] * self.cosbe
-        self.cal = self.cell[1] * self.cell[2] * self.cosal
-        self.asq = self.cell[0] ** 2
-        self.bsq = self.cell[1] ** 2
-        self.csq = self.cell[2] ** 2
+        self.cosal = cos(radians(cell.alpha))
+        self.cosbe = cos(radians(cell.beta))
+        self.cosga = cos(radians(cell.gamma))
+        self.aga = self.cell.a * self.cell.b * self.cosga
+        self.bbe = self.cell.a * self.cell.c * self.cosbe
+        self.cal = self.cell.b * self.cell.c * self.cosal
+        self.asq = self.cell.a ** 2
+        self.bsq = self.cell.b ** 2
+        self.csq = self.cell.c ** 2
         self.sdm_list = []  # list of sdmitems
         self.maxmol = 1
         self.sdmtime = 0
@@ -141,19 +136,19 @@ class SDM():
         Converts von fractional to cartesian by .
         Invert the matrix to do the opposite.
         """
-        return Matrix([[self.cell[0], self.cell[1] * cos(self.cell[5]), self.cell[2] * cos(self.cell[4])],
-                       [0, self.cell[1] * sin(self.cell[5]),
-                        (self.cell[2] * (cos(self.cell[3]) - cos(self.cell[4]) * cos(self.cell[5])) / sin(
-                            self.cell[5]))],
-                       [0, 0, self.cell[6] / (self.cell[0] * self.cell[1] * sin(self.cell[5]))]])
+        return Matrix([[self.cell.a, self.cell.b * cos(self.cell.gamma), self.cell.c * cos(self.cell.beta)],
+                       [0, self.cell.b * sin(self.cell.gamma),
+                        (self.cell.c * (cos(self.cell.alpha) - cos(self.cell.beta) * cos(self.cell.gamma))
+                         / sin(self.cell.gamma))],
+                       [0, 0, self.cell.volume / (self.cell.a * self.cell.b * sin(self.cell.gamma))]])
 
     def calc_sdm(self) -> list:
         t1 = time.perf_counter()
         h = {'H', 'D'}
         nlen = len(self.symmcards)
-        at2_plushalf = [Array([j + 0.5 for j in x[2:5]]) for x in self.atoms]
+        at2_plushalf = [Array([j + 0.5 for j in (x.x, x.y, x.z)]) for x in self.atoms]
         for i, at1 in enumerate(self.atoms):
-            prime_array = [Array(at1[2:5]) * symop.matrix + symop.trans for symop in self.symmcards]
+            prime_array = [Array((at1.x, at1.y, at1.z)) * symop.matrix + symop.trans for symop in self.symmcards]
             for j, at2 in enumerate(self.atoms):
                 mind = 1000000
                 hma = False
@@ -179,9 +174,9 @@ class SDM():
                 if not sdm_item.atom1:
                     # Do not grow grown atoms:
                     continue
-                if (sdm_item.atom1[1] not in h and sdm_item.atom2[1] not in h) and \
-                    sdm_item.atom1[5] * sdm_item.atom2[5] == 0 or sdm_item.atom1[5] == sdm_item.atom2[5]:
-                    dddd = (get_radius_from_element(at1[1]) + get_radius_from_element(at2[1])) * 1.2
+                if (sdm_item.atom1.element not in h and sdm_item.atom2.element not in h) and \
+                    sdm_item.atom1.part * sdm_item.atom2.part == 0 or sdm_item.atom1.part == sdm_item.atom2.part:
+                    dddd = (get_radius_from_element(at1.element) + get_radius_from_element(at2.element)) * 1.2
                     sdm_item.dddd = dddd
                 else:
                     dddd = 0.0
@@ -211,21 +206,21 @@ class SDM():
                 if sdm_item.atom1[-1] < 1 or sdm_item.atom1[-1] > 6:
                     continue
                 for n, symop in enumerate(self.symmcards):
-                    if sdm_item.atom1[5] * sdm_item.atom2[5] != 0 and \
-                        sdm_item.atom1[5] != sdm_item.atom2[5]:
+                    if sdm_item.atom1.part * sdm_item.atom2.part != 0 and \
+                        sdm_item.atom1.part != sdm_item.atom2.part:
                         continue
                     # Both the same atomic number and number 0 (hydrogen)
-                    if sdm_item.atom1[1] == sdm_item.atom2[1] and sdm_item.atom1[1] in h:
+                    if sdm_item.atom1.element == sdm_item.atom2.element and sdm_item.atom1.element in h:
                         continue
-                    prime = Array(sdm_item.atom1[2:5]) * symop.matrix + symop.trans
-                    D = prime - Array(sdm_item.atom2[2:5]) + Array([0.5, 0.5, 0.5])
+                    prime = Array((sdm_item.atom1.x, sdm_item.atom1.y, sdm_item.atom1.z)) * symop.matrix + symop.trans
+                    D = prime - Array((sdm_item.atom2.x, sdm_item.atom2.y, sdm_item.atom2.z)) + Array([0.5, 0.5, 0.5])
                     floorD = D.floor
                     dp = D - floorD - Array([0.5, 0.5, 0.5])
                     if n == 0 and Array([0, 0, 0]) == floorD:
                         continue
                     dk = self.vector_length(*dp)
                     dddd = sdm_item.dist + 0.2
-                    if sdm_item.atom1[1] in h and sdm_item.atom2[1] in h:
+                    if sdm_item.atom1.element in h and sdm_item.atom2.element in h:
                         dddd = 1.8
                     if (dk > 0.001) and (dddd >= dk):
                         bs = [n + 1, (5 - floorD[0]), (5 - floorD[1]), (5 - floorD[2]), sdm_item.atom1[-1]]
@@ -299,9 +294,9 @@ class SDM():
                         showatoms.append(new)
         cart_atoms = []
         Atom = namedtuple('Atom', 'label, type, x, y, z, part')
-        cell = self.cell[:6]
         for at in showatoms:
-            x, y, z = frac_to_cart([at[2], at[3], at[4]], cell)
+            x, y, z = frac_to_cart([at[2], at[3], at[4]], [self.cell.a, self.cell.b,
+                                                           self.cell.alpha, self.cell.beta, self.cell.gamma])
             cart_atoms.append(Atom(label=at[0], type=at[1], x=x, y=y, z=z, part=at[5]))
         return cart_atoms
 
@@ -315,9 +310,7 @@ def make_molecule(cif) -> list:
 
 
 if __name__ == "__main__":
-    from pathlib import Path
-    from molecule2D import display
-    from pathlib import Path
+    pass
     # cif = CifContainer(Path('tests/test-data/4060314.cif'))
     # atoms = make_molecule(cif)
     # display(atoms)

@@ -14,7 +14,7 @@ import string
 from collections import namedtuple
 from math import sqrt, radians, cos, sin, acos, degrees, floor
 from operator import sub, add
-from typing import Union
+from typing import Union, Generator
 
 frac = namedtuple('Frac', "num, den")
 
@@ -69,10 +69,10 @@ class Array(object):
     """
     __slots__ = ['values']
 
-    def __init__(self, values: list):
+    def __init__(self, values: Union[list, tuple]):
         self.values = values
 
-    def __iter__(self) -> iter:
+    def __iter__(self) -> Generator:
         for v in self.values:
             yield v
 
