@@ -18,7 +18,7 @@ from typing import List, Optional
 
 from numpy.random._common import namedtuple
 
-from structurefinder.searcher.mapping import Cell, Atoms
+from structurefinder.db.mapping import Cell, Atoms
 from structurefinder.shelxfile.dsrmath import SymmetryElement, Matrix, Array, frac_to_cart
 from structurefinder.shelxfile.elements import get_radius_from_element
 
@@ -26,15 +26,15 @@ DEBUG = False
 
 
 @dataclass(frozen=False)
-class Atom:
+class SDMAtom:
     name: str
     element: str
     x: float
     y: float
     z: float
     part: int
-    occ: float
-    maxmol: int
+    occ: float = 1.0
+    molindex: int = 1
 
 
 class SymmCards():
@@ -128,7 +128,7 @@ class SDM():
         self.bsq = self.cell.b ** 2
         self.csq = self.cell.c ** 2
         self.sdm_list = []  # list of sdmitems
-        self.maxmol = 1
+        self.molindex = 1
         self.sdmtime = 0
 
     def orthogonal_matrix(self):
@@ -194,7 +194,7 @@ class SDM():
         self.calc_molindex(self.atoms)
         need_symm = self.collect_needed_symmetry()
         if DEBUG:
-            print("The asymmetric unit contains {} fragments.".format(self.maxmol))
+            print("The asymmetric unit contains {} fragments.".format(self.molindex))
         return need_symm
 
     def collect_needed_symmetry(self) -> list:
@@ -203,7 +203,7 @@ class SDM():
         # Collect needsymm list:
         for sdm_item in self.sdm_list:
             if sdm_item.covalent:
-                if sdm_item.atom1[-1] < 1 or sdm_item.atom1[-1] > 6:
+                if sdm_item.atom1.molindex < 1 or sdm_item.atom1.molindex > 6:
                     continue
                 for n, symop in enumerate(self.symmcards):
                     if sdm_item.atom1.part * sdm_item.atom2.part != 0 and \
@@ -223,7 +223,7 @@ class SDM():
                     if sdm_item.atom1.element in h and sdm_item.atom2.element in h:
                         dddd = 1.8
                     if (dk > 0.001) and (dddd >= dk):
-                        bs = [n + 1, (5 - floorD[0]), (5 - floorD[1]), (5 - floorD[2]), sdm_item.atom1[-1]]
+                        bs = [n + 1, (5 - floorD[0]), (5 - floorD[1]), (5 - floorD[2]), sdm_item.atom1.molindex]
                         if bs not in need_symm:
                             need_symm.append(bs)
         return need_symm
@@ -233,25 +233,25 @@ class SDM():
         someleft = 1
         nextmol = 1
         for at in all_atoms:
-            at.append(-1)
-        all_atoms[0][-1] = 1
+            at.molindex = -1
+        all_atoms[0].molindex = 1
         while nextmol:
             someleft = 1
             nextmol = 0
             while someleft:
                 someleft = 0
                 for sdm_item in self.sdm_list:
-                    if sdm_item.covalent and sdm_item.atom1[-1] * sdm_item.atom2[-1] < 0:
-                        sdm_item.atom1[-1] = self.maxmol  # last item is the molindex
-                        sdm_item.atom2[-1] = self.maxmol
+                    if sdm_item.covalent and sdm_item.atom1.molindex * sdm_item.atom2.molindex < 0:
+                        sdm_item.atom1.molindex = self.molindex  # last item is the molindex
+                        sdm_item.atom2.molindex = self.molindex
                         someleft += 1
             for ni, at in enumerate(all_atoms):
-                if at[-1] < 0:
+                if at.molindex < 0:
                     nextmol = ni
                     break
             if nextmol:
-                self.maxmol += 1
-                all_atoms[nextmol][-1] = self.maxmol
+                self.molindex += 1
+                all_atoms[nextmol][-1] = self.molindex
 
     def vector_length(self, x: float, y: float, z: float) -> float:
         """
@@ -263,6 +263,8 @@ class SDM():
     def packer(self, sdm: 'SDM', need_symm: list, with_qpeaks=False):
         """
         Packs atoms of the asymmetric unit to real molecules.
+                        0      1      2  3  4   5       6          7
+        :param atoms: [Name, Element, X, Y, Z, Part, ocuupancy, molindex -> (later)]
         """
         showatoms = list(self.atoms)
         new_atoms = []
@@ -273,17 +275,17 @@ class SDM():
             l -= 5
             s -= 1
             for atom in self.atoms:
-                if atom[-1] == symmgroup:
-                    coords = Array(atom[2:5]) * self.symmcards[s].matrix \
+                if atom.molindex == symmgroup:
+                    coords = Array((atom.x, atom.y, atom.z)) * self.symmcards[s].matrix \
                              + Array(self.symmcards[s].trans) + Array([h, k, l])
                     # The new atom:
-                    new = [atom[0], atom[1]] + list(coords) + [atom[5], atom[6], atom[7], 'symmgen']
+                    new = [atom.Name, atom.element] + list(coords) + [atom.part, atom.occupancy, atom.molindex, 'symmgen']
                     new_atoms.append(new)
                     isthere = False
                     # Only add atom if its occupancy (new[5]) is greater zero:
                     if new[5] >= 0:
                         for atom in showatoms:
-                            if atom[5] != new[5]:
+                            if atom.part != new[5]:
                                 continue
                             length = sdm.vector_length(new[2] - atom[2],
                                                        new[3] - atom[3],
@@ -293,11 +295,10 @@ class SDM():
                     if not isthere:
                         showatoms.append(new)
         cart_atoms = []
-        Atom = namedtuple('Atom', 'label, type, x, y, z, part')
         for at in showatoms:
             x, y, z = frac_to_cart([at[2], at[3], at[4]], [self.cell.a, self.cell.b,
                                                            self.cell.alpha, self.cell.beta, self.cell.gamma])
-            cart_atoms.append(Atom(label=at[0], type=at[1], x=x, y=y, z=z, part=at[5]))
+            cart_atoms.append(SDMAtom(name=at[0], element=at[1], x=x, y=y, z=z, part=at[5]))
         return cart_atoms
 
 

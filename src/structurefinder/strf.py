@@ -23,7 +23,7 @@ from datetime import date
 from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
-from sqlite3 import DatabaseError, ProgrammingError, OperationalError
+from sqlite3 import OperationalError
 from typing import Union, Optional
 
 import gemmi.cif
@@ -33,8 +33,7 @@ from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelectio
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox, QPushButton
 import sqlalchemy as sa
-from sqlalchemy.orm import sessionmaker, load_only, joinedload, subqueryload
-from sqlalchemy.sql.functions import count
+from sqlalchemy.orm import sessionmaker
 
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.table_model import TableModel
@@ -45,7 +44,7 @@ from structurefinder.misc.settings import StructureFinderSettings
 from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
 from structurefinder.searcher import database_handler, constants
 from structurefinder.searcher.filecrawler import excluded_names
-from structurefinder.searcher.mapping import Structure, Residuals, Cell, Atoms
+from structurefinder.db.mapping import Structure, Cell
 from structurefinder.searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
 

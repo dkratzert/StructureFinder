@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from sqlalchemy import Column, Date, Float, ForeignKey, Index, Integer, String, Text, inspect
+from sqlalchemy import Column, Date, Float, ForeignKey, Index, Integer, String, Text, inspect, alias
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped
 
 
@@ -47,6 +47,7 @@ class Measurement(Base):
 
 class Atoms(Base):
     __tablename__ = 'Atoms'
+    molindex: int = 0
 
     Id = Column(Integer, primary_key=True)
     StructureId = Column(ForeignKey('Structure.Id'), nullable=False)
