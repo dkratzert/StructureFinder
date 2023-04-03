@@ -218,6 +218,12 @@ class StartStructureDB(QMainWindow):
         self.ui.cellcheckExePushButton.clicked.connect(self.browse_for_ccdc_exe)
         self.ui.appendDatabasePushButton.clicked.connect(self.append_database)
         self.ui.labelsCheckBox.toggled.connect(self.show_labels)
+        self.ui.helpPushButton.clicked.connect(self.show_help)
+
+    def show_help(self) -> None:
+        from PyQt5 import QtCore
+        from PyQt5.QtGui import QDesktopServices
+        QDesktopServices.openUrl(QtCore.QUrl('https://dkratzert.de/files/structurefinder/docs/'))
 
     def show_labels(self, value: bool):
         self.ui.render_widget.show_labels(value)

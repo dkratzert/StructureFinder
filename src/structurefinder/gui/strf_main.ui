@@ -239,6 +239,13 @@
          </property>
         </spacer>
        </item>
+       <item>
+        <widget class="QPushButton" name="helpPushButton">
+         <property name="text">
+          <string>Help</string>
+         </property>
+        </widget>
+       </item>
        <item alignment="Qt::AlignLeft">
         <widget class="QPushButton" name="closeDatabaseButton">
          <property name="sizePolicy">
