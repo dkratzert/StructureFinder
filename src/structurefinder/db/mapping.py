@@ -25,7 +25,7 @@ class Structure(Base):
     Structure = relationship('Structure', remote_side=[Id], back_populates='Structure_reverse')
     Structure_reverse = relationship('Structure', remote_side=[measurement], back_populates='Structure')
     Atoms: Mapped[List['Atoms']] = relationship('Atoms')
-    Residuals: Mapped['Residuals'] = relationship('Residuals', back_populates='Structure_')
+    Residuals: Mapped['Residuals'] = relationship('Residuals')
     authors: Mapped['Authors'] = relationship('Authors', back_populates='Structure_')
     cell: Mapped['Cell'] = relationship('Cell', back_populates='Structure_', uselist=False)
     sum_formula: Mapped['SumFormula'] = relationship('SumFormula', back_populates='Structure_')
@@ -134,7 +134,7 @@ class Residuals(Base):
     modification_time = Column(Date)
     file_size = Column(Integer)
 
-    Structure_ = relationship('Structure', back_populates='Residuals')
+    Structure_: Mapped["Structure"] = relationship('Structure', back_populates='Residuals')
 
 
 class Authors(Base):

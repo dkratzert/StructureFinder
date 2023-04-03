@@ -35,6 +35,7 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidget
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 
+from structurefinder.db.database import DB
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.table_model import TableModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
@@ -116,7 +117,6 @@ from structurefinder.gui.strf_main import Ui_stdbMainwindow
 class StartStructureDB(QMainWindow):
     def __init__(self, db_file_name: str = '', *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.structure: Optional[Structure] = None
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
         font = QtGui.QFont()
@@ -149,15 +149,12 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
-        self.engine = None
-        self.Session: Optional[sessionmaker] = None
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         # self.ui.cifList_tableView.addAction(self.ui.actionGo_to_All_CIF_Tab)
+        self.db = DB()
         if db_file_name:
             self.open_database_file(db_file_name)
-        data = self.get_all_structures()
-        self.set_model_from_data(data)
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
@@ -444,7 +441,7 @@ class StartStructureDB(QMainWindow):
     def copyUnitCell(self):
         if self.structureId:
             try:
-                cell = self.structure.cell
+                cell = self.db.structure.cell
                 cell_txt = (f"{cell.a:>6.3f} {cell.b:>6.3f} {cell.c:>6.3f} "
                             f"{cell.alpha:>6.3f} {cell.beta:>6.3f} {cell.gamma:>6.3f}")
                 self.ui.cellSearchCSDLineEdit.setText(cell_txt)
@@ -747,11 +744,9 @@ class StartStructureDB(QMainWindow):
             structure_id = selected.indexes()[0].data()
         except IndexError:
             return False
-        self.structureId = structure_id
-        with self.Session() as session:
-            stmt = sa.select(Structure).filter_by(Id=self.structureId)
-            self.structure = session.scalar(stmt)
-            self.display_properties(structure_id, self.structure)
+        with self.db.Session() as session:
+            self.db.get_structure(session, structure_id)
+            self.display_properties(self.db.structure)
         return True
 
     def export_current_cif(self):
@@ -811,12 +806,12 @@ class StartStructureDB(QMainWindow):
             super().keyPressEvent(q_key_event)
 
     def view_molecule(self) -> None:
-        cell = self.structure.cell
+        cell = self.db.structure.cell
         if not cell:
             print('No cell found')
             return
         if self.ui.growCheckBox.isChecked():
-            symstring = self.structure.Residuals._space_group_symop_operation_xyz
+            symstring = self.db.structure.Residuals._space_group_symop_operation_xyz
             symmcards = [x.split(',') for x in symstring.replace("'", "").replace(" ", "").split("\n")]
             #
             if symmcards[0] == ['']:
@@ -824,7 +819,7 @@ class StartStructureDB(QMainWindow):
                 self.show_asymmetric_unit()
                 return
             self.ui.molGroupBox.setTitle('Completed Molecule')
-            atoms = self.structure.Atoms
+            atoms = self.db.structure.Atoms
             if atoms:
                 sdm = SDM(atoms, symmcards, cell)
                 needsymm = sdm.calc_sdm()
@@ -836,7 +831,7 @@ class StartStructureDB(QMainWindow):
     def show_asymmetric_unit(self):
         self.ui.molGroupBox.setTitle('Asymmetric Unit')
         # atoms = self.structures.get_atoms_table(self.structureId, cartesian=True, as_list=False)
-        atoms = self.structure.Atoms
+        atoms = self.db.structure.Atoms
         if atoms:
             self.ui.render_widget.open_molecule(atoms,
                                                 labels=self.ui.labelsCheckBox.isChecked())
@@ -844,14 +839,16 @@ class StartStructureDB(QMainWindow):
     def redraw_molecule(self) -> None:
         self.view_molecule()
 
-    def display_properties(self, structure_id, struct: Structure):
+    def display_properties(self, struct: Structure):
         """
         Displays the residuals from the cif file
         _refine_ls_number_reflns -> unique reflect. (Independent reflections)
         _reflns_number_gt        -> unique über 2sigma (Independent reflections >2sigma)
         """
+        if not struct:
+            return
         self.clear_fields()
-        cell: Cell = struct.cell  # self.structures.get_cell_by_id(structure_id)
+        cell: Cell = struct.cell
         residuals = struct.Residuals
         if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
             self.ui.cellSearchCSDLineEdit.setText(f"{cell.a:.5f}{cell.b:.5f}{cell.c:.5f}"
@@ -1110,7 +1107,7 @@ class StartStructureDB(QMainWindow):
             pass
         return list(res)
 
-    def get_import_filename_from_dialog(self, directory: str = ''):
+    def get_import_filename_from_dialog(self, directory: str = '') -> str:
         if not directory:
             directory = self.settings.load_last_workdir()
         return QFileDialog.getOpenFileName(self, caption='Open File', directory=directory, filter="*.sqlite; *.sql")[0]
@@ -1132,9 +1129,7 @@ class StartStructureDB(QMainWindow):
         self.close_db()
         self.clear_fields()
         self.dbfilename = file_name
-        url_object = sa.URL.create("sqlite", database=self.dbfilename)
-        self.engine = sa.create_engine(url_object, echo=True)
-        self.Session: sessionmaker = sessionmaker(self.engine)
+        self.db.load_database(Path(file_name))
         self.show_full_list()
         print("Opened {}.".format(file_name))
         self.settings.save_current_work_dir(str(Path(file_name).resolve().parent))
@@ -1147,9 +1142,8 @@ class StartStructureDB(QMainWindow):
         return True
 
     def display_number_of_structures(self):
-        with self.Session() as session:
-            num = session.query(Structure).count()
-            self.ui.statusbar.showMessage(f'Database with {num} structures loaded.')
+        num = self.db.structure_count()
+        self.ui.statusbar.showMessage(f'Database with {num} structures loaded.')
 
     def get_name_from_p4p(self):
         """
@@ -1226,8 +1220,7 @@ class StartStructureDB(QMainWindow):
         Displays the complete list of structures
         [structure_id, meas, path, filename, data]
         """
-        data = self.get_all_structures()
-        self.set_model_from_data(data)
+        self.set_model_from_data(self.db.get_all_structures())
         self.full_list = True
         self.ui.SpGrpComboBox.setCurrentIndex(0)
         self.ui.adv_elementsIncLineEdit.clear()
@@ -1242,14 +1235,6 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
-
-    def get_all_structures(self):
-        connection = self.engine.connect()
-        req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
-                        FROM Structure AS str
-                        INNER JOIN Residuals AS res ON res.StructureId == str.Id '''
-        data = connection.execute(sa.text(req)).fetchall()
-        return data
 
     def clear_fields(self) -> None:
         """
