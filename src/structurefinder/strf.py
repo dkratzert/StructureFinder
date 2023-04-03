@@ -51,7 +51,7 @@ from structurefinder.shelxfile.shelx import ShelXFile
 app = QApplication(sys.argv)
 
 print(sys.version)
-DEBUG = False
+DEBUG = True
 
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core import lattice
@@ -444,17 +444,18 @@ class StartStructureDB(QMainWindow):
     def copyUnitCell(self):
         if self.structureId:
             try:
-                cell = "{:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f} {:>6.3f}" \
-                    .format(*self.structures.get_cell_by_id(self.structureId))
-                self.ui.cellSearchCSDLineEdit.setText(cell)
+                cell = self.structure.cell
+                cell_txt = (f"{cell.a:>6.3f} {cell.b:>6.3f} {cell.c:>6.3f} "
+                            f"{cell.alpha:>6.3f} {cell.beta:>6.3f} {cell.gamma:>6.3f}")
+                self.ui.cellSearchCSDLineEdit.setText(cell_txt)
             except Exception as e:
                 print(e)
                 if DEBUG:
                     raise
                 return False
             clipboard = QApplication.clipboard()
-            clipboard.setText(cell)
-            self.ui.statusbar.showMessage(f'Copied unit cell {cell} to clip board.')
+            clipboard.setText(cell_txt)
+            self.ui.statusbar.showMessage(f'Copied unit cell {cell_txt} to clip board.')
         return True
 
     def advanced_search(self):
@@ -1008,6 +1009,7 @@ class StartStructureDB(QMainWindow):
         """
         Searches for a unit cell and resturns a list of found database ids.
         This method does not validate the cell. This has to be done before!
+        TODO: Refactor database stuff out in database.py
         """
         try:
             volume = misc.vol_unitcell(*cell)
@@ -1073,11 +1075,6 @@ class StartStructureDB(QMainWindow):
             if self.full_list:
                 return False
             return False
-        try:
-            if not self.structures:
-                return False  # Empty database
-        except Exception:
-            return False  # No database cursor
         idlist = self.search_cell_idlist(cell)
         if not idlist:
             self.ui.cifList_tableView.model().resetInternalData()
