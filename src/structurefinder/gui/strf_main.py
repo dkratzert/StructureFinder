@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'D:\_DEV\GitHub\StructureFinder\src\structurefinder/gui\strf_main.ui'
+# Form implementation generated from reading ui file '/Users/daniel/Documents/GitHub/StructureFinder/src/structurefinder/gui/strf_main.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #

@@ -985,19 +985,19 @@ class StartStructureDB(QMainWindow):
         self.ui.searchCellLineEDit.clear()
         if not self.db.engine:
             return False  # Empty database
-        searchresult = []
+        result = []
         if len(search_string) == 0:
             self.show_full_list()
             return False
         if len(search_string) >= 2 and "*" not in search_string:
             search_string = f"{'*'}{search_string}{'*'}"
         try:
-            searchresult = self.structures.find_text_and_authors(search_string)
+            result = self.db.find_text_and_authors(search_string)
         except AttributeError as e:
             print(e)
         try:
-            self.statusBar().showMessage("Found {} structures.".format(len(searchresult)))
-            self.set_model_from_data(self.structures.get_structures_by_idlist(searchresult))
+            self.statusBar().showMessage("Found {} structures.".format(len(result)))
+            self.set_model_from_data(self.db.get_all_structures(result))
         except Exception:
             self.statusBar().showMessage("Nothing found.")
 

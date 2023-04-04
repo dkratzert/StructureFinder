@@ -1,4 +1,5 @@
 import time
+from itertools import chain
 from math import log
 from pathlib import Path
 from typing import Optional, List, Tuple
@@ -134,45 +135,44 @@ class DB(QtCore.QObject):
         :param text: Volume uncertaincy where to search
         id, name, data, path
         """
-        req = '''
-        SELECT StructureId FROM txtsearch 
-            WHERE filename MATCH ? 
-                OR dataname MATCH ? 
-                OR path MATCH ?
-                OR shelx_res_file MATCH ?
-        '''
-        res = self.database.db_request(req, (text, text, text, text))
-        return tuple(self.result_to_list(res))
+        req = sa.text('''SELECT StructureId FROM txtsearch 
+                    WHERE filename MATCH :text 
+                        OR dataname MATCH :text
+                        OR path MATCH :text
+                        OR shelx_res_file MATCH :text
+               ''')
+        with self.engine.connect() as conn:
+            return tuple(chain(*conn.execute(req, {'text': text}).all()))
 
     def find_authors(self, text: str) -> Tuple:
-        author_table_exists = self.database.db_request("""SELECT name FROM sqlite_master WHERE 
+        with self.engine.connect() as conn:
+            req = sa.text("""SELECT name FROM sqlite_master WHERE 
                         type='table' AND name='authortxtsearch';""")
-        if not author_table_exists:
-            return tuple()
+            author_table_exists = 'authortxtsearch' in conn.execute(req).first()
+            if not author_table_exists:
+                return tuple()
         search = f"{'*'}{text}{'*'}"
         select = """SELECT StructureId from authortxtsearch """
-        req = f'''
+        req = sa.text(f'''
             {select}
-                WHERE _audit_author_name MATCH ? 
+                WHERE _audit_author_name MATCH :text 
                 UNION
             {select}
-                WHERE _audit_contact_author_name MATCH ?
+                WHERE _audit_contact_author_name MATCH :text
                 UNION
             {select}
-                WHERE _publ_contact_author_name MATCH ?
+                WHERE _publ_contact_author_name MATCH :text
                 UNION
             {select}
-                WHERE _publ_contact_author MATCH ?
+                WHERE _publ_contact_author MATCH :text
                 UNION
             {select}
-                WHERE _publ_author_name MATCH ?
-        '''
-        try:
-            res = self.database.db_request(req, (search, search, search, search, search))
-        except (TypeError, ProgrammingError, OperationalError) as e:
-            print('DB request error in find_by_strings().', e)
-            return ()
-        return tuple(self.result_to_list(res))
+                WHERE _publ_author_name MATCH :text
+        ''')
+        with self.engine.connect() as conn:
+            result = conn.execute(req, {'text': search}).all()
+        return tuple(chain(*result))
+
 
 if __name__ == '__main__':
     db = DB()
@@ -181,4 +181,4 @@ if __name__ == '__main__':
                          # sublattice=True,
                          # more_results=True
                          ))
-    print(db.get_all_structures(idlist=[3, 5])[:10])
+    print(db.find_authors('sadi'))
