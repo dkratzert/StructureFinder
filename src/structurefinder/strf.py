@@ -281,7 +281,7 @@ class StartStructureDB(QMainWindow):
         if not file_name or not Path(file_name).is_file():
             return
         if Path(file_name).samefile(self.structures.dbfilename):
-            QMessageBox.information(self, 'This is the same file', f'Can not merge same files.')
+            QMessageBox.information(self, 'This is the same file', 'Can not merge same files.')
             return
         try:
             tst = database_handler.StructureTable(file_name)
@@ -291,7 +291,7 @@ class StartStructureDB(QMainWindow):
             del tst
         except Exception as e:
             print(f'Unable to append database: {e}')
-            self.ui.statusbar.showMessage(f'Unable to merge databases.')
+            self.ui.statusbar.showMessage('Unable to merge databases.')
             return
         self.structures.database.merge_databases(file_name)
         dbfile = self.structures.dbfilename
@@ -511,7 +511,10 @@ class StartStructureDB(QMainWindow):
             spgr = 0
         if cell:
             states['cell'] = True
-            cell_results = self.search_cell_idlist(cell)
+            cell_results = self.db.search_cell(cell=cell,
+                                               more_results=self.ui.adv_moreResultscheckBox.isChecked(),
+                                               sublattice=self.ui.adv_superlatticeCheckBox.isChecked()
+                                               )
         if spgr:
             states['spgr'] = True
             spgr_results = self.structures.find_by_it_number(spgr)
@@ -1002,56 +1005,6 @@ class StartStructureDB(QMainWindow):
         except Exception:
             self.statusBar().showMessage("Nothing found.")
 
-    def search_cell_idlist(self, cell: list) -> list:
-        """
-        Searches for a unit cell and resturns a list of found database ids.
-        This method does not validate the cell. This has to be done before!
-        TODO: Refactor database stuff out in database.py
-        """
-        try:
-            volume = misc.vol_unitcell(*cell)
-            if volume < 0:
-                return []
-        except ValueError:
-            return []
-        if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
-            # more results:
-            print('more results activated')
-            atol, ltol, vol_threshold = more_results_parameters(volume)
-        else:
-            # regular:
-            atol, ltol, vol_threshold = regular_results_parameters(volume)
-        try:
-            # the fist number in the result is the structureid:
-            cells = self.structures.find_by_volume(volume, vol_threshold)
-            print(f'{len(cells)} cells to check at {vol_threshold:.2f} threshold.')
-            if self.ui.sublattCheckbox.isChecked() or self.ui.adv_superlatticeCheckBox.isChecked():
-                # sub- and superlattices:
-                for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
-                    # First a list of structures where the volume is similar:
-                    cells.extend(self.structures.find_by_volume(v, vol_threshold))
-                cells = list(set(cells))
-        except (ValueError, AttributeError):
-            if not self.full_list:
-                self.ui.cifList_tableView.model().setData(value=[])
-                self.statusBar().showMessage('Found 0 structures.')
-            return []
-        # Real lattice comparing in G6:
-        idlist = []
-        if cells:
-            lattice1 = lattice.Lattice.from_parameters(*cell)
-            self.statusBar().clearMessage()
-            for num, curr_cell in enumerate(cells):
-                self.progressbar(num, 0, len(cells) - 1)
-                try:
-                    lattice2 = lattice.Lattice.from_parameters(*curr_cell[1:7])
-                except ValueError:
-                    continue
-                mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
-                if mapping:
-                    idlist.append(curr_cell[0])
-        return idlist
-
     @pyqtSlot('QString', name='search_cell')
     def search_cell(self, search_string: str) -> bool:
         """
@@ -1072,15 +1025,20 @@ class StartStructureDB(QMainWindow):
             if self.full_list:
                 return False
             return False
-        idlist = self.search_cell_idlist(cell)
-        if not idlist:
+        searchresult = self.db.search_cell(cell=cell,
+                                           more_results=self.ui.moreResultsCheckBox.isChecked(),
+                                           sublattice=self.ui.sublattCheckbox.isChecked()
+                                           )
+        if not searchresult and not self.full_list:
+            self.set_model_from_data([])
+            # self.ui.cifList_tableView.model().setData(value=[])
+            self.statusBar().showMessage('Found 0 structures.')
+        if not searchresult:
             self.ui.cifList_tableView.model().resetInternalData()
             self.statusBar().showMessage('Found 0 structures.', msecs=0)
             self.set_model_from_data([])
             return False
-        print(f'Found {len(idlist)} results.')
-        searchresult = self.structures.get_all_structure_names(idlist)
-        # self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
+        print(f'Found {len(searchresult)} results.')
         self.full_list = False
         self.set_model_from_data(searchresult)
         return True
@@ -1280,7 +1238,7 @@ def my_exception_hook(exctype, value, error_traceback):
     errortext += f'Python {sys.version}\n'
     errortext += f'{sys.platform} \n'
     errortext += f'{time.asctime(time.localtime(time.time()))} \n'
-    errortext += f'StructureFinder crashed during the following operation: \n'
+    errortext += 'StructureFinder crashed during the following operation: \n'
     errortext += '-' * 80 + '\n'
     errortext += ''.join(traceback.format_tb(error_traceback)) + '\n'
     errortext += f'{str(exctype.__name__)} : '

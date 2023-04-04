@@ -1,15 +1,23 @@
 import time
+from math import log
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Tuple
 
+from PyQt5 import QtCore
 from sqlalchemy.orm import sessionmaker
 import sqlalchemy as sa
 
-from structurefinder.db.mapping import Structure, Residuals
+from structurefinder.db.mapping import Structure, Residuals, Cell
+from structurefinder.pymatgen.core import lattice
+from structurefinder.searcher import misc
+from structurefinder.searcher.misc import more_results_parameters, regular_results_parameters
 
 
-class DB:
-    def __init__(self):
+class DB(QtCore.QObject):
+    progress = QtCore.pyqtSignal((int, int))
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.engine = None
         self.Session: Optional[sessionmaker] = None
         self.structure_id: Optional[int] = None
@@ -17,7 +25,7 @@ class DB:
 
     def load_database(self, database_file: Path):
         url_object = sa.URL.create("sqlite", database=str(database_file.resolve()))
-        self.engine = sa.create_engine(url_object, echo=True)
+        self.engine = sa.create_engine(url_object, echo=False)
         self.Session: sessionmaker = sessionmaker(self.engine)
 
     def structure_count(self) -> int:
@@ -42,8 +50,86 @@ class DB:
         stmt = sa.select(Structure).filter_by(Id=structureId)
         self.structure = session.scalar(stmt)
 
+    def _find_by_volume(self, volume: float, threshold: float = 0) -> list:
+        """
+        Searches cells with volume between upper and lower limit. Returns the Id and the unit cell.
+        :param threshold: Volume uncertaincy where to search
+        :param volume: the unit cell volume
+        """
+        if not threshold:
+            threshold = log(volume) + 1.2
+        upper_limit = float(volume + threshold)
+        lower_limit = float(volume - threshold)
+
+        req = '''SELECT cell.StructureId, a, b, c, alpha, beta, gamma, volume,
+                        res._space_group_IT_number, res._chemical_formula_sum, struct.filename, struct.path FROM cell
+                INNER JOIN Residuals AS res on cell.StructureId = res.StructureId
+                INNER JOIN Structure AS struct on struct.Id = res.StructureId
+                WHERE cell.volume >= ? AND cell.volume <= ?'''
+        stmt = (
+            sa.select(Structure.Id, Structure.dataname, Structure.filename, Residuals.modification_time, Structure.path,
+                      Cell.a, Cell.b, Cell.c, Cell.alpha, Cell.beta, Cell.gamma, Cell.volume
+                      )
+            .join_from(Structure, Residuals)
+            .join_from(Structure, Cell)
+            .filter(Cell.volume >= lower_limit)
+            .filter(Cell.volume <= upper_limit)
+        )
+        with self.engine.connect() as conn:
+            return list(conn.execute(stmt).tuples())
+
+    def search_cell(self, cell: list, more_results: bool = False, sublattice: bool = False) -> List:
+        """
+        Searches for a unit cell and resturns a list of found structures for main table.
+        This method does not validate the cell. This has to be done before!
+        """
+        try:
+            volume = misc.vol_unitcell(*cell)
+            if volume < 0:
+                return []
+        except ValueError:
+            return []
+        if more_results:
+            # more results:
+            print('more results activated')
+            atol, ltol, vol_threshold = more_results_parameters(volume)
+        else:
+            # regular:
+            atol, ltol, vol_threshold = regular_results_parameters(volume)
+        try:
+            # the fist number in the result is the structureid:
+            cells = self._find_by_volume(volume, vol_threshold)
+            if sublattice:
+                # sub- and superlattices:
+                for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
+                    # First a list of structures where the volume is similar:
+                    cells.extend(self._find_by_volume(v, vol_threshold))
+                cells = list(set(cells))
+        except (ValueError, AttributeError):
+            return []
+        # Real lattice comparing in G6:
+        results = []
+        num_cells = len(cells)
+        print(f'{num_cells} cells to check at {vol_threshold:.2f} A^3 threshold.')
+        if cells:
+            lattice1 = lattice.Lattice.from_parameters(*cell)
+            for num, curr_cell in enumerate(cells):
+                self.progress.emit(num, num_cells)
+                try:
+                    lattice2 = lattice.Lattice.from_parameters(curr_cell.a, curr_cell.b, curr_cell.c,
+                                                               curr_cell.alpha, curr_cell.beta, curr_cell.gamma)
+                except ValueError:
+                    continue
+                mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
+                if mapping:
+                    results.append(curr_cell)
+        return results
+
 
 if __name__ == '__main__':
     db = DB()
     db.load_database(Path('./test.sqlite'))
-    print([x for x in db.get_all_structures()][:3])
+    print(db.search_cell(cell=[12.955, 12.955, 12.955, 90.0, 90.0, 90.0],
+                         # sublattice=True,
+                         # more_results=True
+                         ))
