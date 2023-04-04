@@ -33,7 +33,7 @@ class DB(QtCore.QObject):
             num = session.query(Structure).count()
         return num
 
-    def get_all_structures(self):
+    def get_all_structures(self, idlist: List[int] = None) -> tuple:
         """
         sqlalchemy.engine.Engine SELECT "Structure"."Id", "Structure".dataname, "Structure".filename,
         "Residuals".modification_time, "Structure".path
@@ -44,9 +44,11 @@ class DB(QtCore.QObject):
                               Residuals.modification_time, Structure.path)
                     .join_from(Structure, Residuals)
                     )
-            return conn.execute(stmt)
+            if idlist:
+                stmt = stmt.where(Structure.Id.in_(idlist))
+            return tuple(conn.execute(stmt))
 
-    def get_structure(self, session, structureId: int) -> Structure:
+    def set_structure(self, session, structureId: int) -> None:
         stmt = sa.select(Structure).filter_by(Id=structureId)
         self.structure = session.scalar(stmt)
 
@@ -60,12 +62,6 @@ class DB(QtCore.QObject):
             threshold = log(volume) + 1.2
         upper_limit = float(volume + threshold)
         lower_limit = float(volume - threshold)
-
-        req = '''SELECT cell.StructureId, a, b, c, alpha, beta, gamma, volume,
-                        res._space_group_IT_number, res._chemical_formula_sum, struct.filename, struct.path FROM cell
-                INNER JOIN Residuals AS res on cell.StructureId = res.StructureId
-                INNER JOIN Structure AS struct on struct.Id = res.StructureId
-                WHERE cell.volume >= ? AND cell.volume <= ?'''
         stmt = (
             sa.select(Structure.Id, Structure.dataname, Structure.filename, Residuals.modification_time, Structure.path,
                       Cell.a, Cell.b, Cell.c, Cell.alpha, Cell.beta, Cell.gamma, Cell.volume
@@ -125,6 +121,58 @@ class DB(QtCore.QObject):
                     results.append(curr_cell)
         return results
 
+    def find_text_and_authors(self, txt: str) -> tuple:
+        result_txt = self.find_authors(txt)
+        result_authors = self.find_by_strings(txt)
+        result_txt = set(result_txt)
+        result_txt.update(result_authors)
+        return tuple(result_txt)
+
+    def find_by_strings(self, text: str) -> Tuple:
+        """
+        Searches cells with volume between upper and lower limit
+        :param text: Volume uncertaincy where to search
+        id, name, data, path
+        """
+        req = '''
+        SELECT StructureId FROM txtsearch 
+            WHERE filename MATCH ? 
+                OR dataname MATCH ? 
+                OR path MATCH ?
+                OR shelx_res_file MATCH ?
+        '''
+        res = self.database.db_request(req, (text, text, text, text))
+        return tuple(self.result_to_list(res))
+
+    def find_authors(self, text: str) -> Tuple:
+        author_table_exists = self.database.db_request("""SELECT name FROM sqlite_master WHERE 
+                        type='table' AND name='authortxtsearch';""")
+        if not author_table_exists:
+            return tuple()
+        search = f"{'*'}{text}{'*'}"
+        select = """SELECT StructureId from authortxtsearch """
+        req = f'''
+            {select}
+                WHERE _audit_author_name MATCH ? 
+                UNION
+            {select}
+                WHERE _audit_contact_author_name MATCH ?
+                UNION
+            {select}
+                WHERE _publ_contact_author_name MATCH ?
+                UNION
+            {select}
+                WHERE _publ_contact_author MATCH ?
+                UNION
+            {select}
+                WHERE _publ_author_name MATCH ?
+        '''
+        try:
+            res = self.database.db_request(req, (search, search, search, search, search))
+        except (TypeError, ProgrammingError, OperationalError) as e:
+            print('DB request error in find_by_strings().', e)
+            return ()
+        return tuple(self.result_to_list(res))
 
 if __name__ == '__main__':
     db = DB()
@@ -133,3 +181,4 @@ if __name__ == '__main__':
                          # sublattice=True,
                          # more_results=True
                          ))
+    print(db.get_all_structures(idlist=[3, 5])[:10])

@@ -997,7 +997,6 @@ class StructureTable():
         :param text: Volume uncertaincy where to search
         id, name, data, path
         """
-        select = """"""
         req = '''
         SELECT StructureId FROM txtsearch 
             WHERE filename MATCH ? 

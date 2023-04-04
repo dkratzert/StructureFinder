@@ -173,7 +173,7 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDatabasePushButton.setIcon(qta.icon('fa.plus'))
 
     def set_model_from_data(self, data: Union[list, tuple]):
-        self.table_model = TableModel(structures=tuple(data))
+        self.table_model = TableModel(structures=data)
         self.ui.cifList_tableView.setModel(self.table_model)
         self.ui.cifList_tableView.hideColumn(0)
         self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
@@ -439,7 +439,7 @@ class StartStructureDB(QMainWindow):
         self.ui.adv_SearchPushButton.setEnabled(True)
 
     def copyUnitCell(self):
-        if self.structureId:
+        if self.db.structure:
             try:
                 cell = self.db.structure.cell
                 cell_txt = (f"{cell.a:>6.3f} {cell.b:>6.3f} {cell.c:>6.3f} "
@@ -549,7 +549,7 @@ class StartStructureDB(QMainWindow):
         if not idlist:
             self.statusBar().showMessage(f'Found {0} structures.')
             return
-        searchresult = self.structures.get_all_structure_names(idlist)
+        searchresult = self.db.get_all_structures(idlist)
         self.statusBar().showMessage(f'Found {len(idlist)} structures.')
         self.full_list = False
         self.set_model_from_data(searchresult)
@@ -748,7 +748,7 @@ class StartStructureDB(QMainWindow):
         except IndexError:
             return False
         with self.db.Session() as session:
-            self.db.get_structure(session, structure_id)
+            self.db.set_structure(session, structure_id)
             self.display_properties(self.db.structure)
         return True
 
@@ -978,17 +978,13 @@ class StartStructureDB(QMainWindow):
         result = self.structures.find_by_date(date1, date2)
         return result
 
-    @pyqtSlot('QString')
     def search_text(self, search_string: str) -> bool:
         """
         searches db for given text
         """
         self.ui.searchCellLineEDit.clear()
-        try:
-            if not self.structures:
-                return False  # Empty database
-        except Exception:
-            return False  # No database cursor
+        if not self.db.engine:
+            return False  # Empty database
         searchresult = []
         if len(search_string) == 0:
             self.show_full_list()
