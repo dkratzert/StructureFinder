@@ -26,24 +26,24 @@ class DB:
         return num
 
     def get_all_structures(self):
-        # t1 = time.perf_counter()
-        connection = self.engine.connect()
-        req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
-                        FROM Structure AS str
-                        INNER JOIN Residuals AS res ON res.StructureId == str.Id '''
-        data = connection.execute(sa.text(req)).fetchall()
-        return data
-        # print(f'##1 {t1-time.perf_counter():.3}s')
-        """t2 = time.perf_counter()
-        with self.Session() as session:
-            stmt = (sa.select(Structure, Residuals)
-                    .join(Residuals, Structure.Id==Residuals.StructureId)
+        """
+        sqlalchemy.engine.Engine SELECT "Structure"."Id", "Structure".dataname, "Structure".filename,
+        "Residuals".modification_time, "Structure".path
+        FROM "Structure" JOIN "Residuals" ON "Structure"."Id" = "Residuals"."StructureId"
+        """
+        with self.engine.connect() as conn:
+            stmt = (sa.select(Structure.Id, Structure.dataname, Structure.filename,
+                              Residuals.modification_time, Structure.path)
+                    .join_from(Structure, Residuals)
                     )
-            data = session.scalars(stmt).all()
-            return data
-        print(f'##2 {time.perf_counter()-t2:.3}s')"""
+            return conn.execute(stmt)
 
     def get_structure(self, session, structureId: int) -> Structure:
         stmt = sa.select(Structure).filter_by(Id=structureId)
         self.structure = session.scalar(stmt)
 
+
+if __name__ == '__main__':
+    db = DB()
+    db.load_database(Path('./test.sqlite'))
+    print([x for x in db.get_all_structures()][:3])

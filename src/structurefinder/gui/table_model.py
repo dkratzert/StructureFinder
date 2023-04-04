@@ -1,7 +1,16 @@
+from enum import IntEnum
+from pathlib import Path
 from typing import Any
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex, Qt
+
+
+class Column(IntEnum):
+    DATA = 1
+    FILENAME = 2
+    MODIFIED = 3
+    PATH = 4
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -13,6 +22,10 @@ class TableModel(QtCore.QAbstractTableModel):
     def data(self, index: QModelIndex, role: int = None):
         row, col = index.row(), index.column()
         value = self._data[row][col]
+        if col == Column.MODIFIED and role == Qt.DisplayRole:
+            return str(value)
+        if col == Column.PATH and role == Qt.DisplayRole:
+            return str(Path(value.decode('utf-8')))
         if role == Qt.DisplayRole:
             if isinstance(value, bytes):
                 return value.decode('utf-8')

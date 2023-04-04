@@ -173,7 +173,7 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDatabasePushButton.setIcon(qta.icon('fa.plus'))
 
     def set_model_from_data(self, data: Union[list, tuple]):
-        self.table_model = TableModel(structures=data)
+        self.table_model = TableModel(structures=tuple(data))
         self.ui.cifList_tableView.setModel(self.table_model)
         self.ui.cifList_tableView.hideColumn(0)
         self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
