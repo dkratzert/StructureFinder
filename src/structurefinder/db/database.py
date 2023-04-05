@@ -14,6 +14,11 @@ from structurefinder.searcher import misc
 from structurefinder.searcher.misc import more_results_parameters, regular_results_parameters
 
 
+def table_exists(table: str, engine: sa.Engine, schema=None):
+    inspector = sa.inspect(engine)
+    return inspector.has_table(table, schema)
+
+
 class DB(QtCore.QObject):
     progress = QtCore.pyqtSignal((int, int))
 
@@ -145,12 +150,8 @@ class DB(QtCore.QObject):
             return tuple(chain(*conn.execute(req, {'text': text}).all()))
 
     def find_authors(self, text: str) -> Tuple:
-        with self.engine.connect() as conn:
-            req = sa.text("""SELECT name FROM sqlite_master WHERE 
-                        type='table' AND name='authortxtsearch';""")
-            author_table_exists = 'authortxtsearch' in conn.execute(req).first()
-            if not author_table_exists:
-                return tuple()
+        if not table_exists(table='authortxtsearch', engine=self.engine):
+            return tuple()
         search = f"{'*'}{text}{'*'}"
         select = """SELECT StructureId from authortxtsearch """
         req = sa.text(f'''
@@ -177,8 +178,8 @@ class DB(QtCore.QObject):
 if __name__ == '__main__':
     db = DB()
     db.load_database(Path('./test.sqlite'))
-    print(db.search_cell(cell=[12.955, 12.955, 12.955, 90.0, 90.0, 90.0],
+    """print(db.search_cell(cell=[12.955, 12.955, 12.955, 90.0, 90.0, 90.0],
                          # sublattice=True,
                          # more_results=True
-                         ))
-    print(db.find_authors('sadi'))
+                         ))"""
+    print(db.get_all_structures(db.find_authors('Bacsa')))
