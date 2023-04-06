@@ -33,6 +33,7 @@ from math import log
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
 from typing import List, Union, Tuple, Dict, Optional
 
+from structurefinder.searcher import misc
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.elements import sorted_atoms
 
@@ -1068,12 +1069,16 @@ class StructureTable():
         else:
             return []
 
-    def find_by_elements(self, elements: list, excluding: list = None, onlyincluded: bool = False) -> List[int]:
+    def find_by_elements(self, elements: str, excluding: str = '', onlyincluded: bool = False) -> List[int]:
         """
         Find structures where certain elements are included in the sum formula.
         """
-        if not excluding:
-            excluding = []
+        formula = misc.get_list_of_elements(elements)
+        if formula is None:
+            return []
+        formula_ex = misc.get_list_of_elements(excluding)
+        if formula_ex is None:
+            return []
         # Find all structures where these elements are included:
         el = ' NOT NULL AND '.join(['Elem_' + x.capitalize() for x in elements]) + ' NOT NULL '
         # Find all structures where these elements are included and the others not included:

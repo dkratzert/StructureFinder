@@ -12,6 +12,7 @@ from structurefinder.db.mapping import Structure, Residuals, Cell
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import misc
 from structurefinder.searcher.misc import more_results_parameters, regular_results_parameters
+from structurefinder.shelxfile.elements import sorted_atoms
 
 
 def table_exists(table: str, engine: sa.Engine, schema=None):
@@ -174,6 +175,35 @@ class DB(QtCore.QObject):
             result = conn.execute(req, {'text': search}).all()
         return tuple(chain(*result))
 
+    def find_by_elements(self, formula: str, formula_ex: str = '', onlyincluded: bool = False) -> tuple[int, ...]:
+        """
+        Find structures where certain elements are included in the sum formula.
+        """
+        elements = misc.get_list_of_elements(formula)
+        if elements is None:
+            return ()
+        excluding = misc.get_list_of_elements(formula_ex)
+        if excluding is None:
+            return ()
+        # Find all structures where these elements are included:
+        el = ' NOT NULL AND '.join(['Elem_' + x.capitalize() for x in elements]) + ' NOT NULL '
+        # Find all structures where these elements are included and the others not included:
+        exclude = ' IS NULL AND '.join(['Elem_' + x.capitalize() for x in excluding]) + ' IS NULL '
+        if not excluding:
+            req = '''SELECT StructureId from sum_formula WHERE ({}) '''.format(el)
+        else:
+            # With exclude condition
+            if elements:
+                req = '''SELECT StructureId from sum_formula WHERE ({} AND {}) '''.format(el, exclude)
+            else:
+                req = '''SELECT StructureId from sum_formula WHERE ({}) '''.format(exclude)
+        if onlyincluded:
+            elex = list(set(sorted_atoms) - set(elements))
+            exclude = ' IS NULL AND '.join(['Elem_' + x.capitalize() for x in elex]) + ' IS NULL '
+            req = '''SELECT StructureId from sum_formula WHERE ({} AND {}) '''.format(el, exclude)
+        with self.engine.connect() as conn:
+            return tuple(chain(*conn.execute(sa.text(req))))
+
 
 if __name__ == '__main__':
     db = DB()
@@ -182,4 +212,4 @@ if __name__ == '__main__':
                          # sublattice=True,
                          # more_results=True
                          ))"""
-    print(db.get_all_structures(db.find_authors('Bacsa')))
+    print(db.find_by_elements('C6H1O1Ag', formula_ex=''))

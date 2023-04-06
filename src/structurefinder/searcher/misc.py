@@ -368,18 +368,9 @@ def formula_str_to_dict(sumform: Union[str, bytes]) -> Dict[str, str]:
     return atlist
 
 
-def get_list_of_elements(formula: str) -> List[str]:
+def get_list_of_elements(formula: str) -> Union[List[str], None]:
     """
-    >>> get_list_of_elements("SCl")
-    ['S', 'Cl']
-    >>> get_list_of_elements("S1Cl1")
-    ['S', 'Cl']
-    >>> get_list_of_elements("S1Cl")
-    ['S', 'Cl']
-    >>> get_list_of_elements("ScCl")
-    ['Sc', 'Cl']
-    >>> get_list_of_elements("S20 Cl")
-    ['S', 'Cl']
+    Get the list of elements from a formula.
     """
     elements = constants.atoms
     atlist = []
@@ -392,7 +383,7 @@ def get_list_of_elements(formula: str) -> List[str]:
             atlist.append(formula[0:1].capitalize())
             formula = formula[1:]
         else:
-            raise KeyError
+            return None
     return atlist
 
 

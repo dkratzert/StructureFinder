@@ -470,7 +470,7 @@ class StartStructureDB(QMainWindow):
                   'spgr'  : False,
                   'rval'  : False,
                   'ccdc'  : False}
-        if not self.structures:
+        if not self.db:
             return
         cell = is_valid_cell(self.ui.adv_unitCellLineEdit.text())
         date1 = self.ui.dateEdit1.text()
@@ -578,7 +578,6 @@ class StartStructureDB(QMainWindow):
         self.statusBar().showMessage('')
         if not append:
             self.close_db()
-            self.start_db()
         self.progressbar(1, 0, 20)
         # self.abort_import_button.show()
         if not startdir:
@@ -733,9 +732,9 @@ class StartStructureDB(QMainWindow):
         """
         Initializes the database.
         """
-        self.dbfdesc, self.dbfilename = tempfile.mkstemp()
-        self.structures = database_handler.StructureTable(self.dbfilename)
-        self.structures.database.initialize_db()
+        #self.dbfdesc, self.dbfilename = tempfile.mkstemp()
+        #self.structures = database_handler.StructureTable(self.dbfilename)
+        #self.structures.database.initialize_db()
         self.ui.appendDirButton.setEnabled(True)
 
     @pyqtSlot(QItemSelection, QItemSelection, name="get_properties")
@@ -1041,25 +1040,11 @@ class StartStructureDB(QMainWindow):
 
     def search_elements(self, elements: str, excluding: str, onlythese: bool = False) -> list:
         """
-        list(set(l).intersection(l2))
+        Search for elements like 'C', 'H' or 'O'.
         """
         self.statusBar().showMessage('')
-        res = []
-        try:
-            formula = misc.get_list_of_elements(elements)
-        except KeyError:
-            self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
-            return []
-        try:
-            formula_ex = misc.get_list_of_elements(excluding)
-        except KeyError:
-            self.statusBar().showMessage('Error: Wrong list of Elements!', msecs=5000)
-            return []
-        try:
-            res = self.structures.find_by_elements(formula, excluding=formula_ex, onlyincluded=onlythese)
-        except AttributeError:
-            pass
-        return list(res)
+        res = self.db.find_by_elements(formula=elements, formula_ex=excluding, onlyincluded=onlythese)
+        return res
 
     def get_import_filename_from_dialog(self, directory: str = '') -> str:
         if not directory:
