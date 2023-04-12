@@ -151,13 +151,8 @@ def run_index(args=None):
             else:
                 lastid += 1
             try:
-                worker = Worker(searchpath=p,
-                                excludes=args.ex if args.ex else excluded_names,
-                                structures=structures,
-                                lastid=lastid,
-                                add_res_files=args.fillres,
-                                add_cif_files=args.fillcif,
-                                standalone=True)
+                worker = Worker(searchpath=p, add_res_files=args.fillres, add_cif_files=args.fillcif, lastid=lastid,
+                                db=structures, excludes=args.ex if args.ex else excluded_names, standalone=True)
             except OSError as e:
                 print("Unable to collect files:")
                 print(e)

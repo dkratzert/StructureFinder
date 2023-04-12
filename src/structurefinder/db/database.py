@@ -31,8 +31,12 @@ class DB(QtCore.QObject):
 
     def load_database(self, database_file: Path):
         url_object = sa.URL.create("sqlite", database=str(database_file.resolve()))
-        self.engine = sa.create_engine(url_object, echo=True)
+        self.engine = sa.create_engine(url_object, echo=False)
         self.Session: sessionmaker = sessionmaker(self.engine)
+
+    def set_structure(self, session, structureId: int) -> None:
+        stmt = sa.select(Structure).filter_by(Id=structureId)
+        self.structure = session.scalar(stmt)
 
     def structure_count(self) -> int:
         with self.Session() as session:
@@ -54,10 +58,6 @@ class DB(QtCore.QObject):
                 stmt = stmt.where(Structure.Id.in_(idlist))
             return conn.execute(stmt).tuples().all()
 
-    def set_structure(self, session, structureId: int) -> None:
-        stmt = sa.select(Structure).filter_by(Id=structureId)
-        self.structure = session.scalar(stmt)
-
     def _find_by_volume(self, volume: float, threshold: float = 0) -> List[sa.Row]:
         """
         Searches cells with volume between upper and lower limit. Returns the Id and the unit cell.
@@ -74,8 +74,7 @@ class DB(QtCore.QObject):
                       )
             .join_from(Structure, Residuals)
             .join_from(Structure, Cell)
-            .filter(Cell.volume >= lower_limit)
-            .filter(Cell.volume <= upper_limit)
+            .filter(sa.between(Cell.volume, lower_limit, upper_limit))
         )
         with self.engine.connect() as conn:
             return list(conn.execute(stmt).tuples())
@@ -134,6 +133,49 @@ class DB(QtCore.QObject):
         result_txt.update(result_authors)
         return tuple(result_txt)
 
+    def find_by_ccdc_num(self, ccdc: str) -> Tuple:
+        """
+        Find structures with respective CCDC number.
+        """
+
+        stmt = sa.select(
+            Residuals.StructureId
+        ).filter_by(_database_code_depnum_ccdc_archive=ccdc)
+        with self.engine.connect() as conn:
+            return self.flatten(conn, stmt)
+
+    def find_by_date(self, start='0000-01-01', end='NOW') -> tuple[int, ...]:
+        """
+        Find structures between start and end date.
+        """
+        stmt = sa.select(Residuals.StructureId).where(sa.between(Residuals.modification_time, start, end))
+        with self.engine.connect() as conn:
+            return self.flatten(conn, stmt)
+
+    def find_by_rvalue(self, rvalue: float) -> tuple[int, ...]:
+        """
+        Finds structures with R1 value better than rvalue. I search both R1 values, because often one or even both
+        are missing.
+        """
+        stmt = sa.select(Residuals.StructureId).where((Residuals._refine_ls_R_factor_gt <= rvalue) |
+                                                      (Residuals._refine_ls_R_factor_all <= rvalue))
+        with self.engine.connect() as conn:
+            return self.flatten(conn, stmt)
+
+    def find_by_it_number(self, number: int) -> Tuple[int, ...]:
+        """
+        Find structures by space group number in international tables of
+        crystallography.
+        Returns a list of index numbers.
+        """
+        try:
+            value = int(number)
+        except ValueError:
+            return tuple()
+        stmt = sa.select(Residuals.StructureId).filter_by(_space_group_IT_number=value)
+        with self.engine.connect() as conn:
+            return self.flatten(conn, stmt)
+
     def find_by_strings(self, text: str) -> Tuple:
         """
         Searches cells with volume between upper and lower limit
@@ -147,7 +189,11 @@ class DB(QtCore.QObject):
                         OR shelx_res_file MATCH :text
                ''')
         with self.engine.connect() as conn:
-            return tuple(chain(*conn.execute(req, {'text': text}).all()))
+            args = {'text': text}
+            return self.flatten(conn, req, args)
+
+    def flatten(self, conn, stmt, args=None):
+        return tuple(chain(*conn.execute(stmt, args)))
 
     def find_authors(self, text: str) -> Tuple:
         if not table_exists(table='authortxtsearch', engine=self.engine):
@@ -211,6 +257,9 @@ if __name__ == '__main__':
                          # sublattice=True,
                          # more_results=True
                          ))"""
-    print(db.find_by_elements('C6H1O1Ag', formula_ex=''))
-    volume = db._find_by_volume(500)
-    print(volume)
+    # print(db.find_by_elements('C6H1O1Ag', formula_ex=''))
+    # volume = db._find_by_volume(500)
+    # print(db.find_by_ccdc_num('1979688'))
+    #print(db.find_by_rvalue(0.02))
+    with db.Session() as session:
+        print(db.structure_count())

@@ -16,8 +16,8 @@ from structurefinder.misc.exporter import cif_data_to_document
 from structurefinder.misc.version import VERSION
 from structurefinder.searcher.constants import centering_letter_2_num, centering_num_2_letter
 from structurefinder.searcher.database_handler import StructureTable
-from structurefinder.searcher.misc import is_valid_cell, format_sum_formula, regular_results_parameters, vol_unitcell, \
-    get_list_of_elements, more_results_parameters, is_a_nonzero_file, combine_results
+from structurefinder.searcher.misc import is_valid_cell, format_sum_formula, get_list_of_elements, is_a_nonzero_file, \
+    combine_results
 
 parser = ArgumentParser(prog='strf_web',
                         description=f'StructureFinder Web Server v{VERSION}')
@@ -54,7 +54,6 @@ from shutil import which
 from structurefinder.cgi_ui.bottle import Bottle, static_file, template, redirect, request, response, HTTPResponse
 from structurefinder.displaymol.mol_file_writer import MolFile
 from structurefinder.displaymol.sdm import SDM
-from structurefinder.pymatgen.core import lattice
 
 app = application = Bottle()
 
@@ -133,15 +132,14 @@ def adv():
     it_num = request.GET.it_num
     r1val = request.GET.r1val
     ccdc_num = request.GET.ccdc_num
-    structures = StructureTable(dbfilename)
     print("Advanced search: elin:", elincl, 'elout:', elexcl, date1, '|', date2, '|', cell_search, 'txin:', txt_in,
           'txout:', txt_out, '|', 'more:', more_results, 'Sublatt:', sublattice, 'It-num:', it_num, 'only:', onlyelem,
           'CCDC:', ccdc_num)
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt=txt_in, txt_ex=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
-                          structures=structures, it_num=it_num, onlythese=onlyelem, r1val=r1val, ccdc_num=ccdc_num)
+                          it_num=it_num, onlythese=onlyelem, r1val=r1val, ccdc_num=ccdc_num)
     print("--> Got {} structures from Advanced search.".format(len(ids)))
-    return get_structures_json(structures, ids)
+    return get_structures_json(db, ids)
 
 
 @app.post('/molecule')
@@ -268,17 +266,15 @@ def show_cellcheck():
     """
     Shows the CellcheckCSD web page
     """
-    structures = StructureTable(dbfilename)
     str_id = request.get_cookie('str_id')
     centering = ''
     if str_id:
-        cell = structures.get_cell_by_id(str_id)
-        cif_dic = structures.get_row_as_dict(str_id)
-        try:
-            centering = cif_dic['_space_group_centring_type']
-        except KeyError:
-            centering = ''
-        cellstr = '{:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f} {:>8.3f}'.format(*cell)
+        with db.Session() as session:
+            db.set_structure(session=session, structureId=str_id)
+            cell: Cell = db.structure.cell
+            centering = db.structure.Residuals._space_group_centring_type
+        cellstr = (f'{cell.a:>8.3f} {cell.b:>8.3f} {cell.c:>8.3f} '
+                   f'{cell.alpha:>8.3f} {cell.beta:>8.3f} {cell.gamma:>8.3f}')
     else:
         cellstr = ''
     if centering:
@@ -306,7 +302,7 @@ def search_cellcheck_csd():
     """
     cmd = request.POST.cmd
     cell = request.POST.cell
-    str_id = request.POST.str_id
+    #str_id = request.POST.str_id
     if not cell:
         return {}
     cent = request.POST.centering
@@ -320,9 +316,6 @@ def search_cellcheck_csd():
         except ParseError as e:
             print(e)
             return
-        # print(results)
-        if str_id:
-            structures = StructureTable(dbfilename)
         print(len(results), 'Structures found...')
         return {"total": len(results), "records": results, "status": "success"}
     else:
@@ -586,7 +579,7 @@ def chunks(l: list, n: int) -> list:
     return [l[i:i + n] for i in range(0, len(l), n)]
 
 
-def find_cell(db: DB, cell: list, sublattice=False, more_results=False) -> list:
+'''def find_cell(db: DB, cell: list, sublattice=False, more_results=False) -> list:
     """
     Finds unit cells in db. Rsturns hits a a list of ids.
     """
@@ -619,7 +612,7 @@ def find_cell(db: DB, cell: list, sublattice=False, more_results=False) -> list:
     if idlist2:
         return idlist2
     else:
-        return []
+        return []'''
 
 
 def search_text(db: DB, search_string: str) -> tuple:
@@ -640,29 +633,29 @@ def search_text(db: DB, search_string: str) -> tuple:
     return idlist
 
 
-def search_elements(structures: StructureTable, elements: str, excluding: str = '', onlyelem: bool = False) -> list:
+def search_elements(elements: str, excluding: str = '', onlyelem: bool = False) -> list:
     """
     list(set(l).intersection(l2))
     """
     res = []
     try:
-        formula = get_list_of_elements(elements)
+        formula = ' '.join(get_list_of_elements(elements))
     except KeyError:
         print('Element search error! Wrong list of elements.')
         return []
     try:
-        formula_ex = get_list_of_elements(excluding)
+        formula_ex = ' '.join(get_list_of_elements(excluding))
     except KeyError:
         print('Error: Wrong list of Elements!')
         return []
     try:
-        res = structures.find_by_elements(formula, excluding=formula_ex, onlyincluded=onlyelem)
+        res = db.find_by_elements(formula, formula_ex=formula_ex, onlyincluded=onlyelem)
     except AttributeError:
         print('Element search error! Wrong list of elements..')
     return list(res)
 
 
-def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
+def find_dates(date1: str, date2: str) -> list:
     """
     Returns a list if id between date1 and date2
     """
@@ -670,13 +663,13 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
         date1 = '0000-01-01'
     if not date2:
         date2 = 'NOW'
-    result = structures.find_by_date(date1, date2)
+    result = db.find_by_date(date1, date2)
     return result
 
 
 def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
-                    date1: str = None, date2: str = None, structures: StructureTable = None,
-                    it_num: str = None, onlythese: bool = False, r1val: float = 0.0, ccdc_num: str = '') -> list:
+                    date1: str = None, date2: str = None, it_num: str = None, onlythese: bool = False,
+                    r1val: float = 0.0, ccdc_num: str = '') -> Union[List[int], Tuple[int, ...]]:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
@@ -684,12 +677,12 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
     #
     results: List = []
     cell_results: List = []
-    spgr_results: List = []
+    spgr_results: Union[List, Tuple] = []
     elincl_results: List = []
     txt_results: Union[List, Tuple] = []
     txt_ex_results: Union[List, Tuple] = []
-    date_results: List = []
-    ccdc_num_results: List = []
+    date_results: Union[List, Tuple] = []
+    ccdc_num_results: Union[List, Tuple] = []
     states: Dict[str, bool] = {'date'    : False,
                                'cell'    : False,
                                'elincl'  : False,
@@ -701,7 +694,7 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
                                'ccdc_num': False,
                                }
     if ccdc_num:
-        ccdc_num_results = structures.find_by_ccdc_num(ccdc_num)
+        ccdc_num_results = db.find_by_ccdc_num(ccdc_num)
     if ccdc_num_results:
         return ccdc_num_results
     cell = is_valid_cell(cellstr)
@@ -716,28 +709,28 @@ def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_
         rval = 0.0
     if cell:
         states['cell'] = True
-        cell_results = find_cell(structures, cell, sublattice=sublattice, more_results=more_results)
+        cell_results = db.search_cell(cell, sublattice=sublattice, more_results=more_results)
     if spgr:
         states['spgr'] = True
-        spgr_results = structures.find_by_it_number(spgr)
+        spgr_results = db.find_by_it_number(spgr)
     if elincl or elexcl:
         if elincl:
             states['elincl'] = True
         if elexcl:
             states['elexcl'] = True
-        elincl_results = search_elements(structures, elincl, elexcl, onlythese)
+        elincl_results = search_elements(elincl, elexcl, onlythese)
     if txt:
         states['txt'] = True
-        txt_results = structures.find_text_and_authors(txt)
+        txt_results = db.find_text_and_authors(txt)
     if txt_ex:
         states['txt_ex'] = True
-        txt_ex_results = structures.find_text_and_authors(txt_ex)
+        txt_ex_results = db.find_text_and_authors(txt_ex)
     if date1 != date2:
         states['date'] = True
-        date_results = find_dates(structures, date1, date2)
+        date_results = find_dates(date1, date2)
     rval_results = []
     if rval > 0.0:
-        rval_results = structures.find_by_rvalue(rval / 100)
+        rval_results = db.find_by_rvalue(rval / 100)
     ####################
     results = combine_results(cell_results=cell_results,
                               date_results=date_results,

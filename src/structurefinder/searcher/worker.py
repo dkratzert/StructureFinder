@@ -21,13 +21,13 @@ class Worker(QtCore.QObject):
     number_of_files = QtCore.pyqtSignal(int)
 
     def __init__(self, searchpath: str, add_res_files: bool, add_cif_files: bool, lastid: int,
-                 structures: StructureTable, excludes: Optional[list] = None, standalone: Optional[bool] = False):
+                 db: DB, excludes: Optional[list] = None, standalone: Optional[bool] = False):
         super().__init__()
         self.stop = False
         self.searchpath = searchpath
         self.add_res_files = add_res_files
         self.add_cif_files = add_cif_files
-        self.structures = structures
+        self.structures = db
         self.lastid = lastid
         self.excludes = [] if not excludes else excludes
         self.files_indexed = 0
