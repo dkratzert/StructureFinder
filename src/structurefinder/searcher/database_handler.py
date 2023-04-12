@@ -52,6 +52,7 @@ class DatabaseRequest():
         :param dbfile: database file
         :type dbfile: str
         """
+        raise Exception('Dont use me')
         # open the database
         self.id_translate_table: Optional[Dict[int, int]] = None
         self.dbfile = dbfile

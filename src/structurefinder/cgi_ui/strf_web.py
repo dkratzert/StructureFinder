@@ -156,25 +156,27 @@ def jsmol_request():
     """
     str_id = request.POST.id
     print("Molecule id:", str_id)
-    structures = StructureTable(dbfilename)
-    if str_id:
-        cell = structures.get_cell_by_id(str_id)
-        if request.POST.grow == 'true':
-            symmcards = [x.split(',') for x in structures.get_row_as_dict(str_id)
-            ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
-            atoms = structures.get_atoms_table(str_id, cartesian=False, as_list=True)
-            if atoms:
-                sdm = SDM(atoms, symmcards, cell)
-                needsymm = sdm.calc_sdm()
-                atoms = sdm.packer(sdm, needsymm)
-        else:
-            atoms = structures.get_atoms_table(str_id, cartesian=True, as_list=False)
-        try:
-            m = MolFile(atoms)
-            return m.make_mol()
-        except(KeyError, TypeError) as e:
-            print('Exception in jsmol_request: {}'.format(e))
-            return ''
+    db = DB()
+    db.load_database(Path(dbfilename))
+    with db.Session() as session:
+        db.set_structure(session=session, structureId=str_id)
+        if str_id:
+            if request.POST.grow == 'true':
+                symmcards = [x.split(',') for x in db.structure.Residuals._space_group_symop_operation_xyz
+                .replace("'", "").replace(" ", "").split("\n")]
+                atoms = db.structure.Atoms
+                if atoms:
+                    sdm = SDM(atoms, symmcards, db.structure.cell)
+                    needsymm = sdm.calc_sdm()
+                    atoms = sdm.packer(sdm, needsymm)
+            else:
+                atoms = db.structure.Atoms
+            try:
+                m = MolFile(atoms)
+                return m.make_mol()
+            except(KeyError, TypeError) as e:
+                print('Exception in jsmol_request: {}'.format(e))
+                return ''
 
 
 @app.post('/residuals')
@@ -189,7 +191,8 @@ def post_request():
     resid2 = request.POST.residuals2 == 'true'
     all_cif = request.POST.all == 'true'
     unitcell = request.POST.unitcell
-    structures = StructureTable(dbfilename)
+    db = DB()
+    db.load_database(Path(dbfilename))
     print("Structure id:", str_id)
     if str_id:
         cif_dic = structures.get_row_as_dict(str_id)
