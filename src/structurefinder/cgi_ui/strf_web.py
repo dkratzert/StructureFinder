@@ -11,6 +11,7 @@ from gemmi.cif import Style
 
 from structurefinder.ccdc.query import get_cccsd_path, search_csd, parse_results
 from structurefinder.db.database import DB
+from structurefinder.db.mapping import Cell, Structure
 from structurefinder.misc.exporter import cif_data_to_document
 from structurefinder.misc.version import VERSION
 from structurefinder.searcher.constants import centering_letter_2_num, centering_num_2_letter
@@ -63,8 +64,6 @@ def structures_list_data():
     """
     The content of the structures list.
     """
-    db = DB()
-    db.load_database(Path(dbfilename))
     return get_structures_json(db, show_all=True)
 
 
@@ -101,8 +100,6 @@ def cellsrch():
     sublattice = (request.GET.supercell == "true")
     cell = is_valid_cell(cell_search)
     print("Cell search:", cell)
-    db = DB()
-    db.load_database(dbfilename)
     if cell:
         ids = [x.Id for x in db.search_cell(cell=cell, more_results=more_results, sublattice=sublattice)]
         print("--> Got {} structures from cell search.".format(len(ids)))
@@ -111,8 +108,6 @@ def cellsrch():
 
 @app.get("/txtsrch")
 def txtsrch():
-    db = DB()
-    db.load_database(dbfilename)
     text_search = request.GET.text_search
     print("Text search:", text_search)
     ids = search_text(db, text_search)
@@ -156,21 +151,17 @@ def jsmol_request():
     """
     str_id = request.POST.id
     print("Molecule id:", str_id)
-    db = DB()
-    db.load_database(Path(dbfilename))
     with db.Session() as session:
         db.set_structure(session=session, structureId=str_id)
         if str_id:
+            atoms = db.structure.Atoms
             if request.POST.grow == 'true':
                 symmcards = [x.split(',') for x in db.structure.Residuals._space_group_symop_operation_xyz
                 .replace("'", "").replace(" ", "").split("\n")]
-                atoms = db.structure.Atoms
                 if atoms:
                     sdm = SDM(atoms, symmcards, db.structure.cell)
                     needsymm = sdm.calc_sdm()
                     atoms = sdm.packer(sdm, needsymm)
-            else:
-                atoms = db.structure.Atoms
             try:
                 m = MolFile(atoms)
                 return m.make_mol()
@@ -191,24 +182,24 @@ def post_request():
     resid2 = request.POST.residuals2 == 'true'
     all_cif = request.POST.all == 'true'
     unitcell = request.POST.unitcell
-    db = DB()
-    db.load_database(Path(dbfilename))
-    print("Structure id:", str_id)
-    if str_id:
-        cif_dic = structures.get_row_as_dict(str_id)
-    if str_id and unitcell and not (resid1 or resid2 or all_cif):
-        try:
-            return get_cell_parameters(structures, str_id)
-        except ValueError as e:
-            print("Exception raised:")
-            print(e)
-            return ''
-    if str_id and resid1:
-        return get_residuals_table1(structures, cif_dic, str_id)
-    if str_id and resid2:
-        return get_residuals_table2(cif_dic)
-    if str_id and all_cif:
-        return get_all_cif_val_table(structures, str_id)
+    with db.Session() as session:
+        db.set_structure(session, structureId=str_id)
+        print("Structure id:", str_id)
+        if str_id:
+            structure = db.structure
+        if str_id and unitcell and not (resid1 or resid2 or all_cif):
+            try:
+                return get_cell_parameters(cell=db.structure.cell)
+            except ValueError as e:
+                print("Exception raised:")
+                print(e)
+                return ''
+        if str_id and resid1:
+            return get_residuals_table1(structure)
+        if str_id and resid2:
+            return get_residuals_table2(structure)
+        if str_id and all_cif:
+            return get_all_cif_val_table(structure)
 
 
 # noinspection PyUnresolvedReferences
@@ -380,95 +371,111 @@ def get_structures_json(db: DB, ids: (list, tuple) = None, show_all: bool = Fals
     return {"total": number, "records": dic, "status": "success"}
 
 
-def get_cell_parameters(structures: StructureTable, strid: str) -> str:
+def get_cell_parameters(cell: Cell) -> str:
     """
     Resturns unit cell parameters as html formated string.
     """
-    c = structures.get_cell_by_id(strid)
-    cstr = """<b>Unit Cell:</b>&nbsp;&nbsp; 
-                      <i>a</i> = {0:>8.3f}&nbsp;&angst;,&nbsp;
-                      <i>b</i> = {1:>8.3f}&nbsp;&angst;,&nbsp;
-                      <i>c</i> = {2:>8.3f}&nbsp;&angst;,&nbsp; 
-                      <i>&alpha;</i> = {3:>8.3f}&deg;,&nbsp;
-                      <i>&beta;</i> = {4:>8.3f}&deg;,&nbsp;
-                      <i>&gamma;</i> = {5:>8.3f}&deg;,&nbsp;
-                      <i>V</i> = {6}&nbsp;&angst;<sup>3</sup>&nbsp;&nbsp;&nbsp;&nbsp; 
-            <div style="font-size:0pt" id='hidden-cell'>{0}  {1}  {2}  {3}  {4}  {5}</div>
-            """.format(c[0], c[1], c[2], c[3], c[4], c[5], round(c[6], 2))
+    cstr = f"""<b>Unit Cell:</b>&nbsp;&nbsp; 
+                      <i>a</i> = {cell.a:>8.3f}&nbsp;&angst;,&nbsp;
+                      <i>b</i> = {cell.b:>8.3f}&nbsp;&angst;,&nbsp;
+                      <i>c</i> = {cell.c:>8.3f}&nbsp;&angst;,&nbsp; 
+                      <i>&alpha;</i> = {cell.alpha:>8.3f}&deg;,&nbsp;
+                      <i>&beta;</i> = {cell.beta:>8.3f}&deg;,&nbsp;
+                      <i>&gamma;</i> = {cell.gamma:>8.3f}&deg;,&nbsp;
+                      <i>V</i> = {cell.volume:.2f}&nbsp;&angst;<sup>3</sup>&nbsp;&nbsp;&nbsp;&nbsp; 
+            <div style="font-size:0pt" id='hidden-cell'>{cell.a}  {cell.b}  {cell.c}  
+            {cell.alpha}  {cell.beta}  {cell.gamma}</div>
+            """
     return cstr
 
 
-def get_residuals_table1(structures: StructureTable, cif_dic: dict, structure_id: int) -> str:
+def get_residuals_table1(structure: Structure) -> str:
     """
     Returns a table with the most important residuals of a structure.
     """
     try:
-        rsigma = " / {}".format(cif_dic['_diffrn_reflns_av_unetI_netI'])
+        rsigma = f" / {structure.Residuals._diffrn_reflns_av_unetI_netI}"
     except (TypeError, ValueError):
         rsigma = " "
-    if not cif_dic:
-        return ""
-    if cif_dic['_refine_diff_density_max']:
-        peakhole = "{} / {}".format(cif_dic['_refine_diff_density_max'], cif_dic['_refine_diff_density_min'])
+    if structure.Residuals._refine_diff_density_max:
+        peakhole = f"{structure.Residuals._refine_diff_density_max} / {structure.Residuals._refine_diff_density_min}"
     else:
         peakhole = " "
     try:
-        sumform = format_sum_formula(structures.get_calc_sum_formula(structure_id), break_after=99)
+        sumform = format_sum_formula(structure.sum_formula._asdict(), break_after=99)
     except KeyError:
         sumform = ''
     if sumform == '':
         # Display this as last resort:
-        sumform = cif_dic['_chemical_formula_sum']
-    table1 = """
+        sumform = structure.Residuals._chemical_formula_sum
+    table1 = f"""
     <table class="table table-bordered table-condensed" id='resitable1'>
         <tbody>
-        <tr><td style='width: 40%'><b>Space Group</b></td>                 <td>{0}</td></tr>
-        <tr><td><b>Z</b></td>                           <td>{1}</td></tr>
-        <tr><td><b>Sum Formula</b></td>                 <td>{2}</td></tr>
-        <tr><td><b>Temperature [K]</b></td>             <td>{3}</td></tr>
-        <tr><td><b><i>wR</i><sub>2</sub></b></td>       <td>{4}</td></tr>
-        <tr><td><b><i>R<i/><sub>1</sub></b></td>        <td>{5}</td></tr>
-        <tr><td><b>Goof</b></td>                        <td>{6}</td></tr>
-        <tr><td><b>Max Shift/esd</b></td>               <td>{7}</td></tr>
-        <tr><td><b>Peak / Hole [e&angst;<sup>&minus;3</sup>]</b></td>             <td>{8}</td></tr>
-        <tr><td><b><i>R</i><sub>int</sub> / <i>R</i><sub>&sigma;</sub></b></b></td>    <td>{9}{10} </td></tr>
-        <tr><td><b>Wavelength [&angst;]</b></td>                      <td>{11}</td></tr>
+        <tr>
+            <td style='width: 40%'><b>Space Group</b></td> 
+            <td>{structure.Residuals._space_group_name_H_M_alt}</td>
+        </tr>
+        <tr>
+            <td><b>Z</b></td>                           
+            <td>{structure.Residuals._cell_formula_units_Z}</td>
+        </tr>
+        <tr>
+            <td><b>Sum Formula</b></td>                 
+            <td>{sumform}</td>
+        </tr>
+        <tr>
+            <td><b>Temperature [K]</b></td>
+            <td>{structure.Residuals._diffrn_ambient_temperature}</td>
+        </tr>
+        <tr>
+            <td><b><i>wR</i><sub>2</sub></b></td>
+            <td>{(structure.Residuals._refine_ls_wR_factor_ref if structure.Residuals._refine_ls_wR_factor_ref else structure.Residuals._refine_ls_wR_factor_gt)}
+            </td>
+        </tr>
+        <tr>
+            <td><b><i>R<i/><sub>1</sub></b></td>
+            <td>{(structure.Residuals._refine_ls_R_factor_gt if structure.Residuals._refine_ls_R_factor_gt else structure.Residuals._refine_ls_R_factor_all)}
+            </td>
+        </tr>
+        <tr>
+            <td><b>Goof</b></td>
+            <td>{structure.Residuals._refine_ls_goodness_of_fit_ref}</td>
+        </tr>
+        <tr>
+            <td><b>Max Shift/esd</b></td> 
+            <td>{structure.Residuals._refine_ls_shift_su_max}</td>
+        </tr>
+        <tr>
+            <td><b>Peak / Hole [e&angst;<sup>&minus;3</sup>]</b></td> 
+            <td>{peakhole}</td></tr>
+        <tr>
+            <td><b><i>R</i><sub>int</sub> / <i>R</i><sub>&sigma;</sub></b></b></td> 
+            <td>{structure.Residuals._diffrn_reflns_av_R_equivalents}{rsigma} </td>
+        </tr>
+        <tr>
+            <td><b>Wavelength [&angst;]</b></td> 
+            <td>{structure.Residuals._diffrn_radiation_wavelength}</td></tr>
         </tbody>
     </table>
-    """.format(cif_dic['_space_group_name_H_M_alt'],
-               cif_dic['_cell_formula_units_Z'],
-               sumform,
-               cif_dic['_diffrn_ambient_temperature'],
-               cif_dic['_refine_ls_wR_factor_ref'] if cif_dic['_refine_ls_wR_factor_ref'] else cif_dic[
-                   '_refine_ls_wR_factor_gt'],
-               cif_dic['_refine_ls_R_factor_gt'] if cif_dic['_refine_ls_R_factor_gt'] else cif_dic[
-                   '_refine_ls_R_factor_all'],
-               cif_dic['_refine_ls_goodness_of_fit_ref'],
-               cif_dic['_refine_ls_shift_su_max'],
-               peakhole,
-               cif_dic['_diffrn_reflns_av_R_equivalents'],
-               rsigma,
-               cif_dic['_diffrn_radiation_wavelength']
-               )
+    """
     return table1
 
 
-def get_residuals_table2(cif_dic: dict) -> str:
+def get_residuals_table2(structure: Structure) -> str:
     """
     Returns a table with the most important residuals of a structure.
     """
-    if not cif_dic:
-        return ""
-    wavelen = cif_dic['_diffrn_radiation_wavelength']
-    thetamax = cif_dic['_diffrn_reflns_theta_max']
-    thetafull = cif_dic['_diffrn_reflns_theta_full']
+    res = structure.Residuals
+    wavelen = res._diffrn_radiation_wavelength
+    thetamax = res._diffrn_reflns_theta_max
+    thetafull = res._diffrn_reflns_theta_full
     # d = lambda/2sin(theta):
     try:
         d = wavelen / (2 * math.sin(math.radians(thetamax)))
     except(ZeroDivisionError, TypeError):
         d = 0.0
     try:
-        compl = cif_dic['_diffrn_measured_fraction_theta_max'] * 100
+        compl = res._diffrn_measured_fraction_theta_max * 100
         if not compl:
             compl = 0.0
         if isinstance(compl, str):
@@ -476,51 +483,68 @@ def get_residuals_table2(cif_dic: dict) -> str:
     except TypeError:
         compl = 0.0
     try:
-        data_to_param = cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters']
+        data_to_param = res._refine_ls_number_reflns / res._refine_ls_number_parameters
     except TypeError:
         data_to_param = 0
-    table2 = """
+    table2 = f"""
     <table class="table table-bordered table-condensed" id='resitable2'>
         <tbody>
-        <tr><td style='width: 40%'><b>Measured Refl.</b></td>       <td>{0}</td></tr>
-        <tr><td><b>Independent Refl.</b></td>                       <td>{10}</td></tr>
-        <tr><td><b>Data with [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>    <td>{11}</td></tr>
-        <tr><td><b>Parameters</b></td>                              <td>{1}</td></tr>
-        <tr><td><b>data/param</b></td>                              <td>{2:<5.1f}</td></tr>
-        <tr><td><b>Restraints</b></td>                              <td>{3}</td></tr>
-        <tr><td><b>&theta;<sub>full</sub> [&deg;]</b> / 
-        <b>&theta;<sub>max</sub> [&deg;]</b></td>                    <td>{4} / {5}</td></tr>
-        <tr><td><b>d [&angst;]</b></td>                             <td>{6:5.3f}</td></tr>
-        <tr><td><b>completeness [%]</b></td>                            <td>{7:<5.1f}</td></tr>
-        <tr><td><b>Flack X parameter</b></td>                             <td>{8}</td></tr>
-        <tr><td><b>CCDC Number</b></td>                             <td>{9}</td></tr>
+        <tr>
+            <td style='width: 40%'><b>Measured Refl.</b></td>       
+            <td>{res._diffrn_reflns_number}</td></tr>
+        <tr>
+            <td><b>Independent Refl.</b></td>
+            <td>{res._refine_ls_number_reflns}</td>
+        </tr>
+        <tr>
+            <td><b>Data with [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>    
+            <td>{res._reflns_number_gt}</td></tr>
+        <tr>
+            <td><b>Parameters</b></td>
+            <td>{res._refine_ls_number_parameters}</td>
+        </tr>
+        <tr><td><b>data/param</b></td> 
+            <td>{data_to_param:<5.1f}</td>
+        </tr>
+        <tr>
+            <td><b>Restraints</b></td> 
+            <td>{res._refine_ls_number_restraints}</td>
+        </tr>
+        <tr>
+            <td><b>&theta;<sub>full</sub> [&deg;]</b> / <b>&theta;<sub>max</sub> [&deg;]</b></td>  
+            <td>{(thetamax if thetamax else '?')} / {(thetafull if thetafull else '?')}</td>
+        </tr>
+        <tr>
+            <td><b>d [&angst;]</b></td> 
+            <td>{d:5.3f}</td>
+        </tr>
+        <tr>
+            <td><b>completeness [%]</b></td> 
+            <td>{compl:<5.1f}</td>
+        </tr>
+        <tr>
+            <td><b>Flack X parameter</b></td> 
+            <td>{res._refine_ls_abs_structure_Flack}</td>
+        </tr>
+        <tr>
+            <td><b>CCDC Number</b></td> 
+            <td>{res._database_code_depnum_ccdc_archive}</td>
+        </tr>
         </tbody>
     </table>
-    """.format(cif_dic['_diffrn_reflns_number'],  # 0
-               cif_dic['_refine_ls_number_parameters'],  # 1
-               data_to_param,  # 2
-               cif_dic['_refine_ls_number_restraints'],  # 3
-               thetamax if thetamax else '?',  # 4
-               thetafull if thetafull else '?',  # 5
-               d,  # 6
-               compl,  # 7
-               cif_dic['_refine_ls_abs_structure_Flack'],  # 8
-               cif_dic['_database_code_depnum_ccdc_archive'],  # 9
-               cif_dic['_refine_ls_number_reflns'],  # 10
-               cif_dic['_reflns_number_gt']  # 11
-               )
+    """
     return table2
 
 
-def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
+def get_all_cif_val_table(structure: Structure) -> str:
     """
     Returns a html table with the residuals values of a structure.
     """
     # starting table header (the div is for css):
     # style="white-space: pre": preserves white space
-    button = """<a type="button" class="btn btn-default btn-sm" id="download_CIF"
-                                                 href='current-cif/{}' >Download as CIF</a>""".format(structure_id)
-    table_string = """<h4>All CIF values</h4> {}
+    button = f"""<a type="button" class="btn btn-default btn-sm" id="download_CIF"
+                                                 href='current-cif/{structure.Id}' >Download as CIF</a>"""
+    table_string = f"""<h4>All CIF values</h4> {button if download_button else ''}
                         <div id="myresidualtable">
                         <table class="table table-striped table-bordered table-condensed" style="white-space: pre">
                             <thead>
@@ -529,28 +553,25 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
                                     <th> Value </th>
                                 </tr>
                             </thead>
-                        <tbody>""".format(button if download_button else '')
+                        <tbody>"""
     # get the residuals of the cif file as a dictionary:
-    dic = structures.get_row_as_dict(structure_id)
-    if not dic:
-        return ""
     # filling table with data rows:
-    for key, value in dic.items():
+    for key, value in structure.Residuals._asdict().items():
         if key == "Id":
             continue
         if isinstance(value, str):
             value = ''.join([x.replace("\n", "<br>").rstrip('\r\n') for x in value])
         if key == '_shelx_res_file':
             # Adding an ID to make font monospace in the view:
-            table_string += '''<tr>
-                                 <td class="residual-{}"> {} </a></td> 
-                                 <td id=resfile > {} </a></td> 
-                               </tr> \n'''.format(structure_id, key, value)
+            table_string += f'''<tr>
+                                 <td class="residual-{structure.Id}"> {key} </a></td> 
+                                 <td id=resfile > {value} </a></td> 
+                               </tr> \n'''
         else:
-            table_string += '''<tr>
-                                <td class="residual-{}"> {} </a></td> 
-                                <td> {} </a></td> 
-                           </tr> \n'''.format(structure_id, key, value)
+            table_string += f'''<tr>
+                                <td class="residual-{structure.Id}"> {key} </a></td> 
+                                <td> {value} </a></td> 
+                           </tr> \n'''
     # closing table:
     table_string += """ </tbody>
                         </table>
@@ -752,8 +773,8 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
     db = DB()
-    db.load_database(Path('/Users/daniel/Documents/GitHub/StructureFinder/test.sqlite'))
+    db.load_database(Path(dbfilename))
+    run()
     json = get_structures_json(db, [1, 2, 4])
     print(json)

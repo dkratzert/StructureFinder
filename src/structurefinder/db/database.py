@@ -31,7 +31,7 @@ class DB(QtCore.QObject):
 
     def load_database(self, database_file: Path):
         url_object = sa.URL.create("sqlite", database=str(database_file.resolve()))
-        self.engine = sa.create_engine(url_object, echo=False)
+        self.engine = sa.create_engine(url_object, echo=True)
         self.Session: sessionmaker = sessionmaker(self.engine)
 
     def structure_count(self) -> int:
