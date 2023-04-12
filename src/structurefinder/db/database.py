@@ -5,6 +5,8 @@ from pathlib import Path
 from typing import Optional, List, Tuple
 
 from PyQt5 import QtCore
+from sqlalchemy import CursorResult
+from sqlalchemy.engine import TupleResult
 from sqlalchemy.orm import sessionmaker
 import sqlalchemy as sa
 
@@ -40,7 +42,7 @@ class DB(QtCore.QObject):
             num = session.query(Structure).count()
         return num
 
-    def get_all_structures(self, idlist: List[int] = None) -> tuple:
+    def get_all_structures(self, idlist: List[int] = None) -> List[sa.Row]:
         """
         sqlalchemy.engine.Engine SELECT "Structure"."Id", "Structure".dataname, "Structure".filename,
         "Residuals".modification_time, "Structure".path
@@ -53,13 +55,13 @@ class DB(QtCore.QObject):
                     )
             if idlist:
                 stmt = stmt.where(Structure.Id.in_(idlist))
-            return tuple(conn.execute(stmt))
+            return conn.execute(stmt).tuples().all()
 
     def set_structure(self, session, structureId: int) -> None:
         stmt = sa.select(Structure).filter_by(Id=structureId)
         self.structure = session.scalar(stmt)
 
-    def _find_by_volume(self, volume: float, threshold: float = 0) -> list:
+    def _find_by_volume(self, volume: float, threshold: float = 0) -> List[sa.Row]:
         """
         Searches cells with volume between upper and lower limit. Returns the Id and the unit cell.
         :param threshold: Volume uncertaincy where to search
@@ -81,7 +83,7 @@ class DB(QtCore.QObject):
         with self.engine.connect() as conn:
             return list(conn.execute(stmt).tuples())
 
-    def search_cell(self, cell: list, more_results: bool = False, sublattice: bool = False) -> List:
+    def search_cell(self, cell: list, more_results: bool = False, sublattice: bool = False) -> List[sa.Row]:
         """
         Searches for a unit cell and resturns a list of found structures for main table.
         This method does not validate the cell. This has to be done before!
@@ -128,7 +130,7 @@ class DB(QtCore.QObject):
                     results.append(curr_cell)
         return results
 
-    def find_text_and_authors(self, txt: str) -> tuple:
+    def find_text_and_authors(self, txt: str) -> Tuple[Tuple, ...]:
         result_txt = self.find_authors(txt)
         result_authors = self.find_by_strings(txt)
         result_txt = set(result_txt)
@@ -213,3 +215,5 @@ if __name__ == '__main__':
                          # more_results=True
                          ))"""
     print(db.find_by_elements('C6H1O1Ag', formula_ex=''))
+    volume = db._find_by_volume(500)
+    print(volume)

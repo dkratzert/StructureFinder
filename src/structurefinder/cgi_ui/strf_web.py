@@ -10,6 +10,7 @@ from xml.etree.ElementTree import ParseError
 from gemmi.cif import Style
 
 from structurefinder.ccdc.query import get_cccsd_path, search_csd, parse_results
+from structurefinder.db.database import DB
 from structurefinder.misc.exporter import cif_data_to_document
 from structurefinder.misc.version import VERSION
 from structurefinder.searcher.constants import centering_letter_2_num, centering_num_2_letter
@@ -62,8 +63,9 @@ def structures_list_data():
     """
     The content of the structures list.
     """
-    structures = StructureTable(dbfilename)
-    return get_structures_json(structures, show_all=True)
+    db = DB()
+    db.load_database(Path(dbfilename))
+    return get_structures_json(db, show_all=True)
 
 
 @app.get('/')
@@ -99,20 +101,22 @@ def cellsrch():
     sublattice = (request.GET.supercell == "true")
     cell = is_valid_cell(cell_search)
     print("Cell search:", cell)
-    structures = StructureTable(dbfilename)
+    db = DB()
+    db.load_database(dbfilename)
     if cell:
-        ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
+        ids = [x.Id for x in db.search_cell(cell=cell, more_results=more_results, sublattice=sublattice)]
         print("--> Got {} structures from cell search.".format(len(ids)))
-        return get_structures_json(structures, ids)
+        return get_structures_json(db, ids)
 
 
 @app.get("/txtsrch")
 def txtsrch():
-    structures = StructureTable(dbfilename)
+    db = DB()
+    db.load_database(dbfilename)
     text_search = request.GET.text_search
     print("Text search:", text_search)
-    ids = search_text(structures, text_search)
-    return get_structures_json(structures, ids)
+    ids = search_text(db, text_search)
+    return get_structures_json(db, ids)
 
 
 @app.get("/adv_srch")
@@ -352,13 +356,13 @@ def is_ajax():
         return False
 
 
-def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, show_all: bool = False) -> dict:
+def get_structures_json(db: DB, ids: (list, tuple) = None, show_all: bool = False) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
     if not ids and not show_all:
         return {}
-    dic = structures.get_all_structures_as_dict(ids)
+    dic = [row._asdict() for row in db.get_all_structures(ids)]
     number = len(dic)
     print("--> Got {} structures from actual search.".format(number))
     if number == 0:
@@ -558,7 +562,7 @@ def chunks(l: list, n: int) -> list:
     return [l[i:i + n] for i in range(0, len(l), n)]
 
 
-def find_cell(structures: StructureTable, cell: list, sublattice=False, more_results=False) -> list:
+def find_cell(db: DB, cell: list, sublattice=False, more_results=False) -> list:
     """
     Finds unit cells in db. Rsturns hits a a list of ids.
     """
@@ -569,12 +573,12 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     else:
         # regular:
         atol, ltol, vol_threshold = regular_results_parameters(volume)
-    cells: List = structures.find_by_volume(volume, vol_threshold)
+    cells: List = db.find_by_volume(volume, vol_threshold)
     if sublattice:
         # sub- and superlattices:
         for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
             # First a list of structures where the volume is similar:
-            cells.extend(structures.find_by_volume(v, vol_threshold))
+            cells.extend(db.search_cell().find_by_volume(v, vol_threshold))
         cells = list(set(cells))
     idlist2: List = []
     # Real lattice comparing in G6:
@@ -594,7 +598,7 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
         return []
 
 
-def search_text(structures: StructureTable, search_string: str) -> tuple:
+def search_text(db: DB, search_string: str) -> tuple:
     """
     searches db for given text
     """
@@ -605,7 +609,7 @@ def search_text(structures: StructureTable, search_string: str) -> tuple:
         search_string = "{}{}{}".format('*', search_string, '*')
     try:
         #  bad hack, should make this return ids like cell search
-        idlist = structures.find_text_and_authors(search_string)
+        idlist = db.find_text_and_authors(search_string)
     except AttributeError as e:
         print("Exception in search_text:")
         print(e)
@@ -746,3 +750,7 @@ def run():
 
 if __name__ == "__main__":
     run()
+    db = DB()
+    db.load_database(Path('/Users/daniel/Documents/GitHub/StructureFinder/test.sqlite'))
+    json = get_structures_json(db, [1, 2, 4])
+    print(json)
