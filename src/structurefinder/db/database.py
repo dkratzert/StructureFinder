@@ -1,14 +1,11 @@
-import time
 from itertools import chain
 from math import log
 from pathlib import Path
 from typing import Optional, List, Tuple
 
-from PyQt5 import QtCore
-from sqlalchemy import CursorResult
-from sqlalchemy.engine import TupleResult
-from sqlalchemy.orm import sessionmaker
 import sqlalchemy as sa
+from PyQt5 import QtCore
+from sqlalchemy.orm import sessionmaker
 
 from structurefinder.db.mapping import Structure, Residuals, Cell
 from structurefinder.pymatgen.core import lattice

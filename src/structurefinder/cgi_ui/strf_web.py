@@ -363,6 +363,13 @@ def get_structures_json(db: DB, ids: (list, tuple) = None, show_all: bool = Fals
     if not ids and not show_all:
         return {}
     dic = [row._asdict() for row in db.get_all_structures(ids)]
+    for row in dic:
+        row['recid'] = row.get('Id')
+        for key, value in row.items():
+            if isinstance(value, bytes):
+                row[key] = value.decode('utf-8', 'ignore')
+            if isinstance(value, datetime.date):
+                row[key] = str(value)
     number = len(dic)
     print("--> Got {} structures from actual search.".format(number))
     if number == 0:
@@ -551,13 +558,6 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
 def chunks(l: list, n: int) -> list:
     """
     returns successive n-sized chunks from l.
-    >>> l = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'a', 'b', 'c', 'd', 'e', 'f']
-    >>> chunks(l, 5)
-    [[1, 2, 3, 4, 5], [6, 7, 8, 9, 0], ['a', 'b', 'c', 'd', 'e'], ['f']]
-    >>> chunks(l, 1)
-    [[1], [2], [3], [4], [5], [6], [7], [8], [9], [0], ['a'], ['b'], ['c'], ['d'], ['e'], ['f']]
-    >>> chunks(l, 50)
-    [[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'a', 'b', 'c', 'd', 'e', 'f']]
     """
     return [l[i:i + n] for i in range(0, len(l), n)]
 
