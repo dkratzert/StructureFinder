@@ -6,7 +6,7 @@ from typing import Optional, Union
 import gemmi
 from PyQt5 import QtCore
 
-from structurefinder.searcher.database_handler import StructureTable
+from structurefinder.db.database import DB
 from structurefinder.searcher.filecrawler import excluded_names, filewalker_walk, fill_db_with_cif_data, MyZipReader, \
     MyTarReader, fill_db_with_res_data
 from structurefinder.searcher.fileparser import CifFile
@@ -27,7 +27,7 @@ class Worker(QtCore.QObject):
         self.searchpath = searchpath
         self.add_res_files = add_res_files
         self.add_cif_files = add_cif_files
-        self.structures = db
+        self.db = db
         self.lastid = lastid
         self.excludes = [] if not excludes else excludes
         self.files_indexed = 0
@@ -35,12 +35,11 @@ class Worker(QtCore.QObject):
             self.files_indexed = self.index_files()
 
     def index_files(self):
-        return self.put_files_in_db(searchpath=self.searchpath, structures=self.structures,
-                                    fillres=self.add_res_files, excludes=self.excludes,
-                                    fillcif=self.add_cif_files, lastid=self.lastid)
+        return self.put_files_in_db(searchpath=self.searchpath, excludes=self.excludes, lastid=self.lastid,
+                                    db=self.db, fillcif=self.add_cif_files, fillres=self.add_res_files)
 
     def put_files_in_db(self, searchpath: str = '', excludes: Union[list, None] = None, lastid: int = 1,
-                        structures=None, fillcif=True, fillres=True) -> int:
+                        db: DB=None, fillcif=True, fillres=True) -> int:
         """
         Imports files from a certain directory
         """
@@ -61,7 +60,7 @@ class Worker(QtCore.QObject):
         filecount = 1
         for filenum, (filepth, name) in enumerate(filelist, start=1):
             if self.stop:
-                structures.database.commit_db()
+                db.database.commit_db()
                 self.finished.emit('Indexing aborted')
                 return 0
             filecount = filenum
@@ -89,7 +88,7 @@ class Worker(QtCore.QObject):
                     tst = None
                     try:
                         tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid,
-                                                    structures=structures)
+                                                    structures=db)
                     except Exception as err:
                         if DEBUG:
                             print(
@@ -102,7 +101,7 @@ class Worker(QtCore.QObject):
                     num += 1
                     if lastid % 1000 == 0:
                         print(f'{num} files ...')
-                        structures.database.commit_db()
+                        db.database.commit_db()
                 lastid += 1
                 self.progress.emit(filecount)
                 self.number_of_files.emit(filecount)
@@ -138,7 +137,7 @@ class Worker(QtCore.QObject):
                         tst = None
                         try:
                             tst = fill_db_with_cif_data(cif, filename=z.cifname, path=fullpath, structure_id=lastid,
-                                                        structures=structures)
+                                                        structures=db)
                         except Exception as err:
                             if DEBUG:
                                 print(
@@ -154,7 +153,7 @@ class Worker(QtCore.QObject):
                         num += 1
                         if lastid % 1000 == 0:
                             print(f'{num} files ...')
-                            structures.database.commit_db()
+                            db.database.commit_db()
                         lastid += 1
                         self.progress.emit(filecount)
                         self.number_of_files.emit(filecount)
@@ -170,7 +169,7 @@ class Worker(QtCore.QObject):
                     continue
                 if res:
                     tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=lastid,
-                                                structures=structures, options=options)
+                                                structures=db, options=options)
                 if not tst:
                     if DEBUG:
                         print('res file not added:', fullpath)
@@ -179,11 +178,11 @@ class Worker(QtCore.QObject):
                 rescount += 1
                 if lastid % 1000 == 0:
                     print(f'{num} files ...')
-                    structures.database.commit_db()
+                    db.database.commit_db()
                 lastid += 1
                 self.progress.emit(filecount)
                 self.number_of_files.emit(filecount)
-        structures.database.commit_db()
+        db.database.commit_db()
         time2 = time.perf_counter()
         self.progress.emit(filecount)
         m, s = divmod(time2 - time1, 60)
@@ -193,4 +192,4 @@ class Worker(QtCore.QObject):
         print(f'      {filecount} files considered.')
         print(tmessage)
         self.finished.emit(tmessage)
-        return len(structures)
+        return len(db)
