@@ -599,7 +599,8 @@ class StartStructureDB(QMainWindow):
         self.ui.importDatabaseButton.setDisabled(True)
         self.thread = QThread()
         self.worker = Worker(searchpath=startdir, add_res_files=self.ui.add_res.isChecked(),
-                             add_cif_files=self.ui.add_cif.isChecked(), lastid=lastid, db=, excludes=excluded_names)
+                             add_cif_files=self.ui.add_cif.isChecked(), lastid=lastid, db=self.db,
+                             excludes=excluded_names)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.index_files)
         self.worker.finished.connect(self.thread.quit)

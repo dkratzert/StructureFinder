@@ -60,7 +60,6 @@ class Worker(QtCore.QObject):
         filecount = 1
         for filenum, (filepth, name) in enumerate(filelist, start=1):
             if self.stop:
-                db.database.commit_db()
                 self.finished.emit('Indexing aborted')
                 return 0
             filecount = filenum
@@ -87,8 +86,7 @@ class Worker(QtCore.QObject):
                 if cif:  # means cif object has data inside (cif could be parsed)
                     tst = None
                     try:
-                        tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid,
-                                                    structures=db)
+                        tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid, db=self.db)
                     except Exception as err:
                         if DEBUG:
                             print(
@@ -101,7 +99,7 @@ class Worker(QtCore.QObject):
                     num += 1
                     if lastid % 1000 == 0:
                         print(f'{num} files ...')
-                        db.database.commit_db()
+                        db.session.commit()
                 lastid += 1
                 self.progress.emit(filecount)
                 self.number_of_files.emit(filecount)
@@ -137,7 +135,7 @@ class Worker(QtCore.QObject):
                         tst = None
                         try:
                             tst = fill_db_with_cif_data(cif, filename=z.cifname, path=fullpath, structure_id=lastid,
-                                                        structures=db)
+                                                        db=self.db)
                         except Exception as err:
                             if DEBUG:
                                 print(
@@ -153,7 +151,7 @@ class Worker(QtCore.QObject):
                         num += 1
                         if lastid % 1000 == 0:
                             print(f'{num} files ...')
-                            db.database.commit_db()
+                            db.session.commit()
                         lastid += 1
                         self.progress.emit(filecount)
                         self.number_of_files.emit(filecount)
@@ -169,7 +167,7 @@ class Worker(QtCore.QObject):
                     continue
                 if res:
                     tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=lastid,
-                                                structures=db, options=options)
+                                                db=self.db, options=options)
                 if not tst:
                     if DEBUG:
                         print('res file not added:', fullpath)
@@ -182,7 +180,7 @@ class Worker(QtCore.QObject):
                 lastid += 1
                 self.progress.emit(filecount)
                 self.number_of_files.emit(filecount)
-        db.database.commit_db()
+        db.session.commit()
         time2 = time.perf_counter()
         self.progress.emit(filecount)
         m, s = divmod(time2 - time1, 60)
@@ -192,4 +190,4 @@ class Worker(QtCore.QObject):
         print(f'      {filecount} files considered.')
         print(tmessage)
         self.finished.emit(tmessage)
-        return len(db)
+        return db.get_lastrowid()

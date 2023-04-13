@@ -5,9 +5,9 @@ from typing import Optional, List, Tuple
 
 import sqlalchemy as sa
 from PyQt5 import QtCore
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 
-from structurefinder.db.mapping import Structure, Residuals, Cell
+from structurefinder.db.mapping import Structure, Residuals, Cell, Base
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import misc
 from structurefinder.searcher.misc import more_results_parameters, regular_results_parameters
@@ -25,13 +25,17 @@ class DB(QtCore.QObject):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.engine = None
+        self.session: Optional[Session] = None
         self.Session: Optional[sessionmaker] = None
         self.structure_id: Optional[int] = None
         self.structure: Optional[Structure] = None
 
     def load_database(self, database_file: Path):
-        url_object = sa.URL.create("sqlite", database=str(database_file.resolve()))
+        database_path = database_file.resolve()
+        url_object = sa.URL.create("sqlite", database=str(database_path))
         self.engine = sa.create_engine(url_object, echo=False)
+        if not database_path.exists():
+            Base.metadata.create_all(self.engine)
         self.Session: sessionmaker = sessionmaker(self.engine)
 
     def set_structure(self, session, structureId: int) -> None:
@@ -42,6 +46,9 @@ class DB(QtCore.QObject):
         with self.Session() as session:
             num = session.query(Structure).count()
         return num
+
+    def get_lastrowid(self):
+        return self.structure_count()
 
     def get_all_structures(self, idlist: List[int] = None) -> List[sa.Row]:
         """

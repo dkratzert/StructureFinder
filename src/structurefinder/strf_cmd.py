@@ -3,12 +3,11 @@ import sys
 import time
 from argparse import Namespace
 from pathlib import Path
-from sqlite3 import DatabaseError
 
+from structurefinder.db.database import DB
 from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core.lattice import Lattice
-from structurefinder.searcher.database_handler import DatabaseRequest, StructureTable
 from structurefinder.searcher.filecrawler import excluded_names
 from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
 from structurefinder.searcher.worker import Worker
@@ -128,7 +127,7 @@ def run_index(args=None):
             print("Error: You need to give either option -c, -r or both.")
             sys.exit()
         if args.outfile:
-            dbfilename = args.outfile
+            dbfilename: str = args.outfile
         else:
             dbfilename = 'structuredb.sqlite'
         if args.delete:
@@ -138,45 +137,47 @@ def run_index(args=None):
             except FileNotFoundError:
                 pass
             except PermissionError:
-                print('Could not acess database file "{}". Is it used elsewhere?'.format(dbfilename))
+                print(f'Could not acess database file "{dbfilename}". Is it used elsewhere?')
                 print('Giving up...')
                 sys.exit()
-        db, structures = get_database(dbfilename)
+        db = DB()
+        db.load_database(Path(dbfilename))
         time1 = time.perf_counter()
-        for p in args.dir:
-            # the command line version
-            lastid = db.get_lastrowid()
-            if not lastid:
-                lastid = 1
-            else:
-                lastid += 1
-            try:
-                worker = Worker(searchpath=p, add_res_files=args.fillres, add_cif_files=args.fillcif, lastid=lastid,
-                                db=structures, excludes=args.ex if args.ex else excluded_names, standalone=True)
-            except OSError as e:
-                print("Unable to collect files:")
-                print(e)
-            except KeyboardInterrupt:
-                sys.exit()
-            print("---------------------")
-        try:
-            if db and structures:
-                db.init_textsearch()
-                db.init_author_search()
-                db.populate_fulltext_search_table()
-                db.populate_author_fulltext_search()
-                db.make_indexes()
-        except TypeError:
-            print('No valid files found. They might be in excluded subdirectories.')
-        time2 = time.perf_counter()
-        diff = time2 - time1
-        m, s = divmod(diff, 60)
-        h, m = divmod(m, 60)
-        print(f"\nTotal {worker.files_indexed} cif/res files in '{str(Path(dbfilename).resolve())}'. "
-              f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
-        import os
-        if "PYTEST_CURRENT_TEST" not in os.environ:
-            check_update()
+        with db.Session() as session:
+            db.session = session
+            for p in args.dir:
+                # the command line version
+                lastid = db.get_lastrowid()
+                if not lastid:
+                    lastid = 1
+                else:
+                    lastid += 1
+                try:
+                    worker = Worker(searchpath=p, add_res_files=args.fillres, add_cif_files=args.fillcif, lastid=lastid,
+                                    db=db, excludes=args.ex if args.ex else excluded_names, standalone=True)
+                except OSError as e:
+                    print("Unable to collect files:")
+                    print(e)
+                except KeyboardInterrupt:
+                    sys.exit()
+                print("---------------------")
+            """
+            TODO:
+            db.init_textsearch()
+            db.init_author_search()
+            db.populate_fulltext_search_table()
+            db.populate_author_fulltext_search()
+            db.make_indexes()"""
+            #print('No valid files found. They might be in excluded subdirectories.')
+            time2 = time.perf_counter()
+            diff = time2 - time1
+            m, s = divmod(diff, 60)
+            h, m = divmod(m, 60)
+            print(f"\nTotal {worker.files_indexed} cif/res files in '{str(Path(dbfilename).resolve())}'. "
+                  f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
+            import os
+            if "PYTEST_CURRENT_TEST" not in os.environ:
+                check_update()
 
 
 def merge_database(args: Namespace):
@@ -187,20 +188,9 @@ def merge_database(args: Namespace):
     if Path(merge_file_name).samefile(dbfile):
         print('\nCan not merge same file together!\n')
         return
-    db, structures = get_database(dbfile)
+    db = DB()
     db.merge_databases(merge_file_name)
 
-
-def get_database(dbfilename):
-    db = DatabaseRequest(dbfilename)
-    try:
-        db.initialize_db()
-    except DatabaseError as e:
-        print(e)
-        print(f'The Database {dbfilename} is corrupt. Unable to open it!')
-        sys.exit()
-    structures = StructureTable(dbfilename)
-    return db, structures
 
 
 def main():

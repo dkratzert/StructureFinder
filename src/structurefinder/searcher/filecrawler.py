@@ -22,6 +22,8 @@ from typing import Generator, Tuple, List
 
 import gemmi
 
+from structurefinder.db.database import DB
+from structurefinder.db.mapping import Structure, Cell, Atoms
 from structurefinder.searcher import database_handler
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import get_value
@@ -143,8 +145,7 @@ def filewalker_walk(startdir: str, patterns: list, excludes: List[str]) -> Tuple
     return tuple(filelist)
 
 
-def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: int,
-                          structures: database_handler.StructureTable):
+def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: int, db: DB):
     """
     Fill all info from cif file into the database tables
     _atom_site_label
@@ -165,21 +166,24 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
     """
     sum_formula_dict = {}
     measurement_id = 1
-    structures.fill_structures_table(path, filename, structure_id, measurement_id, cif.block.name)
-    structures.fill_cell_table(structure_id, cif.cell.a, cif.cell.b, cif.cell.c,
-                               cif.cell.alpha, cif.cell.beta, cif.cell.gamma, cif.cell.volume)
+    struct = Structure(path=path, filename=filename, Id=structure_id, dataname=cif.block.name,
+                       measurement=measurement_id)
+    struct.cell = Cell(StructureId=structure_id, a=cif.cell.a, b=cif.cell.b, c=cif.cell.c,
+                       alpha=cif.cell.alpha, beta=cif.cell.beta, gamma=cif.cell.gamma, volume=cif.cell.volume)
     try:
-        sum_formula_dict = add_atoms(cif, structure_id, structures)
+        sum_formula_dict = add_atoms(cif, structure_id, struct)
     except AttributeError as e:
         print('Atoms crashed', e, structure_id)
     cif.cif_data['calculated_formula_sum'] = sum_formula_dict
     structures.fill_residuals_table(structure_id, cif)
-    structures.fill_authors_table(structure_id, cif)
+    # structures.fill_authors_table(structure_id, cif)
+    db.session.add(struct)
     return True
 
 
-def add_atoms(cif, structure_id, structures):
+def add_atoms(cif: CifFile, structure_id: int, struct: Structure):
     sum_formula_dict = {}
+    atoms = []
     for at, orth in zip(cif.atoms, cif.atoms_orth):
         try:
             try:
@@ -194,14 +198,17 @@ def add_atoms(cif, structure_id, structures):
                     occu = 1.0
             except (KeyError, ValueError, IndexError):
                 occu = 1.0
-            try:
+            """try:
                 structures.fill_atoms_table(structure_id, at.label, at.type,
                                             get_value(at.x), get_value(at.y), get_value(at.z),
                                             occu, part,
                                             orth.x, orth.y, orth.z)
             except ValueError:
-                pass
-                # print(cif.cif_data['data'], structure_id)
+                pass"""
+            atoms.append(Atoms(StructureId=structure_id, Name=at.label, element=at.type,
+                               x=get_value(at.x), y=get_value(at.y), z=get_value(at.z),
+                               xc=orth.x, yc=orth.y, zc=orth.z))
+            # print(cif.cif_data['data'], structure_id)
             if at.type in sum_formula_dict:
                 sum_formula_dict[at.type] += occu
             else:
@@ -209,11 +216,11 @@ def add_atoms(cif, structure_id, structures):
         except KeyError as e:
             # print(at, structure_id, e)
             pass
+    struct.Atoms = atoms
     return sum_formula_dict
 
 
-def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: int,
-                          structures: database_handler.StructureTable, options: dict):
+def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: int, db: DB, options: dict):
     if not res.cell:
         return False
     if not all([res.cell.a, res.cell.b, res.cell.c, res.cell.al, res.cell.be, res.cell.ga]):
@@ -222,23 +229,23 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         return False
     # Unused value:
     measurement_id = 1
-    structures.fill_structures_table(path, filename, structure_id, measurement_id, res.titl)
-    structures.fill_cell_table(structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.al,
-                               res.cell.be, res.cell.ga, res.cell.volume)
+    db.fill_structures_table(path, filename, structure_id, measurement_id, res.titl)
+    db.fill_cell_table(structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.al,
+                       res.cell.be, res.cell.ga, res.cell.volume)
     for at in res.atoms:
         if at.qpeak:
             continue
         if at.element.lower() == 'cnt':  # Do not add Shelxle centroids
             continue
-        structures.fill_atoms_table(structure_id,
-                                    at.name,
-                                    at.element.capitalize(),
-                                    at.x,
-                                    at.y,
-                                    at.z,
-                                    at.sof,
-                                    at.part.n,
-                                    round(at.xc, 5), round(at.yc, 5), round(at.zc, 5))
+        db.fill_atoms_table(structure_id,
+                            at.name,
+                            at.element.capitalize(),
+                            at.x,
+                            at.y,
+                            at.z,
+                            at.sof,
+                            at.part.n,
+                            round(at.xc, 5), round(at.yc, 5), round(at.zc, 5))
     cif = CifFile(options=options)
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     try:
@@ -306,7 +313,7 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         cif.cif_data["_shelx_res_file"] = str(res)
     except IndexError:
         pass
-    structures.fill_residuals_table(structure_id, cif)
+    db.fill_residuals_table(structure_id, cif)
     return True
 
 
