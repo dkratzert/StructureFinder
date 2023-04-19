@@ -24,7 +24,7 @@ from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import OperationalError
-from typing import Union, Optional
+from typing import Union, Optional, Tuple
 
 import gemmi.cif
 import qtawesome as qta
@@ -598,9 +598,11 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDatabasePushButton.setDisabled(True)
         self.ui.importDatabaseButton.setDisabled(True)
         self.thread = QThread()
-        self.worker = Worker(searchpath=startdir, add_res_files=self.ui.add_res.isChecked(),
-                             add_cif_files=self.ui.add_cif.isChecked(), lastid=lastid, db=self.db,
-                             excludes=excluded_names)
+        with self.db.Session() as session:
+            self.db.session = session
+            self.worker = Worker(searchpath=startdir, add_res_files=self.ui.add_res.isChecked(),
+                                 add_cif_files=self.ui.add_cif.isChecked(), lastid=lastid, db=self.db,
+                                 excludes=excluded_names)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.index_files)
         self.worker.finished.connect(self.thread.quit)
@@ -611,7 +613,8 @@ class StartStructureDB(QMainWindow):
         self.worker.progress.connect(self.report_progress)
         self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
-        self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir))
+        # TODO: make this work
+        #self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir))
         self.statusBar().showMessage('Searching potential files...')
         self.statusBar().show()
         self.abort_import_button.clicked.connect(self.abort_indexing)
@@ -676,7 +679,6 @@ class StartStructureDB(QMainWindow):
         if curr == max:
             self.progress.hide()
 
-    @pyqtSlot(name="close_db")
     def close_db(self, copy_on_close: str = None) -> bool:
         """
         Closed the current database and erases the list.
@@ -722,7 +724,6 @@ class StartStructureDB(QMainWindow):
             return False
         return True
 
-    @pyqtSlot(name="abort_import")
     def abort_import(self):
         """
         This slot means, import was aborted.
@@ -738,8 +739,7 @@ class StartStructureDB(QMainWindow):
         #self.structures.database.initialize_db()
         self.ui.appendDirButton.setEnabled(True)
 
-    @pyqtSlot(QItemSelection, QItemSelection, name="get_properties")
-    def get_properties(self, selected, deselected) -> bool:
+    def get_properties(self, selected: QItemSelection, _: QItemSelection) -> bool:
         """
         This slot shows the properties of a cif file in the properties widget
         """
@@ -769,9 +769,9 @@ class StartStructureDB(QMainWindow):
         """
         Saves the database to a certain file. Therefore I have to close the database.
         """
-        if not hasattr(self.structures, 'database'):
-            return False
-        self.structures.database.commit_db()
+        #if not hasattr(self.structures, 'database'):
+        #    return False
+        #self.structures.database.commit_db()
         # if self.structures.database.con.total_changes > 0:
         #    self.structures.set_database_version(0)
         status = False
@@ -966,8 +966,7 @@ class StartStructureDB(QMainWindow):
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
         return True
 
-    @pyqtSlot('QString')
-    def find_dates(self, date1: str, date2: str) -> list:
+    def find_dates(self, date1: str, date2: str) -> Tuple[int, ...]:
         """
         Returns a list if id between date1 and date2
         """
@@ -975,7 +974,7 @@ class StartStructureDB(QMainWindow):
             date1 = '0000-01-01'
         if not date2:
             date2 = 'NOW'
-        result = self.structures.find_by_date(date1, date2)
+        result = self.db.find_by_date(date1, date2)
         return result
 
     def search_text(self, search_string: str) -> bool:
@@ -1001,7 +1000,6 @@ class StartStructureDB(QMainWindow):
         except Exception:
             self.statusBar().showMessage("Nothing found.")
 
-    @pyqtSlot('QString', name='search_cell')
     def search_cell(self, search_string: str) -> bool:
         """
         searches db for given cell via the cell volume
@@ -1039,7 +1037,7 @@ class StartStructureDB(QMainWindow):
         self.set_model_from_data(searchresult)
         return True
 
-    def search_elements(self, elements: str, excluding: str, onlythese: bool = False) -> list:
+    def search_elements(self, elements: str, excluding: str, onlythese: bool = False) -> Tuple[int, ...]:
         """
         Search for elements like 'C', 'H' or 'O'.
         """
