@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import time
@@ -12,7 +13,7 @@ from structurefinder.searcher.filecrawler import excluded_names, filewalker_walk
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.shelx import ShelXFile
 
-DEBUG = False
+DEBUG = True
 
 
 class Worker(QtCore.QObject):
@@ -64,7 +65,7 @@ class Worker(QtCore.QObject):
                 return 0
             filecount = filenum
             fullpath = os.path.join(filepth, name)
-            options['modification_time'] = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(fullpath)))
+            options['modification_time'] = datetime.date.fromtimestamp(os.path.getmtime(fullpath))
             options['file_size'] = int(os.stat(str(fullpath)).st_size)
             cif = CifFile(options=options)
             self.progress.emit(filecount)

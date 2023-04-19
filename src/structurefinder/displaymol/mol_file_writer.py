@@ -1,12 +1,11 @@
 """
 MOl V3000 format
 """
-
+import math
 import os
 from typing import List
 
 from structurefinder.db.mapping import Atoms
-from structurefinder.searcher.misc import distance
 from structurefinder.shelxfile.elements import get_radius_from_element
 
 
@@ -77,7 +76,7 @@ class MolFile(object):
                     continue
                 if at1.Name == at2.Name:  # name1 = name2
                     continue
-                d = distance(at1.xc, at1.yc, at1.zc, at2.xc, at2.yc, at2.zc)
+                d = math.dist((at1.xc, at1.yc, at1.zc), (at2.xc, at2.yc, at2.zc))
                 if d > 4.0:  # makes bonding faster (longer bonds do not exist)
                     continue
                 rad2 = get_radius_from_element(at2.element)

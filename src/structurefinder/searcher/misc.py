@@ -192,56 +192,6 @@ def get_error_from_value(value: str) -> Tuple[float, float]:
             return 0.0, 0.0
 
 
-def get_value(string):
-    """
-    Returns only the numeric value from a cif item like 1.234(4).
-
-    :parameters
-        ** string **
-            A cif value as string
-    :returns
-        The value without error. (`float`)
-    """
-    if "(" in string:
-        vval = string.split("(")[0]
-        if vval == '':
-            vval = '0.0'
-        return float(vval)
-    else:
-        try:
-            return float(string)
-        except ValueError:
-            return 0.0
-
-
-def flatten(lis: List[Optional[List[Any]]]) -> List[Any]:
-    """
-    Given a list, possibly nested to any level, return it flattened.
-    From: http://code.activestate.com/recipes/578948-flattening-an-arbitrarily-nested-list-in-python/
-
-    >>> flatten([1, 2, 3, [4,5,6,[789, 10, [100]]], 11, [12, 13, [14]]])
-    [1, 2, 3, 4, 5, 6, 789, 10, 100, 11, 12, 13, 14]
-    """
-    new_lis = []
-    for item in lis:
-        if isinstance(item, list):
-            new_lis.extend(flatten(item))
-        else:
-            new_lis.append(item)
-    return new_lis
-
-
-def distance(x1: float, y1: float, z1: float, x2: float, y2: float, z2: float) -> float:
-    """
-    distance between two points in space for orthogonal axes.
-    >>> distance(1, 1, 1, 2, 2, 2)
-    1.7320508075688772
-    >>> distance(1, 0, 0, 2, 0, 0)
-    1.0
-    """
-    return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
-
-
 def format_sum_formula(sumform: Dict[str, Union[int, float]], break_after: int = 99) -> str:
     """
     Makes html formated sum formula from dictionary.

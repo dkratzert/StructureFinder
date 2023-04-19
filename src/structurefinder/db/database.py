@@ -1,15 +1,17 @@
+import datetime
 from itertools import chain
 from math import log
 from pathlib import Path
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Dict
 
 import sqlalchemy as sa
 from PyQt5 import QtCore
 from sqlalchemy.orm import sessionmaker, Session
 
-from structurefinder.db.mapping import Structure, Residuals, Cell, Base
+from structurefinder.db.mapping import Structure, Residuals, Cell, Base, SumFormula
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import misc
+from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import more_results_parameters, regular_results_parameters
 from structurefinder.shelxfile.elements import sorted_atoms
 
@@ -256,6 +258,79 @@ class DB(QtCore.QObject):
         with self.engine.connect() as conn:
             return tuple(chain(*conn.execute(sa.text(req))))
 
+    def fill_residuals_data(self, struct: Structure, cif: CifFile):
+        res = Residuals(
+            _cell_formula_units_Z=cif.cif_data['_cell_formula_units_Z'],
+            _space_group_name_H_M_alt=cif.cif_data['_space_group_name_H-M_alt'],
+            _space_group_name_Hall=cif.cif_data['_space_group_name_Hall'],
+            _space_group_centring_type=cif.cif_data['_space_group_centring_type'],
+            _space_group_IT_number=cif.cif_data['_space_group_IT_number'],
+            _space_group_crystal_system=cif.cif_data['_space_group_crystal_system'],
+            _space_group_symop_operation_xyz=cif.cif_data['_space_group_symop_operation_xyz'],
+            _chemical_formula_sum=cif.cif_data['_chemical_formula_sum'],
+            _chemical_formula_weight=cif.cif_data['_chemical_formula_weight'],
+            _exptl_crystal_description=cif.cif_data['_exptl_crystal_description'],
+            _exptl_crystal_colour=cif.cif_data['_exptl_crystal_colour'],
+            _exptl_crystal_size_max=cif.cif_data['_exptl_crystal_size_max'],
+            _exptl_crystal_size_mid=cif.cif_data['_exptl_crystal_size_mid'],
+            _exptl_crystal_size_min=cif.cif_data['_exptl_crystal_size_min'],
+            _audit_creation_method=cif.cif_data['_audit_creation_method'],
+            _exptl_absorpt_coefficient_mu=cif.cif_data['_exptl_absorpt_coefficient_mu'],
+            _exptl_absorpt_correction_type=cif.cif_data['_exptl_absorpt_correction_type'],
+            _diffrn_ambient_temperature=cif.cif_data['_diffrn_ambient_temperature'],
+            _diffrn_radiation_wavelength=cif.cif_data['_diffrn_radiation_wavelength'],
+            _diffrn_radiation_type=cif.cif_data['_diffrn_radiation_type'],
+            _diffrn_source=cif.cif_data['_diffrn_source'],
+            _diffrn_measurement_device_type=cif.cif_data['_diffrn_measurement_device_type'],
+            _diffrn_reflns_number=cif.cif_data['_diffrn_reflns_number'],
+            _diffrn_reflns_av_R_equivalents=cif.cif_data['_diffrn_reflns_av_R_equivalents'],
+            _diffrn_reflns_theta_min=cif.cif_data['_diffrn_reflns_theta_min'],
+            _diffrn_reflns_theta_max=cif.cif_data['_diffrn_reflns_theta_max'],
+            _diffrn_reflns_theta_full=cif.cif_data['_diffrn_reflns_theta_full'],
+            _diffrn_measured_fraction_theta_max=cif.cif_data['_diffrn_measured_fraction_theta_max'],
+            _diffrn_measured_fraction_theta_full=cif.cif_data['_diffrn_measured_fraction_theta_full'],
+            _reflns_number_total=cif.cif_data['_reflns_number_total'],
+            _reflns_number_gt=cif.cif_data['_reflns_number_gt'],
+            _reflns_threshold_expression=cif.cif_data['_reflns_threshold_expression'],
+            _reflns_Friedel_coverage=cif.cif_data['_reflns_Friedel_coverage'],
+            _computing_structure_solution=cif.cif_data['_computing_structure_solution'],
+            _computing_structure_refinement=cif.cif_data['_computing_structure_refinement'],
+            _refine_special_details=cif.cif_data['_refine_special_details'],
+            _refine_ls_abs_structure_Flack=cif.cif_data['_refine_ls_abs_structure_Flack'],
+            _refine_ls_structure_factor_coef=cif.cif_data['_refine_ls_structure_factor_coef'],
+            _refine_ls_weighting_details=cif.cif_data['_refine_ls_weighting_details'],
+            _refine_ls_number_reflns=cif.cif_data['_refine_ls_number_reflns'],
+            _refine_ls_number_parameters=cif.cif_data['_refine_ls_number_parameters'],
+            _refine_ls_number_restraints=cif.cif_data['_refine_ls_number_restraints'],
+            _refine_ls_R_factor_all=cif.cif_data['_refine_ls_R_factor_all'],
+            _refine_ls_R_factor_gt=cif.cif_data['_refine_ls_R_factor_gt'],
+            _refine_ls_wR_factor_ref=cif.cif_data['_refine_ls_wR_factor_ref'],
+            _refine_ls_wR_factor_gt=cif.cif_data['_refine_ls_wR_factor_gt'],
+            _refine_ls_goodness_of_fit_ref=cif.cif_data['_refine_ls_goodness_of_fit_ref'],
+            _refine_ls_restrained_S_all=cif.cif_data['_refine_ls_restrained_S_all'],
+            _refine_ls_shift_su_max=cif.cif_data['_refine_ls_shift/su_max'],
+            _refine_ls_shift_su_mean=cif.cif_data['_refine_ls_shift/su_mean'],
+            _refine_diff_density_max=cif.cif_data['_refine_diff_density_max'],
+            _refine_diff_density_min=cif.cif_data['_refine_diff_density_min'],
+            _diffrn_reflns_av_unetI_netI=cif.cif_data['_diffrn_reflns_av_unetI/netI'],
+            _database_code_depnum_ccdc_archive=cif.cif_data['_database_code_depnum_ccdc_archive'],
+            _shelx_res_file=cif.cif_data['_shelx_res_file'],
+            modification_time=cif.cif_data['modification_time'],
+            file_size=cif.cif_data['file_size']
+        )
+        struct.Residuals = res
+
+    def fill_formula(self, struct: Structure, formula: Dict[str, float]) -> None:
+        out = [x for x in formula if x.capitalize() not in sorted_atoms]
+        # Delete non-existing atoms from formula:
+        for x in out:
+            del formula[x]
+        if not formula:
+            return
+        columns = ('Elem_' + x.capitalize() for x in formula.keys())
+        formula_dict = dict(zip(columns, formula.values()))
+        struct.sum_formula = SumFormula(**formula_dict)
+
 
 if __name__ == '__main__':
     db = DB()
@@ -267,6 +342,7 @@ if __name__ == '__main__':
     # print(db.find_by_elements('C6H1O1Ag', formula_ex=''))
     # volume = db._find_by_volume(500)
     # print(db.find_by_ccdc_num('1979688'))
-    #print(db.find_by_rvalue(0.02))
+    # print(db.find_by_rvalue(0.02))
     with db.Session() as session:
         print(db.structure_count())
+    db.fill_formula(formula={'C': 23, 'H': 12, 'ir': 1.5}, struct=None)

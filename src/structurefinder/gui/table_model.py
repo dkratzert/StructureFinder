@@ -25,7 +25,10 @@ class TableModel(QtCore.QAbstractTableModel):
         if col == Column.MODIFIED and role == Qt.DisplayRole:
             return str(value)
         if col == Column.PATH and role == Qt.DisplayRole:
-            return str(Path(value.decode('utf-8')))
+            if isinstance(value, bytes):
+                return str(Path(value.decode('utf-8')))
+            else:
+                return str(Path(value))
         if role == Qt.DisplayRole:
             if isinstance(value, bytes):
                 return value.decode('utf-8')

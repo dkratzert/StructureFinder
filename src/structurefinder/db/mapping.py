@@ -2,6 +2,7 @@ from typing import Any, List
 
 from sqlalchemy import Column, Date, Float, ForeignKey, Index, Integer, String, Text, inspect, alias
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped
+from sqlalchemy.types import TypeDecorator, Float
 
 
 class Base(DeclarativeBase):
@@ -11,6 +12,23 @@ class Base(DeclarativeBase):
 
 
 metadata = Base.metadata
+
+
+class FloatType(TypeDecorator):
+    impl = Float
+
+    def process_bind_param(self, value: str, dialect):
+        """
+        Method is called when a value is being written to the database
+        """
+        try:
+            return float(value)
+        except ValueError:
+            return None
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            return float(value)
 
 
 class Structure(Base):
@@ -88,27 +106,27 @@ class Residuals(Base):
     _chemical_formula_weight = Column(Text)
     _exptl_crystal_description = Column(Text)
     _exptl_crystal_colour = Column(Text)
-    _exptl_crystal_size_max = Column(Float)
-    _exptl_crystal_size_mid = Column(Float)
-    _exptl_crystal_size_min = Column(Float)
-    _exptl_absorpt_coefficient_mu = Column(Float)
+    _exptl_crystal_size_max = Column(FloatType)
+    _exptl_crystal_size_mid = Column(FloatType)
+    _exptl_crystal_size_min = Column(FloatType)
+    _exptl_absorpt_coefficient_mu = Column(FloatType)
     _exptl_absorpt_correction_type = Column(Text)
-    _diffrn_ambient_temperature = Column(Float)
-    _diffrn_radiation_wavelength = Column(Float)
+    _diffrn_ambient_temperature = Column(FloatType)
+    _diffrn_radiation_wavelength = Column(FloatType)
     _diffrn_radiation_type = Column(Text)
     _diffrn_source = Column(Text)
     _diffrn_measurement_device_type = Column(Text)
     _diffrn_reflns_number = Column(Integer)
     _diffrn_reflns_av_R_equivalents = Column(Integer)
-    _diffrn_reflns_theta_min = Column(Float)
-    _diffrn_reflns_theta_max = Column(Float)
-    _diffrn_reflns_theta_full = Column(Float)
-    _diffrn_measured_fraction_theta_max = Column(Float)
-    _diffrn_measured_fraction_theta_full = Column(Float)
+    _diffrn_reflns_theta_min = Column(FloatType)
+    _diffrn_reflns_theta_max = Column(FloatType)
+    _diffrn_reflns_theta_full = Column(FloatType)
+    _diffrn_measured_fraction_theta_max = Column(FloatType)
+    _diffrn_measured_fraction_theta_full = Column(FloatType)
     _reflns_number_total = Column(Integer)
     _reflns_number_gt = Column(Integer)
     _reflns_threshold_expression = Column(Text)
-    _reflns_Friedel_coverage = Column(Float)
+    _reflns_Friedel_coverage = Column(FloatType)
     _computing_structure_solution = Column(Text)
     _computing_structure_refinement = Column(Text)
     _refine_special_details = Column(Text)
@@ -118,17 +136,17 @@ class Residuals(Base):
     _refine_ls_number_reflns = Column(Integer)
     _refine_ls_number_parameters = Column(Integer)
     _refine_ls_number_restraints = Column(Integer)
-    _refine_ls_R_factor_all = Column(Float)
-    _refine_ls_R_factor_gt = Column(Float)
-    _refine_ls_wR_factor_ref = Column(Float)
-    _refine_ls_wR_factor_gt = Column(Float)
-    _refine_ls_goodness_of_fit_ref = Column(Float)
-    _refine_ls_restrained_S_all = Column(Float)
-    _refine_ls_shift_su_max = Column(Float)
-    _refine_ls_shift_su_mean = Column(Float)
-    _refine_diff_density_max = Column(Float)
-    _refine_diff_density_min = Column(Float)
-    _diffrn_reflns_av_unetI_netI = Column(Float)
+    _refine_ls_R_factor_all = Column(FloatType)
+    _refine_ls_R_factor_gt = Column(FloatType)
+    _refine_ls_wR_factor_ref = Column(FloatType)
+    _refine_ls_wR_factor_gt = Column(FloatType)
+    _refine_ls_goodness_of_fit_ref = Column(FloatType)
+    _refine_ls_restrained_S_all = Column(FloatType)
+    _refine_ls_shift_su_max = Column(FloatType)
+    _refine_ls_shift_su_mean = Column(FloatType)
+    _refine_diff_density_max = Column(FloatType)
+    _refine_diff_density_min = Column(FloatType)
+    _diffrn_reflns_av_unetI_netI = Column(FloatType)
     _database_code_depnum_ccdc_archive = Column(Text)
     _shelx_res_file = Column(Text)
     modification_time = Column(Date)

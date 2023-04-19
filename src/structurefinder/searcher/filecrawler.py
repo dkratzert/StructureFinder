@@ -18,15 +18,15 @@ import os
 import re
 import tarfile
 import zipfile
+from contextlib import suppress
 from typing import Generator, Tuple, List
 
 import gemmi
+from gemmi.cif import as_number
 
 from structurefinder.db.database import DB
 from structurefinder.db.mapping import Structure, Cell, Atoms
-from structurefinder.searcher import database_handler
 from structurefinder.searcher.fileparser import CifFile
-from structurefinder.searcher.misc import get_value
 from structurefinder.shelxfile.shelx import ShelXFile
 
 DEBUG = False
@@ -168,54 +168,43 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
     measurement_id = 1
     struct = Structure(path=path, filename=filename, Id=structure_id, dataname=cif.block.name,
                        measurement=measurement_id)
-    struct.cell = Cell(StructureId=structure_id, a=cif.cell.a, b=cif.cell.b, c=cif.cell.c,
+    struct.cell = Cell(a=cif.cell.a, b=cif.cell.b, c=cif.cell.c,
                        alpha=cif.cell.alpha, beta=cif.cell.beta, gamma=cif.cell.gamma, volume=cif.cell.volume)
     try:
-        sum_formula_dict = add_atoms(cif, structure_id, struct)
+        sum_formula_dict = add_atoms(cif, struct)
     except AttributeError as e:
         print('Atoms crashed', e, structure_id)
     cif.cif_data['calculated_formula_sum'] = sum_formula_dict
-    structures.fill_residuals_table(structure_id, cif)
+    if sum_formula_dict:
+        db.fill_formula(struct, cif.cif_data['calculated_formula_sum'])
+    db.fill_residuals_data(struct, cif)
     # structures.fill_authors_table(structure_id, cif)
     db.session.add(struct)
     return True
 
 
-def add_atoms(cif: CifFile, structure_id: int, struct: Structure):
+def add_atoms(cif: CifFile, struct: Structure):
     sum_formula_dict = {}
     atoms = []
     for at, orth in zip(cif.atoms, cif.atoms_orth):
         try:
-            try:
+            occu = 1.0
+            part = 0
+            with suppress(Exception):
                 part = at.part
                 if part in {'.', '', '?'}:
                     part = 0
-            except (KeyError, ValueError, IndexError):
-                part = 0
-            try:
-                occu = get_value(at.occ)
-                if not occu:
-                    occu = 1.0
-            except (KeyError, ValueError, IndexError):
-                occu = 1.0
-            """try:
-                structures.fill_atoms_table(structure_id, at.label, at.type,
-                                            get_value(at.x), get_value(at.y), get_value(at.z),
-                                            occu, part,
-                                            orth.x, orth.y, orth.z)
-            except ValueError:
-                pass"""
-            atoms.append(Atoms(StructureId=structure_id, Name=at.label, element=at.type,
-                               x=get_value(at.x), y=get_value(at.y), z=get_value(at.z),
+            with suppress(Exception):
+                occu = as_number(at.occ)
+            atoms.append(Atoms(Name=at.label, element=at.type, occupancy=occu, part=part,
+                               x=as_number(at.x), y=as_number(at.y), z=as_number(at.z),
                                xc=orth.x, yc=orth.y, zc=orth.z))
-            # print(cif.cif_data['data'], structure_id)
             if at.type in sum_formula_dict:
                 sum_formula_dict[at.type] += occu
             else:
                 sum_formula_dict[at.type] = occu
         except KeyError as e:
-            # print(at, structure_id, e)
-            pass
+            print(f'Exception in structure {struct.Id} ant atom {at}: {e}.')
     struct.Atoms = atoms
     return sum_formula_dict
 

@@ -792,8 +792,7 @@ class StructureTable():
             cif.cif_data['_audit_creation_method'],  # how data were entered into the data block.
             cif.cif_data['_exptl_absorpt_coefficient_mu'],  # Linear absorption coefficient (mm-1)
             cif.cif_data['_exptl_absorpt_correction_type'],  # Code for absorption correction
-            cif.cif_data['_diffrn_ambient_temperature'],  # The mean temperature in kelvins at which the
-            # intensities were measured.
+            cif.cif_data['_diffrn_ambient_temperature'],  # The mean temperature in kelvins at which the intensities were measured.
             cif.cif_data['_diffrn_radiation_wavelength'],  # Radiation wavelength (Å)
             cif.cif_data['_diffrn_radiation_type'],  # Radiation type (e.g. neutron or `Mo Kα')
             cif.cif_data['_diffrn_source'],  # Röntgenquelle
@@ -802,25 +801,20 @@ class StructureTable():
             cif.cif_data['_diffrn_reflns_av_R_equivalents'],  # R(int) -> R factor for symmetry-equivalent intensities
             cif.cif_data['_diffrn_reflns_theta_min'],  # Minimum θ of measured reflections (°)
             cif.cif_data['_diffrn_reflns_theta_max'],  # Maximum θ of measured reflections (°)
-            cif.cif_data['_diffrn_reflns_theta_full'],
-            # θ to which available reflections are close to 100% complete (°)
-            cif.cif_data['_diffrn_measured_fraction_theta_max'],
-            # completeness, Fraction of unique reflections measured to θmax
+            cif.cif_data['_diffrn_reflns_theta_full'], # θ to which available reflections are close to 100% complete (°)
+            cif.cif_data['_diffrn_measured_fraction_theta_max'],# completeness, Fraction of unique reflections measured to θmax
             cif.cif_data['_diffrn_measured_fraction_theta_full'],  # Fraction of unique reflections measured to θfull
-            cif.cif_data['_reflns_number_total'],  # Number of symmetry-independent reflections excluding
-            #   systematic absences.
+            cif.cif_data['_reflns_number_total'],  # Number of symmetry-independent reflections excluding systematic absences.
             cif.cif_data['_reflns_number_gt'],  # Number of reflections > σ threshold
             cif.cif_data['_reflns_threshold_expression'],  # σ expression for F, F2 or I threshold
-            cif.cif_data['_reflns_Friedel_coverage'],  # The proportion of Friedel-related reflections
-            #   present in the number of reported unique reflections
+            cif.cif_data['_reflns_Friedel_coverage'],  # The proportion of Friedel-related reflections present in the number of reported unique reflections
             cif.cif_data['_computing_structure_solution'],  # Reference to structure-solution software
             cif.cif_data['_computing_structure_refinement'],  # Reference to structure-refinement software
             cif.cif_data['_refine_special_details'],  # Details about the refinement
             cif.cif_data['_refine_ls_abs_structure_Flack'],
             cif.cif_data['_refine_ls_structure_factor_coef'],  # Code for F, F2 or I used in least-squares refinement
             cif.cif_data['_refine_ls_weighting_details'],  # Weighting expression
-            cif.cif_data['_refine_ls_number_reflns'],  # The number of unique reflections contributing to the
-            #   least-squares refinement calculation.
+            cif.cif_data['_refine_ls_number_reflns'],  # The number of unique reflections contributing to the least-squares refinement calculation.
             cif.cif_data['_refine_ls_number_parameters'],  # Number of parameters refined
             cif.cif_data['_refine_ls_number_restraints'],  # Number of restraints applied during refinement
             cif.cif_data['_refine_ls_R_factor_all'],
@@ -828,8 +822,7 @@ class StructureTable():
             cif.cif_data['_refine_ls_wR_factor_ref'],  # wR2 factor of coefficient for refinement reflections
             cif.cif_data['_refine_ls_wR_factor_gt'],
             cif.cif_data['_refine_ls_goodness_of_fit_ref'],  # Goodness of fit S for refinement reflections
-            cif.cif_data['_refine_ls_restrained_S_all'],  # The least-squares goodness-of-fit parameter S' for
-            # all reflections after the final cycle of least-squares refinement.
+            cif.cif_data['_refine_ls_restrained_S_all'],  # The least-squares goodness-of-fit parameter S' for all reflections after the final cycle of least-squares refinement.
             cif.cif_data['_refine_ls_shift/su_max'],  # Maximum shift/s.u. ratio after final refinement cycle
             cif.cif_data['_refine_ls_shift/su_mean'],
             cif.cif_data['_refine_diff_density_max'],  # Maximum difference density after refinement
