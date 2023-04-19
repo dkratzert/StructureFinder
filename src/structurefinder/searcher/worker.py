@@ -8,12 +8,12 @@ import gemmi
 from PyQt5 import QtCore
 
 from structurefinder.db.database import DB
-from structurefinder.searcher.filecrawler import excluded_names, filewalker_walk, fill_db_with_cif_data, MyZipReader, \
-    MyTarReader, fill_db_with_res_data
+from structurefinder.searcher.filecrawler import fill_db_with_cif_data, MyZipReader, \
+    MyTarReader, fill_db_with_res_data, filewalker_walk
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.shelx import ShelXFile
 
-DEBUG = True
+DEBUG = False
 
 
 class Worker(QtCore.QObject):
@@ -37,10 +37,10 @@ class Worker(QtCore.QObject):
 
     def index_files(self):
         return self.put_files_in_db(searchpath=self.searchpath, excludes=self.excludes, lastid=self.lastid,
-                                    db=self.db, fillcif=self.add_cif_files, fillres=self.add_res_files)
+                                    fillcif=self.add_cif_files, fillres=self.add_res_files)
 
     def put_files_in_db(self, searchpath: str = '', excludes: Union[list, None] = None, lastid: int = 1,
-                        db: DB=None, fillcif=True, fillres=True) -> int:
+                        fillcif=True, fillres=True) -> int:
         """
         Imports files from a certain directory
         """
@@ -72,7 +72,7 @@ class Worker(QtCore.QObject):
             self.number_of_files.emit(filecount)
             # This is really ugly copy&pase code. TODO: refractor this:
             if name.endswith('.cif') and fillcif:
-                #print(fullpath, '###')
+                # print(fullpath, '###')
                 doc = gemmi.cif.Document()
                 doc.source = fullpath
                 try:
@@ -90,17 +90,13 @@ class Worker(QtCore.QObject):
                         tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid, db=self.db)
                     except Exception as err:
                         if DEBUG:
-                            print(
-                                str(err) + f"\nIndexing error in file {filepth}{os.path.sep}{name} - Id: {lastid}")
+                            print(f"{err}\nIndexing error in file {filepth}{os.path.sep}{name} - Id: {lastid}")
                             raise
                         continue
                     if not tst:
                         continue
                     cifcount += 1
                     num += 1
-                    if lastid % 1000 == 0:
-                        print(f'{num} files ...')
-                        db.session.commit()
                 lastid += 1
                 self.progress.emit(filecount)
                 self.number_of_files.emit(filecount)
@@ -117,7 +113,7 @@ class Worker(QtCore.QObject):
                         continue
                     # Important here to re-initialize empty cif dictionary:
                     cif = CifFile(options=options)
-                    #print(zippedfile, 'z#i#p')
+                    # print(zippedfile, 'z#i#p')
                     omit = False
                     for ex in excludes:  # remove excludes
                         if re.search(ex, z.cifpath, re.I):
@@ -150,9 +146,6 @@ class Worker(QtCore.QObject):
                         zipcifs += 1
                         cifcount += 1
                         num += 1
-                        if lastid % 1000 == 0:
-                            print(f'{num} files ...')
-                            db.session.commit()
                         lastid += 1
                         self.progress.emit(filecount)
                         self.number_of_files.emit(filecount)
@@ -175,13 +168,13 @@ class Worker(QtCore.QObject):
                     continue
                 num += 1
                 rescount += 1
-                if lastid % 1000 == 0:
-                    print(f'{num} files ...')
-                    db.database.commit_db()
+                # if lastid % 1000 == 0:
+                #    print(f'{num} files ...')
+                #    db.database.commit_db()
                 lastid += 1
                 self.progress.emit(filecount)
                 self.number_of_files.emit(filecount)
-        db.session.commit()
+        self.db.session.commit()
         time2 = time.perf_counter()
         self.progress.emit(filecount)
         m, s = divmod(time2 - time1, 60)
@@ -191,4 +184,88 @@ class Worker(QtCore.QObject):
         print(f'      {filecount} files considered.')
         print(tmessage)
         self.finished.emit(tmessage)
-        return db.get_lastrowid()
+        return self.db.get_lastrowid()
+
+
+'''
+from pathlib import Path
+import zipfile
+from typing import List
+
+def put_files_in_db(folder_path: Path):
+    cif_files = []
+    res_files = []
+    zip_files = []
+
+    for file_path in folder_path.glob("*"):
+        if file_path.is_file():
+            if file_path.suffix == ".cif":
+                cif_files.append(file_path)
+            elif file_path.suffix == ".res":
+                res_files.append(file_path)
+            elif file_path.suffix == ".zip":
+                zip_files.append(file_path)
+
+    for file_path in cif_files:
+        process_cif_file(file_path)
+
+    for file_path in res_files:
+        process_res_file(file_path)
+
+    for file_path in zip_files:
+        process_zip_file(file_path)
+
+
+def process_cif_file(file_path: Path):
+    # implementation for processing CIF files
+    pass
+
+def process_res_file(file_path: Path):
+    # implementation for processing RES files
+    pass
+
+def process_zip_file(file_path: Path):
+    # implementation for processing ZIP files
+    with zipfile.ZipFile(file_path, 'r') as zip_ref:
+        for member in zip_ref.namelist():
+            if Path(member).suffix == ".cif":
+                with zip_ref.open(member) as f:
+                    process_cif_file(f)
+
+######################################################################
+
+import os
+from abc import ABC, abstractmethod
+from typing import List
+
+class DataFiller(ABC):
+    @abstractmethod
+    def fill(self, file_path: str) -> None:
+        pass
+
+class CIFDataFiller(DataFiller):
+    def fill(self, file_path: str) -> None:
+        # code for filling the database with CIF data goes here
+        pass
+
+class ResDataFiller(DataFiller):
+    def fill(self, file_path: str) -> None:
+        # code for filling the database with RES data goes here
+        pass
+
+class DataFillerFactory:
+    def get_data_filler(self, file_type: str) -> DataFiller:
+        if file_type == 'cif':
+            return CIFDataFiller()
+        elif file_type == 'res':
+            return ResDataFiller()
+        else:
+            raise ValueError('Unsupported file type')
+
+def put_files_in_db(files: List[str], data_filler_factory: DataFillerFactory) -> None:
+    for file_path in files:
+        file_type = os.path.splitext(file_path)[1][1:]
+        data_filler = data_filler_factory.get_data_filler(file_type)
+        data_filler.fill(file_path)
+
+'''
