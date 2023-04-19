@@ -28,7 +28,10 @@ class FloatType(TypeDecorator):
 
     def process_result_value(self, value, dialect):
         if value is not None:
-            return float(value)
+            try:
+                return float(value)
+            except ValueError:
+                return None
 
 
 class Structure(Base):

@@ -614,7 +614,7 @@ class StartStructureDB(QMainWindow):
         self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
         # TODO: make this work
-        #self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir))
+        # self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir))
         self.statusBar().showMessage('Searching potential files...')
         self.statusBar().show()
         self.abort_import_button.clicked.connect(self.abort_indexing)
@@ -734,9 +734,9 @@ class StartStructureDB(QMainWindow):
         """
         Initializes the database.
         """
-        #self.dbfdesc, self.dbfilename = tempfile.mkstemp()
-        #self.structures = database_handler.StructureTable(self.dbfilename)
-        #self.structures.database.initialize_db()
+        # self.dbfdesc, self.dbfilename = tempfile.mkstemp()
+        # self.structures = database_handler.StructureTable(self.dbfilename)
+        # self.structures.database.initialize_db()
         self.ui.appendDirButton.setEnabled(True)
 
     def get_properties(self, selected: QItemSelection, _: QItemSelection) -> bool:
@@ -769,9 +769,9 @@ class StartStructureDB(QMainWindow):
         """
         Saves the database to a certain file. Therefore I have to close the database.
         """
-        #if not hasattr(self.structures, 'database'):
+        # if not hasattr(self.structures, 'database'):
         #    return False
-        #self.structures.database.commit_db()
+        # self.structures.database.commit_db()
         # if self.structures.database.con.total_changes > 0:
         #    self.structures.set_database_version(0)
         status = False
@@ -854,8 +854,11 @@ class StartStructureDB(QMainWindow):
         cell: Cell = struct.cell
         residuals = struct.Residuals
         if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
-            self.ui.cellSearchCSDLineEdit.setText(f"{cell.a:.5f}{cell.b:.5f}{cell.c:.5f}"
-                                                  f"{cell.alpha:.5f}{cell.beta:.5f}{cell.gamma:.5f}")
+            try:
+                self.ui.cellSearchCSDLineEdit.setText(f"{cell.a:.4f} {cell.b:.4f} {cell.c:.4f} "
+                                                      f"{cell.alpha:.4f} {cell.beta:.4f} {cell.gamma:.4f}")
+            except TypeError:
+                self.ui.cellSearchCSDLineEdit.setText('')
             with suppress(KeyError, TypeError):
                 cstring = residuals._space_group_centring_type
                 self.ui.lattCentComboBox.setCurrentIndex(centering_letter_2_num[cstring])

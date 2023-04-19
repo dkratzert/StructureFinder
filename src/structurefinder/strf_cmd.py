@@ -144,6 +144,7 @@ def run_index(args=None):
         db.load_database(Path(dbfilename))
         time1 = time.perf_counter()
         with db.Session() as session:
+            session.autoflush = False
             db.session = session
             for p in args.dir:
                 # the command line version
@@ -157,6 +158,7 @@ def run_index(args=None):
                                     db=db, excludes=args.ex if args.ex else excluded_names, standalone=True)
                 except OSError as e:
                     print("Unable to collect files:")
+                    raise
                     print(e)
                 except KeyboardInterrupt:
                     sys.exit()
@@ -168,16 +170,18 @@ def run_index(args=None):
             db.populate_fulltext_search_table()
             db.populate_author_fulltext_search()
             db.make_indexes()"""
-            #print('No valid files found. They might be in excluded subdirectories.')
-            time2 = time.perf_counter()
-            diff = time2 - time1
-            m, s = divmod(diff, 60)
-            h, m = divmod(m, 60)
-            print(f"\nTotal {worker.files_indexed} cif/res files in '{str(Path(dbfilename).resolve())}'. "
-                  f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
-            import os
-            if "PYTEST_CURRENT_TEST" not in os.environ:
-                check_update()
+            session.flush()
+            session.commit()
+        #print('No valid files found. They might be in excluded subdirectories.')
+        time2 = time.perf_counter()
+        diff = time2 - time1
+        m, s = divmod(diff, 60)
+        h, m = divmod(m, 60)
+        print(f"\nTotal {worker.files_indexed} cif/res files in '{str(Path(dbfilename).resolve())}'. "
+              f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
+        import os
+        if "PYTEST_CURRENT_TEST" not in os.environ:
+            check_update()
 
 
 def merge_database(args: Namespace):

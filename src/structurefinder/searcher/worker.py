@@ -174,7 +174,6 @@ class Worker(QtCore.QObject):
                 lastid += 1
                 self.progress.emit(filecount)
                 self.number_of_files.emit(filecount)
-        self.db.session.commit()
         time2 = time.perf_counter()
         self.progress.emit(filecount)
         m, s = divmod(time2 - time1, 60)
