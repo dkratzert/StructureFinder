@@ -7,9 +7,7 @@ from pathlib import Path
 from structurefinder.db.database import DB
 from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
-from structurefinder.pymatgen.core.lattice import Lattice
 from structurefinder.searcher.filecrawler import excluded_names
-from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
 from structurefinder.searcher.worker import Worker
 
 parser = argparse.ArgumentParser(
@@ -79,43 +77,26 @@ def find_cell(args: Namespace):
     """
     Searches for unit cells by command line parameters
     """
-    cell = [float(x) for x in args.cell]
-    no_result = '\nNo similar unit cell found.'
+    try:
+        cell = [float(x) for x in args.cell]
+    except Exception:
+        print('No valid cell given. Use space-separated values.')
+        sys.exit()
     if args.outfile:
         dbfilename = args.outfile
     else:
         dbfilename = 'structuredb.sqlite'
-    db, structures = get_database(dbfilename)
-    volume = vol_unitcell(*cell)
-    atol, ltol, vol_threshold = regular_results_parameters(volume)
-    # the fist number in the result is the structureid:
-    cells = structures.find_by_volume(volume, vol_threshold)
-    idlist = []
-    if not cells:
-        print(no_result)
+    db = DB()
+    db.load_database(Path(dbfilename))
+    searchresult = db.search_cell(cell)
+    if not searchresult:
+        print('\nNo similar unit cell found.')
         sys.exit()
-    lattice1 = Lattice.from_parameters(*cell)
-    for num, curr_cell in enumerate(cells):
-        try:
-            lattice2 = Lattice.from_parameters(*curr_cell[1:7])
-        except ValueError:
-            continue
-        mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
-        if mapping:
-            idlist.append(curr_cell[0])
-    if not idlist:
-        print(no_result)
-        sys.exit()
-    else:
-        print('\n{} Structures found:'.format(len(idlist)))
-        searchresult = structures.get_all_structure_names(idlist)
-    print(
-        'ID  |      path                                                                     |   filename            |   data   ')
+    print('ID      |      path                                 '
+          '                                    |  filename             |  data name  ')
     print('-' * 130)
     for res in searchresult:
-        Id = res[0]
-        dataname, filename, path = [x.decode('utf-8') for x in res if isinstance(x, bytes)]
-        print(f'{Id:3} | {path:77s} | {filename:<21s} | {dataname:s}')
+        print(f'{res.Id:<7} | {res.path.decode():77s} | {res.filename.decode():<21s} | {res.dataname.decode():s}')
 
 
 def run_index(args=None):
@@ -154,8 +135,8 @@ def run_index(args=None):
                 else:
                     lastid += 1
                 try:
-                    worker = Worker(searchpath=p, add_res_files=args.fillres, add_cif_files=args.fillcif, lastid=lastid,
-                                    db=db, excludes=args.ex if args.ex else excluded_names, standalone=True)
+                    _ = Worker(searchpath=p, add_res_files=args.fillres, add_cif_files=args.fillcif, lastid=lastid,
+                               db=db, excludes=args.ex if args.ex else excluded_names, standalone=True)
                 except OSError as e:
                     print("Unable to collect files:")
                     raise
@@ -172,7 +153,7 @@ def run_index(args=None):
             db.make_indexes()"""
             session.flush()
             session.commit()
-        #print('No valid files found. They might be in excluded subdirectories.')
+        # print('No valid files found. They might be in excluded subdirectories.')
         time2 = time.perf_counter()
         diff = time2 - time1
         m, s = divmod(diff, 60)
@@ -194,7 +175,6 @@ def merge_database(args: Namespace):
         return
     db = DB()
     db.merge_databases(merge_file_name)
-
 
 
 def main():
