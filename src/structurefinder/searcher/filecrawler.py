@@ -30,7 +30,7 @@ from structurefinder.db.mapping import Structure, Cell, Atoms
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.shelx import ShelXFile
 
-DEBUG = False
+DEBUG = True
 
 excluded_names = ('ROOT',
                   '.OLEX',
@@ -151,10 +151,10 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
     Fill all info from cif file into the database tables
     """
     struct = Structure(Id=structure_id, path=path, filename=filename, dataname=cif.block.name, measurement=1)
-    struct.cell = Cell(StructureId=structure_id, a=cif.cell.a, b=cif.cell.b, c=cif.cell.c,
+    struct.cell = Cell(StructureId=struct.Id, a=cif.cell.a, b=cif.cell.b, c=cif.cell.c,
                        alpha=cif.cell.alpha, beta=cif.cell.beta, gamma=cif.cell.gamma, volume=cif.cell.volume)
     try:
-        sum_formula_dict = add_atoms(cif, struct, structure_id)
+        sum_formula_dict = add_atoms(cif, struct)
     except AttributeError as e:
         print('Atoms crashed', e, structure_id)
         sum_formula_dict = {}
@@ -167,7 +167,7 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
     return True
 
 
-def add_atoms(cif: CifFile, struct: Structure, structure_id):
+def add_atoms(cif: CifFile, struct: Structure):
     sum_formula_dict = defaultdict(float)
     atoms = []
     nopart_val = {'.', '', '?'}
@@ -181,7 +181,7 @@ def add_atoms(cif: CifFile, struct: Structure, structure_id):
                     part = 0
             with suppress(Exception):
                 occu = as_number(at.occ)
-            atoms.append(Atoms(StructureId=structure_id, Name=at.label, element=at.type, occupancy=occu, part=part,
+            atoms.append(Atoms(StructureId=struct.Id, Name=at.label, element=at.type, occupancy=occu, part=part,
                                x=as_number(at.x), y=as_number(at.y), z=as_number(at.z),
                                xc=orth.x, yc=orth.y, zc=orth.z))
             sum_formula_dict[at.type] += occu

@@ -584,7 +584,7 @@ class StartStructureDB(QMainWindow):
         self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
         # TODO: make this work
-        # self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir))
+        self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir, session))
         self.statusBar().showMessage('Searching potential files...')
         self.statusBar().show()
         self.abort_import_button.clicked.connect(self.abort_indexing)
@@ -605,9 +605,9 @@ class StartStructureDB(QMainWindow):
     def report_progress(self, progress: int):
         self.progressbar(progress, 0, self.maxfiles)
 
-    def do_work_after_indexing(self, startdir: str):
+    def do_work_after_indexing(self, startdir: str, session):
         self.progress.hide()
-        # TODO: Do I need this here? It is already done in worker.py?
+        """# TODO: Do I need this here? It is already done in worker.py?
         try:
             self.structures.database.init_textsearch()
             self.structures.database.init_author_search()
@@ -621,7 +621,9 @@ class StartStructureDB(QMainWindow):
             print(e)
             print('No fulltext search compiled into sqlite.')
         self.structures.database.make_indexes()
-        self.structures.database.commit_db()
+        """
+        session.flush()
+        session.commit()
         self.ui.cifList_tableView.show()
         self.show_full_list()
         self.settings.save_current_index_dir(str(Path(startdir)))
