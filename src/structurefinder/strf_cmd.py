@@ -123,9 +123,7 @@ def run_index(args=None):
         db = DB()
         db.load_database(Path(dbfilename))
         time1 = time.perf_counter()
-        with db.Session() as session:
-            session.autoflush = False
-            db.session = session
+        with db.Session(autobegin=True, autoflush = False) as session:
             for p in args.dir:
                 # the command line version
                 lastid = db.get_lastrowid()
@@ -138,8 +136,8 @@ def run_index(args=None):
                                db=db, excludes=args.ex if args.ex else excluded_names, standalone=True)
                 except OSError as e:
                     print("Unable to collect files:")
-                    raise
                     print(e)
+                    raise
                 except KeyboardInterrupt:
                     sys.exit()
                 print("---------------------")
