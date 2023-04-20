@@ -56,24 +56,22 @@ class Worker(QtCore.QObject):
         time1 = time.perf_counter()
         patterns = ['*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '*.res']
         filelist = filewalker_walk(str(searchpath), patterns, excludes=excludes)
-        self.number_of_files.emit(len(filelist))
+        filecount = len(filelist)
+        self.number_of_files.emit(filecount)
         options = {}
-        filecount = 1
         for filenum, (filepth, name) in enumerate(filelist, start=1):
-            # if filenum % 1000 == 0:
-            #    self.db.session.flush()
+            if filenum % 1000 == 0:
+                print(f'{filenum} files...')
+                #self.db.session.flush()
             if self.stop:
                 self.finished.emit('Indexing aborted')
                 return 0
-            filecount = filenum
             fullpath = os.path.join(filepth, name)
             options['modification_time'] = datetime.date.fromtimestamp(os.path.getmtime(fullpath))
             options['file_size'] = int(os.stat(str(fullpath)).st_size)
             cif = CifFile(options=options)
-            self.progress.emit(filecount)
-            self.number_of_files.emit(filecount)
+            self.progress.emit(filenum)
             if name.endswith('.cif') and fillcif:
-                # print(fullpath, '###')
                 doc = gemmi.cif.Document()
                 doc.source = fullpath
                 try:
@@ -85,71 +83,64 @@ class Worker(QtCore.QObject):
                     if DEBUG:
                         print(f"Could not parse (.cif): {fullpath}")
                     continue
-                if cif:  # means cif object has data inside (cif could be parsed)
-                    tst = None
-                    try:
-                        tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid, db=self.db)
-                    except Exception as err:
-                        if DEBUG:
-                            print(f"{err}\nIndexing error in file {filepth}{os.path.sep}{name} - Id: {lastid}")
-                            raise
-                        continue
-                    if not tst:
-                        continue
-                    cifcount += 1
-                    num += 1
+                try:
+                    tst = fill_db_with_cif_data(cif, filename=name, path=filepth, structure_id=lastid, db=self.db)
+                except Exception as err:
+                    if DEBUG:
+                        print(f"{err}\nIndexing error in file {filepth}{os.path.sep}{name} - Id: {lastid}")
+                        raise
+                    continue
+                if not tst:
+                    continue
+                cifcount += 1
+                num += 1
                 lastid += 1
-                self.progress.emit(filecount)
-                self.number_of_files.emit(filecount)
+                self.progress.emit(filenum)
                 continue
             if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2')
                 or name.endswith('.tgz')) and fillcif:
                 if fullpath.endswith('.zip'):
-                    # MyZipReader defines .cif ending:
                     z = MyZipReader(fullpath)
+                    filecount = filecount + len(z)
+                    self.number_of_files.emit(filecount)
                 else:
                     z = MyTarReader(fullpath)
+                    filecount = filecount + len(z)
+                    self.number_of_files.emit(filecount)
                 for zippedfile in z:  # the list of cif files in the zip file
                     if not zippedfile:
                         continue
                     # Important here to re-initialize empty cif dictionary:
                     cif = CifFile(options=options)
-                    # print(zippedfile, 'z#i#p')
                     omit = False
                     for ex in excludes:  # remove excludes
                         if re.search(ex, z.cifpath, re.I):
                             omit = True
                     if omit:
                         continue
-                    try:
-                        cifok = cif.parsefile(zippedfile)
-                        if not cifok:
-                            if DEBUG:
-                                print(f"Could not parse (zipped): {fullpath}")
-                            continue
-                    except IndexError:
+                    cifok = cif.parsefile(zippedfile)
+                    if not cifok:
+                        if DEBUG:
+                            print(f"Could not parse (zipped): {fullpath}")
                         continue
-                    if cif:
-                        tst = None
-                        try:
-                            tst = fill_db_with_cif_data(cif, filename=z.cifname, path=fullpath, structure_id=lastid,
-                                                        db=self.db)
-                        except Exception as err:
-                            if DEBUG:
-                                print(
-                                    str(err) + f"\nIndexing error in file {filepth}{os.path.sep}{name} - Id: {lastid}")
-                                raise
-                            continue
-                        if not tst:
-                            if DEBUG:
-                                print('cif file not added:', fullpath)
-                            continue
-                        zipcifs += 1
-                        cifcount += 1
-                        num += 1
-                        lastid += 1
-                        self.progress.emit(filecount)
-                        self.number_of_files.emit(filecount)
+                    try:
+                        tst = fill_db_with_cif_data(cif, filename=z.cifname, path=fullpath, structure_id=lastid,
+                                                    db=self.db)
+                    except Exception as err:
+                        if DEBUG:
+                            print(
+                                str(err) + f"\nIndexing error in file {filepth}{os.path.sep}{name} - Id: {lastid}")
+                            raise
+                        continue
+                    if not tst:
+                        if DEBUG:
+                            print('cif file not added:', fullpath)
+                        continue
+                    zipcifs += 1
+                    cifcount += 1
+                    num += 1
+                    lastid += 1
+                    self.progress.emit(filenum)
                 continue
             if name.endswith('.res') and fillres:
                 tst = None
@@ -169,12 +160,8 @@ class Worker(QtCore.QObject):
                     continue
                 num += 1
                 rescount += 1
-                # if lastid % 1000 == 0:
-                #    print(f'{num} files ...')
-                #    db.database.commit_db()
                 lastid += 1
-                self.progress.emit(filecount)
-                self.number_of_files.emit(filecount)
+                self.progress.emit(filenum)
         time2 = time.perf_counter()
         self.progress.emit(filecount)
         m, s = divmod(time2 - time1, 60)

@@ -128,6 +128,7 @@ class StartStructureDB(QMainWindow):
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
+        self.ui.add_res.setChecked(False)
 
     def set_initial_button_states(self):
         self.ui.appendDatabasePushButton.setDisabled(True)
@@ -648,8 +649,8 @@ class StartStructureDB(QMainWindow):
         self.progress.setMaximum(max)
         self.progress.setMinimum(min)
         self.progress.show()
-        if curr == max:
-            self.progress.hide()
+        #if curr == max:
+        #    self.progress.hide()
 
     def close_db(self, copy_on_close: str = None) -> bool:
         """
