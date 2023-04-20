@@ -15,7 +15,6 @@ Created on 09.02.2015
 import os
 import shutil
 import sys
-import tempfile
 import time
 import traceback
 from contextlib import suppress
@@ -24,7 +23,8 @@ from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import OperationalError
-from typing import Union, Optional, Tuple
+from typing import Union, Tuple
+from xml.etree.ElementTree import ParseError
 
 import gemmi.cif
 import qtawesome as qta
@@ -32,47 +32,30 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox, QPushButton
-import sqlalchemy as sa
-from sqlalchemy.orm import sessionmaker
 
+from structurefinder.ccdc.query import search_csd, parse_results
 from structurefinder.db.database import DB
+from structurefinder.db.mapping import Structure, Cell
 from structurefinder.displaymol.sdm import SDM
+from structurefinder.gui.strf_main import Ui_stdbMainwindow
 from structurefinder.gui.table_model import TableModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
 from structurefinder.misc.settings import StructureFinderSettings
+from structurefinder.misc.version import VERSION
 from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
 from structurefinder.searcher import database_handler, constants
+from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
 from structurefinder.searcher.filecrawler import excluded_names
-from structurefinder.db.mapping import Structure, Cell
+from structurefinder.searcher.fileparser import CifFile
+from structurefinder.searcher.misc import is_valid_cell, elements, combine_results
 from structurefinder.searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
 
-app = QApplication(sys.argv)
-
-print(sys.version)
 DEBUG = True
 
-from structurefinder.misc.version import VERSION
-from structurefinder.pymatgen.core import lattice
-from structurefinder.searcher import misc
-from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
-from structurefinder.searcher.fileparser import CifFile
-from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, \
-    regular_results_parameters
 
-is_windows = False
-import platform
-
-if platform.system() == 'Windows':
-    is_windows = True
-
-try:
-    from xml.etree.ElementTree import ParseError
-    from structurefinder.ccdc.query import get_cccsd_path, search_csd, parse_results
-except ModuleNotFoundError:
-    print('Non xml parser found.')
 
 """
 TODO:
@@ -99,19 +82,6 @@ if getattr(sys, 'frozen', False):
 else:
     application_path = Path(os.path.abspath(__file__)).parent.parent
 
-if DEBUG:
-    try:
-        from PyQt5 import uic, QtGui
-
-        uic.compileUiDir(os.path.join(application_path, 'structurefinder/gui'))
-        print('recompiled ui')
-    except:
-        print("Unable to compile UI!")
-        raise
-else:
-    print("Remember, UI is not recompiled without DEBUG.")
-
-from structurefinder.gui.strf_main import Ui_stdbMainwindow
 
 
 class StartStructureDB(QMainWindow):
@@ -1239,6 +1209,8 @@ def my_exception_hook(exctype, value, error_traceback):
 
 
 def main():
+    app = QApplication(sys.argv)
+    print(sys.version)
     if not DEBUG:
         sys.excepthook = my_exception_hook
     app.setWindowIcon(QtGui.QIcon(str(Path(application_path, 'icons/strf.png').resolve())))
