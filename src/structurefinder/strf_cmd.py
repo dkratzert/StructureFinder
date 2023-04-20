@@ -123,7 +123,7 @@ def run_index(args=None):
         db = DB()
         db.load_database(Path(dbfilename))
         time1 = time.perf_counter()
-        with db.Session(autobegin=True, autoflush = False) as session:
+        with db.Session(autoflush=False) as session:
             for p in args.dir:
                 # the command line version
                 lastid = db.get_lastrowid()

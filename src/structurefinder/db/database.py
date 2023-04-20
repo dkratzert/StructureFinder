@@ -258,8 +258,8 @@ class DB(QtCore.QObject):
         with self.engine.connect() as conn:
             return tuple(chain(*conn.execute(sa.text(req))))
 
-    def fill_residuals_data(self, struct: Structure, cif: CifFile):
-        res = Residuals(
+    def fill_residuals_data(self, struct: Structure, cif: CifFile, structure_id: int):
+        res = Residuals(StructureId=structure_id,
             _cell_formula_units_Z=cif.cif_data['_cell_formula_units_Z'],
             _space_group_name_H_M_alt=cif.cif_data['_space_group_name_H-M_alt'],
             _space_group_name_Hall=cif.cif_data['_space_group_name_Hall'],
@@ -329,7 +329,7 @@ class DB(QtCore.QObject):
             return
         columns = ('Elem_' + x.capitalize() for x in formula.keys())
         formula_dict = dict(zip(columns, formula.values()))
-        struct.sum_formula = SumFormula(**formula_dict)
+        struct.sum_formula = SumFormula(StructureId=struct.Id, **formula_dict)
 
 
 if __name__ == '__main__':

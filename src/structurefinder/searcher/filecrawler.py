@@ -18,6 +18,7 @@ import os
 import re
 import tarfile
 import zipfile
+from collections import defaultdict
 from contextlib import suppress
 from typing import Generator, Tuple, List
 
@@ -148,63 +149,44 @@ def filewalker_walk(startdir: str, patterns: list, excludes: List[str]) -> Tuple
 def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: int, db: DB):
     """
     Fill all info from cif file into the database tables
-    _atom_site_label
-    _atom_site_type_symbol
-    _atom_site_fract_x
-    _atom_site_fract_y
-    _atom_site_fract_z
-    _atom_site_U_iso_or_equiv
-    _atom_site_adp_type
-    _atom_site_occupancy
-    _atom_site_site_symmetry_order
-    _atom_site_calc_flag
-    _atom_site_refinement_flags_posn
-    _atom_site_refinement_flags_adp
-    _atom_site_refinement_flags_occupancy
-    _atom_site_disorder_assembly
-    _atom_site_disorder_group
     """
-    sum_formula_dict = {}
-    measurement_id = 1
-    struct = Structure(path=path, filename=filename, Id=structure_id, dataname=cif.block.name,
-                       measurement=measurement_id)
-    struct.cell = Cell(a=cif.cell.a, b=cif.cell.b, c=cif.cell.c,
+    struct = Structure(Id=structure_id, path=path, filename=filename, dataname=cif.block.name, measurement=1)
+    struct.cell = Cell(StructureId=structure_id, a=cif.cell.a, b=cif.cell.b, c=cif.cell.c,
                        alpha=cif.cell.alpha, beta=cif.cell.beta, gamma=cif.cell.gamma, volume=cif.cell.volume)
     try:
-        sum_formula_dict = add_atoms(cif, struct)
+        sum_formula_dict = add_atoms(cif, struct, structure_id)
     except AttributeError as e:
         print('Atoms crashed', e, structure_id)
+        sum_formula_dict = {}
     cif.cif_data['calculated_formula_sum'] = sum_formula_dict
     if sum_formula_dict:
         db.fill_formula(struct, cif.cif_data['calculated_formula_sum'])
-    db.fill_residuals_data(struct, cif)
+    db.fill_residuals_data(struct, cif, structure_id)
     # structures.fill_authors_table(structure_id, cif)
     db.session.add(struct)
     return True
 
 
-def add_atoms(cif: CifFile, struct: Structure):
-    sum_formula_dict = {}
+def add_atoms(cif: CifFile, struct: Structure, structure_id):
+    sum_formula_dict = defaultdict(float)
     atoms = []
+    nopart_val = {'.', '', '?'}
     for at, orth in zip(cif.atoms, cif.atoms_orth):
+        occu = 1.0
+        part = 0
         try:
-            occu = 1.0
-            part = 0
             with suppress(Exception):
                 part = at.part
-                if part in {'.', '', '?'}:
+                if part in nopart_val:
                     part = 0
             with suppress(Exception):
                 occu = as_number(at.occ)
-            atoms.append(Atoms(Name=at.label, element=at.type, occupancy=occu, part=part,
+            atoms.append(Atoms(StructureId=structure_id, Name=at.label, element=at.type, occupancy=occu, part=part,
                                x=as_number(at.x), y=as_number(at.y), z=as_number(at.z),
                                xc=orth.x, yc=orth.y, zc=orth.z))
-            if at.type in sum_formula_dict:
-                sum_formula_dict[at.type] += occu
-            else:
-                sum_formula_dict[at.type] = occu
+            sum_formula_dict[at.type] += occu
         except KeyError as e:
-            print(f'Exception in structure {struct.Id} ant atom {at}: {e}.')
+            print(f'Exception in structure {struct.Id} at atom {at}: {e}.')
     struct.Atoms = atoms
     return sum_formula_dict
 

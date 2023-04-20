@@ -60,6 +60,8 @@ class Worker(QtCore.QObject):
         options = {}
         filecount = 1
         for filenum, (filepth, name) in enumerate(filelist, start=1):
+            # if filenum % 1000 == 0:
+            #    self.db.session.flush()
             if self.stop:
                 self.finished.emit('Indexing aborted')
                 return 0
