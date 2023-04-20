@@ -28,7 +28,7 @@ class TestApplication(unittest.TestCase):
         # Has to be without version number, because QWebengine stores data in ApplicationName directory:
         strf.app.setApplicationName('StructureFinder')
         self.myapp = strf.StartStructureDB(db_file_name='./tests/test-data/test.sql')
-        self.myapp.setWindowTitle('StructureFinder v{}'.format(VERSION))
+        self.myapp.setWindowTitle(f'StructureFinder v{VERSION}')
 
     def tearDown(self) -> None:
         self.myapp.close()

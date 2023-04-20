@@ -31,13 +31,10 @@ class MyDownloader(QThread):
         print('HTTP status was {}'.format(status_code))
 
     def download(self, full_url: str) -> bytes:
-        OS = sys.platform
-        user_agent = f'StructureFinder v{VERSION} ({OS})'
         headers = {
-            'User-Agent': user_agent,
+            'User-Agent': f'StructureFinder v{VERSION} ({sys.platform})',
         }
-        # noinspection PyUnresolvedReferences
-        self.progress.emit('Starting download: {}'.format(full_url))
+        #self.progress.emit('Starting download: {}'.format(full_url))
         response = requests.get(full_url, stream=True, headers=headers, timeout=5)
         if response.status_code != 200:
             # noinspection PyUnresolvedReferences
@@ -45,7 +42,6 @@ class MyDownloader(QThread):
             # noinspection PyUnresolvedReferences
             self.finished.emit(b'')
             return b''
-        # noinspection PyUnresolvedReferences
         self.finished.emit(response.content)
         return response.content
 

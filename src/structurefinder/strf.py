@@ -123,7 +123,7 @@ class StartStructureDB(QMainWindow):
         font.setFamily("Courier")
         font.setStyleHint(QtGui.QFont.Monospace)
         self.ui.SHELXplainTextEdit.setFont(font)
-        self.statusBar().showMessage('StructureFinder version {}'.format(VERSION))
+        self.statusBar().showMessage(f'StructureFinder version {VERSION}')
         self.maxfiles = 0
         self.dbfdesc = None
         self.dbfilename = db_file_name
@@ -1250,7 +1250,7 @@ def main():
     myapp = StartStructureDB(db_file_name=db_filename)
     myapp.show()
     myapp.raise_()
-    myapp.setWindowTitle('StructureFinder v{}'.format(VERSION))
+    myapp.setWindowTitle(f'StructureFinder v{VERSION}')
     try:
         sys.exit(app.exec_())
     except KeyboardInterrupt:
