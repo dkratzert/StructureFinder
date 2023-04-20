@@ -109,7 +109,7 @@ class MyTarReader(MyZipBase):
             yield None
 
 
-def filewalker_walk(startdir: str, patterns: list, excludes: List[str]) -> Tuple[Tuple[str, str]]:
+def filewalker_walk(startdir: str, patterns: list, excludes: List[str]) -> Tuple[Tuple[str, str], ...]:
     """
     walks through the filesystem starting from startdir and searches
     for files with ending endings.

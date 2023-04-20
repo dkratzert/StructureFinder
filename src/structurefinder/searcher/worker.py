@@ -70,7 +70,6 @@ class Worker(QtCore.QObject):
             cif = CifFile(options=options)
             self.progress.emit(filecount)
             self.number_of_files.emit(filecount)
-            # This is really ugly copy&pase code. TODO: refractor this:
             if name.endswith('.cif') and fillcif:
                 # print(fullpath, '###')
                 doc = gemmi.cif.Document()
@@ -183,7 +182,6 @@ class Worker(QtCore.QObject):
         print(f'      {filecount} files considered.')
         print(tmessage)
         self.finished.emit(tmessage)
-        return self.db.get_lastrowid()
 
 
 '''

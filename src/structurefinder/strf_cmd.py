@@ -177,7 +177,7 @@ def run_index(args=None):
         diff = time2 - time1
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
-        print(f"\nTotal {worker.files_indexed} cif/res files in '{str(Path(dbfilename).resolve())}'. "
+        print(f"\nTotal {db.get_lastrowid()} cif/res files in '{str(Path(dbfilename).resolve())}'. "
               f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
         import os
         if "PYTEST_CURRENT_TEST" not in os.environ:
