@@ -100,7 +100,6 @@ def find_cell(args: Namespace):
 
 
 def run_index(args=None):
-    worker = None
     if not args:
         print('')
     else:
