@@ -8,7 +8,7 @@ import sqlalchemy as sa
 from PyQt5 import QtCore
 from sqlalchemy.orm import sessionmaker, Session
 
-from structurefinder.db.mapping import Structure, Residuals, Cell, Base, SumFormula
+from structurefinder.db.mapping import Structure, Residuals, Cell, Base, SumFormula, Authors
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import misc
 from structurefinder.searcher.fileparser import CifFile
@@ -147,9 +147,7 @@ class DB(QtCore.QObject):
         Find structures with respective CCDC number.
         """
 
-        stmt = sa.select(
-            Residuals.StructureId
-        ).filter_by(_database_code_depnum_ccdc_archive=ccdc)
+        stmt = sa.select(Residuals.StructureId).filter_by(_database_code_depnum_ccdc_archive=ccdc)
         with self.engine.connect() as conn:
             return self.flatten(conn, stmt)
 
@@ -191,6 +189,8 @@ class DB(QtCore.QObject):
         :param text: Volume uncertaincy where to search
         id, name, data, path
         """
+        if not table_exists(table='txtsearch', engine=self.engine):
+            return tuple()
         req = sa.text('''SELECT StructureId FROM txtsearch 
                     WHERE filename MATCH :text 
                         OR dataname MATCH :text
@@ -258,66 +258,66 @@ class DB(QtCore.QObject):
         with self.engine.connect() as conn:
             return tuple(chain(*conn.execute(sa.text(req))))
 
-    def fill_residuals_data(self, struct: Structure, cif: CifFile, structure_id: int):
+    def fill_residuals_data(self, struct: Structure, cif: CifFile, structure_id: int) -> None:
         res = Residuals(StructureId=structure_id,
-            _cell_formula_units_Z=cif.cif_data['_cell_formula_units_Z'],
-            _space_group_name_H_M_alt=cif.cif_data['_space_group_name_H-M_alt'],
-            _space_group_name_Hall=cif.cif_data['_space_group_name_Hall'],
-            _space_group_centring_type=cif.cif_data['_space_group_centring_type'],
-            _space_group_IT_number=cif.cif_data['_space_group_IT_number'],
-            _space_group_crystal_system=cif.cif_data['_space_group_crystal_system'],
-            _space_group_symop_operation_xyz=cif.cif_data['_space_group_symop_operation_xyz'],
-            _chemical_formula_sum=cif.cif_data['_chemical_formula_sum'],
-            _chemical_formula_weight=cif.cif_data['_chemical_formula_weight'],
-            _exptl_crystal_description=cif.cif_data['_exptl_crystal_description'],
-            _exptl_crystal_colour=cif.cif_data['_exptl_crystal_colour'],
-            _exptl_crystal_size_max=cif.cif_data['_exptl_crystal_size_max'],
-            _exptl_crystal_size_mid=cif.cif_data['_exptl_crystal_size_mid'],
-            _exptl_crystal_size_min=cif.cif_data['_exptl_crystal_size_min'],
-            _audit_creation_method=cif.cif_data['_audit_creation_method'],
-            _exptl_absorpt_coefficient_mu=cif.cif_data['_exptl_absorpt_coefficient_mu'],
-            _exptl_absorpt_correction_type=cif.cif_data['_exptl_absorpt_correction_type'],
-            _diffrn_ambient_temperature=cif.cif_data['_diffrn_ambient_temperature'],
-            _diffrn_radiation_wavelength=cif.cif_data['_diffrn_radiation_wavelength'],
-            _diffrn_radiation_type=cif.cif_data['_diffrn_radiation_type'],
-            _diffrn_source=cif.cif_data['_diffrn_source'],
-            _diffrn_measurement_device_type=cif.cif_data['_diffrn_measurement_device_type'],
-            _diffrn_reflns_number=cif.cif_data['_diffrn_reflns_number'],
-            _diffrn_reflns_av_R_equivalents=cif.cif_data['_diffrn_reflns_av_R_equivalents'],
-            _diffrn_reflns_theta_min=cif.cif_data['_diffrn_reflns_theta_min'],
-            _diffrn_reflns_theta_max=cif.cif_data['_diffrn_reflns_theta_max'],
-            _diffrn_reflns_theta_full=cif.cif_data['_diffrn_reflns_theta_full'],
-            _diffrn_measured_fraction_theta_max=cif.cif_data['_diffrn_measured_fraction_theta_max'],
-            _diffrn_measured_fraction_theta_full=cif.cif_data['_diffrn_measured_fraction_theta_full'],
-            _reflns_number_total=cif.cif_data['_reflns_number_total'],
-            _reflns_number_gt=cif.cif_data['_reflns_number_gt'],
-            _reflns_threshold_expression=cif.cif_data['_reflns_threshold_expression'],
-            _reflns_Friedel_coverage=cif.cif_data['_reflns_Friedel_coverage'],
-            _computing_structure_solution=cif.cif_data['_computing_structure_solution'],
-            _computing_structure_refinement=cif.cif_data['_computing_structure_refinement'],
-            _refine_special_details=cif.cif_data['_refine_special_details'],
-            _refine_ls_abs_structure_Flack=cif.cif_data['_refine_ls_abs_structure_Flack'],
-            _refine_ls_structure_factor_coef=cif.cif_data['_refine_ls_structure_factor_coef'],
-            _refine_ls_weighting_details=cif.cif_data['_refine_ls_weighting_details'],
-            _refine_ls_number_reflns=cif.cif_data['_refine_ls_number_reflns'],
-            _refine_ls_number_parameters=cif.cif_data['_refine_ls_number_parameters'],
-            _refine_ls_number_restraints=cif.cif_data['_refine_ls_number_restraints'],
-            _refine_ls_R_factor_all=cif.cif_data['_refine_ls_R_factor_all'],
-            _refine_ls_R_factor_gt=cif.cif_data['_refine_ls_R_factor_gt'],
-            _refine_ls_wR_factor_ref=cif.cif_data['_refine_ls_wR_factor_ref'],
-            _refine_ls_wR_factor_gt=cif.cif_data['_refine_ls_wR_factor_gt'],
-            _refine_ls_goodness_of_fit_ref=cif.cif_data['_refine_ls_goodness_of_fit_ref'],
-            _refine_ls_restrained_S_all=cif.cif_data['_refine_ls_restrained_S_all'],
-            _refine_ls_shift_su_max=cif.cif_data['_refine_ls_shift/su_max'],
-            _refine_ls_shift_su_mean=cif.cif_data['_refine_ls_shift/su_mean'],
-            _refine_diff_density_max=cif.cif_data['_refine_diff_density_max'],
-            _refine_diff_density_min=cif.cif_data['_refine_diff_density_min'],
-            _diffrn_reflns_av_unetI_netI=cif.cif_data['_diffrn_reflns_av_unetI/netI'],
-            _database_code_depnum_ccdc_archive=cif.cif_data['_database_code_depnum_ccdc_archive'],
-            _shelx_res_file=cif.cif_data['_shelx_res_file'],
-            modification_time=cif.cif_data['modification_time'],
-            file_size=cif.cif_data['file_size']
-        )
+                        _cell_formula_units_Z=cif.cif_data['_cell_formula_units_Z'],
+                        _space_group_name_H_M_alt=cif.cif_data['_space_group_name_H-M_alt'],
+                        _space_group_name_Hall=cif.cif_data['_space_group_name_Hall'],
+                        _space_group_centring_type=cif.cif_data['_space_group_centring_type'],
+                        _space_group_IT_number=cif.cif_data['_space_group_IT_number'],
+                        _space_group_crystal_system=cif.cif_data['_space_group_crystal_system'],
+                        _space_group_symop_operation_xyz=cif.cif_data['_space_group_symop_operation_xyz'],
+                        _chemical_formula_sum=cif.cif_data['_chemical_formula_sum'],
+                        _chemical_formula_weight=cif.cif_data['_chemical_formula_weight'],
+                        _exptl_crystal_description=cif.cif_data['_exptl_crystal_description'],
+                        _exptl_crystal_colour=cif.cif_data['_exptl_crystal_colour'],
+                        _exptl_crystal_size_max=cif.cif_data['_exptl_crystal_size_max'],
+                        _exptl_crystal_size_mid=cif.cif_data['_exptl_crystal_size_mid'],
+                        _exptl_crystal_size_min=cif.cif_data['_exptl_crystal_size_min'],
+                        _audit_creation_method=cif.cif_data['_audit_creation_method'],
+                        _exptl_absorpt_coefficient_mu=cif.cif_data['_exptl_absorpt_coefficient_mu'],
+                        _exptl_absorpt_correction_type=cif.cif_data['_exptl_absorpt_correction_type'],
+                        _diffrn_ambient_temperature=cif.cif_data['_diffrn_ambient_temperature'],
+                        _diffrn_radiation_wavelength=cif.cif_data['_diffrn_radiation_wavelength'],
+                        _diffrn_radiation_type=cif.cif_data['_diffrn_radiation_type'],
+                        _diffrn_source=cif.cif_data['_diffrn_source'],
+                        _diffrn_measurement_device_type=cif.cif_data['_diffrn_measurement_device_type'],
+                        _diffrn_reflns_number=cif.cif_data['_diffrn_reflns_number'],
+                        _diffrn_reflns_av_R_equivalents=cif.cif_data['_diffrn_reflns_av_R_equivalents'],
+                        _diffrn_reflns_theta_min=cif.cif_data['_diffrn_reflns_theta_min'],
+                        _diffrn_reflns_theta_max=cif.cif_data['_diffrn_reflns_theta_max'],
+                        _diffrn_reflns_theta_full=cif.cif_data['_diffrn_reflns_theta_full'],
+                        _diffrn_measured_fraction_theta_max=cif.cif_data['_diffrn_measured_fraction_theta_max'],
+                        _diffrn_measured_fraction_theta_full=cif.cif_data['_diffrn_measured_fraction_theta_full'],
+                        _reflns_number_total=cif.cif_data['_reflns_number_total'],
+                        _reflns_number_gt=cif.cif_data['_reflns_number_gt'],
+                        _reflns_threshold_expression=cif.cif_data['_reflns_threshold_expression'],
+                        _reflns_Friedel_coverage=cif.cif_data['_reflns_Friedel_coverage'],
+                        _computing_structure_solution=cif.cif_data['_computing_structure_solution'],
+                        _computing_structure_refinement=cif.cif_data['_computing_structure_refinement'],
+                        _refine_special_details=cif.cif_data['_refine_special_details'],
+                        _refine_ls_abs_structure_Flack=cif.cif_data['_refine_ls_abs_structure_Flack'],
+                        _refine_ls_structure_factor_coef=cif.cif_data['_refine_ls_structure_factor_coef'],
+                        _refine_ls_weighting_details=cif.cif_data['_refine_ls_weighting_details'],
+                        _refine_ls_number_reflns=cif.cif_data['_refine_ls_number_reflns'],
+                        _refine_ls_number_parameters=cif.cif_data['_refine_ls_number_parameters'],
+                        _refine_ls_number_restraints=cif.cif_data['_refine_ls_number_restraints'],
+                        _refine_ls_R_factor_all=cif.cif_data['_refine_ls_R_factor_all'],
+                        _refine_ls_R_factor_gt=cif.cif_data['_refine_ls_R_factor_gt'],
+                        _refine_ls_wR_factor_ref=cif.cif_data['_refine_ls_wR_factor_ref'],
+                        _refine_ls_wR_factor_gt=cif.cif_data['_refine_ls_wR_factor_gt'],
+                        _refine_ls_goodness_of_fit_ref=cif.cif_data['_refine_ls_goodness_of_fit_ref'],
+                        _refine_ls_restrained_S_all=cif.cif_data['_refine_ls_restrained_S_all'],
+                        _refine_ls_shift_su_max=cif.cif_data['_refine_ls_shift/su_max'],
+                        _refine_ls_shift_su_mean=cif.cif_data['_refine_ls_shift/su_mean'],
+                        _refine_diff_density_max=cif.cif_data['_refine_diff_density_max'],
+                        _refine_diff_density_min=cif.cif_data['_refine_diff_density_min'],
+                        _diffrn_reflns_av_unetI_netI=cif.cif_data['_diffrn_reflns_av_unetI/netI'],
+                        _database_code_depnum_ccdc_archive=cif.cif_data['_database_code_depnum_ccdc_archive'],
+                        _shelx_res_file=cif.cif_data['_shelx_res_file'],
+                        modification_time=cif.cif_data['modification_time'],
+                        file_size=cif.cif_data['file_size']
+                        )
         struct.Residuals = res
 
     def fill_formula(self, struct: Structure, formula: Dict[str, float]) -> None:
@@ -330,6 +330,55 @@ class DB(QtCore.QObject):
         columns = ('Elem_' + x.capitalize() for x in formula.keys())
         formula_dict = dict(zip(columns, formula.values()))
         struct.sum_formula = SumFormula(StructureId=struct.Id, **formula_dict)
+
+    def fill_authors_table(self, struct: Structure, cif: CifFile):
+        """
+        This is the table where the direct values from the authors of the CIF are stored.
+        The virtual table "authortxtsearch" contains the fts data.
+        """
+        struct.authors = Authors(
+            _audit_author_name=cif.cif_data.get('_audit_author_name'),
+            _audit_contact_author_name=cif.cif_data.get('_audit_contact_author_name'),
+            _publ_contact_author_name=cif.cif_data.get('_publ_contact_author_name'),
+            _publ_contact_author=cif.cif_data.get('_publ_contact_author'),
+            _publ_author_name=cif.cif_data.get('_publ_author_name'),
+        )
+
+    def init_author_search(self):
+        """
+        Initializes the full text search (fts) table for author search.
+        """
+        with self.engine.connect() as conn:
+            conn.execute(sa.text("DROP TABLE IF EXISTS authortxtsearch"))
+            # The simple tokenizer is best for my purposes (A self-written tokenizer would even be better):
+            conn.execute(sa.text("""
+                CREATE VIRTUAL TABLE authortxtsearch USING
+                        fts4(StructureId                   INTEGER,
+                             _audit_author_name            TEXT,
+                             _audit_contact_author_name    TEXT,
+                             _publ_contact_author_name     TEXT,
+                             _publ_contact_author          TEXT,
+                             _publ_author_name             TEXT,
+                                tokenize=simple "tokenchars= .=-_");
+                              """))
+
+    def populate_author_fulltext_search(self):
+        index = """
+            INSERT INTO authortxtsearch (StructureId,
+                                    _audit_author_name,
+                                    _audit_contact_author_name,
+                                    _publ_contact_author_name,
+                                    _publ_contact_author,
+                                    _publ_author_name)
+            SELECT  aut.StructureId,
+                    aut._audit_author_name,
+                    aut._audit_contact_author_name,
+                    aut._publ_contact_author_name,
+                    aut._publ_contact_author,
+                    aut._publ_author_name
+                        FROM authors AS aut; """
+        self.db_request(index)
+        self.db_request("""INSERT INTO authortxtsearch(authortxtsearch) VALUES('optimize'); """)
 
 
 if __name__ == '__main__':
@@ -345,4 +394,4 @@ if __name__ == '__main__':
     # print(db.find_by_rvalue(0.02))
     with db.Session() as session:
         print(db.structure_count())
-    db.fill_formula(formula={'C': 23, 'H': 12, 'ir': 1.5}, struct=None)
+    db.init_author_search()
