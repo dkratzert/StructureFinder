@@ -1,7 +1,10 @@
+from collections import namedtuple
 from pathlib import Path
+from typing import NamedTuple, Type
 
-from PyQt5.QtCore import QSettings
+from PyQt5.QtCore import QSettings, QPoint, QSize
 
+Position = namedtuple('Position', 'size, position, maximized')
 
 class StructureFinderSettings():
     def __init__(self):
@@ -57,3 +60,32 @@ class StructureFinderSettings():
             exe_path = ''
         self.settings.endGroup()
         return exe_path
+
+    def save_window_position(self, position: QPoint, size: QSize, maximized: bool) -> None:
+        self.settings.beginGroup("MainWindow")
+        self.settings.setValue("position", position)
+        self.settings.setValue("size", size)
+        self.settings.setValue('maximized', maximized)
+        self.settings.endGroup()
+
+    def load_window_position(self) -> 'Position':
+        """
+        Loads window position information and sets default values if no configuration exists.
+        """
+        self.settings.beginGroup("MainWindow")
+        pos = self.settings.value("position", type=QPoint)
+        size = self.settings.value("size", type=QSize)
+        size = size if size.width() > 0 else QSize(1000, 950)
+        pos = pos if pos.x() > 0 else QPoint(20, 20)
+        maximized = self.settings.value('maximized')
+        maxim = False
+        if isinstance(maximized, str):
+            if eval(maximized.capitalize()):
+                maxim = True
+            else:
+                maxim = False
+        if maximized is None:
+            # In this case, there was no saved setting
+            maxim = True
+        self.settings.endGroup()
+        return Position(size=size, position=pos, maximized=maxim)

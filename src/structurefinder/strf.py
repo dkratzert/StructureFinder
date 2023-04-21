@@ -22,14 +22,13 @@ from datetime import date
 from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
-from sqlite3 import OperationalError
 from typing import Union, Tuple
 from xml.etree.ElementTree import ParseError
 
 import gemmi.cif
 import qtawesome as qta
-from PyQt5 import QtGui
-from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread, QPoint
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox, QPushButton
 
@@ -54,8 +53,6 @@ from structurefinder.searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
 
 DEBUG = True
-
-
 
 """
 TODO:
@@ -83,12 +80,13 @@ else:
     application_path = Path(os.path.abspath(__file__)).parent.parent
 
 
-
 class StartStructureDB(QMainWindow):
     def __init__(self, db_file_name: str = '', *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.settings = StructureFinderSettings()
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
+        self.set_window_size_and_position()
         font = QtGui.QFont()
         font.setFamily("Courier")
         font.setStyleHint(QtGui.QFont.Monospace)
@@ -112,7 +110,6 @@ class StartStructureDB(QMainWindow):
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
-        self.settings = StructureFinderSettings()
         self.ui.cellcheckExeLineEdit.setText(self.settings.load_ccdc_exe_path())
         self.connect_signals_and_slots()
         self.set_initial_button_states()
@@ -200,8 +197,31 @@ class StartStructureDB(QMainWindow):
     def show_labels(self, value: bool):
         self.ui.render_widget.show_labels(value)
 
-    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
-        super(StartStructureDB, self).resizeEvent(a0)
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self._savesize()
+
+    def moveEvent(self, event: QtGui.QMoveEvent) -> None:
+        """Is called when the main window moves."""
+        super().moveEvent(event)
+        self._savesize()
+
+    def changeEvent(self, event: QtCore.QEvent) -> None:
+        """Is called when the main window changes its state."""
+        if event.type() == QtCore.QEvent.WindowStateChange:
+            self._savesize()
+
+    def _savesize(self) -> None:
+        """Saves the main window size nd position."""
+        x, y = self.pos().x(), self.pos().y()
+        self.settings.save_window_position(QPoint(x, y), self.size(), self.isMaximized())
+
+    def set_window_size_and_position(self) -> None:
+        wsettings = self.settings.load_window_position()
+        self.resize(wsettings.size)
+        self.move(wsettings.position)
+        if wsettings.maximized:
+            self.showMaximized()
 
     def checkfor_version(self):
         url = 'https://dkratzert.de/files/structurefinder/version.txt'
@@ -649,7 +669,7 @@ class StartStructureDB(QMainWindow):
         self.progress.setMaximum(max)
         self.progress.setMinimum(min)
         self.progress.show()
-        #if curr == max:
+        # if curr == max:
         #    self.progress.hide()
 
     def close_db(self, copy_on_close: str = None) -> bool:
