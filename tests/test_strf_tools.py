@@ -1,5 +1,6 @@
 import unittest
 
+from structurefinder.searcher.misc import get_value
 
 
 class TestGetValue(unittest.TestCase):

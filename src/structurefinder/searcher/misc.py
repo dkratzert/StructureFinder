@@ -203,15 +203,12 @@ def get_value(string):
         The value without error. (`float`)
     """
     if "(" in string:
-        vval = string.split("(")[0]
+        vval, err = string.split("(")
         if vval == '':
-            vval = '0.0'
+            vval = '0'
         return float(vval)
     else:
-        try:
-            return float(string)
-        except ValueError:
-            return 0.0
+        return float(string)
 
 
 def flatten(lis: List[Optional[List[Any]]]) -> List[Any]:
