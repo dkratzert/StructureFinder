@@ -169,7 +169,7 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
     if sum_formula_dict:
         db.fill_formula(struct, cif.cif_data['calculated_formula_sum'])
     db.fill_residuals_data(struct, cif, structure_id)
-    # structures.fill_authors_table(structure_id, cif)
+    db.fill_authors_table(struct, cif, structure_id)
     db.session.add(struct)
     return True
 

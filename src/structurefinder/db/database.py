@@ -331,12 +331,13 @@ class DB(QtCore.QObject):
         formula_dict = dict(zip(columns, formula.values()))
         struct.sum_formula = SumFormula(StructureId=struct.Id, **formula_dict)
 
-    def fill_authors_table(self, struct: Structure, cif: CifFile):
+    def fill_authors_table(self, struct: Structure, cif: CifFile, structure_id: int):
         """
         This is the table where the direct values from the authors of the CIF are stored.
         The virtual table "authortxtsearch" contains the fts data.
         """
         struct.authors = Authors(
+            StructureId=structure_id,
             _audit_author_name=cif.cif_data.get('_audit_author_name'),
             _audit_contact_author_name=cif.cif_data.get('_audit_contact_author_name'),
             _publ_contact_author_name=cif.cif_data.get('_publ_contact_author_name'),
@@ -377,13 +378,15 @@ class DB(QtCore.QObject):
                     aut._publ_contact_author,
                     aut._publ_author_name
                         FROM authors AS aut; """
-        self.db_request(index)
-        self.db_request("""INSERT INTO authortxtsearch(authortxtsearch) VALUES('optimize'); """)
+        with self.engine.connect() as conn:
+            conn.execute(sa.text(index))
+            conn.execute(sa.text("""INSERT INTO authortxtsearch(authortxtsearch) VALUES('optimize'); """))
+
 
 
 if __name__ == '__main__':
     db = DB()
-    db.load_database(Path('./test.sqlite'))
+    db.load_database(Path('./test2.sqlite'))
     """print(db.search_cell(cell=[12.955, 12.955, 12.955, 90.0, 90.0, 90.0],
                          # sublattice=True,
                          # more_results=True
@@ -395,3 +398,5 @@ if __name__ == '__main__':
     with db.Session() as session:
         print(db.structure_count())
     db.init_author_search()
+    db.populate_author_fulltext_search()
+    print(db.find_authors('krat'))

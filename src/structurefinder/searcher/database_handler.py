@@ -315,6 +315,8 @@ class DatabaseRequest():
     def init_textsearch(self):
         """
         Initializes the full text search (fts) tables.
+
+        https://stackoverflow.com/questions/75492216/fts5-on-sqlite-through-sqlalchemy
         """
         self.cur.execute("DROP TABLE IF EXISTS txtsearch")
 
