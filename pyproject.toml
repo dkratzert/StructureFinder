@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "structurefinder"
-version = "73.post2"
+dynamic = ["version"]
 
 authors = [
     { name = "Daniel Kratzert", email = "dkratzert@gmx.de" },
@@ -43,9 +43,11 @@ dependencies = [
 "Homepage" = "https://dkratzert.de/structurefinder.html"
 "Bug Tracker" = "https://github.com/dkratzert/StructureFinder/issues"
 
+[tool.hatch.version]
+path = "src/structurefinder/misc/version.py"
+pattern = "VERSION\\s*=\\s*(?P<version>\\d+)"
+
 [tool.hatch.build.targets.sdist]
-only-include = ["src/structurefinder"]
-sources = ["src"]
 exclude = [
     "/.github",
     "/pictures",
