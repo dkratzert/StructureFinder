@@ -18,7 +18,7 @@ import os
 import re
 import tarfile
 import zipfile
-from typing import Generator, Tuple, List
+from typing import Generator, Tuple, List, Union
 
 import gemmi
 
