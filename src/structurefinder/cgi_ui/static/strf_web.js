@@ -63,8 +63,8 @@ $(document).ready(function ($) {
     });
 
     //gets the window's height
-    var b = $(window).height();
-    var h = b * 0.35;
+    let b = $(window).height();
+    let h = b * 0.35;
     if (h < 200) {
         h = 220;
     }
@@ -72,33 +72,33 @@ $(document).ready(function ($) {
     mygrid.css("height", h);
 
     // Do advanced search:
-    var advanced_search_button = $("#advsearch-button");
+    let advanced_search_button = $("#advsearch-button");
     advanced_search_button.click(function (event) {
-        var txt_in = document.getElementById("text_in").value;
-        var txt_out = document.getElementById("text_out").value;
-        var elements_in = document.getElementById("elements_in").value;
-        var elements_out = document.getElementById("elements_out").value;
-        var cell_adv = document.getElementById("cell_adv").value;
-        var more_res = $('#more_results').is(':checked');
-        var supercell = $('#supercells').is(':checked');
-        var onlyelem = $('#onlythese_elem').is(':checked');
-        var datefield1 = document.getElementById("date1").value;
-        var datefield2 = document.getElementById("date2").value;
-        var itnum = $("#IT_number").val().split(" ")[0];
-        var r1val = document.getElementById("r1_val_adv").value;
-        var ccdc_num = document.getElementById("ccdc_num_adv").value;
+        let txt_in = document.getElementById("text_in").value;
+        let txt_out = document.getElementById("text_out").value;
+        let elements_in = document.getElementById("elements_in").value;
+        let elements_out = document.getElementById("elements_out").value;
+        let cell_adv = document.getElementById("cell_adv").value;
+        let more_res = $('#more_results').is(':checked');
+        let supercell = $('#supercells').is(':checked');
+        let onlyelem = $('#onlythese_elem').is(':checked');
+        let datefield1 = document.getElementById("date1").value;
+        let datefield2 = document.getElementById("date2").value;
+        let itnum = $("#IT_number").val().split(" ")[0];
+        let r1val = document.getElementById("r1_val_adv").value;
+        let ccdc_num = document.getElementById("ccdc_num_adv").value;
         advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res,
             supercell, datefield1, datefield2, itnum, onlyelem, r1val, ccdc_num);
     });
 
     function get_cell_from_p4p(p4pdata) {
-        var cell = '';
+        let cell = '';
         //console.log('insidep4p');
-        var allLines = p4pdata.split(/\r\n|\n|\r/);
+        let allLines = p4pdata.split(/\r\n|\n|\r/);
         // Reading line by line
         //console.log(allLines);
-        for (var i = 0; i < allLines.length; i++) {
-            var spline = allLines[i].split(/\s+/);
+        for (const element of allLines) {
+            let spline = element.split(/\s+/);
             //console.log(spline);
             if (spline[0] === 'CELL') {
                 cell += spline[1] + '  ';
@@ -115,11 +115,11 @@ $(document).ready(function ($) {
     }
 
     function get_cell_from_res(resdata) {
-        var cell = '';
+        let cell = '';
         //console.log('insidep4p');
-        var allLines = resdata.split(/\r\n|\n|\r/);
-        for (var i = 0; i < allLines.length; i++) {
-            var spline = allLines[i].split(/\s+/);
+        let allLines = resdata.split(/\r\n|\n|\r/);
+        for (const element of allLines) {
+            let spline = element.split(/\s+/);
             if (spline[0] === 'CELL') {
                 cell += spline[2] + '  ';
                 cell += spline[3] + '  ';
@@ -136,16 +136,16 @@ $(document).ready(function ($) {
 
 
     function get_cell_from_cif(cifdata) {
-        var cell = '';
+        let cell = '';
         //_cell_length_a                   11.776(2)
         //_cell_length_b                   5.7561(12)
         //_cell_length_c                   17.462(4)
         //_cell_angle_alpha                90.00
         //_cell_angle_beta                 95.02(3)
         //_cell_angle_gamma                90.00
-        var allLines = cifdata.split(/\r\n|\n|\r/);
-        for (var i = 0; i < allLines.length; i++) {
-            var spline = allLines[i].split(/\s+/);
+        let allLines = cifdata.split(/\r\n|\n|\r/);
+        for (const element of allLines) {
+            let spline = element.split(/\s+/);
             if (spline[0] === '_cell_length_a') {
                 cell += spline[1].split('(')[0] + '  ';
             }
@@ -171,7 +171,7 @@ $(document).ready(function ($) {
     }
 
 
-    var dropZone = document.getElementById('dropZone');
+    let dropZone = document.getElementById('dropZone');
 
     dropZone.addEventListener('dragover', function (e) {
         e.stopPropagation();
@@ -183,10 +183,10 @@ $(document).ready(function ($) {
     dropZone.addEventListener('drop', function (e) {
         e.stopPropagation();
         e.preventDefault();
-        var files = e.dataTransfer.files; // Array of all files
+        let files = e.dataTransfer.files; // Array of all files
         //console.log('dropped');
         if (files[0].type.match(/.*/)) {
-            var reader = new FileReader();
+            let reader = new FileReader();
 
             reader.onload = function (e2) {
                 // finished reading file data.
@@ -209,12 +209,12 @@ $(document).ready(function ($) {
 
     // Check if element names are occouring more than one time:
     function is_elem_doubled(elements_in, elements_out) {
-        var sumlist = elements_in.split(" ");
-        var outlist = elements_out.split(" ");
-        var ok = true;
+        let sumlist = elements_in.split(" ");
+        let outlist = elements_out.split(" ");
+        let ok = true;
         ok = validateSumForm(elements_in);
-        for (i = 0; i < sumlist.length; i++) {
-            var el = sumlist[i];
+        for (const element of sumlist) {
+            let el = element;
             if ($.inArray(el, outlist) >= 0) {
                 // A space character is allowed:
                 if (el === "") {
@@ -227,20 +227,20 @@ $(document).ready(function ($) {
     }
 
     function check_elin() {
-        var elements_in = document.getElementById("elements_in").value;
-        var elements_out = document.getElementById("elements_out").value;
+        let elements_in = document.getElementById("elements_in").value;
+        let elements_out = document.getElementById("elements_out").value;
         return is_elem_doubled(elements_in, elements_out);
     }
 
     function check_elex() {
-        var elements_in = document.getElementById("elements_in").value;
-        var elements_out = document.getElementById("elements_out").value;
+        let elements_in = document.getElementById("elements_in").value;
+        let elements_out = document.getElementById("elements_out").value;
         return is_elem_doubled(elements_out, elements_in)
     }
 
     function elements_red() {
-        var elinform = $("#elements_in.form-control");
-        var elexform = $("#elements_out.form-control");
+        let elinform = $("#elements_in.form-control");
+        let elexform = $("#elements_out.form-control");
         elinform.css("color", "#f35e59");
         elinform.css("font-weight", "bold");
         elexform.css("color", "#f35e59");
@@ -248,8 +248,8 @@ $(document).ready(function ($) {
     }
 
     function elements_regular() {
-        var elinform = $("#elements_in.form-control");
-        var elexform = $("#elements_out.form-control");
+        let elinform = $("#elements_in.form-control");
+        let elexform = $("#elements_out.form-control");
         elinform.css("color", "#000000");
         elinform.css("font-weight", "normal");
         elexform.css("color", "#000000");

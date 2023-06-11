@@ -24,51 +24,36 @@ from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
-from typing import Union, Optional
+from typing import Union, Optional, List
 
 import gemmi.cif
 import qtawesome as qta
-from PyQt5 import QtGui
-from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread, QPoint
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox, QPushButton
 
+from structurefinder.ccdc.query import search_csd, parse_results
 from structurefinder.displaymol.sdm import SDM
+from structurefinder.gui.strf_main import Ui_stdbMainwindow
 from structurefinder.gui.table_model import TableModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
 from structurefinder.misc.settings import StructureFinderSettings
-from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
-from structurefinder.searcher import database_handler, constants
-from structurefinder.searcher.filecrawler import excluded_names
-from structurefinder.searcher.worker import Worker
-from structurefinder.shelxfile.shelx import ShelXFile
-
-app = QApplication(sys.argv)
-
-print(sys.version)
-DEBUG = False
-
 from structurefinder.misc.version import VERSION
+from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
 from structurefinder.pymatgen.core import lattice
-from structurefinder.searcher import misc
+from structurefinder.searcher import database_handler, constants, misc
 from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
+from structurefinder.searcher.filecrawler import excluded_names
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, \
     regular_results_parameters
+from structurefinder.searcher.worker import Worker
+from structurefinder.shelxfile.shelx import ShelXFile
 
-is_windows = False
-import platform
-
-if platform.system() == 'Windows':
-    is_windows = True
-
-try:
-    from xml.etree.ElementTree import ParseError
-    from structurefinder.ccdc.query import get_cccsd_path, search_csd, parse_results
-except ModuleNotFoundError:
-    print('Non xml parser found.')
+DEBUG = True
 
 """
 TODO:
@@ -81,7 +66,6 @@ TODO:
 - Use spellfix for text search: https://www.sqlite.org/spellfix1.html
 
 Search for:
-- draw structure (with JSME? Acros? Kekule?, https://github.com/ggasoftware/ketcher)
 - compare  molecules https://groups.google.com/forum/#!msg/networkx-discuss/gC_-Wc0bRWw/ISRZYFsPCQAJ
   - search algorithms
   http://chemmine.ucr.edu/help/#similarity, https://en.wikipedia.org/wiki/Jaccard_index
@@ -96,31 +80,22 @@ if getattr(sys, 'frozen', False):
 else:
     application_path = Path(os.path.abspath(__file__)).parent.parent
 
-if DEBUG:
-    try:
-        from PyQt5 import uic, QtGui
-
-        uic.compileUiDir(os.path.join(application_path, 'structurefinder/gui'))
-        print('recompiled ui')
-    except:
-        print("Unable to compile UI!")
-        raise
-else:
-    print("Remember, UI is not recompiled without DEBUG.")
-
-from structurefinder.gui.strf_main import Ui_stdbMainwindow
+app = QApplication(sys.argv)
+print(sys.version)
 
 
 class StartStructureDB(QMainWindow):
     def __init__(self, db_file_name: str = '', *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.settings = StructureFinderSettings()
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
+        self.set_window_size_and_position()
         font = QtGui.QFont()
         font.setFamily("Courier")
         font.setStyleHint(QtGui.QFont.Monospace)
         self.ui.SHELXplainTextEdit.setFont(font)
-        self.statusBar().showMessage('StructureFinder version {}'.format(VERSION))
+        self.statusBar().showMessage(f'StructureFinder version {VERSION}')
         self.maxfiles = 0
         self.dbfdesc = None
         self.dbfilename = db_file_name
@@ -140,7 +115,6 @@ class StartStructureDB(QMainWindow):
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
         self.decide_import = True
-        self.settings = StructureFinderSettings()
         self.ui.cellcheckExeLineEdit.setText(self.settings.load_ccdc_exe_path())
         self.connect_signals_and_slots()
         self.set_initial_button_states()
@@ -228,8 +202,31 @@ class StartStructureDB(QMainWindow):
     def show_labels(self, value: bool):
         self.ui.render_widget.show_labels(value)
 
-    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
-        super(StartStructureDB, self).resizeEvent(a0)
+    def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self._savesize()
+
+    def moveEvent(self, event: QtGui.QMoveEvent) -> None:
+        """Is called when the main window moves."""
+        super().moveEvent(event)
+        self._savesize()
+
+    def changeEvent(self, event: QtCore.QEvent) -> None:
+        """Is called when the main window changes its state."""
+        if event.type() == QtCore.QEvent.WindowStateChange:
+            self._savesize()
+
+    def _savesize(self) -> None:
+        """Saves the main window size nd position."""
+        x, y = self.pos().x(), self.pos().y()
+        self.settings.save_window_position(QPoint(x, y), self.size(), self.isMaximized())
+
+    def set_window_size_and_position(self) -> None:
+        wsettings = self.settings.load_window_position()
+        self.resize(wsettings.size)
+        self.move(wsettings.position)
+        if wsettings.maximized:
+            self.showMaximized()
 
     def checkfor_version(self):
         url = 'https://dkratzert.de/files/structurefinder/version.txt'
@@ -280,7 +277,7 @@ class StartStructureDB(QMainWindow):
         if not file_name or not Path(file_name).is_file():
             return
         if Path(file_name).samefile(self.structures.dbfilename):
-            QMessageBox.information(self, 'This is the same file', f'Can not merge same files.')
+            QMessageBox.information(self, 'This is the same file', 'Can not merge same files.')
             return
         try:
             tst = database_handler.StructureTable(file_name)
@@ -290,7 +287,7 @@ class StartStructureDB(QMainWindow):
             del tst
         except Exception as e:
             print(f'Unable to append database: {e}')
-            self.ui.statusbar.showMessage(f'Unable to merge databases.')
+            self.ui.statusbar.showMessage('Unable to merge databases.')
             return
         self.structures.database.merge_databases(file_name)
         dbfile = self.structures.dbfilename
@@ -551,7 +548,6 @@ class StartStructureDB(QMainWindow):
         if idlist:
             self.ui.MaintabWidget.setCurrentIndex(0)
 
-    @pyqtSlot(name="cell_state_changed")
     def cell_state_changed(self):
         """
         Searches a cell but with diffeent loose or strict option.
@@ -668,10 +664,9 @@ class StartStructureDB(QMainWindow):
         self.progress.setMaximum(max)
         self.progress.setMinimum(min)
         self.progress.show()
-        if curr == max:
-            self.progress.hide()
+        # if curr == max:
+        #    self.progress.hide()
 
-    @pyqtSlot(name="close_db")
     def close_db(self, copy_on_close: str = None) -> bool:
         """
         Closed the current database and erases the list.
@@ -717,7 +712,6 @@ class StartStructureDB(QMainWindow):
             return False
         return True
 
-    @pyqtSlot(name="abort_import")
     def abort_import(self):
         """
         This slot means, import was aborted.
@@ -733,8 +727,7 @@ class StartStructureDB(QMainWindow):
         self.structures.database.initialize_db()
         self.ui.appendDirButton.setEnabled(True)
 
-    @pyqtSlot(QItemSelection, QItemSelection, name="get_properties")
-    def get_properties(self, selected, deselected) -> bool:
+    def get_properties(self, selected: QItemSelection, _: QItemSelection) -> bool:
         """
         This slot shows the properties of a cif file in the properties widget
         """
@@ -767,7 +760,7 @@ class StartStructureDB(QMainWindow):
         if not hasattr(self.structures, 'database'):
             return False
         self.structures.database.commit_db()
-        #if self.structures.database.con.total_changes > 0:
+        # if self.structures.database.con.total_changes > 0:
         #    self.structures.set_database_version(0)
         status = False
         if not save_name:
@@ -957,8 +950,7 @@ class StartStructureDB(QMainWindow):
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
         return True
 
-    @pyqtSlot('QString')
-    def find_dates(self, date1: str, date2: str) -> list:
+    def find_dates(self, date1: str, date2: str) -> List[int]:
         """
         Returns a list if id between date1 and date2
         """
@@ -969,7 +961,6 @@ class StartStructureDB(QMainWindow):
         result = self.structures.find_by_date(date1, date2)
         return result
 
-    @pyqtSlot('QString')
     def search_text(self, search_string: str) -> bool:
         """
         searches db for given text
@@ -1045,7 +1036,6 @@ class StartStructureDB(QMainWindow):
                     idlist.append(curr_cell[0])
         return idlist
 
-    @pyqtSlot('QString', name='search_cell')
     def search_cell(self, search_string: str) -> bool:
         """
         searches db for given cell via the cell volume
@@ -1251,6 +1241,7 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
+        self.statusBar().showMessage(f'Found {len(data)} structures.', msecs=0)
 
     def clear_fields(self) -> None:
         """
@@ -1296,7 +1287,7 @@ def my_exception_hook(exctype, value, error_traceback):
     errortext += f'Python {sys.version}\n'
     errortext += f'{sys.platform} \n'
     errortext += f'{time.asctime(time.localtime(time.time()))} \n'
-    errortext += f'StructureFinder crashed during the following operation: \n'
+    errortext += 'StructureFinder crashed during the following operation: \n'
     errortext += '-' * 80 + '\n'
     errortext += ''.join(traceback.format_tb(error_traceback)) + '\n'
     errortext += f'{str(exctype.__name__)} : '
@@ -1325,7 +1316,7 @@ def main():
     myapp = StartStructureDB(db_file_name=db_filename)
     myapp.show()
     myapp.raise_()
-    myapp.setWindowTitle('StructureFinder v{}'.format(VERSION))
+    myapp.setWindowTitle(f'StructureFinder v{VERSION}')
     try:
         sys.exit(app.exec_())
     except KeyboardInterrupt:

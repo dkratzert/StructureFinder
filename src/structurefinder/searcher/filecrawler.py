@@ -46,6 +46,7 @@ class MyZipBase(object):
         self.filepath = filepath
         self.cifname = ''
         self.cifpath = ''
+        self.filenames: Union[List, None] = None
 
 
 class MyZipReader(MyZipBase):
@@ -54,27 +55,32 @@ class MyZipReader(MyZipBase):
         extracts .cif files from zip files
         """
         super().__init__(filepath)
+        self.zfile = zipfile.ZipFile(self.filepath)
+        self.filenames = [x for x in self.zfile.namelist() if x.endswith('.cif')]
+
+    def __len__(self):
+        return len(self.filenames)
 
     def __iter__(self) -> Generator:
         """
         returns an iterator of cif files in the zipfile as list.
         """
         try:
-            zfile = zipfile.ZipFile(self.filepath)
-            for name in zfile.namelist():
-                (self.cifpath, self.cifname) = os.path.split(name)
-                if self.cifname.endswith('.cif'):
-                    if not self.cifname.startswith('__') and zfile.NameToInfo[name].file_size < 150000000:
-                        doc = gemmi.cif.Document()
-                        doc.source = name
-                        doc.parse_string(zfile.read(name).decode('ascii', 'ignore'))
-                        if doc:
-                            yield doc
-                        else:
-                            continue
+            for name in self.filenames:
+                if name.startswith('__'):
+                    continue
+                if self.zfile.NameToInfo[name].file_size < 150000000:
+                    doc = gemmi.cif.Document()
+                    doc.source = name
+                    doc.parse_string(self.zfile.read(name).decode('ascii', 'ignore'))
+                    if doc:
+                        yield doc
+                    else:
+                        continue
         except Exception as e:
-            # print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
-            # print(e, self.filepath)  # filepath is not utf-8 save
+            if DEBUG:
+                print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
+                print(e, self.filepath)  # filepath is not utf-8 save
             yield None
 
 
@@ -84,30 +90,33 @@ class MyTarReader(MyZipBase):
         extracts .cif files from tar.gz files
         """
         super().__init__(filepath)
+        self.tfile = tarfile.open(self.filepath, mode='r')
+        self.filenames = [x for x in self.tfile.getnames() if x.endswith('.cif')]
+
+    def __len__(self):
+        return len(self.filenames)
 
     def __iter__(self) -> Generator:
         """
         returns an iterator of cif files in the zipfile as list.
         """
         try:
-            tfile = tarfile.open(self.filepath, mode='r')
-            for name in tfile.getnames():
-                self.cifpath, self.cifname = os.path.split(name)
-                if self.cifname.endswith('.cif'):
-                    doc = gemmi.cif.Document()
-                    doc.source = name
-                    doc.parse_string(tfile.extractfile(name).read().decode('ascii', 'ignore'))
-                    if doc:
-                        yield doc
-                    else:
-                        continue
+            for name in self.filenames:
+                doc = gemmi.cif.Document()
+                doc.source = name
+                doc.parse_string(self.tfile.extractfile(name).read().decode('ascii', 'ignore'))
+                if doc:
+                    yield doc
+                else:
+                    continue
         except Exception as e:
-            # print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
-            # print(e, self.filepath)  # filepath is not utf-8 save
+            if DEBUG:
+                print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
+                print(e, self.filepath)  # filepath is not utf-8 save
             yield None
 
 
-def filewalker_walk(startdir: str, patterns: list, excludes: List[str]) -> Tuple[Tuple[str, str]]:
+def filewalker_walk(startdir: str, patterns: list, excludes: List[str]) -> Tuple[Tuple[str, str], ...]:
     """
     walks through the filesystem starting from startdir and searches
     for files with ending endings.

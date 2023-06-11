@@ -1,10 +1,9 @@
 """
 MOl V3000 format
 """
-
+import math
 import os
 
-from structurefinder.searcher.misc import distance
 from structurefinder.shelxfile.elements import get_radius_from_element
 
 
@@ -13,7 +12,7 @@ class MolFile(object):
     This mol file writer is only to use the file with JSmol, not to implement the standard exactly!
     """
 
-    def __init__(self, atoms: list, bonds = None):
+    def __init__(self, atoms: list, bonds=None):
         self.atoms = atoms
         if bonds:
             self.bonds = bonds
@@ -26,13 +25,13 @@ class MolFile(object):
         """
         For JSmol, I don't need a facy header.
         """
-        return "{}{}{}".format(os.linesep, os.linesep, os.linesep)
+        return f"{os.linesep}{os.linesep}{os.linesep}"
 
     def connection_table(self) -> str:
         """
           6  6  0  0  0  0  0  0  0  0  1 V3000
         """
-        tab = "{:>5d}{:>5d}".format(self.atomscount, self.bondscount)
+        tab = f"{self.atomscount:>5d}{self.bondscount:>5d}"
         return tab
 
     def get_atoms_string(self) -> str:
@@ -64,7 +63,7 @@ class MolFile(object):
         :param extra_param: additional distance to the covalence radius
         :type extra_param: float
         """
-        #t1 = perf_counter()
+        # t1 = perf_counter()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
             at1_part = at1[5]
@@ -75,7 +74,7 @@ class MolFile(object):
                     continue
                 if at1[0] == at2[0]:  # name1 = name2
                     continue
-                d = distance(at1[2], at1[3], at1[4], at2[2], at2[3], at2[4])
+                d = math.dist(at1[2:5], at2[2:5])
                 if d > 4.0:  # makes bonding faster (longer bonds do not exist)
                     continue
                 rad2 = get_radius_from_element(at2[1])
@@ -87,15 +86,15 @@ class MolFile(object):
                     if [num2, num1] in conlist:
                         continue
                     conlist.append([num1, num2])
-        #t2 = perf_counter()
-        #print('Bondzeit:', round(t2-t1, 3), 's')
-        #print('len:', len(conlist))
+        # t2 = perf_counter()
+        # print('Bondzeit:', round(t2-t1, 3), 's')
+        # print('len:', len(conlist))
         return conlist
 
     def footer(self) -> str:
         """
         """
-        return "M  END{}$$$$".format(os.linesep)
+        return f"M  END{os.linesep}$$$$"
 
     def make_mol(self):
         """

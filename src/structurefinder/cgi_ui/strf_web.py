@@ -235,7 +235,7 @@ def cellsearch():
     else:
         try:
             if which('ccdc_searcher') or \
-                Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
+                    Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
                 print('CellCheckCSD found')
                 return 'true'
         except TypeError:
@@ -308,7 +308,6 @@ def search_cellcheck_csd():
     """
     cmd = request.POST.cmd
     cell = request.POST.cell
-    str_id = request.POST.str_id
     if not cell:
         return {}
     cent = request.POST.centering
@@ -322,9 +321,6 @@ def search_cellcheck_csd():
         except ParseError as e:
             print(e)
             return
-        # print(results)
-        if str_id:
-            structures = StructureTable(dbfilename)
         print(len(results), 'Structures found...')
         return {"total": len(results), "records": results, "status": "success"}
     else:
@@ -547,13 +543,6 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
 def chunks(l: list, n: int) -> list:
     """
     returns successive n-sized chunks from l.
-    >>> l = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'a', 'b', 'c', 'd', 'e', 'f']
-    >>> chunks(l, 5)
-    [[1, 2, 3, 4, 5], [6, 7, 8, 9, 0], ['a', 'b', 'c', 'd', 'e'], ['f']]
-    >>> chunks(l, 1)
-    [[1], [2], [3], [4], [5], [6], [7], [8], [9], [0], ['a'], ['b'], ['c'], ['d'], ['e'], ['f']]
-    >>> chunks(l, 50)
-    [[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'a', 'b', 'c', 'd', 'e', 'f']]
     """
     return [l[i:i + n] for i in range(0, len(l), n)]
 
@@ -648,7 +637,8 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
 
 def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
                     date1: str = None, date2: str = None, structures: StructureTable = None,
-                    it_num: str = None, onlythese: bool = False, r1val: float = 0.0, ccdc_num: str = '') -> list:
+                    it_num: str = None, onlythese: bool = False, r1val: float = 0.0,
+                    ccdc_num: str = '') -> Union[List[int], Tuple[int, ...]]:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.

@@ -80,8 +80,11 @@ def find_cell(args: Namespace):
     """
     Searches for unit cells by command line parameters
     """
-    cell = [float(x) for x in args.cell]
-    no_result = '\nNo similar unit cell found.'
+    try:
+        cell = [float(x) for x in args.cell]
+    except Exception:
+        print('No valid cell given. Use space-separated values.')
+        sys.exit()
     if args.outfile:
         dbfilename = args.outfile
     else:
@@ -110,17 +113,16 @@ def find_cell(args: Namespace):
     else:
         print('\n{} Structures found:'.format(len(idlist)))
         searchresult = structures.get_all_structure_names(idlist)
-    print(
-        'ID  |      path                                                                     |   filename            |   data   ')
+    print('ID      |      path                                 '
+          '                                    |  filename             |  data name  ')
     print('-' * 130)
     for res in searchresult:
         Id = res[0]
         dataname, filename, path = [x.decode('utf-8') for x in res if isinstance(x, bytes)]
-        print(f'{Id:3} | {path:77s} | {filename:<21s} | {dataname:s}')
+        print(f'{Id:<7} | {path:77s} | {filename:<21s} | {dataname:s}')
 
 
 def run_index(args=None):
-    worker = None
     if not args:
         print('')
     else:
@@ -138,7 +140,7 @@ def run_index(args=None):
             except FileNotFoundError:
                 pass
             except PermissionError:
-                print('Could not acess database file "{}". Is it used elsewhere?'.format(dbfilename))
+                print(f'Could not acess database file "{dbfilename}". Is it used elsewhere?')
                 print('Giving up...')
                 sys.exit()
         db, structures = get_database(dbfilename)
@@ -151,13 +153,8 @@ def run_index(args=None):
             else:
                 lastid += 1
             try:
-                worker = Worker(searchpath=p,
-                                excludes=args.ex if args.ex else excluded_names,
-                                structures=structures,
-                                lastid=lastid,
-                                add_res_files=args.fillres,
-                                add_cif_files=args.fillcif,
-                                standalone=True)
+                _ = Worker(searchpath=p, add_res_files=args.fillres, add_cif_files=args.fillcif, lastid=lastid,
+                           structures=structures, excludes=args.ex if args.ex else excluded_names, standalone=True)
             except OSError as e:
                 print("Unable to collect files:")
                 print(e)
@@ -177,7 +174,7 @@ def run_index(args=None):
         diff = time2 - time1
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
-        print(f"\nTotal {worker.files_indexed} cif/res files in '{str(Path(dbfilename).resolve())}'. "
+        print(f"\nTotal {len(structures)} cif/res files in '{str(Path(dbfilename).resolve())}'. "
               f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
         import os
         if "PYTEST_CURRENT_TEST" not in os.environ:

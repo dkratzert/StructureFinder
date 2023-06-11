@@ -15,7 +15,7 @@ import os
 import shutil
 from math import sqrt, cos, radians, log
 from pathlib import Path
-from typing import List, Union, Dict, Optional, Tuple, Any
+from typing import List, Union, Dict, Tuple
 
 from structurefinder.searcher import constants
 
@@ -211,39 +211,9 @@ def get_value(string):
         return float(string)
 
 
-def flatten(lis: List[Optional[List[Any]]]) -> List[Any]:
-    """
-    Given a list, possibly nested to any level, return it flattened.
-    From: http://code.activestate.com/recipes/578948-flattening-an-arbitrarily-nested-list-in-python/
-
-    >>> flatten([1, 2, 3, [4,5,6,[789, 10, [100]]], 11, [12, 13, [14]]])
-    [1, 2, 3, 4, 5, 6, 789, 10, 100, 11, 12, 13, 14]
-    """
-    new_lis = []
-    for item in lis:
-        if isinstance(item, list):
-            new_lis.extend(flatten(item))
-        else:
-            new_lis.append(item)
-    return new_lis
-
-
-def distance(x1: float, y1: float, z1: float, x2: float, y2: float, z2: float) -> float:
-    """
-    distance between two points in space for orthogonal axes.
-    >>> distance(1, 1, 1, 2, 2, 2)
-    1.7320508075688772
-    >>> distance(1, 0, 0, 2, 0, 0)
-    1.0
-    """
-    return sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2)
-
-
 def format_sum_formula(sumform: Dict[str, Union[int, float]], break_after: int = 99) -> str:
     """
     Makes html formated sum formula from dictionary.
-    >>> format_sum_formula({'C': 12, 'H': 6, 'O': 3, 'Mn': 7})
-    '<html><body>C<sub>12 </sub>H<sub>6 </sub>O<sub>3 </sub>Mn<sub>7 </sub></body></html>'
     """
     # atlist = formula_str_to_dict(sumform)
     if not sumform:
@@ -365,18 +335,9 @@ def formula_str_to_dict(sumform: Union[str, bytes]) -> Dict[str, str]:
     return atlist
 
 
-def get_list_of_elements(formula: str) -> List[str]:
+def get_list_of_elements(formula: str) -> Union[List[str], None]:
     """
-    >>> get_list_of_elements("SCl")
-    ['S', 'Cl']
-    >>> get_list_of_elements("S1Cl1")
-    ['S', 'Cl']
-    >>> get_list_of_elements("S1Cl")
-    ['S', 'Cl']
-    >>> get_list_of_elements("ScCl")
-    ['Sc', 'Cl']
-    >>> get_list_of_elements("S20 Cl")
-    ['S', 'Cl']
+    Get the list of elements from a formula.
     """
     elements = constants.atoms
     atlist = []
@@ -389,7 +350,7 @@ def get_list_of_elements(formula: str) -> List[str]:
             atlist.append(formula[0:1].capitalize())
             formula = formula[1:]
         else:
-            raise KeyError
+            return None
     return atlist
 
 

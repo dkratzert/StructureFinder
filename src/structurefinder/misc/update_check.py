@@ -11,9 +11,12 @@
 #
 from __future__ import print_function
 
+import sys
 from contextlib import suppress
 
 import requests
+
+from structurefinder.misc.version import VERSION
 
 urlprefix = "https://dkratzert.de/files/structurefinder/"
 
@@ -26,8 +29,11 @@ def get_current_strf_version(silent=True) -> str:
     -------
     version number
     """
+    headers = {
+        'User-Agent': f'strf_cmd v{VERSION} ({sys.platform})',
+    }
     try:
-        response = requests.get(url='{}version.txt'.format(urlprefix), timeout=2)
+        response = requests.get(url='{}version.txt'.format(urlprefix), headers=headers, timeout=2)
     except Exception:
         if not silent:
             print("*** Unable to connect to update server. No Update possible. ***")

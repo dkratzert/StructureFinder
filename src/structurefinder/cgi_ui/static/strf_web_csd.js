@@ -1,7 +1,7 @@
 
 $(document).ready(function($){
 
-    my_ccdc_grid = $('#my_ccdc_grid');
+    let my_ccdc_grid = $('#my_ccdc_grid');
 
     // The main structures table:
     my_ccdc_grid.w2grid({
@@ -26,15 +26,15 @@ $(document).ready(function($){
         ],
         //sortData: [{field: 'dataname', direction: 'ASC'}],
         onDblClick:function(event) {
-            strid = event.recid;
+            let strid = event.recid;
             show_csd_entry(strid);
             //console.log(event);
         }
     });
 
     //gets the window's height
-    var bc = $(window).height();
-    var hc = bc * 0.50;
+    let bc = $(window).height();
+    let hc = bc * 0.50;
     if (hc < 220) {
         hc = 220;
     }
@@ -44,18 +44,18 @@ $(document).ready(function($){
 
     function csdcellsearch(cell) {
         //var more_res = $('#more_results').is(':checked');
-        var e = document.getElementById("centering_drop");
-        var centering = e.options[e.selectedIndex].value;
+        let e = document.getElementById("centering_drop");
+        let centering = e.options[e.selectedIndex].value;
         //console.log(centering+' #centering##');
         cell = cell.replace(/\s+/g, ' ').trim();  // replace multiple spaces with one
         cell = cell.replace(/,/g, '.');  // replace comma with point
         //console.log(cell+'csdcellsrch');
-        var params;
-        var url;
+        let params;
+        let url;
         if (isValidCell(cell)) {
             w2ui['my_ccdc_grid'].request('get-records',
-                params = {cell: cell, centering: centering, str_id: strid},
-                url = cgifile + "/csd-list",  // the 'get-records' request of w2ui fetches the CSD entries found by 'params'
+                {cell: cell, centering: centering, str_id: strid},
+                cgifile + "/csd-list",  // the 'get-records' request of w2ui fetches the CSD entries found by 'params'
                 function (result) {
                     display_csd_resultnum(result);
                     //console.log(result);
@@ -78,7 +78,7 @@ $(document).ready(function($){
 
     // display how many results I got
     function display_csd_resultnum(result) {
-        var numresult;
+        let numresult;
         if (typeof result === 'undefined') numresult = 0;
         else (numresult = result.total);
         document.getElementById("found_csd").innerHTML = "Found " + numresult + " structures";
@@ -86,13 +86,13 @@ $(document).ready(function($){
     
     function show_csd_entry(identifier) {
         //console.log(identifier);
-        var win = window.open('https://www.ccdc.cam.ac.uk/structures/Search?entry_list=' + identifier, '_blank');
+        let win = window.open('https://www.ccdc.cam.ac.uk/structures/Search?entry_list=' + identifier, '_blank');
         win.focus();
     }
 
         // Test if a valid unit cell is in cell:
     function isValidCell(cell) {
-        var scell = cell.split(" ");
+        let scell = cell.split(" ");
         //console.log(scell);
         if (isNumericArray(scell)) {
             return !(scell.length !== 6); // return True if 6 values
@@ -103,9 +103,9 @@ $(document).ready(function($){
 
     // Test if all values in array are numeric:
     function isNumericArray(array) {
-        var isal = true;
-        for (var i=0; i<array.length; i++) {
-            if (!$.isNumeric(array[i])) {
+        let isal = true;
+        for (const element of array) {
+            if (!$.isNumeric(element)) {
                 isal = false;
             }
         }
@@ -115,7 +115,7 @@ $(document).ready(function($){
     
     // Cell search Button clicked:
     $("#csd_search_btn").click(function(event) {
-        var cell = document.getElementById("cell_csd_inp").value;
+        let cell = document.getElementById("cell_csd_inp").value;
         //console.log(cell+' btnsrch');
         csdcellsearch(cell);
     });
@@ -124,7 +124,7 @@ $(document).ready(function($){
     // Enter key pressed in the cell search field:
     $('#cell_csd_inp').keypress(function(e) {
         if (e.which === 13) {  // enter key
-            var cell = document.getElementById("cell_csd_inp").value;
+            let cell = document.getElementById("cell_csd_inp").value;
             csdcellsearch(cell);
             //console.log(txt);
         }
