@@ -138,13 +138,14 @@ class StartStructureDB(QMainWindow):
         self.ui.saveDatabaseButton.setDisabled(True)
 
     def set_icons(self):
-        self.ui.importDatabaseButton.setIcon(qta.icon('fa5s.database'))
-        self.ui.saveDatabaseButton.setIcon(qta.icon('fa.hdd-o'))
-        self.ui.importDirButton.setIcon(qta.icon('fa5s.download'))
-        self.ui.appendDirButton.setIcon(qta.icon('fa5s.plus'))
-        self.ui.p4pCellButton.setIcon(qta.icon('fa.cube'))
-        self.ui.closeDatabaseButton.setIcon(qta.icon('fa.times-circle-o'))
-        self.ui.appendDatabasePushButton.setIcon(qta.icon('fa.plus'))
+        with suppress(Exception):
+            self.ui.importDatabaseButton.setIcon(qta.icon('fa5s.database'))
+            self.ui.saveDatabaseButton.setIcon(qta.icon('fa5.hdd'))
+            self.ui.importDirButton.setIcon(qta.icon('fa5s.download'))
+            self.ui.appendDirButton.setIcon(qta.icon('fa5s.plus'))
+            self.ui.p4pCellButton.setIcon(qta.icon('mdi.cube-outline'))
+            self.ui.closeDatabaseButton.setIcon(qta.icon('fa5.times-circle'))
+            self.ui.appendDatabasePushButton.setIcon(qta.icon('fa5s.plus'))
 
     def set_model_from_data(self, data: Union[list, tuple]):
         self.table_model = TableModel(structures=data)
