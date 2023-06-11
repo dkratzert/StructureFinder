@@ -25,6 +25,7 @@ from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError, OperationalError
 from typing import Union, Optional, List
+from xml.etree.ElementTree import ParseError
 
 import gemmi.cif
 import qtawesome as qta
