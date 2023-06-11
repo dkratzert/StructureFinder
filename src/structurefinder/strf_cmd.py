@@ -80,6 +80,7 @@ def find_cell(args: Namespace):
     """
     Searches for unit cells by command line parameters
     """
+    no_result = '\nNo similar unit cell found.'
     try:
         cell = [float(x) for x in args.cell]
     except Exception:
