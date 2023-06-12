@@ -25,7 +25,7 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://dkratzert.de/structurefinder.html"
+"Homepage" = "https://github.com/dkratzert/StructureFinder"
 "Bug Tracker" = "https://github.com/dkratzert/StructureFinder/issues"
 
 [tool.hatch.version]
