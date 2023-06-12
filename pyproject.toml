@@ -29,7 +29,7 @@ classifiers = [
 
 [tool.hatch.version]
 path = "src/structurefinder/misc/version.py"
-pattern = "VERSION\\s*=\\s*(?P<version>\\d+\\.\\d{0,1})"
+pattern = "VERSION\\s*=\\s*(?P<version>\\d+\\.{0,1}\\d{0,1})"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
