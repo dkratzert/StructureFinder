@@ -41,4 +41,4 @@ jobs:
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1.8
         with:
-          packages_dir: artifact/
+          packages-dir: artifact/
