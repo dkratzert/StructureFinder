@@ -54,7 +54,7 @@ from structurefinder.searcher.misc import is_valid_cell, elements, combine_resul
 from structurefinder.searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
 
-DEBUG = True
+DEBUG = False
 
 """
 TODO:
