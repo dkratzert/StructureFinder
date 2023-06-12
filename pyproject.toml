@@ -2,13 +2,12 @@
 requires = ["hatchling", "hatch-requirements-txt"]
 build-backend = "hatchling.build"
 
-[project]
-name = "structurefinder"
-dynamic = ["version", "dependencies"]
-
 [tool.hatch.metadata.hooks.requirements_txt]
 files = ["requirements.txt"]
 
+[project]
+name = "structurefinder"
+dynamic = ["version", "dependencies"]
 authors = [
     { name = "Daniel Kratzert", email = "dkratzert@gmx.de" },
 ]
@@ -25,12 +24,12 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/dkratzert/StructureFinder"
+"Homepage" = "https://dkratzert.de/structurefinder.html"
 "Bug Tracker" = "https://github.com/dkratzert/StructureFinder/issues"
 
 [tool.hatch.version]
 path = "src/structurefinder/misc/version.py"
-pattern = "VERSION\\s*=\\s*(?P<version>\\d+)"
+pattern = "VERSION\\s*=\\s*(?P<version>\\d+\\.\\d{0,1})"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
