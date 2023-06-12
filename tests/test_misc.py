@@ -1,6 +1,7 @@
 import unittest
 
-from structurefinder.searcher.misc import get_list_of_elements, format_sum_formula
+from structurefinder.searcher.misc import get_list_of_elements, format_sum_formula, is_a_nonzero_file, \
+    get_error_from_value
 from structurefinder.shelxfile.misc import range_resolver, wrap_line, multiline_test, chunks
 
 
@@ -62,4 +63,63 @@ class Test(unittest.TestCase):
         self.assertEqual([[1], [2], [3], [4], [5], [6], [7], [8], [9], [0], ['a'], ['b'], ['c'], ['d'], ['e'], ['f']],
                          chunks(l, 1))
         self.assertEqual([[1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 'a', 'b', 'c', 'd', 'e', 'f']], chunks(l, 50))
+
+
+class FileTestCase(unittest.TestCase):
+    def test_existing_nonzero_file(self):
+        filepath = './src/structurefinder/searcher/misc.py'
+        self.assertTrue(is_a_nonzero_file(filepath))
+
+    def test_existing_zero_file(self):
+        filepath = './tests/test-data/test_zerofile.cif'
+        self.assertFalse(is_a_nonzero_file(filepath))
+
+    def test_nonexistent_file(self):
+        filepath = 'foo.bar'
+        self.assertFalse(is_a_nonzero_file(filepath))
+
+    def test_existing_nonzero_file_another(self):
+        filepath = './src/structurefinder/strf.py'
+        self.assertTrue(is_a_nonzero_file(filepath))
+
+
+class TestGetErrorFromValue(unittest.TestCase):
+    def test_get_error_from_value_with_error(self):
+        self.assertEqual(get_error_from_value("0.0123 (23)"), (0.0123, 0.0023))
+        self.assertEqual(get_error_from_value("0.0123(23)"), (0.0123, 0.0023))
+        self.assertEqual(get_error_from_value("250.0123(23)"), (250.0123, 0.0023))
+        self.assertEqual(get_error_from_value("123(25)"), (123.0, 25.0))
+        self.assertEqual(get_error_from_value("123(25"), (123.0, 25.0))
+
+    def test_get_error_from_value_without_error(self):
+        self.assertEqual(get_error_from_value('0.0123'), (0.0123, 0.0))
+        self.assertEqual(get_error_from_value("abc"), (0.0, 0.0))
+
+    def test_get_error_from_value_empty_string(self):
+        self.assertEqual(get_error_from_value(""), (0.0, 0.0))
+
+    def test_get_error_from_value_invalid_format(self):
+        self.assertEqual(get_error_from_value("0.0123()"), (0.0123, 0.0))
+        with self.assertRaises(ValueError):
+            self.assertEqual(get_error_from_value("0.0123 (abc)"), (0.0123, 0.0))
+        self.assertEqual(get_error_from_value("0.0123 (123)"), (0.0123, 0.0123))
+        self.assertEqual(get_error_from_value("0.0123 (23"), (0.0123, 0.0023))
+        self.assertEqual(get_error_from_value("0.0123("), (0.0123, 0.0))
+        self.assertEqual(get_error_from_value("0.0123)"), (0.0, 0.0))
+        self.assertEqual(get_error_from_value("0.0123("), (0.0123, 0.0))
+        with self.assertRaises(ValueError):
+            self.assertEqual(get_error_from_value("0.0123((23))"), (0.0123, 0.0))
+        with self.assertRaises(ValueError):
+            self.assertEqual(get_error_from_value("(23)"), (0.0, 0.0))
+        with self.assertRaises(ValueError):
+            self.assertEqual(get_error_from_value("0.0123(23.45)"), (0.0123, 0.0))
+        self.assertEqual(get_error_from_value("0.0123(23)abc"), (0.0123, 0.0023))
+
+
+if __name__ == '__main__':
+    unittest.main()
+
+
+
+
 
