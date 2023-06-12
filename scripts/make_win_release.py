@@ -74,8 +74,7 @@ def make_distribs():
 
     innosetup_compiler = r'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
     # Run 64bit setup compiler
-    subprocess.run([innosetup_compiler,
-                    r'scripts\strf-install_win64.iss', ])
+    subprocess.run([innosetup_compiler, f'/dMyAppVersion={VERSION}', r'scripts\strf-install_win64.iss', ])
 
 
 if __name__ == '__main__':
