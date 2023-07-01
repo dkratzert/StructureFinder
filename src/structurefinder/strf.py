@@ -1180,7 +1180,7 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
-        self.statusBar().showMessage(f'Found {len(data)} structures.', msecs=0)
+        self.statusBar().showMessage(f'Found {len(self.db)} structures.', msecs=0)
 
     def clear_fields(self) -> None:
         """

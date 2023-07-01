@@ -1,4 +1,3 @@
-import datetime
 from itertools import chain
 from math import log
 from pathlib import Path
@@ -140,14 +139,14 @@ class DB(QtCore.QObject):
                     results.append(curr_cell)
         return results
 
-    def find_text_and_authors(self, txt: str) -> Tuple[Tuple, ...]:
-        result_txt = self.find_authors(txt)
-        result_authors = self.find_by_strings(txt)
+    def find_text_and_authors(self, txt: str) -> Tuple[int, ...]:
+        result_authors = self.find_authors(txt)
+        result_txt = self.find_by_strings(txt)
         result_txt = set(result_txt)
         result_txt.update(result_authors)
         return tuple(result_txt)
 
-    def find_by_ccdc_num(self, ccdc: str) -> Tuple:
+    def find_by_ccdc_num(self, ccdc: str) -> Tuple[int, ...]:
         """
         Find structures with respective CCDC number.
         """
@@ -156,7 +155,7 @@ class DB(QtCore.QObject):
         with self.engine.connect() as conn:
             return self.flatten(conn, stmt)
 
-    def find_by_date(self, start='0000-01-01', end='NOW') -> tuple[int, ...]:
+    def find_by_date(self, start='0000-01-01', end='NOW') -> Tuple[int, ...]:
         """
         Find structures between start and end date.
         """
@@ -164,7 +163,7 @@ class DB(QtCore.QObject):
         with self.engine.connect() as conn:
             return self.flatten(conn, stmt)
 
-    def find_by_rvalue(self, rvalue: float) -> tuple[int, ...]:
+    def find_by_rvalue(self, rvalue: float) -> Tuple[int, ...]:
         """
         Finds structures with R1 value better than rvalue. I search both R1 values, because often one or even both
         are missing.
@@ -188,7 +187,7 @@ class DB(QtCore.QObject):
         with self.engine.connect() as conn:
             return self.flatten(conn, stmt)
 
-    def find_by_strings(self, text: str) -> Tuple:
+    def find_by_strings(self, text: str) -> Tuple[int, ...]:
         """
         Searches cells with volume between upper and lower limit
         :param text: Volume uncertaincy where to search
@@ -209,8 +208,9 @@ class DB(QtCore.QObject):
     def flatten(self, conn, stmt, args=None):
         return tuple(chain(*conn.execute(stmt, args)))
 
-    def find_authors(self, text: str) -> Tuple:
+    def find_authors(self, text: str) -> Tuple[int, ...]:
         if not table_exists(table='authortxtsearch', engine=self.engine):
+            print('Author table not available')
             return tuple()
         search = f"{'*'}{text}{'*'}"
         select = """SELECT StructureId from authortxtsearch """
@@ -367,6 +367,7 @@ class DB(QtCore.QObject):
                              _publ_author_name             TEXT,
                                 tokenize=simple "tokenchars= .=-_");
                               """))
+            conn.commit()
 
     def populate_author_fulltext_search(self):
         index = """
@@ -386,11 +387,12 @@ class DB(QtCore.QObject):
         with self.engine.connect() as conn:
             conn.execute(sa.text(index))
             conn.execute(sa.text("""INSERT INTO authortxtsearch(authortxtsearch) VALUES('optimize'); """))
+            conn.commit()
 
 
 if __name__ == '__main__':
     db = DB()
-    db.load_database(Path('./test2.sqlite'))
+    db.load_database(Path('./test.sqlite'))
     """print(db.search_cell(cell=[12.955, 12.955, 12.955, 90.0, 90.0, 90.0],
                          # sublattice=True,
                          # more_results=True
@@ -403,4 +405,4 @@ if __name__ == '__main__':
         print(db.structure_count())
     db.init_author_search()
     db.populate_author_fulltext_search()
-    print(db.find_authors('krat'))
+    print(db.find_authors('kratzert'))
