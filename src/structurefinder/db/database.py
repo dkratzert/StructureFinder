@@ -389,6 +389,50 @@ class DB(QtCore.QObject):
             conn.execute(sa.text("""INSERT INTO authortxtsearch(authortxtsearch) VALUES('optimize'); """))
             conn.commit()
 
+    def init_textsearch(self):
+        """
+        Initializes the full text search (fts) tables.
+        https://stackoverflow.com/questions/75492216/fts5-on-sqlite-through-sqlalchemy
+        """
+        # The simple tokenizer is best for my purposes (A self-written tokenizer would even be better):
+        create_table = """
+            CREATE VIRTUAL TABLE txtsearch USING
+                    fts4(StructureId    INTEGER,
+                         filename       TEXT,
+                         dataname       TEXT,
+                         path           TEXT,
+                         shelx_res_file TEXT,
+                            tokenize=simple "tokenchars= .=-_");
+                          """
+        with self.engine.connect() as conn:
+            conn.execute(sa.text("DROP TABLE IF EXISTS txtsearch"))
+            conn.execute(sa.text(create_table))
+            conn.commit()
+
+    def populate_fulltext_search_table(self):
+        """
+        Populates the fts4 table with data to search for text.
+        _publ_contact_author_name
+        """
+        populate_index = """
+                    INSERT INTO txtsearch (StructureId,
+                                            filename,
+                                            dataname,
+                                            path,
+                                            shelx_res_file)
+            SELECT  str.Id,
+                    str.filename,
+                    str.dataname,
+                    str.path,
+                    res._shelx_res_file
+                        FROM Structure AS str
+                            INNER JOIN Residuals AS res WHERE str.Id = res.Id; """
+        optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize'); """
+        with self.engine.connect() as conn:
+            conn.execute(sa.text(populate_index))
+            conn.execute(sa.text(optimize_queries))
+            conn.commit()
+
 
 if __name__ == '__main__':
     db = DB()
@@ -406,3 +450,6 @@ if __name__ == '__main__':
     db.init_author_search()
     db.populate_author_fulltext_search()
     print(db.find_authors('kratzert'))
+    db.init_textsearch()
+    db.populate_fulltext_search_table()
+    print(db.find_by_strings('kratzert'))

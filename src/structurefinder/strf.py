@@ -33,6 +33,7 @@ from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread, QPoint
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox, QPushButton
+from sqlalchemy.exc import OperationalError
 
 from structurefinder.ccdc.query import search_csd, parse_results
 from structurefinder.db.database import DB
@@ -637,21 +638,13 @@ class StartStructureDB(QMainWindow):
 
     def do_work_after_indexing(self, startdir: str, session):
         self.progress.hide()
-        """# TODO: Do I need this here? It is already done in worker.py?
-        try:
-            self.structures.database.init_textsearch()
-            self.structures.database.init_author_search()
-        except OperationalError as e:
-            print(e)
-            print('No fulltext search module found.')
-        try:
-            self.structures.database.populate_fulltext_search_table()
-            self.structures.database.populate_author_fulltext_search()
-        except OperationalError as e:
-            print(e)
-            print('No fulltext search compiled into sqlite.')
-        self.structures.database.make_indexes()
-        """
+        with suppress(OperationalError):
+            self.db.init_textsearch()
+            self.db.populate_fulltext_search_table()
+        with suppress(OperationalError):
+            self.db.init_author_search()
+            self.db.populate_author_fulltext_search()
+        # TODO: self.structures.database.make_indexes()
         session.flush()
         session.commit()
         self.ui.cifList_tableView.show()

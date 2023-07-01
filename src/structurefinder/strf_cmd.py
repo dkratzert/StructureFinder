@@ -144,13 +144,12 @@ def run_index(args=None):
                 except KeyboardInterrupt:
                     sys.exit()
                 print("---------------------")
-            """
-            TODO:
             db.init_textsearch()
             db.init_author_search()
             db.populate_fulltext_search_table()
             db.populate_author_fulltext_search()
-            db.make_indexes()"""
+            # TODO: make indexes work:
+            # db.make_indexes()
             session.flush()
             session.commit()
         # print('No valid files found. They might be in excluded subdirectories.')
