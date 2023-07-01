@@ -50,6 +50,11 @@ class DB(QtCore.QObject):
         return num
 
     def get_lastrowid(self):
+        with self.engine.connect() as conn:
+            stmt = sa.select(sa.func.max(Structure.Id))
+            return conn.execute(stmt).scalar()
+
+    def __len__(self):
         return self.structure_count()
 
     def get_all_structures(self, idlist: List[int] = None) -> List[sa.Row]:
@@ -381,7 +386,6 @@ class DB(QtCore.QObject):
         with self.engine.connect() as conn:
             conn.execute(sa.text(index))
             conn.execute(sa.text("""INSERT INTO authortxtsearch(authortxtsearch) VALUES('optimize'); """))
-
 
 
 if __name__ == '__main__':
