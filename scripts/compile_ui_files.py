@@ -2,6 +2,7 @@ from pathlib import Path
 
 from qtpy import uic
 
+
 def fix_comment(pyfile: Path, uifile: Path):
     txt = pyfile.read_text()
     lines = txt.splitlines(keepends=True)

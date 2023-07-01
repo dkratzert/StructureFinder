@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "StructureFinder"
-#define MyAppVersion "73"
+;#define MyAppVersion "74"  ; This is now done by commandline argument
 #define MyAppPublisher "Daniel Kratzert"
 
 ; Remember, first run pyInstaller script!

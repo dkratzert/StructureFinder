@@ -15,7 +15,7 @@ import os
 import shutil
 from math import sqrt, cos, radians, log
 from pathlib import Path
-from typing import List, Union, Dict, Optional, Tuple, Any
+from typing import List, Union, Dict, Tuple
 
 from structurefinder.searcher import constants
 
@@ -128,48 +128,19 @@ def open_file_read(filename: str, asci: bool = True) -> Union[str, List]:
             return binary
 
 
-def is_a_nonzero_file(filename: Union[str, Path]) -> bool:
+def is_a_nonzero_file(filepath: Union[str, Path]) -> bool:
     """
     Check if a file exists and has some content.
-
-    >>> is_a_nonzero_file('./structurefinder/searcher/misc.py')
-    True
-    >>> is_a_nonzero_file('foo.bar')
-    False
-    >>> is_a_nonzero_file('./tests/test-data/test_zerofile.cif')
-    False
-    >>> is_a_nonzero_file('./structurefinder/strf.py')
-    True
     """
-    status = False
-    if os.path.isfile(filename):
-        filesize = int(os.stat(str(filename)).st_size)
+    if os.path.isfile(filepath) and os.path.getsize(filepath) > 0:
+        return True
     else:
         return False
-    if isinstance(filesize, int) and filesize > 0:
-        status = True
-    if isinstance(filesize, int) and filesize == 0:
-        status = False
-    return status
 
 
 def get_error_from_value(value: str) -> Tuple[float, float]:
     """
     Returns the error value from a number string.
-    :type value: str
-    :rtype: str
-    >>> get_error_from_value("0.0123 (23)")
-    (0.0123, 0.0023)
-    >>> get_error_from_value("0.0123(23)")
-    (0.0123, 0.0023)
-    >>> get_error_from_value('0.0123')
-    (0.0123, 0.0)
-    >>> get_error_from_value("250.0123(23)")
-    (250.0123, 0.0023)
-    >>> get_error_from_value("123(25)")
-    (123.0, 25.0)
-    >>> get_error_from_value("123(25")
-    (123.0, 25.0)
     """
     try:
         value = value.replace(" ", "")

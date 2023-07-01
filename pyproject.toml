@@ -1,11 +1,13 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-requirements-txt"]
 build-backend = "hatchling.build"
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
 
 [project]
 name = "structurefinder"
-version = "73.post2"
-
+dynamic = ["version", "dependencies"]
 authors = [
     { name = "Daniel Kratzert", email = "dkratzert@gmx.de" },
 ]
@@ -20,32 +22,16 @@ classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
 ]
-dependencies = [
-    'altgraph',
-    'docutils',
-    'future',
-    'macholib',
-    'numpy',
-    'pefile',
-    'PyQt5~=5.15',
-    'PyQt5-sip~=12.11',
-    'PyQt5-stubs~=5.15',
-    'pywin32-ctypes~=0.2',
-    'six',
-    'requests',
-    'gemmi',
-    'gunicorn',
-    'xlsxwriter',
-    'qtawesome',
-]
 
 [project.urls]
 "Homepage" = "https://dkratzert.de/structurefinder.html"
 "Bug Tracker" = "https://github.com/dkratzert/StructureFinder/issues"
 
+[tool.hatch.version]
+path = "src/structurefinder/misc/version.py"
+pattern = "VERSION\\s*=\\s*(?P<version>\\d+\\.{0,1}\\d{0,1})"
+
 [tool.hatch.build.targets.sdist]
-only-include = ["src/structurefinder"]
-sources = ["src"]
 exclude = [
     "/.github",
     "/pictures",
@@ -54,7 +40,7 @@ exclude = [
     "/tests",
     "/manuals",
     "/requirements-devel.txt",
-    "/requirements.txt",
+    "/requirements-cmd.txt",
     "/make_release.sh",
     "/venv*",
 ]

@@ -9,9 +9,7 @@
 # Daniel Kratzert
 # ----------------------------------------------------------------------------
 #
-from __future__ import print_function
 
-import os
 import sys
 from contextlib import suppress
 

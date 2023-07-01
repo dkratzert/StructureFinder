@@ -14,7 +14,7 @@ class MolFile(object):
     This mol file writer is only to use the file with JSmol, not to implement the standard exactly!
     """
 
-    def __init__(self, atoms: List[Atoms], bonds = None):
+    def __init__(self, atoms: List[Atoms], bonds=None):
         self.atoms = atoms
         if bonds:
             self.bonds = bonds
@@ -65,7 +65,7 @@ class MolFile(object):
         :param extra_param: additional distance to the covalence radius
         :type extra_param: float
         """
-        #t1 = perf_counter()
+        # t1 = perf_counter()
         conlist = []
         for num1, at1 in enumerate(self.atoms, 1):
             at1_part = at1.part
@@ -88,9 +88,9 @@ class MolFile(object):
                     if [num2, num1] in conlist:
                         continue
                     conlist.append([num1, num2])
-        #t2 = perf_counter()
-        #print('Bondzeit:', round(t2-t1, 3), 's')
-        #print('len:', len(conlist))
+        # t2 = perf_counter()
+        # print('Bondzeit:', round(t2-t1, 3), 's')
+        # print('len:', len(conlist))
         return conlist
 
     def footer(self) -> str:

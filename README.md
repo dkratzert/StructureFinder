@@ -1,6 +1,5 @@
-<a href="https://repology.org/project/python:structurefinder/versions">
-    <img src="https://repology.org/badge/vertical-allrepos/python:structurefinder.svg" alt="Packaging status" align="right">
-</a>
+[![Packaging Status](https://repology.org/badge/vertical-allrepos/python:structurefinder.svg)](https://repology.org/project/python:structurefinder/versions)
+
 
 ![Lates Release](https://img.shields.io/github/v/tag/dkratzert/StructureFinder?label=Latest%20Release)
 [![Unit Tests](https://github.com/dkratzert/StructureFinder/actions/workflows/python-app_windows.yml/badge.svg?branch=master)](https://github.com/dkratzert/StructureFinder/actions/workflows/python-app_windows.yml)

@@ -81,8 +81,9 @@ class MyZipReader(MyZipBase):
                     else:
                         continue
         except Exception as e:
-            # print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
-            # print(e, self.filepath)  # filepath is not utf-8 save
+            if DEBUG:
+                print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
+                print(e, self.filepath)  # filepath is not utf-8 save
             yield None
 
 
@@ -112,8 +113,9 @@ class MyTarReader(MyZipBase):
                 else:
                     continue
         except Exception as e:
-            # print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
-            # print(e, self.filepath)  # filepath is not utf-8 save
+            if DEBUG:
+                print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
+                print(e, self.filepath)  # filepath is not utf-8 save
             yield None
 
 

@@ -6,6 +6,7 @@ from PyQt5.QtCore import QSettings, QPoint, QSize
 
 Position = namedtuple('Position', 'size, position, maximized')
 
+
 class StructureFinderSettings():
     def __init__(self):
         self.software_name = 'StructureFinder'

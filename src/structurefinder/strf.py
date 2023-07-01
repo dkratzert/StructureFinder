@@ -22,7 +22,9 @@ from datetime import date
 from math import sin, radians
 from os.path import isfile, samefile
 from pathlib import Path
+
 from typing import Union, Tuple
+
 from xml.etree.ElementTree import ParseError
 
 import gemmi.cif
@@ -44,6 +46,7 @@ from structurefinder.misc.exporter import export_to_cif_file
 from structurefinder.misc.settings import StructureFinderSettings
 from structurefinder.misc.version import VERSION
 from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
+
 from structurefinder.searcher import database_handler, constants
 from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
 from structurefinder.searcher.filecrawler import excluded_names
@@ -53,6 +56,7 @@ from structurefinder.searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
 
 DEBUG = True
+
 
 """
 TODO:
@@ -78,6 +82,11 @@ if getattr(sys, 'frozen', False):
     application_path = sys._MEIPASS
 else:
     application_path = Path(os.path.abspath(__file__)).parent.parent
+
+
+app = QApplication(sys.argv)
+print(sys.version)
+
 
 
 class StartStructureDB(QMainWindow):
@@ -132,13 +141,14 @@ class StartStructureDB(QMainWindow):
         self.ui.saveDatabaseButton.setDisabled(True)
 
     def set_icons(self):
-        self.ui.importDatabaseButton.setIcon(qta.icon('fa5s.database'))
-        self.ui.saveDatabaseButton.setIcon(qta.icon('fa.hdd-o'))
-        self.ui.importDirButton.setIcon(qta.icon('fa5s.download'))
-        self.ui.appendDirButton.setIcon(qta.icon('fa5s.plus'))
-        self.ui.p4pCellButton.setIcon(qta.icon('fa.cube'))
-        self.ui.closeDatabaseButton.setIcon(qta.icon('fa.times-circle-o'))
-        self.ui.appendDatabasePushButton.setIcon(qta.icon('fa.plus'))
+        with suppress(Exception):
+            self.ui.importDatabaseButton.setIcon(qta.icon('fa5s.database'))
+            self.ui.saveDatabaseButton.setIcon(qta.icon('fa5.hdd'))
+            self.ui.importDirButton.setIcon(qta.icon('fa5s.download'))
+            self.ui.appendDirButton.setIcon(qta.icon('fa5s.plus'))
+            self.ui.p4pCellButton.setIcon(qta.icon('mdi.cube-outline'))
+            self.ui.closeDatabaseButton.setIcon(qta.icon('fa5.times-circle'))
+            self.ui.appendDatabasePushButton.setIcon(qta.icon('fa5s.plus'))
 
     def set_model_from_data(self, data: Union[list, tuple]):
         self.table_model = TableModel(structures=data)
@@ -547,7 +557,6 @@ class StartStructureDB(QMainWindow):
         if idlist:
             self.ui.MaintabWidget.setCurrentIndex(0)
 
-    @pyqtSlot(name="cell_state_changed")
     def cell_state_changed(self):
         """
         Searches a cell but with diffeent loose or strict option.
@@ -762,9 +771,11 @@ class StartStructureDB(QMainWindow):
         """
         Saves the database to a certain file. Therefore I have to close the database.
         """
+
         # if not hasattr(self.structures, 'database'):
         #    return False
         # self.structures.database.commit_db()
+
         # if self.structures.database.con.total_changes > 0:
         #    self.structures.set_database_version(0)
         status = False
@@ -1169,6 +1180,7 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
+        self.statusBar().showMessage(f'Found {len(data)} structures.', msecs=0)
 
     def clear_fields(self) -> None:
         """

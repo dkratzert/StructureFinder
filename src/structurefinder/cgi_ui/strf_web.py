@@ -231,7 +231,7 @@ def cellsearch():
     else:
         try:
             if which('ccdc_searcher') or \
-                Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
+                    Path('/opt/CCDC/CellCheckCSD/bin/ccdc_searcher').exists():
                 print('CellCheckCSD found')
                 return 'true'
         except TypeError:
@@ -302,7 +302,6 @@ def search_cellcheck_csd():
     """
     cmd = request.POST.cmd
     cell = request.POST.cell
-    #str_id = request.POST.str_id
     if not cell:
         return {}
     cent = request.POST.centering

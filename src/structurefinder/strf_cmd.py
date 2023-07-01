@@ -99,6 +99,7 @@ def find_cell(args: Namespace):
         print(f'{res.Id:<7} | {res.path.decode():77s} | {res.filename.decode():<21s} | {res.dataname.decode():s}')
 
 
+
 def run_index(args=None):
     if not args:
         print('')
@@ -123,6 +124,7 @@ def run_index(args=None):
         db = DB()
         db.load_database(Path(dbfilename))
         time1 = time.perf_counter()
+
         with db.Session(autoflush=False) as session:
             db.session = session
             for p in args.dir:
@@ -156,7 +158,7 @@ def run_index(args=None):
         diff = time2 - time1
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
-        print(f"\nTotal {db.get_lastrowid()} cif/res files in '{str(Path(dbfilename).resolve())}'. "
+        print(f"\nTotal {len(db)} cif/res files in '{str(Path(dbfilename).resolve())}'. "
               f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
         import os
         if "PYTEST_CURRENT_TEST" not in os.environ:
