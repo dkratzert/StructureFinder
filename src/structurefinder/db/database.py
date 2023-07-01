@@ -370,7 +370,7 @@ class DB(QtCore.QObject):
             conn.commit()
 
     def populate_author_fulltext_search(self):
-        index = """
+        stmt = """
             INSERT INTO authortxtsearch (StructureId,
                                     _audit_author_name,
                                     _audit_contact_author_name,
@@ -385,7 +385,7 @@ class DB(QtCore.QObject):
                     aut._publ_author_name
                         FROM authors AS aut; """
         with self.engine.connect() as conn:
-            conn.execute(sa.text(index))
+            conn.execute(sa.text(stmt))
             conn.execute(sa.text("""INSERT INTO authortxtsearch(authortxtsearch) VALUES('optimize'); """))
             conn.commit()
 
@@ -414,7 +414,7 @@ class DB(QtCore.QObject):
         Populates the fts4 table with data to search for text.
         _publ_contact_author_name
         """
-        populate_index = """
+        stmt = """
                     INSERT INTO txtsearch (StructureId,
                                             filename,
                                             dataname,
@@ -429,7 +429,7 @@ class DB(QtCore.QObject):
                             INNER JOIN Residuals AS res WHERE str.Id = res.Id; """
         optimize_queries = """INSERT INTO txtsearch(txtsearch) VALUES('optimize'); """
         with self.engine.connect() as conn:
-            conn.execute(sa.text(populate_index))
+            conn.execute(sa.text(stmt))
             conn.execute(sa.text(optimize_queries))
             conn.commit()
 
