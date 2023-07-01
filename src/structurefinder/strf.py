@@ -614,7 +614,6 @@ class StartStructureDB(QMainWindow):
         self.worker.progress.connect(self.report_progress)
         self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
-        # TODO: make this work
         self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir, session))
         self.statusBar().showMessage('Searching potential files...')
         self.statusBar().show()
@@ -634,6 +633,7 @@ class StartStructureDB(QMainWindow):
         self.maxfiles = number
 
     def report_progress(self, progress: int):
+        self.statusBar().showMessage('')
         self.progressbar(progress, 0, self.maxfiles)
 
     def do_work_after_indexing(self, startdir: str, session):
@@ -1231,7 +1231,6 @@ def my_exception_hook(exctype, value, error_traceback):
 
 def main():
     app = QApplication(sys.argv)
-    print(sys.version)
     if not DEBUG:
         sys.excepthook = my_exception_hook
     app.setWindowIcon(QtGui.QIcon(str(Path(application_path, 'icons/strf.png').resolve())))
@@ -1244,10 +1243,7 @@ def main():
     myapp.show()
     myapp.raise_()
     myapp.setWindowTitle(f'StructureFinder v{VERSION}')
-    try:
-        sys.exit(app.exec_())
-    except KeyboardInterrupt:
-        sys.exit()
+    app.exec()
 
 
 if __name__ == "__main__":
