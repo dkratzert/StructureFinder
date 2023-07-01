@@ -174,7 +174,7 @@ class Authors(Base):
 
 class Cell(Base):
     __tablename__ = 'cell'
-    __table_args__ = (
+    """__table_args__ = (
         Index('idx_a', 'a'),
         Index('idx_al', 'alpha'),
         Index('idx_b', 'b'),
@@ -182,6 +182,9 @@ class Cell(Base):
         Index('idx_c', 'c'),
         Index('idx_ga', 'gamma'),
         Index('idx_volume', 'volume')
+    )"""
+    __table_args__ = (
+        Index('cell_index', 'a', 'b', 'c', 'alpha', 'beta', 'gamma'),
     )
 
     Id = Column(Integer, primary_key=True)

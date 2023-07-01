@@ -452,4 +452,4 @@ if __name__ == '__main__':
     print(db.find_authors('kratzert'))
     db.init_textsearch()
     db.populate_fulltext_search_table()
-    print(db.find_by_strings('kratzert'))
+    print(db.find_by_strings('zucker'))

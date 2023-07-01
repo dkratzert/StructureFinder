@@ -10,7 +10,7 @@ from typing import Union
 
 from pkg_resources import parse_version
 
-DEBUG = False
+DEBUG = os.environ.get('debug_strf')
 
 try:
     from winreg import OpenKey, HKEY_CURRENT_USER, EnumKey, QueryInfoKey, EnumValue

@@ -16,6 +16,7 @@ Created on 09.02.2015
 import fnmatch
 import os
 import re
+import sys
 import tarfile
 import zipfile
 from collections import defaultdict
@@ -30,7 +31,7 @@ from structurefinder.db.mapping import Structure, Cell, Atoms
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.shelx import ShelXFile
 
-DEBUG = True
+DEBUG = os.environ.get('debug_strf')
 
 excluded_names = ('ROOT',
                   '.OLEX',

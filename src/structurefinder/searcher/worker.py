@@ -13,7 +13,7 @@ from structurefinder.searcher.filecrawler import fill_db_with_cif_data, MyZipRea
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.shelx import ShelXFile
 
-DEBUG = False
+DEBUG = os.environ.get('debug_strf')
 
 
 class Worker(QtCore.QObject):
@@ -170,7 +170,16 @@ class Worker(QtCore.QObject):
                    f'to database in: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s'
         print(f'      {filecount} files considered.')
         print(tmessage)
+        self.db.session.flush()
+        self.db.session.commit()
+        self._do_final_work()
         self.finished.emit(tmessage)
+
+    def _do_final_work(self):
+        self.db.init_author_search()
+        self.db.populate_author_fulltext_search()
+        self.db.init_textsearch()
+        self.db.populate_fulltext_search_table()
 
 
 '''

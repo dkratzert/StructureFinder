@@ -9,8 +9,7 @@
 # Daniel Kratzert
 # ----------------------------------------------------------------------------
 #
-
-
+import os
 import time
 from dataclasses import dataclass
 from math import sqrt, cos, radians, sin
@@ -22,7 +21,7 @@ from structurefinder.db.mapping import Cell, Atoms
 from structurefinder.shelxfile.dsrmath import SymmetryElement, Matrix, Array, frac_to_cart
 from structurefinder.shelxfile.elements import get_radius_from_element
 
-DEBUG = False
+DEBUG = os.environ.get('debug_strf')
 
 
 @dataclass(frozen=False)

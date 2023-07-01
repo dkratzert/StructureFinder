@@ -21,7 +21,7 @@ from structurefinder.shelxfile.dsrmath import frac_to_cart, subtract_vect, deter
 
 # Without DEBUG, the parser should only fail if the file is realy damaged. With DEBUG enabled, the parser
 # fails even in harmless cases.
-DEBUG = False
+DEBUG = os.environ.get('debug_strf')
 PROFILE = False
 
 dsr_regex = re.compile(r'^rem\s+DSR\s+(PUT|REPLACE).*', re.IGNORECASE)

@@ -638,13 +638,6 @@ class StartStructureDB(QMainWindow):
 
     def do_work_after_indexing(self, startdir: str, session):
         self.progress.hide()
-        with suppress(OperationalError):
-            self.db.init_textsearch()
-            self.db.populate_fulltext_search_table()
-        with suppress(OperationalError):
-            self.db.init_author_search()
-            self.db.populate_author_fulltext_search()
-        # TODO: self.structures.database.make_indexes()
         session.flush()
         session.commit()
         self.ui.cifList_tableView.show()

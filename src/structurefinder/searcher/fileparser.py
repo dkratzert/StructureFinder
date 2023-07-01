@@ -11,6 +11,7 @@ Created on 09.02.2015
 
 @author: daniel
 """
+import os
 from collections import namedtuple
 from contextlib import suppress
 from typing import List, Dict, Union, Any
@@ -18,7 +19,7 @@ from typing import List, Dict, Union, Any
 import gemmi.cif
 from gemmi import cif
 
-DEBUG = False
+DEBUG = os.environ.get('debug_strf')
 
 
 class CifFile(object):

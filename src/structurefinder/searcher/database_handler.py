@@ -28,6 +28,7 @@ con.isOpen()
 - False
 QSqlDatabase::removeDatabase("sales")
 """
+import os
 import sys
 from math import log
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
@@ -37,7 +38,7 @@ from structurefinder.searcher import misc
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.elements import sorted_atoms
 
-DEBUG = False
+DEBUG = os.environ.get('debug_strf')
 
 __metaclass__ = type  # use new-style classes
 
