@@ -52,7 +52,7 @@ from structurefinder.searcher import database_handler, constants
 from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
 from structurefinder.searcher.filecrawler import excluded_names
 from structurefinder.searcher.fileparser import CifFile
-from structurefinder.searcher.misc import is_valid_cell, elements, combine_results
+from structurefinder.searcher.misc import is_valid_cell, elements, SearchParameters
 from structurefinder.searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
 
@@ -103,7 +103,6 @@ class StartStructureDB(QMainWindow):
         self.ui.SHELXplainTextEdit.setFont(font)
         self.statusBar().showMessage(f'StructureFinder version {VERSION}')
         self.maxfiles = 0
-        self.dbfdesc = None
         self.dbfilename = db_file_name
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         self.abort_import_button = QPushButton('Abort Indexing')
@@ -119,7 +118,6 @@ class StartStructureDB(QMainWindow):
         self.show()
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
-        self.decide_import = True
         self.ui.cellcheckExeLineEdit.setText(self.settings.load_ccdc_exe_path())
         self.connect_signals_and_slots()
         self.set_initial_button_states()
@@ -462,15 +460,6 @@ class StartStructureDB(QMainWindow):
         the difference.
         """
         self.clear_fields()
-        states = {'date'  : False,
-                  'cell'  : False,
-                  'elincl': False,
-                  'elexcl': False,
-                  'txt'   : False,
-                  'txt_ex': False,
-                  'spgr'  : False,
-                  'rval'  : False,
-                  'ccdc'  : False}
         if not self.db:
             return
         cell = is_valid_cell(self.ui.adv_unitCellLineEdit.text())
@@ -482,65 +471,27 @@ class StartStructureDB(QMainWindow):
         ccdc_num = self.ui.CCDCNumLineEdit.text().strip(' ')
         try:
             rval = float(self.ui.adv_R1_search_line.text().strip(' '))
-            states['rval'] = True
         except ValueError:
             rval = 0
-        if len(txt) >= 2 and "*" not in txt:
-            txt = '*' + txt + '*'
         txt_ex = self.ui.adv_textsearch_excl.text().strip(' ')
-        if len(txt_ex) >= 2 and "*" not in txt_ex:
-            txt_ex = '*' + txt_ex + '*'
         spgr = self.ui.SpGrpComboBox.currentText()
         onlythese = self.ui.onlyTheseElementsCheckBox.isChecked()
-        #
-        results = []
-        cell_results = []
-        spgr_results = []
-        elincl_results = []
-        txt_results = []
-        txt_ex_results = []
-        date_results = []
-        ccdc_num_results = []
-        if ccdc_num:
-            ccdc_num_results = self.structures.find_by_ccdc_num(ccdc_num)
-        if ccdc_num_results:
-            self.display_structures_by_idlist(ccdc_num_results)
-            return
-        try:
-            spgr = int(spgr.split()[0])
-        except Exception:
-            spgr = 0
-        if cell:
-            states['cell'] = True
-            cell_results = self.db.search_cell(cell=cell,
-                                               more_results=self.ui.adv_moreResultscheckBox.isChecked(),
-                                               sublattice=self.ui.adv_superlatticeCheckBox.isChecked()
-                                               )
-        if spgr:
-            states['spgr'] = True
-            spgr_results = self.structures.find_by_it_number(spgr)
-        if elincl or elexcl:
-            if elincl:
-                states['elincl'] = True
-            if elexcl:
-                states['elexcl'] = True
-            elincl_results = self.search_elements(elincl, elexcl, onlythese)
-        if txt:
-            states['txt'] = True
-            txt_results = self.structures.find_text_and_authors(txt)
-        if txt_ex:
-            states['txt_ex'] = True
-            txt_ex_results = self.structures.find_text_and_authors(txt_ex)
-        if date1 != date2:
-            states['date'] = True
-            date_results = self.find_dates(date1, date2)
-        rval_results = []
-        if rval > 0:
-            rval_results = self.structures.find_by_rvalue(rval / 100)
-        ####################
-        results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
-                                  txt_ex_results, txt_results, rval_results, states)
-        self.display_structures_by_idlist(tuple(results))
+        search_parameters = SearchParameters(
+            cell=cell,
+            date1=date1,
+            date2=date2,
+            elincl=elincl,
+            elexcl=elexcl,
+            txt=txt,
+            txt_ex=txt_ex,
+            space_group=spgr,
+            ony_these=onlythese,
+            ccdc_num=ccdc_num,
+            more_results=self.ui.adv_moreResultscheckBox.isChecked(),
+            r_value=rval,
+            super_lattice=self.ui.adv_superlatticeCheckBox.isChecked()
+        )
+        self.display_structures_by_idlist(self.db.advanced_search(parameters=search_parameters))
 
     def display_structures_by_idlist(self, idlist: Union[list, tuple]) -> None:
         """
@@ -675,14 +626,13 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDatabasePushButton.setDisabled(True)
         self.ui.saveDatabaseButton.setDisabled(True)
         self.ui.ExportAsCIFpushButton.setDisabled(True)
-        self.structures.database.commit_db()
         self.ui.searchCellLineEDit.clear()
         self.ui.txtSearchEdit.clear()
-        # self.ui.cifList_tableView.clear()
-        self.structures.database.cur.close()
-        self.structures.database.con.close()
-        os.close(self.dbfdesc)
-        self.dbfdesc = None
+        if self.db.session:
+            self.db.session.commit()
+            self.db.session.close()
+        if self.db.engine:
+            self.db.engine.dispose(close=True)
         if copy_on_close:
             if isfile(copy_on_close) and samefile(self.dbfilename, copy_on_close):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
@@ -705,12 +655,6 @@ class StartStructureDB(QMainWindow):
         except Exception:
             return False
         return True
-
-    def abort_import(self):
-        """
-        This slot means, import was aborted.
-        """
-        self.decide_import = False
 
     def start_db(self):
         """

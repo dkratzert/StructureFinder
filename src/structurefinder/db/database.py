@@ -1,7 +1,8 @@
+import dataclasses
 from itertools import chain
 from math import log
 from pathlib import Path
-from typing import Optional, List, Tuple, Dict
+from typing import Optional, List, Tuple, Dict, Union
 
 import sqlalchemy as sa
 from PyQt5 import QtCore
@@ -11,7 +12,8 @@ from structurefinder.db.mapping import Structure, Residuals, Cell, Base, SumForm
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import misc
 from structurefinder.searcher.fileparser import CifFile
-from structurefinder.searcher.misc import more_results_parameters, regular_results_parameters
+from structurefinder.searcher.misc import more_results_parameters, regular_results_parameters, is_valid_cell, \
+    combine_results, SearchParameters, SearchStates
 from structurefinder.shelxfile.elements import sorted_atoms
 
 
@@ -25,7 +27,7 @@ class DB(QtCore.QObject):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.engine = None
+        self.engine: Union[sa.Engine, None] = None
         self.session: Optional[Session] = None
         self.Session: Optional[sessionmaker] = None
         self.structure_id: Optional[int] = None
@@ -71,7 +73,7 @@ class DB(QtCore.QObject):
                 stmt = stmt.where(Structure.Id.in_(idlist))
             return conn.execute(stmt).tuples().all()
 
-    def _find_by_volume(self, volume: float, threshold: float = 0) -> List[sa.Row]:
+    def _find_by_volume(self, volume: float, threshold: float = 0) -> List[Cell]:
         """
         Searches cells with volume between upper and lower limit. Returns the Id and the unit cell.
         :param threshold: Volume uncertaincy where to search
@@ -92,7 +94,7 @@ class DB(QtCore.QObject):
         with self.engine.connect() as conn:
             return list(conn.execute(stmt).tuples())
 
-    def search_cell(self, cell: list, more_results: bool = False, sublattice: bool = False) -> List[sa.Row]:
+    def search_cell(self, cell: list, more_results: bool = False, sublattice: bool = False) -> List[Cell]:
         """
         Searches for a unit cell and resturns a list of found structures for main table.
         This method does not validate the cell. This has to be done before!
@@ -432,6 +434,63 @@ class DB(QtCore.QObject):
             conn.execute(sa.text(stmt))
             conn.execute(sa.text(optimize_queries))
             conn.commit()
+
+    def advanced_search(self, parameters: SearchParameters) -> Tuple[int, ...]:
+        states = SearchStates()
+        if parameters.r_value > 0:
+            states.rval = True
+        if len(parameters.txt) >= 2 and "*" not in parameters.txt:
+            parameters.txt = f'*{parameters.txt}*'
+        if len(parameters.txt_ex) >= 2 and "*" not in parameters.txt_ex:
+            parameters.txt_ex = f'*{parameters.txt_ex}*'
+        #
+        results = []
+        cell_results = []
+        spgr_results = []
+        elincl_results = []
+        txt_results = []
+        txt_ex_results = []
+        date_results = []
+        ccdc_num_results = []
+        if parameters.ccdc_num:
+            ccdc_num_results = self.find_by_ccdc_num(parameters.ccdc_num)
+        if ccdc_num_results:
+            return ccdc_num_results
+        try:
+            spgr = int(parameters.space_group.split()[0])
+        except Exception:
+            spgr = 0
+        if parameters.cell:
+            states.cell = True
+            cell_results = self.search_cell(cell=parameters.cell,
+                                            more_results=parameters.more_results,
+                                            sublattice=parameters.super_lattice)
+            cell_results = [x.StructureId for x in cell_results]
+        if spgr:
+            states.spgr = True
+            spgr_results = self.find_by_it_number(spgr)
+        if parameters.elincl or parameters.elexcl:
+            if parameters.elincl:
+                states.elincl = True
+            if parameters.elexcl:
+                states.elexcl = True
+            elincl_results = self.find_by_elements(formula=parameters.elincl, formula_ex=parameters.elexcl,
+                                                   onlyincluded=parameters.ony_these)
+        if parameters.txt:
+            states.txt = True
+            txt_results = self.find_text_and_authors(parameters.txt)
+        if parameters.txt_ex:
+            states.txt_ex = True
+            txt_ex_results = self.find_text_and_authors(parameters.txt_ex)
+        if parameters.date1 != parameters.date2:
+            states.date = True
+            date_results = self.find_by_date(start=parameters.date1, end=parameters.date2)
+        rval_results = []
+        if parameters.r_value > 0:
+            rval_results = self.find_by_rvalue(parameters.r_value / 100)
+        results = combine_results(cell_results, date_results, elincl_results, results, spgr_results,
+                                  txt_ex_results, txt_results, rval_results, states)
+        return results
 
 
 if __name__ == '__main__':

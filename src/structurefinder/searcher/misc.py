@@ -10,7 +10,7 @@ Created on 09.02.2015
 
 @author: daniel
 """
-
+import dataclasses
 import os
 import shutil
 from math import sqrt, cos, radians, log
@@ -371,68 +371,98 @@ def is_valid_cell(cell: str = None) -> List[float]:
     return cell
 
 
-def combine_results(cell_results: List,
-                    date_results: List,
-                    elincl_results: List,
+@dataclasses.dataclass(frozen=False)
+class SearchStates:
+    date: bool = False
+    cell: bool = False
+    elincl: bool = False
+    elexcl: bool = False
+    txt: bool = False
+    txt_ex: bool = False
+    spgr: bool = False
+    rval: bool = False
+    ccdc: bool = False
+
+
+@dataclasses.dataclass
+class SearchParameters:
+    cell: List[float]
+    date1: str
+    date2: str
+    elincl: str
+    elexcl: str
+    txt: str
+    txt_ex: str
+    ccdc_num: str
+    r_value: float
+    space_group: str
+    ony_these: bool
+    more_results: bool
+    super_lattice: bool
+
+def combine_results(cell_results: List[int],
+                    date_results: List[int],
+                    elincl_results: List[int],
                     results: Union[List, set],
                     spgr_results: List,
                     txt_ex_results: Union[List, Tuple],
                     txt_results: Union[List, Tuple],
-                    rval_results: List, states: dict) -> Union[set, List]:
+                    rval_results: List,
+                    states: SearchStates) -> Tuple[int, ...]:
     """
     Combines all search results together. Returns a list with database ids from found structures.
     """
-    if states['cell']:
+    if states.cell:
         results.extend(cell_results)
-    if states['spgr']:
+    if states.spgr:
         spgr_results = set(spgr_results)
         if results:
             results = set(results).intersection(spgr_results)
         else:
-            if states['cell']:
+            if states.cell:
                 results = set([])
             else:
                 results = spgr_results
-    if states['elincl'] or states['elexcl']:
+    if states.elincl or states.elexcl:
         elincl_results = set(elincl_results)
         if results:
             results = set(results).intersection(elincl_results)
         else:
-            if states['spgr'] or states['cell']:
+            if states.spgr or states.cell:
                 results = set([])
             else:
                 results = elincl_results
-    if states['txt']:
+    if states.txt:
         txt_results = set(txt_results)
         if results:
             results = set(results).intersection(txt_results)
         else:
-            if states['elincl'] or states['spgr'] or states['cell']:
+            if states.elincl or states.spgr or states.cell:
                 results = set([])
             else:
                 results = txt_results
-    if states['txt_ex']:
+    if states.txt_ex:
         txt_ex_results = set(txt_ex_results)
         results = set(results) - set(txt_ex_results)
-    if states['date']:
+    if states.date:
         date_results = set(date_results)
         if results:
             results = set(results).intersection(date_results)
         else:  # no results from other searches:
-            if states['txt'] or states['elincl'] or states['spgr'] or states['cell']:
+            if states.txt or states.elincl or states.spgr or states.cell:
                 results = set([])
             else:
                 results = date_results
-    if states['rval']:
+    if states.rval:
         rval_results = set(rval_results)
         if results:
             results = set(results).intersection(rval_results)
         else:
-            if states['txt'] or states['elincl'] or states['spgr'] or states['cell'] or states['date']:
+            if states.txt or states.elincl or states.spgr or states.cell or states.date:
                 results = set([])
             else:
                 results = rval_results
-    return results
+    return tuple(results)
 
 
 def vol_unitcell(a: float, b: float, c: float, al: float, be: float, ga: float) -> float:
