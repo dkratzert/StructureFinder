@@ -135,7 +135,6 @@ class StartStructureDB(QMainWindow):
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
-        self.ui.add_res.setChecked(False)
 
     def set_initial_button_states(self):
         self.ui.appendDatabasePushButton.setDisabled(True)
@@ -644,7 +643,6 @@ class StartStructureDB(QMainWindow):
         self.show_full_list()
         self.settings.save_current_index_dir(str(Path(startdir)))
         self.enable_buttons()
-        # self.statusBar().showMessage(f'Found {self.maxfiles} files.')
 
     def enable_buttons(self):
         self.ui.appendDatabasePushButton.setEnabled(True)
@@ -677,18 +675,14 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDatabasePushButton.setDisabled(True)
         self.ui.saveDatabaseButton.setDisabled(True)
         self.ui.ExportAsCIFpushButton.setDisabled(True)
-        with suppress(Exception):
-            self.structures.database.commit_db()
+        self.structures.database.commit_db()
         self.ui.searchCellLineEDit.clear()
         self.ui.txtSearchEdit.clear()
         # self.ui.cifList_tableView.clear()
-        with suppress(Exception):
-            self.structures.database.cur.close()
-        with suppress(Exception):
-            self.structures.database.con.close()
-        with suppress(Exception):
-            os.close(self.dbfdesc)
-            self.dbfdesc = None
+        self.structures.database.cur.close()
+        self.structures.database.con.close()
+        os.close(self.dbfdesc)
+        self.dbfdesc = None
         if copy_on_close:
             if isfile(copy_on_close) and samefile(self.dbfilename, copy_on_close):
                 self.statusBar().showMessage("You can not save to the currently opened file!", msecs=5000)
@@ -722,9 +716,6 @@ class StartStructureDB(QMainWindow):
         """
         Initializes the database.
         """
-        # self.dbfdesc, self.dbfilename = tempfile.mkstemp()
-        # self.structures = database_handler.StructureTable(self.dbfilename)
-        # self.structures.database.initialize_db()
         self.ui.appendDirButton.setEnabled(True)
 
     def get_properties(self, selected: QItemSelection, _: QItemSelection) -> bool:
@@ -755,15 +746,8 @@ class StartStructureDB(QMainWindow):
 
     def save_database(self, save_name=None) -> bool:
         """
-        Saves the database to a certain file. Therefore I have to close the database.
+        Saves the database to a certain file. Therefore, I have to close the database.
         """
-
-        # if not hasattr(self.structures, 'database'):
-        #    return False
-        # self.structures.database.commit_db()
-
-        # if self.structures.database.con.total_changes > 0:
-        #    self.structures.set_database_version(0)
         status = False
         if not save_name:
             save_name, _ = self.get_save_name_from_dialog()
@@ -776,7 +760,6 @@ class StartStructureDB(QMainWindow):
         if status:
             self.ui.DatabaseNameDisplayLabel.setText('')
             self.statusBar().showMessage("Database saved.", msecs=5000)
-            # self.open_database_file(save_name)
 
     def eventFilter(self, object, event):
         """Event filter for mouse clicks."""
