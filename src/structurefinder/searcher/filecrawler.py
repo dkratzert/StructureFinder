@@ -208,35 +208,30 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         return False
     if not res.cell.volume:
         return False
-    # Unused value:
-    measurement_id = 1
-    db.fill_structures_table(path, filename, structure_id, measurement_id, res.titl)
-    db.fill_cell_table(structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.al,
-                       res.cell.be, res.cell.ga, res.cell.volume)
+
+    struct = Structure(Id=structure_id, path=path, filename=filename, dataname=res.titl, measurement=1)
+    struct.cell = Cell(StructureId=struct.Id, a=res.cell.a, b=res.cell.b, c=res.cell.c,
+                       alpha=res.cell.al, beta=res.cell.be, gamma=res.cell.ga, volume=res.cell.volume)
+    atoms = []
     for at in res.atoms:
         if at.qpeak:
             continue
         if at.element.lower() == 'cnt':  # Do not add Shelxle centroids
             continue
-        db.fill_atoms_table(structure_id,
-                            at.name,
-                            at.element.capitalize(),
-                            at.x,
-                            at.y,
-                            at.z,
-                            at.sof,
-                            at.part.n,
-                            round(at.xc, 5), round(at.yc, 5), round(at.zc, 5))
+        atoms.append(Atoms(StructureId=struct.Id, Name=at.name, element=at.element,
+                           occupancy=at.sof, part=at.part.n, x=at.x,
+                           y=at.y, z=at.z, xc=at.xc, yc=at.yc, zc=at.zc))
+    struct.Atoms = atoms
     cif = CifFile(options=options)
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     try:
-        symmops = "\n".join([x.to_fractional() for x in res.symmcards])
+        symmops = "\n".join([x.to_fractional().lower() for x in res.symmcards])
         # gemmi needs integer ratio instead of float values in symmcards:
         # symmops = "\n".join([x.toShelxl() for x in res.symmcards])
         cif.cif_data["_space_group_symop_operation_xyz"] = symmops
     except Exception:
         try:
-            symmops = "\n".join([x.toShelxl() for x in res.symmcards])
+            symmops = "\n".join([x.toShelxl().lower() for x in res.symmcards])
             cif.cif_data["_space_group_symop_operation_xyz"] = symmops
         except Exception:
             pass
@@ -294,7 +289,9 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         cif.cif_data["_shelx_res_file"] = str(res)
     except IndexError:
         pass
-    db.fill_residuals_table(structure_id, cif)
+    db.fill_residuals_data(struct, cif, structure_id)
+    # db.fill_authors_table(struct, cif, structure_id)
+    db.session.add(struct)
     return True
 
 
