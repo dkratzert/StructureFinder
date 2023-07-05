@@ -279,11 +279,12 @@ class StartStructureDB(QMainWindow):
         file_name = self.get_import_filename_from_dialog()
         if not file_name or not Path(file_name).is_file():
             return
-        if Path(file_name).samefile(self.structures.dbfilename):
+        if Path(file_name).samefile(self.db.db_filename):
             QMessageBox.information(self, 'This is the same file', 'Can not merge same files.')
             return
         try:
-            tst = database_handler.StructureTable(file_name)
+            tst = DB()
+            tst.load_database(file_name)
             if len(tst) < 1:
                 print('New database has no entries, aborting.')
                 return None
@@ -292,7 +293,7 @@ class StartStructureDB(QMainWindow):
             print(f'Unable to append database: {e}')
             self.ui.statusbar.showMessage('Unable to merge databases.')
             return
-        self.structures.database.merge_databases(file_name)
+        self.db.merge_databases(file_name)
         dbfile = self.structures.dbfilename
         self.close_db()
         self.open_database_file(dbfile)
@@ -370,7 +371,6 @@ class StartStructureDB(QMainWindow):
                 ok = False
         return ok
 
-    @pyqtSlot('QString', name="elements_fields_check")
     def elements_fields_check(self):
         """
         """

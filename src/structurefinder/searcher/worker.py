@@ -172,12 +172,11 @@ class Worker(QtCore.QObject):
                    f'to database in: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s'
         print(f'      {filecount} files considered.')
         print(tmessage)
-        self.db.session.flush()
-        self.db.session.commit()
         self._do_final_work()
         self.finished.emit(tmessage)
 
     def _do_final_work(self):
+        self.db.session.commit()
         self.db.init_author_search()
         self.db.populate_author_fulltext_search()
         self.db.init_textsearch()

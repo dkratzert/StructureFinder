@@ -41,6 +41,13 @@ class DB(QtCore.QObject):
             Base.metadata.create_all(self.engine)
         self.Session: sessionmaker = sessionmaker(self.engine)
 
+    @property
+    def db_filename(self) -> str:
+        # Path of the database file
+        if self.engine.url.database:
+            return self.engine.url.database
+        return ''
+
     def set_structure(self, session, structureId: int) -> None:
         stmt = sa.select(Structure).filter_by(Id=structureId)
         self.structure = session.scalar(stmt)
@@ -72,6 +79,53 @@ class DB(QtCore.QObject):
             if idlist:
                 stmt = stmt.where(Structure.Id.in_(idlist))
             return conn.execute(stmt).tuples().all()
+
+    def merge_databases(self, db2: str) -> None:
+        """
+        Merges db2 into the current database.
+        """
+        tables = ('Structure', 'Residuals', 'cell', 'atoms', 'sum_formula', 'authors')
+        self.id_translate_table = dict()
+        print(f'Old database size: {self.get_lastrowid()} structures.')
+        with self.engine.connect() as conn:
+            conn.execute(sa.text(f"ATTACH '{db2}' AS dba"))
+            # self.con.execute("BEGIN")
+        for table in tables:
+            print(f'Merging table: {table}')
+            try:
+                self.merge_table(table)
+            except OperationalError:
+                print(f'\nMerging of table {table} failed!! Resulting database may be damaged!\n')
+        self.con.commit()
+        self.con.execute("detach database dba")
+        self.init_textsearch()
+        self.populate_fulltext_search_table()
+        self.init_author_search()
+        self.populate_author_fulltext_search()
+        self.con.commit()
+        print(f'\nMerging databases finished.\n'
+              f'Database {self.dbfile} contains {self.get_lastrowid()} structures now.')
+
+    def merge_table(self, table_name: str) -> None:
+        # noinspection SqlResolve
+        table_size = len(self.con.execute(f"SELECT * from dba.{table_name}").fetchone())
+        placeholders = ', '.join('?' * table_size)
+        last_row_id = self.db_fetchone(f"""SELECT max(id) FROM {table_name}""")[0]
+        next_id = last_row_id + 1
+        # noinspection SqlResolve
+        for row in self.con.execute(f"select * FROM dba.{table_name}"):
+            if table_name != 'Structure':
+                # row[1] is the structure(id)
+                self.con.execute(f"INSERT INTO {table_name} VALUES ({placeholders})",
+                                 (next_id, self.id_translate_table[row[1]], *row[2:]))
+            else:
+                self.id_translate_table[row[0]] = next_id
+                self.con.execute(f"INSERT INTO {table_name} VALUES ({placeholders})", (next_id, *row[1:]))
+            next_id += 1
+            if next_id % 500 == 0:
+                self.con.commit()
+        self.con.commit()
+
 
     def _find_by_volume(self, volume: float, threshold: float = 0) -> List[Cell]:
         """
