@@ -174,6 +174,12 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
     db.fill_residuals_data(struct, cif, structure_id)
     db.fill_authors_table(struct, cif, structure_id)
     db.session.add(struct)
+    """db.session.bulk_insert_mappings(
+        mapper=Structure,
+        mappings=[
+            {'Id': structure_id}
+        ]
+    )"""
     return True
 
 
