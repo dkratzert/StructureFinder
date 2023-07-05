@@ -56,6 +56,8 @@ class Worker(QtCore.QObject):
         time1 = time.perf_counter()
         patterns = ['*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '*.res']
         filelist = filewalker_walk(str(searchpath), patterns, excludes=excludes)
+        if DEBUG:
+            print(f'Time for file list: {time.perf_counter()-time1:1} s.')
         filecount = len(filelist)
         self.number_of_files.emit(filecount)
         options = {}
