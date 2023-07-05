@@ -174,12 +174,6 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
     db.fill_residuals_data(struct, cif, structure_id)
     db.fill_authors_table(struct, cif, structure_id)
     db.session.add(struct)
-    """db.session.bulk_insert_mappings(
-        mapper=Structure,
-        mappings=[
-            {'Id': structure_id}
-        ]
-    )"""
     return True
 
 
@@ -228,6 +222,24 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
                            occupancy=at.sof, part=at.part.n, x=at.x,
                            y=at.y, z=at.z, xc=at.xc, yc=at.yc, zc=at.zc))
     struct.Atoms = atoms
+
+    """This might be faster:
+        atoms_mapping = {
+            'StructureId': structure_id,
+            'Name': at.name,
+            'element': at.element,
+            'occupancy': at.sof,
+            'part': at.part.n,
+            'x': at.x,
+            'y': at.y,
+            'z': at.z,
+            'xc': at.xc,
+            'yc': at.yc,
+            'zc': at.zc
+        }
+        atoms_mappings.append(atoms_mapping)
+    db.session.bulk_insert_mappings(Atoms, atoms_mappings)"""
+
     cif = CifFile(options=options)
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     try:
@@ -296,7 +308,6 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
     except IndexError:
         pass
     db.fill_residuals_data(struct, cif, structure_id)
-    # db.fill_authors_table(struct, cif, structure_id)
     db.session.add(struct)
     return True
 
