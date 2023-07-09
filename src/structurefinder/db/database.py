@@ -8,7 +8,7 @@ import sqlalchemy as sa
 from PyQt5 import QtCore
 from sqlalchemy.orm import sessionmaker, Session
 
-from structurefinder.db.mapping import Structure, Residuals, Cell, Base, SumFormula, Authors
+from structurefinder.db.mapping import Structure, Residuals, Cell, Base, SumFormula, Authors, Atoms, metadata
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import misc
 from structurefinder.searcher.fileparser import CifFile
@@ -80,51 +80,44 @@ class DB(QtCore.QObject):
                 stmt = stmt.where(Structure.Id.in_(idlist))
             return conn.execute(stmt).tuples().all()
 
-    def merge_databases(self, db2: str) -> None:
+    def merge_databases(self, db1: str, db2: str,
+                        merged_file: str = 'test_merged_db.sqlite') -> None:
         """
-        Merges db2 into the current database.
+        Merges db2 into db1.
         """
         tables = ('Structure', 'Residuals', 'cell', 'atoms', 'sum_formula', 'authors')
-        self.id_translate_table = dict()
-        print(f'Old database size: {self.get_lastrowid()} structures.')
-        with self.engine.connect() as conn:
-            conn.execute(sa.text(f"ATTACH '{db2}' AS dba"))
-            # self.con.execute("BEGIN")
-        for table in tables:
-            print(f'Merging table: {table}')
-            try:
-                self.merge_table(table)
-            except OperationalError:
-                print(f'\nMerging of table {table} failed!! Resulting database may be damaged!\n')
-        self.con.commit()
-        self.con.execute("detach database dba")
-        self.init_textsearch()
-        self.populate_fulltext_search_table()
-        self.init_author_search()
-        self.populate_author_fulltext_search()
-        self.con.commit()
-        print(f'\nMerging databases finished.\n'
-              f'Database {self.dbfile} contains {self.get_lastrowid()} structures now.')
+        Path(merged_file).unlink(missing_ok=True)
+        print(f'Merging {db1} into {db2}.')
+        db1_engine = sa.create_engine(f"sqlite:///{db1}")
+        db2_engine = sa.create_engine(f"sqlite:///{db2}")
+        merged_engine = sa.create_engine(f'sqlite:///{merged_file}')
+        for table in metadata.sorted_tables:
+            table.create(merged_engine)
+        db1_session = sessionmaker(bind=db1_engine)()
+        db2_session = sessionmaker(bind=db2_engine)()
+        # Create a session for the new database
+        merged_session = sessionmaker(bind=merged_engine)()
+        for table in metadata.sorted_tables:
+            db1_data = db1_session.scalars(sa.select(table))
+            db2_data = db2_session.scalars(sa.select(table))
+            merged_data = merged_session.scalars(sa.select(table))
+            print(table.name, db1_data)
+            for num, row in enumerate(db1_data.all()):
+                print(row)
+                if num == 10:
+                    break
+                #stmt = (
+                #    sa.insert(table).
+                #    values()
+                #)
+                #print(stmt.compile())
+                #merged_session.execute(stmt)
+            #merged_session.add(stmt)
+            #for row in db2_data:
+            #    merged_session.add(row)
+            #merged_session.flush()
+        #merged_session.commit()
 
-    def merge_table(self, table_name: str) -> None:
-        # noinspection SqlResolve
-        table_size = len(self.con.execute(f"SELECT * from dba.{table_name}").fetchone())
-        placeholders = ', '.join('?' * table_size)
-        last_row_id = self.db_fetchone(f"""SELECT max(id) FROM {table_name}""")[0]
-        next_id = last_row_id + 1
-        # noinspection SqlResolve
-        for row in self.con.execute(f"select * FROM dba.{table_name}"):
-            if table_name != 'Structure':
-                # row[1] is the structure(id)
-                self.con.execute(f"INSERT INTO {table_name} VALUES ({placeholders})",
-                                 (next_id, self.id_translate_table[row[1]], *row[2:]))
-            else:
-                self.id_translate_table[row[0]] = next_id
-                self.con.execute(f"INSERT INTO {table_name} VALUES ({placeholders})", (next_id, *row[1:]))
-            next_id += 1
-            if next_id % 500 == 0:
-                self.con.commit()
-        self.con.commit()
 
 
     def _find_by_volume(self, volume: float, threshold: float = 0) -> List[Cell]:
