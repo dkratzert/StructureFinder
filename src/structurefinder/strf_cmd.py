@@ -2,6 +2,7 @@ import argparse
 import sys
 import time
 from argparse import Namespace
+from contextlib import suppress
 from pathlib import Path
 from sqlite3 import DatabaseError
 
@@ -66,7 +67,7 @@ parser.add_argument("-m",
                     metavar='"sqlite file name"',
                     default=False,
                     type=str,
-                    help="Merges a database file into the file of '-o' option."
+                    help="Merges a database file into the file of '-o' option. Only -o is allowed in addition."
                     )
 
 
@@ -183,24 +184,34 @@ def run_index(args=None):
 
 
 def merge_database(args: Namespace):
-    merge_file_name = args.merge
-    dbfile = args.outfile
-    if not Path(dbfile).exists():
+    argsdict = dict(args.__dict__)
+    with suppress(Exception):
+        argsdict.pop('outfile')
+    with suppress(Exception):
+        argsdict.pop('merge')
+    if any(argsdict.values()):
+        parser.print_help()
+        print("\nWarning:\nOnly option '-o' is allowed in combination with '-m'.")
+        return
+    merge_file_name = Path(args.merge)
+    dbfile = Path(args.outfile)
+    if not dbfile.exists():
         print(f'Error: Database file {dbfile} not found.')
         return
-    if not Path(merge_file_name).exists():
+    if not merge_file_name.exists():
         print(f'Error: Database file {merge_file_name} not found.')
         return
-    if not Path(merge_file_name).is_file():
+    if not merge_file_name.is_file():
         print(f'{merge_file_name} is not a database file.')
         return
-    if not Path(dbfile).is_file():
+    if not dbfile.is_file():
         print(f'{dbfile} is not a database file.')
-    if Path(merge_file_name).samefile(dbfile):
+    if merge_file_name.samefile(dbfile):
         print('\nCan not merge same file together!\n')
         return
+    print(f'Merging {merge_file_name.resolve()} into {dbfile.resolve()}:\n')
     db, structures = get_database(dbfile)
-    db.merge_databases(merge_file_name)
+    db.merge_databases(str(merge_file_name))
 
 
 def get_database(dbfilename):
