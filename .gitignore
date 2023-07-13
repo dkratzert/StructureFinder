@@ -86,3 +86,4 @@ tests/test-data/p21c-finalcif.cif
 StructureFinder-crash.txt
 tests/test-data/ICSD/finalcif-crash.txt
 /.pytest_cache/
+test_merged_db.sqlite
