@@ -185,8 +185,17 @@ def run_index(args=None):
 def merge_database(args: Namespace):
     merge_file_name = args.merge
     dbfile = args.outfile
-    if not merge_file_name or not Path(merge_file_name).is_file():
+    if not Path(dbfile).exists():
+        print(f'Error: Database file {dbfile} not found.')
         return
+    if not Path(merge_file_name).exists():
+        print(f'Error: Database file {merge_file_name} not found.')
+        return
+    if not Path(merge_file_name).is_file():
+        print(f'{merge_file_name} is not a database file.')
+        return
+    if not Path(dbfile).is_file():
+        print(f'{dbfile} is not a database file.')
     if Path(merge_file_name).samefile(dbfile):
         print('\nCan not merge same file together!\n')
         return
