@@ -87,3 +87,4 @@ StructureFinder-crash.txt
 tests/test-data/ICSD/finalcif-crash.txt
 /.pytest_cache/
 strf2.sqlite
+test_merged_db.sqlite

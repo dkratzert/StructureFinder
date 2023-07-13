@@ -85,7 +85,7 @@ class DB(QtCore.QObject):
         """
         Merges db2 into db1.
         """
-        tables = ('Structure', 'Residuals', 'cell', 'atoms', 'sum_formula', 'authors')
+        tables = (Structure, Residuals, Cell, Atoms, SumFormula, Authors)
         Path(merged_file).unlink(missing_ok=True)
         print(f'Merging {db1} into {db2}.')
         db1_engine = sa.create_engine(f"sqlite:///{db1}")
@@ -97,26 +97,36 @@ class DB(QtCore.QObject):
         db2_session = sessionmaker(bind=db2_engine)()
         # Create a session for the new database
         merged_session = sessionmaker(bind=merged_engine)()
-        for table in metadata.sorted_tables:
+
+        """
+        Take each structure and iterate over each foreign table of that structure
+        """
+
+        for num, table in enumerate(tables):
+            print(table)
+            if num == 1:
+                break
             db1_data = db1_session.scalars(sa.select(table))
+            #if hasattr(table, 'Id'):
+            #    db1_data = db1_data.except_(table.Id)
             db2_data = db2_session.scalars(sa.select(table))
-            merged_data = merged_session.scalars(sa.select(table))
-            print(table.name, db1_data)
-            for num, row in enumerate(db1_data.all()):
-                print(row)
-                if num == 10:
+            #merged_data = merged_session.scalars(sa.select(table))
+            print(table.__tablename__, db1_data)
+            for num2, row in enumerate(db1_data):
+                print(row._asdict(), 'row##')
+                if num2 == 10:
                     break
-                #stmt = (
-                #    sa.insert(table).
-                #    values()
-                #)
+                stmt = (
+                    sa.insert(table).
+                    values(row._asdict())
+                )
                 #print(stmt.compile())
-                #merged_session.execute(stmt)
+                merged_session.execute(stmt)
             #merged_session.add(stmt)
             #for row in db2_data:
             #    merged_session.add(row)
-            #merged_session.flush()
-        #merged_session.commit()
+            merged_session.flush()
+        merged_session.commit()
 
 
 
