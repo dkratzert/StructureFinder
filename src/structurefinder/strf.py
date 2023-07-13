@@ -623,6 +623,7 @@ class StartStructureDB(QMainWindow):
         self.maxfiles = number
 
     def report_progress(self, progress: int):
+        self.statusBar().showMessage('')
         self.progressbar(progress, 0, self.maxfiles)
 
     def do_work_after_indexing(self, startdir: str):
