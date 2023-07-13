@@ -27,8 +27,8 @@ from structurefinder.misc.version import VERSION
 print("Updating version numbers to version {} ...".format(VERSION))
 
 # Update version numbers in .iss files
-for i in isspath:
-    process_iss(i)
+#for i in isspath:
+#    process_iss(i)
 
 # disable all debug variables:
 for i in pypath:
@@ -37,8 +37,8 @@ for i in pypath:
 print("Version numbers updated.")
 
 try:
-    print(os.path.abspath('./structurefinder/gui'))
-    uic.compileUiDir('./structurefinder/gui')
+    print(os.path.abspath('./src/structurefinder/gui'))
+    uic.compileUiDir('./src/structurefinder/gui')
     print('recompiled ui')
 except:
     print("Unable to compile UI!")
