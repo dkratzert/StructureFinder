@@ -97,10 +97,11 @@ class DatabaseRequest():
 
     def merge_table(self, table_name: str) -> None:
         # noinspection SqlResolve
-        table_size = len(self.con.execute(f"SELECT * from dba.{table_name}").fetchone())
-        if not table_size:
+        fetchone = self.con.execute(f"SELECT * from dba.{table_name}").fetchone()
+        if not fetchone:
             print(f"Table is empty, skipping table '{table_name}'")
             return
+        table_size = len(fetchone)
         placeholders = ', '.join('?' * table_size)
         last_row_id = self.db_fetchone(f"""SELECT max(id) FROM {table_name}""")[0]
         next_id = last_row_id + 1
