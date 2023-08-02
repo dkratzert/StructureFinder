@@ -233,7 +233,7 @@ class StartStructureDB(QMainWindow):
 
     def checkfor_version(self):
         url = 'https://dkratzert.de/files/structurefinder/version.txt'
-        upd = MyDownloader(self, url)
+        upd = MyDownloader(url=url)
         upd.finished.connect(self.show_update_warning)
         upd.failed.connect(upd.failed_to_download)
         upd.progress.connect(upd.print_status)
