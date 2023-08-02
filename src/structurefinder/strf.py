@@ -97,6 +97,7 @@ class StartStructureDB(QMainWindow):
         font.setStyleHint(QtGui.QFont.Monospace)
         self.ui.SHELXplainTextEdit.setFont(font)
         self.statusBar().showMessage(f'StructureFinder version {VERSION}')
+        self.upd = None
         self.maxfiles = 0
         self.dbfdesc = None
         self.dbfilename = db_file_name
@@ -232,11 +233,11 @@ class StartStructureDB(QMainWindow):
 
     def checkfor_version(self):
         url = 'https://dkratzert.de/files/structurefinder/version.txt'
-        upd = MyDownloader(self, url)
-        upd.finished.connect(self.show_update_warning)
-        upd.failed.connect(upd.failed_to_download)
-        upd.progress.connect(upd.print_status)
-        upd.start()
+        self.upd = MyDownloader(url=url)
+        self.upd.finished.connect(self.show_update_warning)
+        self.upd.failed.connect(self.upd.failed_to_download)
+        self.upd.progress.connect(self.upd.print_status)
+        self.upd.start()
 
     def show_update_warning(self, reply: bytes):
         """
