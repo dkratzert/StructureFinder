@@ -84,7 +84,7 @@ if __name__ == '__main__':
     make_shasum("scripts/Output/StructureFinder-setup-x64-v{}.exe".format(VERSION))
 
     # Make a zip file for web interface distribution:
-    make_zip()
+    #make_zip()
 
     print('\nCreated version: {}'.format(VERSION))
     print(datetime.now().strftime("%d.%m.%Y %H:%M:%S"))
