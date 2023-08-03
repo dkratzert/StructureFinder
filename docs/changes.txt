@@ -1,6 +1,7 @@
 StructureFinder Changelog
 -------------------------
 
+* v76 Hardened file indexer against damaged zip files.
 * v75 Fixed merging of databases where a table, e.g. the authors table, is empty.
 * v74 Several small improvements.
 * v73 Minor bugs fixed. New pypi package added: [https://pypi.org/project/structurefinder](https://pypi.org/project/structurefinder)
