@@ -4,6 +4,7 @@ import time
 from contextlib import suppress
 from pathlib import Path
 from typing import Optional, Union
+from zipfile import BadZipFile
 
 import gemmi
 from PyQt5 import QtCore
@@ -112,11 +113,19 @@ class Worker(QtCore.QObject):
             if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2')
                 or name.endswith('.tgz')) and fillcif:
                 if fullpath.endswith('.zip'):
-                    z = MyZipReader(fullpath)
+                    try:
+                        z = MyZipReader(fullpath)
+                    except BadZipFile:
+                        print(f'Bad zip file skipped: {fullpath}')
+                        continue
                     filecount = filecount + len(z)
                     self.number_of_files.emit(filecount)
                 else:
-                    z = MyTarReader(fullpath)
+                    try:
+                        z = MyTarReader(fullpath)
+                    except Exception:
+                        print(f'Bad tar file skipped: {fullpath}')
+                        continue
                     filecount = filecount + len(z)
                     self.number_of_files.emit(filecount)
                 for zippedfile in z:  # the list of cif files in the zip file
