@@ -1,11 +1,14 @@
 import os
 import re
 import time
+from contextlib import suppress
+from pathlib import Path
 from typing import Optional, Union
 
 import gemmi
 from PyQt5 import QtCore
 
+from structurefinder.misc.dialogs import bug_found_warning
 from structurefinder.searcher.database_handler import StructureTable
 from structurefinder.searcher.filecrawler import filewalker_walk, fill_db_with_cif_data, MyZipReader, \
     MyTarReader, fill_db_with_res_data
@@ -35,9 +38,12 @@ class Worker(QtCore.QObject):
             self.files_indexed = self.index_files()
 
     def index_files(self):
-        return self.put_files_in_db(searchpath=self.searchpath, structures=self.structures,
+        try:
+            return self.put_files_in_db(searchpath=self.searchpath, structures=self.structures,
                                     fillres=self.add_res_files, excludes=self.excludes,
                                     fillcif=self.add_cif_files, lastid=self.lastid)
+        except Exception:
+            self.finished.emit('The indexer has crashed. Please report this problem.')
 
     def put_files_in_db(self, searchpath: str = '', excludes: Union[list, None] = None, lastid: int = 1,
                         structures=None, fillcif=True, fillres=True) -> int:
@@ -57,7 +63,7 @@ class Worker(QtCore.QObject):
         patterns = ['*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '*.res']
         filelist = filewalker_walk(str(searchpath), patterns, excludes=excludes)
         if DEBUG:
-            print(f'Time for file list: {time.perf_counter()-time1:1} s.')
+            print(f'Time for file list: {time.perf_counter() - time1:1} s.')
         filecount = len(filelist)
         self.number_of_files.emit(filecount)
         options = {}
@@ -75,13 +81,15 @@ class Worker(QtCore.QObject):
             cif = CifFile(options=options)
             self.progress.emit(filenum)
             if name.endswith('.cif') and fillcif:
+                cifok = False
                 doc = gemmi.cif.Document()
                 doc.source = fullpath
                 try:
                     doc.parse_file(fullpath)
                 except ValueError:
                     continue
-                cifok = cif.parsefile(doc)
+                with suppress(Exception):
+                    cifok = cif.parsefile(doc)
                 if not cifok:
                     if DEBUG:
                         print(f"Could not parse (.cif): {fullpath}")
@@ -112,6 +120,7 @@ class Worker(QtCore.QObject):
                     filecount = filecount + len(z)
                     self.number_of_files.emit(filecount)
                 for zippedfile in z:  # the list of cif files in the zip file
+                    cifok = False
                     if not zippedfile:
                         continue
                     # Important here to re-initialize empty cif dictionary:
@@ -122,7 +131,8 @@ class Worker(QtCore.QObject):
                             omit = True
                     if omit:
                         continue
-                    cifok = cif.parsefile(zippedfile)
+                    with suppress(Exception):
+                        cifok = cif.parsefile(zippedfile)
                     if not cifok:
                         if DEBUG:
                             print(f"Could not parse (zipped): {fullpath}")
@@ -156,8 +166,9 @@ class Worker(QtCore.QObject):
                         print(f"Could not parse (.res): {fullpath}")
                     continue
                 if res:
-                    tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=lastid,
-                                                structures=self.structures, options=options)
+                    with suppress(Exception):
+                        tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=lastid,
+                                                    structures=self.structures, options=options)
                 if not tst:
                     if DEBUG:
                         print('res file not added:', fullpath)
