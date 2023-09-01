@@ -81,7 +81,7 @@ Source: "..\src\structurefinder\*";            DestDir: "{app}\structurefinder";
 Source: "..\dist\python_dist\*";               DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\icons\*";                          DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\structurefinder.exe";              DestDir: "{app}"; Flags: ignoreversion
-Source: "..\structurefinder.exe";              DestDir: "{app}"; Flags: ignoreversion
+Source: "..\update.exe";              DestDir: "{app}"; Flags: ignoreversion
 Source: "..\vc_redist.x64.exe";                DestDir: "{app}"; Flags: ignoreversion
 
 [Dirs]

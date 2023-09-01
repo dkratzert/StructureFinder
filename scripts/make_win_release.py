@@ -63,22 +63,23 @@ def make_shasum(filename):
     print("SHA512: {}".format(sha))
 
 
-def make_distribs():
-    # create binary distribution of 64bit variant:
-    subprocess.run(['venv/Scripts/pyinstaller.exe',
-                    'StructureFinder.spec',
-                    '--clean',
-                    '-y',
-                    ])
-
-    innosetup_compiler = r'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
-    # Run 64bit setup compiler
+def make_installer():
+    innosetup_compiler = r'D:\Programme\Inno Setup 6/ISCC.exe'
+    innosetup_compiler2 = r'C:\Program Files (x86)\Inno Setup 6/ISCC.exe'
+    if not Path(innosetup_compiler).exists():
+        innosetup_compiler = innosetup_compiler2
     subprocess.run([innosetup_compiler, f'/dMyAppVersion={VERSION}', r'scripts\strf-install_win64.iss', ])
+
+
+def compile_python_files():
+    import compileall
+    compileall.compile_dir(dir='dist', workers=2, force=True)
+    compileall.compile_dir(dir='src', workers=2, force=True)
 
 
 if __name__ == '__main__':
     # Make binary distributions:
-    make_distribs()
+    make_installer()
 
     make_shasum("scripts/Output/StructureFinder-setup-x64-v{}.exe".format(VERSION))
 
