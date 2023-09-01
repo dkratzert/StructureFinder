@@ -6,7 +6,8 @@ docs/_build
 venv
 venv2
 venv27
-
+scripts/starter/.vs
+scripts/starter/x64
 build/
 dist/
 
