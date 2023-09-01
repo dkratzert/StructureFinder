@@ -20,14 +20,13 @@ import subprocess
 # noinspection PyUnresolvedReferences
 from PyQt5 import uic
 
-from scripts.create_zipfile import make_zip
-from scripts.version_numbers import process_iss, disable_debug, isspath, pypath
+from scripts.version_numbers import disable_debug, pypath
 from structurefinder.misc.version import VERSION
 
 print("Updating version numbers to version {} ...".format(VERSION))
 
 # Update version numbers in .iss files
-#for i in isspath:
+# for i in isspath:
 #    process_iss(i)
 
 # disable all debug variables:
@@ -82,9 +81,6 @@ if __name__ == '__main__':
     make_distribs()
 
     make_shasum("scripts/Output/StructureFinder-setup-x64-v{}.exe".format(VERSION))
-
-    # Make a zip file for web interface distribution:
-    #make_zip()
 
     print('\nCreated version: {}'.format(VERSION))
     print(datetime.now().strftime("%d.%m.%Y %H:%M:%S"))
