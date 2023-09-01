@@ -1,6 +1,7 @@
 StructureFinder Changelog
 -------------------------
-
+* v77 The distribution architecture of the application was changed so that
+       virus scanners should detect StructureFinder as malicious software less often.
 * v76 Hardened file indexer against damaged zip files.
 * v75 Fixed merging of databases where a table, e.g. the authors table, is empty.
 * v74 Several small improvements.
