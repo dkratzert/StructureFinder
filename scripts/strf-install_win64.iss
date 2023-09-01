@@ -79,14 +79,14 @@ Type: filesandordirs; Name: "{app}\*"
 [Files]
 Source: "..\src\structurefinder\*";            DestDir: "{app}\structurefinder"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\dist\python_dist\*";               DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\icons\*";                          DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "..\icons\*";                          DestDir: "{app}\icons"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\structurefinder.exe";              DestDir: "{app}"; Flags: ignoreversion
 Source: "..\update.exe";              DestDir: "{app}"; Flags: ignoreversion
 Source: "..\vc_redist.x64.exe";                DestDir: "{app}"; Flags: ignoreversion
 
 [Dirs]
-Name: "{app}\displaymol"; Permissions: everyone-full
-Name: "{app}\gui"; Permissions: everyone-full
+;Name: "{app}\displaymol"; Permissions: everyone-full
+;Name: "{app}\gui"; Permissions: everyone-full
 
 [Code]
 procedure CurStepChanged(CurStep: TSetupStep);
