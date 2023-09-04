@@ -25,10 +25,6 @@ from structurefinder.misc.version import VERSION
 
 print("Updating version numbers to version {} ...".format(VERSION))
 
-# Update version numbers in .iss files
-# for i in isspath:
-#    process_iss(i)
-
 # disable all debug variables:
 for i in pypath:
     disable_debug(i)
@@ -68,7 +64,7 @@ def make_installer():
     innosetup_compiler2 = r'C:\Program Files (x86)\Inno Setup 6/ISCC.exe'
     if not Path(innosetup_compiler).exists():
         innosetup_compiler = innosetup_compiler2
-    subprocess.run([innosetup_compiler, f'/dMyAppVersion={VERSION}', r'scripts\strf-install_win64.iss', ])
+    subprocess.run([innosetup_compiler, '/Qp', f'/dMyAppVersion={VERSION}', r'scripts\strf-install_win64.iss', ])
 
 
 def compile_python_files():

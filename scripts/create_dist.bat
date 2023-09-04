@@ -24,8 +24,8 @@ cd %BUILD_DIR%
 curl %PYTHON_URL% -o python-%PYTHON_VERSION%.zip
 
 del /S /Q /F %PACKAGE_DIR%\*.* >NUL
-rmdir /s /q %PACKAGE_DIR%
-dir "%PACKAGE_DIR%" | findstr /v "\<.*\>"
+rmdir /s /q %PACKAGE_DIR% > NUL
+dir "%PACKAGE_DIR%" | findstr /v "\<.*\>" > NUL
 if not errorlevel 1 (
     echo Directory is not empty.
     exit /b
@@ -53,10 +53,18 @@ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 python get-pip.py
 del get-pip.py
 
-python -m pip install virtualenv
-python -m virtualenv venv --clear --no-periodic-update
-call venv\Scripts\activate.bat
+set PYTHONPATH=%PACKAGE_DIR%
+mkdir %PACKAGE_DIR%\Lib\site-packages > NUL
 
-call pip install -r %SCRIPT_DIR%\..\requirements.txt
+REM Not needed, because it just installs in local python path without venv:
+rem python -m pip install virtualenv
+rem python -m virtualenv venv --clear --no-periodic-update
+rem call venv\Scripts\activate.bat
+
+call Scripts\pip install -r %SCRIPT_DIR%\..\requirements.txt --no-warn-script-location
+if %errorlevel% neq 0 (
+    echo pip failed to install all packages. Stopping now.
+    exit /b %errorlevel%
+)
 
 cd %SCRIPT_DIR%\..
