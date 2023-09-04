@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
 #else
 	setenv("PYTHONPATH", ".", 1);
 #endif
-	string command = "venv\\Scripts\\python structurefinder/strf.py";
+	string command = "python structurefinder/strf.py";
 	add_argvalues(command, argc, argv);
 	// cout << command << endl;
 	system(command.c_str());
