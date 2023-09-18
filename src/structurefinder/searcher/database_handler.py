@@ -939,7 +939,7 @@ class StructureTable():
         :param volume: the unit cell volume
         """
         if not threshold:
-            threshold = log(volume) + 1.0
+            threshold = log(volume) + 10.0
         upper_limit = float(volume + threshold)
         lower_limit = float(volume - threshold)
         req = '''SELECT StructureId, a, b, c, alpha, beta, gamma, volume FROM cell WHERE cell.volume >= ? AND cell.volume <= ?'''

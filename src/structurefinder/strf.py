@@ -1038,6 +1038,7 @@ class StartStructureDB(QMainWindow):
                 mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
                 if mapping:
                     idlist.append(curr_cell[0])
+        self.progress.hide()
         return idlist
 
     def search_cell(self, search_string: str) -> bool:

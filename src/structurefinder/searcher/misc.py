@@ -23,14 +23,14 @@ COL_ID, COL_DATA, COL_FILE, COL_MODIFIED, COL_PATH = range(5)
 
 
 def regular_results_parameters(volume):
-    vol_threshold = log(volume) + 1.0
+    vol_threshold = log(volume) + 1.3
     ltol = 0.03
     atol = 1.0
     return atol, ltol, vol_threshold
 
 
 def more_results_parameters(volume):
-    vol_threshold = log(volume) + 5.0
+    vol_threshold = log(volume) + 20.0
     ltol = 0.05
     atol = 1.8
     return atol, ltol, vol_threshold
