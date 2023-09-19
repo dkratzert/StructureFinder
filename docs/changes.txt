@@ -1,5 +1,6 @@
 StructureFinder Changelog
 -------------------------
+* v78 Improved threshold of volume prefilter to be suitable for inaccurate unit cells.
 * v77 The distribution architecture of the application was changed so that
        virus scanners should detect StructureFinder as malicious software less often.
 * v76 Hardened file indexer against damaged zip files.
