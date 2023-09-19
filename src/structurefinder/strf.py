@@ -1039,6 +1039,7 @@ class StartStructureDB(QMainWindow):
                 if mapping:
                     idlist.append(curr_cell[0])
         self.progress.hide()
+        self.statusBar().showMessage(f'Found {len(idlist)} structures.')
         return idlist
 
     def search_cell(self, search_string: str) -> bool:
@@ -1073,7 +1074,6 @@ class StartStructureDB(QMainWindow):
             return False
         print(f'Found {len(idlist)} results.')
         searchresult = self.structures.get_all_structure_names(idlist)
-        # self.statusBar().showMessage('Found {} structures.'.format(len(idlist)))
         self.full_list = False
         self.set_model_from_data(searchresult)
         return True

@@ -940,8 +940,8 @@ class StructureTable():
         """
         if not threshold:
             threshold = log(volume) + 10.0
-        upper_limit = float(volume + threshold)
-        lower_limit = float(volume - threshold)
+        upper_limit = volume + threshold
+        lower_limit = volume - threshold
         req = '''SELECT StructureId, a, b, c, alpha, beta, gamma, volume FROM cell WHERE cell.volume >= ? AND cell.volume <= ?'''
         try:
             return self.database.db_request(req, (lower_limit, upper_limit))
