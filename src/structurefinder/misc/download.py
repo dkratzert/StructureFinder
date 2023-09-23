@@ -11,8 +11,8 @@ class MyDownloader(QThread):
     failed = pyqtSignal(int)
     finished = pyqtSignal(bytes)
 
-    def __init__(self, url: str):
-        super().__init__()
+    def __init__(self, parent, url: str):
+        super().__init__(parent=parent)
         self.url = url
 
     def run(self):
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         print(bar.decode('ascii'))
 
 
-    upd = MyDownloader(url="https://dkratzert.de/files/structurefinder/version.txt")
+    upd = MyDownloader(parent=None, url="https://dkratzert.de/files/structurefinder/version.txt")
     upd.finished.connect(foo)
     upd.failed.connect(upd.failed_to_download)
     upd.progress.connect(upd.print_status)

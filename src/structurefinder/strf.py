@@ -149,7 +149,7 @@ class StartStructureDB(QMainWindow):
             self.ui.appendDatabasePushButton.setIcon(qta.icon('fa5s.plus'))
 
     def set_model_from_data(self, data: Union[list, tuple]):
-        self.table_model = TableModel(structures=data)
+        self.table_model = TableModel(parent=self, structures=data)
         self.ui.cifList_tableView.setModel(self.table_model)
         self.ui.cifList_tableView.hideColumn(0)
         self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
@@ -233,7 +233,7 @@ class StartStructureDB(QMainWindow):
 
     def checkfor_version(self):
         url = 'https://dkratzert.de/files/structurefinder/version.txt'
-        self.upd = MyDownloader(url=url)
+        self.upd = MyDownloader(parent=self, url=url)
         self.upd.finished.connect(self.show_update_warning)
         self.upd.failed.connect(self.upd.failed_to_download)
         self.upd.progress.connect(self.upd.print_status)
@@ -249,7 +249,7 @@ class StartStructureDB(QMainWindow):
         except Exception:
             pass
         if remote_version > VERSION:
-            print('Version {} is outdated (actual is {}).'.format(remote_version, VERSION))
+            print(f'Version {remote_version} is outdated (actual is {VERSION}).')
             warn_text = "A newer version of StructureFinder is available under " \
                         "<a href='https://dkratzert.de/structurefinder.html'>" \
                         "https://dkratzert.de/structurefinder.html</a>"
@@ -263,15 +263,15 @@ class StartStructureDB(QMainWindow):
                 update_button.clicked.connect(lambda: do_update_program(str(remote_version)))
             box.setText(warn_text.format(remote_version))
             box.exec()
+        else:
+            print(f'Remote version {remote_version} is up to date.')
 
     def save_cellcheck_exe_path(self, text: str):
         self.settings.save_ccdc_exe_path(text)
 
     def browse_for_ccdc_exe(self):
-        exe = \
-            QFileDialog.getOpenFileName(self, caption='CellCheckCSD executable',
-                                        filter="ccdc_searcher.bat;ccdc_searcher")[
-                0]
+        exe = QFileDialog.getOpenFileName(self, caption='CellCheckCSD executable',
+                                          filter="ccdc_searcher.bat;ccdc_searcher")[0]
         if exe:
             self.ui.cellcheckExeLineEdit.setText(exe)
 
@@ -332,7 +332,7 @@ class StartStructureDB(QMainWindow):
             identifier = sel.indexes()[8].data()
         except KeyError:
             return None
-        webbrowser.open_new_tab('https://www.ccdc.cam.ac.uk/structures/Search?entry_list=' + identifier)
+        webbrowser.open_new_tab(f'https://www.ccdc.cam.ac.uk/structures/Search?entry_list={identifier}')
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasText():

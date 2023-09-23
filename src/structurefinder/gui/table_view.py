@@ -7,7 +7,7 @@ class StructuresListTableView(QtWidgets.QTableView):
     save_excel_triggered = pyqtSignal()
 
     def __init__(self, parent):
-        super(StructuresListTableView, self).__init__(parent)
+        super().__init__(parent)
         self.setContextMenuPolicy(Qt.DefaultContextMenu)
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
@@ -23,4 +23,4 @@ class StructuresListTableView(QtWidgets.QTableView):
     def mousePressEvent(self, e: QtGui.QMouseEvent) -> None:
         if e.button() == Qt.RightButton:
             pass
-        super(StructuresListTableView, self).mousePressEvent(e)
+        super().mousePressEvent(e)

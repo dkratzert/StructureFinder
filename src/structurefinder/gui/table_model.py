@@ -14,7 +14,7 @@ class Column(IntEnum):
 
 
 class TableModel(QtCore.QAbstractTableModel):
-    def __init__(self, *args, structures=None, **kwargs):
+    def __init__(self, structures=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.horizontalHeaders = ['Id', 'Data Name', 'File Name', 'Last Modified', 'Path']
         self._data: List[List[str]] = structures or []
