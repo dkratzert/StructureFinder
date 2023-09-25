@@ -43,6 +43,69 @@ __metaclass__ = type  # use new-style classes
 # db_enoding = 'ISO-8859-15'
 db_enoding = 'utf-8'
 
+residuals = (
+    'StructureId',
+    '_cell_formula_units_Z',
+    '_space_group_name_H_M_alt',
+    '_space_group_name_Hall',
+    '_space_group_centring_type',
+    '_space_group_IT_number',
+    '_space_group_crystal_system',
+    '_space_group_symop_operation_xyz',
+    '_chemical_formula_sum',
+    '_chemical_formula_weight',
+    '_exptl_crystal_description',
+    '_exptl_crystal_colour',
+    '_exptl_crystal_size_max',
+    '_exptl_crystal_size_mid',
+    '_exptl_crystal_size_min',
+    '_audit_creation_method',
+    '_exptl_absorpt_coefficient_mu',
+    '_exptl_absorpt_correction_type',
+    '_diffrn_ambient_temperature',
+    '_diffrn_radiation_wavelength',
+    '_diffrn_radiation_type',
+    '_diffrn_source',
+    '_diffrn_measurement_device_type',
+    '_diffrn_reflns_number',
+    '_diffrn_reflns_av_R_equivalents',
+    '_diffrn_reflns_theta_min',
+    '_diffrn_reflns_theta_max',
+    '_diffrn_reflns_theta_full',
+    '_diffrn_measured_fraction_theta_max',
+    '_diffrn_measured_fraction_theta_full',
+    '_reflns_number_total',
+    '_reflns_number_gt',
+    '_reflns_threshold_expression',
+    '_reflns_Friedel_coverage',
+    '_computing_structure_solution',
+    '_computing_structure_refinement',
+    '_refine_special_details',
+    '_refine_ls_abs_structure_Flack',
+    '_refine_ls_structure_factor_coef',
+    '_refine_ls_weighting_details',
+    '_refine_ls_number_reflns',
+    '_refine_ls_number_parameters',
+    '_refine_ls_number_restraints',
+    '_refine_ls_R_factor_all',
+    '_refine_ls_R_factor_gt',
+    '_refine_ls_wR_factor_ref',
+    '_refine_ls_wR_factor_gt',
+    '_refine_ls_goodness_of_fit_ref',
+    '_refine_ls_restrained_S_all',
+    '_refine_ls_shift_su_max',
+    '_refine_ls_shift_su_mean',
+    '_refine_diff_density_max',
+    '_refine_diff_density_min',
+    '_diffrn_reflns_av_unetI_netI',
+    '_database_code_depnum_ccdc_archive',
+    '_shelx_res_file',
+    'modification_time',
+    'file_size'
+)
+
+
+# Residuals: TypeAlias = Literal[residuals]
 
 class DatabaseRequest():
     def __init__(self, dbfile):
@@ -711,69 +774,7 @@ class StructureTable():
         """
         if cif.cif_data['calculated_formula_sum']:
             self.fill_formula(structure_id, cif.cif_data['calculated_formula_sum'])
-        residuals = """
-                    (
-                    StructureId,
-                    _cell_formula_units_Z,
-                    _space_group_name_H_M_alt,
-                    _space_group_name_Hall,
-                    _space_group_centring_type,
-                    _space_group_IT_number,
-                    _space_group_crystal_system,
-                    _space_group_symop_operation_xyz,
-                    _chemical_formula_sum,
-                    _chemical_formula_weight,
-                    _exptl_crystal_description,
-                    _exptl_crystal_colour,
-                    _exptl_crystal_size_max,
-                    _exptl_crystal_size_mid,
-                    _exptl_crystal_size_min,
-                    _audit_creation_method,
-                    _exptl_absorpt_coefficient_mu,
-                    _exptl_absorpt_correction_type,
-                    _diffrn_ambient_temperature,
-                    _diffrn_radiation_wavelength,
-                    _diffrn_radiation_type,
-                    _diffrn_source,
-                    _diffrn_measurement_device_type,
-                    _diffrn_reflns_number,
-                    _diffrn_reflns_av_R_equivalents,
-                    _diffrn_reflns_theta_min,
-                    _diffrn_reflns_theta_max,
-                    _diffrn_reflns_theta_full,
-                    _diffrn_measured_fraction_theta_max,
-                    _diffrn_measured_fraction_theta_full,
-                    _reflns_number_total,
-                    _reflns_number_gt,
-                    _reflns_threshold_expression,
-                    _reflns_Friedel_coverage,
-                    _computing_structure_solution,
-                    _computing_structure_refinement,
-                    _refine_special_details,
-                    _refine_ls_abs_structure_Flack,
-                    _refine_ls_structure_factor_coef,
-                    _refine_ls_weighting_details,
-                    _refine_ls_number_reflns,
-                    _refine_ls_number_parameters,
-                    _refine_ls_number_restraints,
-                    _refine_ls_R_factor_all,
-                    _refine_ls_R_factor_gt,
-                    _refine_ls_wR_factor_ref,
-                    _refine_ls_wR_factor_gt,
-                    _refine_ls_goodness_of_fit_ref,
-                    _refine_ls_restrained_S_all,
-                    _refine_ls_shift_su_max,
-                    _refine_ls_shift_su_mean,
-                    _refine_diff_density_max,
-                    _refine_diff_density_min,
-                    _diffrn_reflns_av_unetI_netI,
-                    _database_code_depnum_ccdc_archive,
-                    _shelx_res_file,
-                    modification_time,
-                    file_size
-                    ) 
-                    """
-        req = '''INSERT INTO Residuals {} VALUES ({});'''.format(residuals, self.joined_arglist(residuals.split(',')))
+        req = f'''INSERT INTO Residuals {str(residuals)} VALUES ({self.joined_arglist(residuals)});'''
 
         result = self.database.db_request(req, (
             structure_id,
@@ -1195,12 +1196,22 @@ class StructureTable():
                     pass
         return cif
 
+    def get_plot_values(self, x_axis: str, y_axis: str):
+        req = f"SELECT {x_axis}, {y_axis} from Residuals"
+        result = self.database.db_request(req)
+        if result:
+            return result
+        else:
+            return []
+
 
 if __name__ == '__main__':
     # searcher.filecrawler.put_cifs_in_db(searchpath='../')
     db = StructureTable('./test.sqlite')
-    f = db.database.db_request("""SELECT name FROM sqlite_master WHERE type='table' AND name='authortxtsearch';""")
-    print(f)
+    # f = db.database.db_request("""SELECT name FROM sqlite_master WHERE type='table' AND name='authortxtsearch';""")
+    # print(f)
+    s = db.get_plot_values(x_axis=residuals[5], y_axis=residuals[9])
+    print(s)
     # db.initialize_db()
     # db = StructureTable(r'C:\Program Files (x86)\CCDC\CellCheckCSD\cell_check.csdsql')
     # db.initialize_db()
@@ -1227,5 +1238,5 @@ if __name__ == '__main__':
     # result = db.database.db_request(req, (1473.46, 1564.76))
     # result = db.find_authors('herb')
     # result = db.find_by_strings('SADI')
-    print(db.get_row_as_dict(2))
+    # print(db.get_row_as_dict(2))
     # lattice1 = Lattice.from_parameters_niggli_reduced(*cell)
