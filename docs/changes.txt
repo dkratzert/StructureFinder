@@ -1,5 +1,6 @@
 StructureFinder Changelog
 -------------------------
+* v79 Improved program executable which can now be pinned to the taskbar. Updated updater executable.
 * v78 Improved threshold of volume prefilter to be suitable for inaccurate unit cells.
 * v77 The distribution architecture of the application was changed so that
        virus scanners should detect StructureFinder as malicious software less often.
