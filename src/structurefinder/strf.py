@@ -179,6 +179,7 @@ class StartStructureDB(QMainWindow):
         self.ui.actionSave_Database.triggered.connect(self.save_database)
         self.ui.actionCopy_Unit_Cell.triggered.connect(self.copyUnitCell)
         self.ui.cifList_tableView.save_excel_triggered.connect(self.on_save_as_excel)
+        self.ui.cifList_tableView.open_save_path.connect(self.on_browse_path_from_row)
         # Other fields:
         self.ui.txtSearchEdit.textChanged.connect(self.search_text)
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
@@ -324,6 +325,15 @@ class StartStructureDB(QMainWindow):
             for col, item in enumerate(row_data):
                 worksheet.write(row, col, item.decode('utf-8') if isinstance(item, bytes) else item)
         workbook.close()
+
+    def on_browse_path_from_row(self, curdir: str):
+        import subprocess
+        if sys.platform == "win" or sys.platform == "win32":
+            subprocess.Popen(['explorer', str(curdir)], shell=True)
+        if sys.platform == 'darwin':
+            subprocess.call(['open', curdir])
+        if sys.platform == 'linux':
+            subprocess.call(['xdg-open', curdir])
 
     def show_csdentry(self, item: QModelIndex):
         import webbrowser
