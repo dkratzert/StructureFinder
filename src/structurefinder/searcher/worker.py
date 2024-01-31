@@ -2,17 +2,15 @@ import os
 import re
 import time
 from contextlib import suppress
-from pathlib import Path
 from typing import Optional, Union
 from zipfile import BadZipFile
 
 import gemmi
 from PyQt5 import QtCore
 
-from structurefinder.misc.dialogs import bug_found_warning
 from structurefinder.searcher.database_handler import StructureTable
-from structurefinder.searcher.filecrawler import filewalker_walk, fill_db_with_cif_data, MyZipReader, \
-    MyTarReader, fill_db_with_res_data
+from structurefinder.searcher.filecrawler import (filewalker_walk, fill_db_with_cif_data, MyZipReader,
+                                                  MyTarReader, fill_db_with_res_data, archives)
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.shelx import ShelXFile
 
@@ -61,7 +59,7 @@ class Worker(QtCore.QObject):
         rescount = 0
         cifcount = 0
         time1 = time.perf_counter()
-        patterns = ['*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '*.res']
+        patterns = ['*.cif', '*.res'] + archives
         filelist = filewalker_walk(str(searchpath), patterns, excludes=excludes)
         if DEBUG:
             print(f'Time for file list: {time.perf_counter() - time1:1} s.')

@@ -37,7 +37,7 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidget
 from structurefinder.ccdc.query import search_csd, parse_results
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.strf_main import Ui_stdbMainwindow
-from structurefinder.gui.table_model import TableModel
+from structurefinder.gui.table_model import TableModel, CustomProxyModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
@@ -148,13 +148,6 @@ class StartStructureDB(QMainWindow):
             self.ui.closeDatabaseButton.setIcon(qta.icon('fa5.times-circle'))
             self.ui.appendDatabasePushButton.setIcon(qta.icon('fa5s.plus'))
 
-    def set_model_from_data(self, data: Union[list, tuple]):
-        self.table_model = TableModel(parent=self, structures=data)
-        self.ui.cifList_tableView.setModel(self.table_model)
-        self.ui.cifList_tableView.hideColumn(0)
-        self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
-        self.ui.cifList_tableView.resizeColumnToContents(3)
-
     def connect_signals_and_slots(self):
         """
         Connects the signals and slot.
@@ -197,6 +190,24 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDatabasePushButton.clicked.connect(self.append_database)
         self.ui.labelsCheckBox.toggled.connect(self.show_labels)
         self.ui.helpPushButton.clicked.connect(self.show_help)
+        self.ui.hideInArchivesCB.clicked.connect(self.recount)
+
+    def set_model_from_data(self, data: Union[list, tuple]):
+        table_model = TableModel(parent=self, structures=data)
+        proxy_model = CustomProxyModel(self)
+        proxy_model.setSourceModel(table_model)
+        self.ui.cifList_tableView.setModel(proxy_model)
+        self.ui.hideInArchivesCB.toggled.connect(proxy_model.setFilterEnabled)
+        proxy_model.setFilterEnabled(self.ui.hideInArchivesCB.isChecked())
+        self.table_model = proxy_model
+        # self.ui.cifList_tableView.setModel(self.table_model)
+        self.ui.cifList_tableView.hideColumn(0)
+        self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
+        self.ui.cifList_tableView.resizeColumnToContents(3)
+
+    def recount(self):
+        if hasattr(self, 'table_model'):
+            self.statusBar().showMessage(f"Database with {self.table_model.rowCount()} structures loaded", msecs=0)
 
     def show_help(self) -> None:
         from PyQt5 import QtCore
@@ -556,9 +567,9 @@ class StartStructureDB(QMainWindow):
             self.statusBar().showMessage(f'Found {0} structures.')
             return
         searchresult = self.structures.get_all_structure_names(idlist)
-        self.statusBar().showMessage(f'Found {len(idlist)} structures.')
         self.full_list = False
         self.set_model_from_data(searchresult)
+        self.statusBar().showMessage(f'Found {self.table_model.rowCount()} structures.')
         if idlist:
             self.ui.MaintabWidget.setCurrentIndex(0)
 
@@ -997,8 +1008,8 @@ class StartStructureDB(QMainWindow):
         except AttributeError as e:
             print(e)
         try:
-            self.statusBar().showMessage("Found {} structures.".format(len(searchresult)))
             self.set_model_from_data(self.structures.get_structures_by_idlist(searchresult))
+            self.statusBar().showMessage(f"Found {self.table_model.rowCount()} structures.")
         except Exception:
             self.statusBar().showMessage("Nothing found.")
 
@@ -1083,10 +1094,10 @@ class StartStructureDB(QMainWindow):
             self.statusBar().showMessage('Found 0 structures.', msecs=0)
             self.set_model_from_data([])
             return False
-        print(f'Found {len(idlist)} results.')
         searchresult = self.structures.get_all_structure_names(idlist)
         self.full_list = False
         self.set_model_from_data(searchresult)
+        print(f'Found {self.table_model.rowCount()} results.')
         return True
 
     def search_elements(self, elements: str, excluding: str, onlythese: bool = False) -> list:
@@ -1156,8 +1167,8 @@ class StartStructureDB(QMainWindow):
         return True
 
     def display_number_of_structures(self):
-        number = self.structures.get_largest_id()
-        self.ui.statusbar.showMessage(f'Database with {number} structures loaded.')
+        # number = self.structures.get_largest_id()
+        self.ui.statusbar.showMessage(f'Database with {self.table_model.rowCount()} structures loaded.')
 
     def get_name_from_p4p(self):
         """
@@ -1257,7 +1268,7 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
-        self.statusBar().showMessage(f'Found {len(data)} structures.', msecs=0)
+        self.statusBar().showMessage(f'Found {self.table_model.rowCount()} structures.', msecs=0)
 
     def clear_fields(self) -> None:
         """

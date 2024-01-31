@@ -40,6 +40,8 @@ excluded_names = ('ROOT',
                   'BrukerShelXlesaves',
                   'shelXlesaves')
 
+archives = ['*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz']
+
 
 class MyZipBase(object):
     def __init__(self, filepath: str) -> None:
