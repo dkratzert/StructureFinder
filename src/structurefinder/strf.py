@@ -329,7 +329,6 @@ class StartStructureDB(QMainWindow):
     def on_browse_path_from_row(self, curdir: str):
         import subprocess
         curdir = Path(curdir).resolve()
-        print(f'Browsing {curdir}')
         if sys.platform == "win" or sys.platform == "win32":
             subprocess.Popen(['explorer', str(curdir)], shell=True)
         if sys.platform == 'darwin':
