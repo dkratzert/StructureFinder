@@ -6,6 +6,7 @@ import unittest
 from contextlib import suppress
 from pathlib import Path
 from time import sleep
+from typing import Union
 
 from PyQt5.QtCore import Qt, QDate, QEventLoop
 from PyQt5.QtGui import QIcon
@@ -33,8 +34,11 @@ class TestApplication(unittest.TestCase):
     def tearDown(self) -> None:
         self.myapp.close()
 
-    def get_row_content(self, row: int):
-        return self.myapp.ui.cifList_tableView.model()._data[row]
+    def get_row_content(self, row: int, col: int) -> Union[str, int]:
+        model = self.myapp.table_model
+        source_index = model.index(row, col)
+        row_content = model.data(source_index)
+        return row_content
 
     def get_row_count_from_table(self):
         return self.myapp.ui.cifList_tableView.model().rowCount()
@@ -54,9 +58,9 @@ class TestApplication(unittest.TestCase):
         # Number of items in main list
         self.assertEqual(263, self.get_row_count_from_table())
         # structureId
-        self.assertEqual(2, self.get_row_content(1)[COL_ID])
+        self.assertEqual(2, self.get_row_content(1, COL_ID))
         # filename
-        self.assertEqual(b'2004924.cif', self.get_row_content(1)[COL_FILE])
+        self.assertEqual('2004924.cif', self.get_row_content(1, COL_FILE))
 
     def test_search_cell_simpl(self):
         """
@@ -101,7 +105,7 @@ class TestApplication(unittest.TestCase):
 
     def test_data_name_column(self):
         self.myapp.ui.txtSearchEdit.setText('sadi')
-        self.assertEqual(b'p21c.res', self.get_row_content(1)[COL_FILE])
+        self.assertEqual('p21c.res', self.get_row_content(1, COL_FILE))
 
     def test_no_result(self):
         self.myapp.ui.txtSearchEdit.setText('foobar')
@@ -277,9 +281,9 @@ class TestApplication(unittest.TestCase):
         self.myapp.ui.adv_textsearch.setText('SADI')
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         self.assertEqual(4, self.get_row_count_from_table())
-        self.assertEqual(b'breit_tb13_85.cif', self.get_row_content(0)[2])
-        self.assertEqual(b'p21c.cif', self.get_row_content(3)[2])
-        self.assertEqual('2018-09-05', self.get_row_content(3)[3])
+        self.assertEqual('breit_tb13_85.cif', self.get_row_content(0, 2))
+        self.assertEqual('p21c.cif', self.get_row_content(3, 2))
+        self.assertEqual('2018-09-05', self.get_row_content(3, 3))
         self.assertEqual(True, self.myapp.ui.MaintabWidget.isVisible())
 
     def test_search_text_with_exclude(self):
@@ -406,4 +410,3 @@ class TestApplication(unittest.TestCase):
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
         # returns full list:
         self.assertEqual(263, self.get_row_count_from_table())
-
