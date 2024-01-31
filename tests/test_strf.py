@@ -184,6 +184,14 @@ class TestApplication(unittest.TestCase):
         self.assertEqual(True, status)
         self.assertEqual(263, self.get_row_count_from_table())
 
+    def test_filter_archives(self):
+        self.myapp.ui.hideInArchivesCB.setChecked(False)
+        status = self.myapp.open_database_file('tests/test-data/test.sql')
+        self.assertEqual(263, self.get_row_count_from_table())
+        self.myapp.ui.hideInArchivesCB.setChecked(True)
+        # Rows without archives:
+        self.assertEqual(51, self.get_row_count_from_table())
+
     def test_p4p_parser(self):
         self.myapp.search_for_p4pcell('tests/test-data/test2.p4p')
         self.assertEqual('14.637 9.221  15.094 90.000 107.186 90.000', self.myapp.ui.searchCellLineEDit.text())
