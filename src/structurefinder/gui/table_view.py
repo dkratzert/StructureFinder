@@ -1,3 +1,5 @@
+from typing import Union
+
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QCursor
@@ -27,12 +29,18 @@ class StructuresListTableView(QtWidgets.QTableView):
     def _on_save_excel(self):
         self.save_excel_triggered.emit()
 
+    def get_field_content(self, row: int, col: int) -> Union[str, int]:
+        model = self.model()
+        source_index = model.index(row, col)
+        content = model.data(source_index)
+        return content
+
     def _on_open_file_path(self) -> None:
         try:
-            path_data = self.model()._data[self.currentIndex().row()][Column.PATH]
+            path_data = self.get_field_content(self.currentIndex().row(), Column.PATH)
         except IndexError:
-            path_data = b''
-        self.open_save_path.emit(path_data.decode(errors='ignore'))
+            path_data = ''
+        self.open_save_path.emit(path_data)
 
     def mousePressEvent(self, e: QtGui.QMouseEvent) -> None:
         if e.button() == Qt.RightButton:

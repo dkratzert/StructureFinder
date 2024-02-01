@@ -37,7 +37,7 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidget
 from structurefinder.ccdc.query import search_csd, parse_results
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.strf_main import Ui_stdbMainwindow
-from structurefinder.gui.table_model import TableModel, CustomProxyModel
+from structurefinder.gui.table_model import TableModel, CustomProxyModel, Column
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
@@ -332,9 +332,14 @@ class StartStructureDB(QMainWindow):
         workbook = xlsxwriter.Workbook(filename)
         worksheet = workbook.add_worksheet()
         for row, index in enumerate(selection):
-            row_data = self.ui.cifList_tableView.model()._data[index.row()]
-            for col, item in enumerate(row_data):
-                worksheet.write(row, col, item.decode('utf-8') if isinstance(item, bytes) else item)
+            row_1_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.DATA)
+            row_2_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.FILENAME)
+            row_3_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.MODIFIED)
+            row_4_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.PATH)
+            worksheet.write(row, Column.DATA, row_1_data)
+            worksheet.write(row, Column.FILENAME, row_2_data)
+            worksheet.write(row, Column.MODIFIED, row_3_data)
+            worksheet.write(row, Column.PATH, row_4_data)
         workbook.close()
 
     def on_browse_path_from_row(self, curdir: str):
