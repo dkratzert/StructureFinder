@@ -2,6 +2,7 @@ StructureFinder Changelog
 -------------------------
 * v80 A missing directory doesn't let the program crash anymore on file open actions. A double click or 
       right click can open the directory of the current structure (Only works on the same computer).
+      Added a filter checkbox to hide files in archives.
 * v79 Improved program executable which can now be pinned to the taskbar. Updated updater executable.
 * v78 Improved threshold of volume prefilter to be suitable for inaccurate unit cells.
 * v77 The distribution architecture of the application was changed so that
