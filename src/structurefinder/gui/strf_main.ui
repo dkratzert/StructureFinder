@@ -3,6 +3,14 @@
  <author>Daniel Kratzert</author>
  <class>stdbMainwindow</class>
  <widget class="QMainWindow" name="stdbMainwindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1371</width>
+    <height>733</height>
+   </rect>
+  </property>
   <property name="windowTitle">
    <string>StructureFinder</string>
   </property>
@@ -30,7 +38,6 @@
          </property>
          <property name="font">
           <font>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -52,7 +59,6 @@
          </property>
          <property name="font">
           <font>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -91,6 +97,29 @@
         </widget>
        </item>
        <item>
+        <spacer name="verticalSpacer_8">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>3</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="hideInArchivesCB">
+         <property name="text">
+          <string>hide files in archives</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_3">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -116,7 +145,6 @@
          </property>
          <property name="font">
           <font>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -151,7 +179,6 @@
          </property>
          <property name="font">
           <font>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -344,7 +371,6 @@
                   <widget class="QLabel" name="SpaceGrouplabel">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -404,7 +430,6 @@
                   <widget class="QLabel" name="wR2Label">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
                      <italic>false</italic>
                      <bold>true</bold>
                     </font>
@@ -428,7 +453,6 @@
                   <widget class="QLabel" name="r1Label">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
                      <italic>false</italic>
                      <bold>true</bold>
                     </font>
@@ -503,7 +527,6 @@
                   <widget class="QLabel" name="rintLabel">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -526,7 +549,6 @@
                   <widget class="QLabel" name="rsigmaLabel">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -578,7 +600,6 @@
                  </property>
                  <property name="font">
                   <font>
-                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -599,7 +620,6 @@
                   <widget class="QLabel" name="label">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -932,7 +952,6 @@
                   <widget class="QLabel" name="dataReflnsLabel">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -1006,7 +1025,6 @@
                   <widget class="QLabel" name="dLabel">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -1029,7 +1047,6 @@
                   <widget class="QLabel" name="completeLabel">
                    <property name="font">
                     <font>
-                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -1389,7 +1406,6 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="NotContainsLabel">
               <property name="font">
                <font>
-                <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
@@ -1479,7 +1495,6 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
-                <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
@@ -3241,7 +3256,6 @@ p, li { white-space: pre-wrap; }
                </property>
                <property name="font">
                 <font>
-                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>

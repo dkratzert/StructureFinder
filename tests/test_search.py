@@ -33,7 +33,9 @@ class TestSearch(unittest.TestCase):
     def test_more_results_cellfind(self):
         idlist = []
         cell = [10.930, 12.716, 15.709, 90.000, 90.000, 90.000]
-        results = [(260, 10.93, 12.7162, 15.7085, 90.0, 90.0, 90.0, 2183.3)]
+        results = [(260, 10.93, 12.7162, 15.7085, 90.0, 90.0, 90.0, 2183.3),
+                   (10, 13.5918, 10.7345, 16.442, 90.0, 113.142, 90.0, 2205.9),
+                   (244, 13.5918, 10.7345, 16.442, 90.0, 113.142, 90.0, 2205.9)]
         volume = vol_unitcell(*cell)
         atol, ltol, vol_threshold = more_results_parameters(volume)
         cells = self.structures.find_by_volume(volume, vol_threshold)

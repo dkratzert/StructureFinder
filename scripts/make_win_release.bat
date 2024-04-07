@@ -5,17 +5,14 @@ REM execute me from the main directory
 rmdir /S dist /Q
 rmdir /S build /Q
 
-CALL venv\Scripts\activate.bat
-
 rem git restore *
 rem git switch master
 rem git pull
 
-venv\Scripts\python.exe -m pip install pip -U
-venv\Scripts\pip install -r requirements.txt -U
-venv\Scripts\pip install pyinstaller -U
-venv\Scripts\pip install -U pyinstaller-hooks-contrib
+CALL scripts\_create_dist.bat
 
-CALL venv\Scripts\python.exe scripts\make_win_release.py
+CALL venv\Scripts\activate.bat
 
-rem git restore *
+CALL venv\Scripts\python.exe scripts\_make_win_release.py
+
+CALL venv\Scripts\deactivate.bat

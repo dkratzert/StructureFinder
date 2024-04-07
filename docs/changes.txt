@@ -1,6 +1,15 @@
 StructureFinder Changelog
 -------------------------
-
+* v80 A missing directory doesn't let the program crash anymore on file open actions. A double click or 
+      right click can open the directory of the current structure (Only works on the same computer).
+      Added a filter checkbox to hide files in archives.
+* v79 Improved program executable which can now be pinned to the taskbar. Updated updater executable.
+* v78 Improved threshold of volume prefilter to be suitable for inaccurate unit cells.
+* v77 The distribution architecture of the application was changed so that
+       virus scanners should detect StructureFinder as malicious software less often.
+* v76 Hardened file indexer against damaged zip files.
+* v75 Fixed merging of databases where a table, e.g. the authors table, is empty.
+* v74 Several small improvements.
 * v73 Minor bugs fixed. New pypi package added: [https://pypi.org/project/structurefinder](https://pypi.org/project/structurefinder)
 * v72 Use _iucr_refine_instructions_details if _shelx_res_file is not found in CIF.
 * v71 Fixed crash when appending a database while no database is opened. Show labels in structure view.

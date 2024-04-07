@@ -5,6 +5,10 @@ from typing import Any, Union, List
 from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex, Qt
 
+from structurefinder.searcher import worker
+
+archives = tuple([x.replace('*', '') for x in worker.archives])
+
 
 class Column(IntEnum):
     DATA = 1
@@ -14,7 +18,7 @@ class Column(IntEnum):
 
 
 class TableModel(QtCore.QAbstractTableModel):
-    def __init__(self, *args, structures=None, **kwargs):
+    def __init__(self, structures=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.horizontalHeaders = ['Id', 'Data Name', 'File Name', 'Last Modified', 'Path']
         self._data: List[List[str]] = structures or []
@@ -86,3 +90,25 @@ class TableModel(QtCore.QAbstractTableModel):
         self._data.sort(key=lambda x: x[column], reverse=True if order == Qt.DescendingOrder else False)
         self.layoutChanged.emit()
         # super(TableModel, self).sort(column, order)
+
+
+class CustomProxyModel(QtCore.QSortFilterProxyModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.filter_enabled = False
+
+    def setFilterEnabled(self, enabled):
+        self.filter_enabled = bool(enabled)
+        self.invalidateFilter()
+
+    def filterAcceptsRow(self, sourceRow: int, sourceParent: QModelIndex) -> bool:
+        if not self.filter_enabled:
+            return True
+
+        # Get the text of the row at sourceRow
+        index = self.sourceModel().index(sourceRow, Column.PATH, sourceParent)
+        text = self.sourceModel().data(index, Qt.DisplayRole)
+
+        if text.endswith(archives):
+            return False
+        return True

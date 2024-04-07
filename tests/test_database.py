@@ -162,6 +162,16 @@ class TestMerging(unittest.TestCase):
         self.assertListEqual(self.db2.get_atoms_table(1), self.db1.get_atoms_table(3))
         self.assertListEqual(self.db2.get_atoms_table(2), self.db1.get_atoms_table(4))
 
+    def test_merge_residuals_with_empty_authors_table(self):
+        # Previous versions failed if the authors table was empty
+        self.maxDiff = None
+        self.db2.database.db_request("DELETE FROM authors")
+        self.db2.database.commit_db()
+        self.db1.database.merge_databases(self.db2.dbfilename)
+        db2_row1 = self.db2.get_row_as_dict(1)
+        self.assertEqual(1, db2_row1.get('Id'))
+        self.assertEqual(1, db2_row1.get('StructureId'))
+
     def test_merge_residuals(self):
         self.maxDiff = None
         self.db1.database.merge_databases(self.db2.dbfilename)

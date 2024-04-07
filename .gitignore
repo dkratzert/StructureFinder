@@ -6,7 +6,8 @@ docs/_build
 venv
 venv2
 venv27
-
+scripts/starter/.vs
+scripts/starter/x64
 build/
 dist/
 
@@ -68,7 +69,6 @@ src/structurefinder/displaymol/jsmol.htm
 jsmol.htm
 *.sqlite-journal
 structuredb.sqlite
-src/structurefinder/displaymol/jsmol.htm
 scripts/Output/*
 test.ins
 venv/
@@ -81,10 +81,11 @@ cellcomp/ncdist.cp37-win_amd64.pyd
 tests/test-data/atomstwoline-finalcif.cif
 tests/test-data/COD/finalcif-crash.txt
 tests/test-data/ICSD/1925_Barth, T._Ca (Ti O3)_C m m m_Calcium titanate.cif
-tests/test-data/ICSD/1925_Barth, T._Ca (Ti O3)_C m m m_Calcium titanate.cif
 tests/test-data/p21c-finalcif.cif
 StructureFinder-crash.txt
 tests/test-data/ICSD/finalcif-crash.txt
 /.pytest_cache/
 strf2.sqlite
 test_merged_db.sqlite
+get-pip.py
+vc_redist.x64.exe

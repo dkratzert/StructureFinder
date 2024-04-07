@@ -2,6 +2,7 @@ import argparse
 import sys
 import time
 from argparse import Namespace
+from contextlib import suppress
 from pathlib import Path
 
 from structurefinder.db.database import DB
@@ -63,7 +64,7 @@ parser.add_argument("-m",
                     metavar='"sqlite file name"',
                     default=False,
                     type=str,
-                    help="Merges a database file into the file of '-o' option."
+                    help="Merges a database file into the file of '-o' option. Only -o is allowed in addition."
                     )
 
 
@@ -97,7 +98,6 @@ def find_cell(args: Namespace):
     print('-' * 130)
     for res in searchresult:
         print(f'{res.Id:<7} | {res.path.decode():77s} | {res.filename.decode():<21s} | {res.dataname.decode():s}')
-
 
 
 def run_index(args=None):
@@ -159,14 +159,33 @@ def run_index(args=None):
 
 
 def merge_database(args: Namespace):
-    merge_file_name = args.merge
-    dbfile = args.outfile
-    if not merge_file_name or not Path(merge_file_name).is_file():
+    argsdict = dict(args.__dict__)
+    with suppress(Exception):
+        argsdict.pop('outfile')
+    with suppress(Exception):
+        argsdict.pop('merge')
+    if any(argsdict.values()):
+        parser.print_help()
+        print("\nWarning:\nOnly option '-o' is allowed in combination with '-m'.")
         return
-    if Path(merge_file_name).samefile(dbfile):
+    merge_file_name = Path(args.merge)
+    dbfile = Path(args.outfile)
+    if not dbfile.exists():
+        print(f'Error: Database file {dbfile} not found.')
+        return
+    if not merge_file_name.exists():
+        print(f'Error: Database file {merge_file_name} not found.')
+        return
+    if not merge_file_name.is_file():
+        print(f'{merge_file_name} is not a database file.')
+        return
+    if not dbfile.is_file():
+        print(f'{dbfile} is not a database file.')
+    if merge_file_name.samefile(dbfile):
         print('\nCan not merge same file together!\n')
         return
     db = DB()
+    print(f'Merging {merge_file_name.resolve()} into {dbfile.resolve()}:\n')
     db.merge_databases(merge_file_name)
 
 

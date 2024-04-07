@@ -2,14 +2,16 @@ import datetime
 import os
 import re
 import time
+from contextlib import suppress
 from typing import Optional, Union
+from zipfile import BadZipFile
 
 import gemmi
 from PyQt5 import QtCore
 
 from structurefinder.db.database import DB
-from structurefinder.searcher.filecrawler import fill_db_with_cif_data, MyZipReader, \
-    MyTarReader, fill_db_with_res_data, filewalker_walk
+from structurefinder.searcher.filecrawler import (filewalker_walk, fill_db_with_cif_data, MyZipReader,
+                                                  MyTarReader, fill_db_with_res_data, archives)
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.shelx import ShelXFile
 
@@ -36,8 +38,13 @@ class Worker(QtCore.QObject):
             self.files_indexed = self.index_files()
 
     def index_files(self):
-        return self.put_files_in_db(searchpath=self.searchpath, excludes=self.excludes, lastid=self.lastid,
-                                    fillcif=self.add_cif_files, fillres=self.add_res_files)
+        try:
+            return self.put_files_in_db(searchpath=self.searchpath,
+                                    fillres=self.add_res_files, excludes=self.excludes,
+                                    fillcif=self.add_cif_files, lastid=self.lastid)
+        except Exception:
+            self.finished.emit('The indexer has crashed. Please report this problem.')
+
 
     def put_files_in_db(self, searchpath: str = '', excludes: Union[list, None] = None, lastid: int = 1,
                         fillcif=True, fillres=True) -> int:
@@ -54,10 +61,10 @@ class Worker(QtCore.QObject):
         rescount = 0
         cifcount = 0
         time1 = time.perf_counter()
-        patterns = ['*.cif', '*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '*.res']
+        patterns = ['*.cif', '*.res'] + archives
         filelist = filewalker_walk(str(searchpath), patterns, excludes=excludes)
         if DEBUG:
-            print(f'Time for file list: {time.perf_counter()-time1:1} s.')
+            print(f'Time for file list: {time.perf_counter() - time1:1} s.')
         filecount = len(filelist)
         self.number_of_files.emit(filecount)
         options = {}
@@ -74,13 +81,15 @@ class Worker(QtCore.QObject):
             cif = CifFile(options=options)
             self.progress.emit(filenum)
             if name.endswith('.cif') and fillcif:
+                cifok = False
                 doc = gemmi.cif.Document()
                 doc.source = fullpath
                 try:
                     doc.parse_file(fullpath)
                 except ValueError:
                     continue
-                cifok = cif.parsefile(doc)
+                with suppress(Exception):
+                    cifok = cif.parsefile(doc)
                 if not cifok:
                     if DEBUG:
                         print(f"Could not parse (.cif): {fullpath}")
@@ -102,14 +111,23 @@ class Worker(QtCore.QObject):
             if (name.endswith('.zip') or name.endswith('.tar.gz') or name.endswith('.tar.bz2')
                 or name.endswith('.tgz')) and fillcif:
                 if fullpath.endswith('.zip'):
-                    z = MyZipReader(fullpath)
+                    try:
+                        z = MyZipReader(fullpath)
+                    except BadZipFile:
+                        print(f'Bad zip file skipped: {fullpath}')
+                        continue
                     filecount = filecount + len(z)
                     self.number_of_files.emit(filecount)
                 else:
-                    z = MyTarReader(fullpath)
+                    try:
+                        z = MyTarReader(fullpath)
+                    except Exception:
+                        print(f'Bad tar file skipped: {fullpath}')
+                        continue
                     filecount = filecount + len(z)
                     self.number_of_files.emit(filecount)
                 for zippedfile in z:  # the list of cif files in the zip file
+                    cifok = False
                     if not zippedfile:
                         continue
                     # Important here to re-initialize empty cif dictionary:
@@ -120,7 +138,8 @@ class Worker(QtCore.QObject):
                             omit = True
                     if omit:
                         continue
-                    cifok = cif.parsefile(zippedfile)
+                    with suppress(Exception):
+                        cifok = cif.parsefile(zippedfile)
                     if not cifok:
                         if DEBUG:
                             print(f"Could not parse (zipped): {fullpath}")

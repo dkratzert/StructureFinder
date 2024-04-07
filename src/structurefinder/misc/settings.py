@@ -24,11 +24,18 @@ class StructureFinderSettings():
 
     def load_last_workdir(self) -> str:
         self.settings.beginGroup('WorkDir')
-        lastdir = self.settings.value("dir", type=str)
-        if not Path(lastdir).exists():
-            lastdir = './'
+        last_dir = self.settings.value("dir", type=str)
         self.settings.endGroup()
-        return lastdir
+        last_dir = self._find_dir(last_dir)
+        return last_dir
+
+    def _find_dir(self, last_dir):
+        try:
+            if not Path(last_dir).exists():
+                last_dir = './'
+        except OSError:
+            last_dir = './'
+        return last_dir
 
     def save_current_index_dir(self, dir: str) -> None:
         """
@@ -41,9 +48,8 @@ class StructureFinderSettings():
     def load_last_indexdir(self) -> str:
         self.settings.beginGroup('IndexDir')
         lastdir = self.settings.value("dir", type=str)
-        if not Path(lastdir).exists():
-            lastdir = './'
         self.settings.endGroup()
+        lastdir = self._find_dir(lastdir)
         return lastdir
 
     def save_ccdc_exe_path(self, path: str) -> None:

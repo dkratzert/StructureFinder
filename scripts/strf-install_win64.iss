@@ -36,7 +36,7 @@ EnableDirDoesntExistWarning=True
 DirExistsWarning=no
 UninstallLogMode=new
 VersionInfoVersion={#MyAppVersion}
-MinVersion=0,6.1
+MinVersion=10.0.10240
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 AppendDefaultGroupName=True
@@ -48,7 +48,6 @@ AlwaysShowComponentsList=False
 ShowComponentSizes=False
 SetupIconFile="..\icons\strf.ico"
 UninstallDisplayIcon={app}\{#MyAppName}.exe
-;SignTool=signtool
 SignTool=sign_sha256
 
 [UninstallRun]
@@ -61,10 +60,11 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ;Excludes: "*.pyc"
 
 [Run]
+Filename: "{app}\vc_redist.x64.exe"; WorkingDir: "{app}"; Parameters: "/passive /norestart"
 
 [Icons]
+Name: "{group}\{#MyAppName}"; Filename: "{app}\structurefinder.exe"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"; Check: IsWin64
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; IconFilename: "{app}\icons\strf.ico"
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppName}.exe"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"; Check: IsWin64
 
 [UninstallDelete]
 Type: files; Name: "{app}\*.pyc"
@@ -77,12 +77,39 @@ Type: filesandordirs; Name: "{app}\*"
 [Tasks]
 
 [Files]
-Source: "..\dist\{#MyAppName}\*"; DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "{#MyAppName}-crash.txt"; DestDir: "{app}"; Permissions: everyone-full
+Source: "..\src\structurefinder\*";            DestDir: "{app}\structurefinder"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "..\dist\python_dist\*";               DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "..\icons\*";                          DestDir: "{app}\icons"; Flags: ignoreversion createallsubdirs recursesubdirs
+Source: "..\structurefinder.exe";              DestDir: "{app}"; Flags: ignoreversion
+Source: "..\update.exe";              DestDir: "{app}"; Flags: ignoreversion
+Source: "..\vc_redist.x64.exe";                DestDir: "{app}"; Flags: ignoreversion
 
 [Dirs]
-Name: "{app}\displaymol"; Permissions: everyone-full
-Name: "{app}\gui"; Permissions: everyone-full
+;Name: "{app}\displaymol"; Permissions: everyone-full
+;Name: "{app}\gui"; Permissions: everyone-full
 
 [Code]
+procedure CurStepChanged(CurStep: TSetupStep);
+// This procedure deletes the installer executable when it
+// is named 'update-structurefinder.exe'
+var
+  strContent: String;
+  intErrorCode: Integer;
+  strSelf_Delete_BAT: String;
+begin
+  // Pos == str.contains(x)
+  if Pos('update-structurefinder.exe', ExpandConstant('{srcexe}')) > 0 then
+    begin
+    if CurStep=ssDone then
+    begin
+      strContent := ':try_delete' + #13 + #10 +
+            'del "' + ExpandConstant('{srcexe}') + '"' + #13 + #10 +
+            'if exist "' + ExpandConstant('{srcexe}') + '" goto try_delete' + #13 + #10 +
+            'del %0';
 
+      strSelf_Delete_BAT := ExtractFilePath(ExpandConstant('{tmp}')) + 'SelfDelete.bat';
+      SaveStringToFile(strSelf_Delete_BAT, strContent, False);
+      Exec(strSelf_Delete_BAT, '', '', SW_HIDE, ewNoWait, intErrorCode);
+    end;
+  end;
+end;

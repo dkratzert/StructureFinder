@@ -40,7 +40,7 @@ from structurefinder.db.database import DB
 from structurefinder.db.mapping import Structure, Cell
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.strf_main import Ui_stdbMainwindow
-from structurefinder.gui.table_model import TableModel
+from structurefinder.gui.table_model import TableModel, CustomProxyModel, Column
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
@@ -102,6 +102,7 @@ class StartStructureDB(QMainWindow):
         font.setStyleHint(QtGui.QFont.Monospace)
         self.ui.SHELXplainTextEdit.setFont(font)
         self.statusBar().showMessage(f'StructureFinder version {VERSION}')
+        self.upd = None
         self.maxfiles = 0
         self.dbfilename = db_file_name
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
@@ -148,13 +149,6 @@ class StartStructureDB(QMainWindow):
             self.ui.closeDatabaseButton.setIcon(qta.icon('fa5.times-circle'))
             self.ui.appendDatabasePushButton.setIcon(qta.icon('fa5s.plus'))
 
-    def set_model_from_data(self, data: Union[list, tuple]):
-        self.table_model = TableModel(structures=data)
-        self.ui.cifList_tableView.setModel(self.table_model)
-        self.ui.cifList_tableView.hideColumn(0)
-        self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
-        self.ui.cifList_tableView.resizeColumnToContents(3)
-
     def connect_signals_and_slots(self):
         """
         Connects the signals and slot.
@@ -179,6 +173,7 @@ class StartStructureDB(QMainWindow):
         self.ui.actionSave_Database.triggered.connect(self.save_database)
         self.ui.actionCopy_Unit_Cell.triggered.connect(self.copyUnitCell)
         self.ui.cifList_tableView.save_excel_triggered.connect(self.on_save_as_excel)
+        self.ui.cifList_tableView.open_save_path.connect(self.on_browse_path_from_row)
         # Other fields:
         self.ui.txtSearchEdit.textChanged.connect(self.search_text)
         self.ui.searchCellLineEDit.textChanged.connect(self.search_cell)
@@ -196,6 +191,24 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDatabasePushButton.clicked.connect(self.append_database)
         self.ui.labelsCheckBox.toggled.connect(self.show_labels)
         self.ui.helpPushButton.clicked.connect(self.show_help)
+        self.ui.hideInArchivesCB.clicked.connect(self.recount)
+
+    def set_model_from_data(self, data: Union[list, tuple]):
+        table_model = TableModel(parent=self, structures=data)
+        proxy_model = CustomProxyModel(self)
+        proxy_model.setSourceModel(table_model)
+        self.ui.cifList_tableView.setModel(proxy_model)
+        self.ui.hideInArchivesCB.toggled.connect(proxy_model.setFilterEnabled)
+        proxy_model.setFilterEnabled(self.ui.hideInArchivesCB.isChecked())
+        self.table_model = proxy_model
+        # self.ui.cifList_tableView.setModel(self.table_model)
+        self.ui.cifList_tableView.hideColumn(0)
+        self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
+        self.ui.cifList_tableView.resizeColumnToContents(3)
+
+    def recount(self):
+        if hasattr(self, 'table_model'):
+            self.statusBar().showMessage(f"Database with {self.table_model.rowCount()} structures loaded", msecs=0)
 
     def show_help(self) -> None:
         from PyQt5 import QtCore
@@ -233,11 +246,11 @@ class StartStructureDB(QMainWindow):
 
     def checkfor_version(self):
         url = 'https://dkratzert.de/files/structurefinder/version.txt'
-        upd = MyDownloader(url=url)
-        upd.finished.connect(self.show_update_warning)
-        upd.failed.connect(upd.failed_to_download)
-        upd.progress.connect(upd.print_status)
-        upd.start()
+        self.upd = MyDownloader(parent=self, url=url)
+        self.upd.finished.connect(self.show_update_warning)
+        self.upd.failed.connect(self.upd.failed_to_download)
+        self.upd.progress.connect(self.upd.print_status)
+        self.upd.start()
 
     def show_update_warning(self, reply: bytes):
         """
@@ -249,7 +262,7 @@ class StartStructureDB(QMainWindow):
         except Exception:
             pass
         if remote_version > VERSION:
-            print('Version {} is outdated (actual is {}).'.format(remote_version, VERSION))
+            print(f'Version {remote_version} is outdated (actual is {VERSION}).')
             warn_text = "A newer version of StructureFinder is available under " \
                         "<a href='https://dkratzert.de/structurefinder.html'>" \
                         "https://dkratzert.de/structurefinder.html</a>"
@@ -263,15 +276,15 @@ class StartStructureDB(QMainWindow):
                 update_button.clicked.connect(lambda: do_update_program(str(remote_version)))
             box.setText(warn_text.format(remote_version))
             box.exec()
+        else:
+            print(f'Remote version {remote_version} is up to date.')
 
     def save_cellcheck_exe_path(self, text: str):
         self.settings.save_ccdc_exe_path(text)
 
     def browse_for_ccdc_exe(self):
-        exe = \
-            QFileDialog.getOpenFileName(self, caption='CellCheckCSD executable',
-                                        filter="ccdc_searcher.bat;ccdc_searcher")[
-                0]
+        exe = QFileDialog.getOpenFileName(self, caption='CellCheckCSD executable',
+                                          filter="ccdc_searcher.bat;ccdc_searcher")[0]
         if exe:
             self.ui.cellcheckExeLineEdit.setText(exe)
 
@@ -321,10 +334,25 @@ class StartStructureDB(QMainWindow):
         workbook = xlsxwriter.Workbook(filename)
         worksheet = workbook.add_worksheet()
         for row, index in enumerate(selection):
-            row_data = self.ui.cifList_tableView.model()._data[index.row()]
-            for col, item in enumerate(row_data):
-                worksheet.write(row, col, item.decode('utf-8') if isinstance(item, bytes) else item)
+            row_1_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.DATA)
+            row_2_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.FILENAME)
+            row_3_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.MODIFIED)
+            row_4_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.PATH)
+            worksheet.write(row, Column.DATA, row_1_data)
+            worksheet.write(row, Column.FILENAME, row_2_data)
+            worksheet.write(row, Column.MODIFIED, row_3_data)
+            worksheet.write(row, Column.PATH, row_4_data)
         workbook.close()
+
+    def on_browse_path_from_row(self, curdir: str):
+        import subprocess
+        curdir = Path(curdir).resolve()
+        if sys.platform == "win" or sys.platform == "win32":
+            subprocess.Popen(['explorer', str(curdir)], shell=True)
+        if sys.platform == 'darwin':
+            subprocess.call(['open', str(curdir)])
+        if sys.platform == 'linux':
+            subprocess.call(['xdg-open', str(curdir)])
 
     def show_csdentry(self, item: QModelIndex):
         import webbrowser
@@ -333,7 +361,7 @@ class StartStructureDB(QMainWindow):
             identifier = sel.indexes()[8].data()
         except KeyError:
             return None
-        webbrowser.open_new_tab('https://www.ccdc.cam.ac.uk/structures/Search?entry_list=' + identifier)
+        webbrowser.open_new_tab(f'https://www.ccdc.cam.ac.uk/structures/Search?entry_list={identifier}')
 
     def dragEnterEvent(self, e):
         if e.mimeData().hasText():
@@ -505,6 +533,7 @@ class StartStructureDB(QMainWindow):
         self.statusBar().showMessage(f'Found {len(idlist)} structures.')
         self.full_list = False
         self.set_model_from_data(searchresult)
+        self.statusBar().showMessage(f'Found {self.table_model.rowCount()} structures.')
         if idlist:
             self.ui.MaintabWidget.setCurrentIndex(0)
 
@@ -955,6 +984,7 @@ class StartStructureDB(QMainWindow):
         print(f'Found {len(searchresult)} results.')
         self.full_list = False
         self.set_model_from_data(searchresult)
+        print(f'Found {self.table_model.rowCount()} results.')
         return True
 
     def search_elements(self, elements: str, excluding: str, onlythese: bool = False) -> Tuple[int, ...]:
