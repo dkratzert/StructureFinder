@@ -250,7 +250,7 @@ class SDM():
                     break
             if nextmol:
                 self.molindex += 1
-                all_atoms[nextmol][-1] = self.molindex
+                all_atoms[nextmol].molindex = self.molindex
 
     def vector_length(self, x: float, y: float, z: float) -> float:
         """
@@ -286,9 +286,9 @@ class SDM():
                         for atom in showatoms:
                             if atom.part != new[5]:
                                 continue
-                            length = sdm.vector_length(new[2] - atom[2],
-                                                       new[3] - atom[3],
-                                                       new[4] - atom[4])
+                            length = sdm.vector_length(new[2] - atom.x,
+                                                       new[3] - atom.y,
+                                                       new[4] - atom.z)
                             if length < 0.2:
                                 isthere = True
                     if not isthere:
