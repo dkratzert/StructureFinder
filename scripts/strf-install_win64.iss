@@ -50,7 +50,7 @@ SetupIconFile="..\icons\strf.ico"
 UninstallDisplayIcon={app}\{#MyAppName}.exe
 SignTool=sign_sha256
 
-[UninstallRun]
+
 
 
 [Languages]
@@ -62,17 +62,20 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Run]
 Filename: "{app}\vc_redist.x64.exe"; WorkingDir: "{app}"; Parameters: "/passive /norestart"
 
+[UninstallRun]
+
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\structurefinder.exe"; WorkingDir: "{app}"; IconFilename: "{app}\icons\strf.ico"; Check: IsWin64
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"; IconFilename: "{app}\icons\strf.ico"
 
 [UninstallDelete]
 Type: files; Name: "{app}\*.pyc"
-Type: files; Name: "{app}\*.*"
-Type: filesandordirs; Name: "{app}\*"
+; too dangerous:
+;Type: files; Name: "{app}\*.*"
+;Type: filesandordirs; Name: "{app}\*"
 
 [InstallDelete]
-Type: filesandordirs; Name: "{app}\*"
+;Type: filesandordirs; Name: "{app}\*"
 
 [Tasks]
 
