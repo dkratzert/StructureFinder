@@ -9,7 +9,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPalette, QImage, QResizeEvent
 
-from structurefinder.shelxfile.elements import get_radius_from_element, element2color
+from shelxfile.misc.elements import get_radius_from_element, element2color
 
 """
 A 2D molecule drawing widget. Feed it with a list (or generator) of atoms of this type:

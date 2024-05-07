@@ -12,7 +12,7 @@ from structurefinder.searcher.database_handler import StructureTable
 from structurefinder.searcher.filecrawler import (filewalker_walk, fill_db_with_cif_data, MyZipReader,
                                                   MyTarReader, fill_db_with_res_data, archives)
 from structurefinder.searcher.fileparser import CifFile
-from structurefinder.shelxfile.shelx import ShelXFile
+from shelxfile import Shelxfile
 
 DEBUG = False
 
@@ -166,16 +166,20 @@ class Worker(QtCore.QObject):
             if name.endswith('.res') and fillres:
                 tst = None
                 try:
-                    res = ShelXFile(fullpath)
+                    res = Shelxfile(debug=True)
+                    res.read_file(fullpath)
                 except Exception as e:
                     if DEBUG:
                         print(e)
                         print(f"Could not parse (.res): {fullpath}")
                     continue
                 if res:
-                    with suppress(Exception):
+                    try:
                         tst = fill_db_with_res_data(res, filename=name, path=filepth, structure_id=lastid,
                                                     structures=self.structures, options=options)
+                    except Exception as err:
+                        print(err)
+                        continue
                 if not tst:
                     if DEBUG:
                         print('res file not added:', fullpath)

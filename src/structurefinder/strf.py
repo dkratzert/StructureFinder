@@ -52,7 +52,7 @@ from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, \
     regular_results_parameters
 from structurefinder.searcher.worker import Worker
-from structurefinder.shelxfile.shelx import ShelXFile
+from shelxfile import Shelxfile
 
 DEBUG = False
 
@@ -1207,7 +1207,8 @@ class StartStructureDB(QMainWindow):
 
     def search_for_res_cell(self, fname):
         if fname:
-            shx = ShelXFile(fname)
+            shx = Shelxfile()
+            shx.read_file(fname)
         else:
             return
         if shx and shx.cell:
