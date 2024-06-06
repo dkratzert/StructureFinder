@@ -39,7 +39,9 @@ excluded_names = ('ROOT',
                   'Recycle.Bin',
                   'dsrsaves',
                   'BrukerShelXlesaves',
-                  'shelXlesaves')
+                  'shelXlesaves',
+                  '__private__',
+                  'autostructure_private')
 
 archives = ['*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz']
 
