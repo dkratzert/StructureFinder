@@ -1025,7 +1025,7 @@ class StartStructureDB(QMainWindow):
         """
         try:
             volume = misc.vol_unitcell(*cell)
-            if volume < 0:
+            if volume < 0.01:
                 return []
         except ValueError:
             return []
