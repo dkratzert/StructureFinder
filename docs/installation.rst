@@ -23,4 +23,6 @@ Next time, only
 
     >> source venv/bin/activate   (Windows: venv\Scripts\activate.bat)
     >> strf  or strf_cmd  or  strf_web
+
 is necessary.
+
