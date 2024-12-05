@@ -1,7 +1,6 @@
-altgraph
 docutils
 macholib
-numpy<2.0
+numpy~=2.1
 pefile
 PyQt5~=5.15
 PyQt5-sip~=12.13

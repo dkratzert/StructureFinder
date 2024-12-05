@@ -88,3 +88,5 @@ tests/test-data/ICSD/finalcif-crash.txt
 test_merged_db.sqlite
 get-pip.py
 vc_redist.x64.exe
+.python-version
+/src/structurefinder.egg-info
