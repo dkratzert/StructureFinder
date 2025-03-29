@@ -462,7 +462,7 @@ class DatabaseRequest():
         return self.cur.fetchall() or tuple()
 
     @staticmethod
-    def dict_factory(cursor: Cursor, row: Tuple[...]):
+    def dict_factory(cursor: Cursor, row: Tuple):
         d = {}
         for idx, col in enumerate(cursor.description):
             key = col[0]
