@@ -93,7 +93,6 @@ class StartStructureDB(QMainWindow):
         self.ui.setupUi(self)
         self.set_window_size_and_position()
         font = QtGui.QFont()
-        font.setFamily("Courier")
         font.setStyleHint(QtGui.QFont.Monospace)
         self.ui.SHELXplainTextEdit.setFont(font)
         self.statusBar().showMessage(f'StructureFinder version {VERSION}')
@@ -1012,11 +1011,13 @@ class StartStructureDB(QMainWindow):
             searchresult = self.structures.find_text_and_authors(search_string)
         except AttributeError as e:
             print(e)
-        try:
-            self.set_model_from_data(self.structures.get_structures_by_idlist(searchresult))
-            self.statusBar().showMessage(f"Found {self.table_model.rowCount()} structures.")
-        except Exception:
-            self.statusBar().showMessage("Nothing found.")
+        if searchresult:
+            self.set_model_from_data(self.structures.get_all_structure_names(searchresult))
+        else:
+            self.set_model_from_data([])
+        self.statusBar().showMessage(f"Found {self.table_model.rowCount()} structures.")
+        return True
+
 
     def search_cell_idlist(self, cell: list) -> list:
         """
