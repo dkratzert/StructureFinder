@@ -30,7 +30,7 @@ QSqlDatabase::removeDatabase("sales")
 """
 import sys
 from math import log
-from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
+from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError, Cursor
 from typing import List, Union, Tuple, Dict, Optional
 
 from structurefinder.searcher.fileparser import CifFile
@@ -454,18 +454,15 @@ class DatabaseRequest():
             self.cur.execute(request, *args)
             # last_rowid = self.cur.lastrowid
         except OperationalError as e:
+            self.con.rollback()
             print(e, "\nDB execution error")
             print('Request:', request)
             print('Arguments:', args)
             return []
-        rows = self.cur.fetchall()
-        if not rows:
-            return tuple()
-            # return last_rowid
-        else:
-            return rows
+        return self.cur.fetchall() or tuple()
 
-    def dict_factory(self, cursor, row):
+    @staticmethod
+    def dict_factory(cursor: Cursor, row: Tuple[...]):
         d = {}
         for idx, col in enumerate(cursor.description):
             key = col[0]
@@ -556,17 +553,7 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return rows
 
-    def get_structures_by_idlist(self, ids: Union[List, Tuple]):
-        return self.get_all_structure_names(ids) if ids else []
-
-    def get_all_structure_names(self, ids: list = None) -> List:
-        """
-        returns all fragment names in the database, sorted by name
-        :returns [id, meas, path, filename, data]
-        >>> str = StructureTable('tests/test-data/test.sql')
-        >>> len(str.get_all_structure_names([1, 2]))
-        2
-        """
+    def get_all_structure_names(self, ids: Union[List, Tuple, None] = None) -> List:
         req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
                         FROM Structure AS str 
                         INNER JOIN Residuals AS res ON res.StructureId == str.Id '''
