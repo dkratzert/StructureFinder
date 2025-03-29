@@ -128,7 +128,7 @@ class StartStructureDB(QMainWindow):
         if db_file_name:
             self.open_database_file(db_file_name)
         if self.structures:
-            self.set_model_from_data(self.structures.get_all_structure_names())
+            self.set_model_from_data(self.structures.get_structure_rows_by_ids())
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
@@ -570,7 +570,7 @@ class StartStructureDB(QMainWindow):
         if not idlist:
             self.statusBar().showMessage(f'Found {0} structures.')
             return
-        searchresult = self.structures.get_all_structure_names(idlist)
+        searchresult = self.structures.get_structure_rows_by_ids(idlist)
         self.full_list = False
         self.set_model_from_data(searchresult)
         self.statusBar().showMessage(f'Found {self.table_model.rowCount()} structures.')
@@ -1012,7 +1012,7 @@ class StartStructureDB(QMainWindow):
         except AttributeError as e:
             print(e)
         if searchresult:
-            self.set_model_from_data(self.structures.get_all_structure_names(searchresult))
+            self.set_model_from_data(self.structures.get_structure_rows_by_ids(searchresult))
         else:
             self.set_model_from_data([])
         self.statusBar().showMessage(f"Found {self.table_model.rowCount()} structures.")
@@ -1100,7 +1100,7 @@ class StartStructureDB(QMainWindow):
             self.statusBar().showMessage('Found 0 structures.', msecs=0)
             self.set_model_from_data([])
             return False
-        searchresult = self.structures.get_all_structure_names(idlist)
+        searchresult = self.structures.get_structure_rows_by_ids(idlist)
         self.full_list = False
         self.set_model_from_data(searchresult)
         print(f'Found {self.table_model.rowCount()} results.')
@@ -1258,7 +1258,7 @@ class StartStructureDB(QMainWindow):
         except Exception:
             return None
         if self.structures:
-            data = self.structures.get_all_structure_names()
+            data = self.structures.get_structure_rows_by_ids()
             self.set_model_from_data(data)
         self.full_list = True
         self.ui.SpGrpComboBox.setCurrentIndex(0)

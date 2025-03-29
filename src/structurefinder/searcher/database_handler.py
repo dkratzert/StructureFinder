@@ -553,7 +553,7 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return rows
 
-    def get_all_structure_names(self, ids: Union[List, Tuple, None] = None) -> List:
+    def get_structure_rows_by_ids(self, ids: Union[List, Tuple, None] = None) -> List:
         req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
                         FROM Structure AS str 
                         INNER JOIN Residuals AS res ON res.StructureId == str.Id '''
@@ -1148,7 +1148,7 @@ class StructureTable():
 
     def get_cif_export_data(self, structure_id):
         try:
-            data_name = bytes(self.get_all_structure_names([structure_id])[0][4]).decode('ascii', 'ignore')
+            data_name = bytes(self.get_structure_rows_by_ids([structure_id])[0][4]).decode('ascii', 'ignore')
         except IndexError:
             data_name = ''
         data_name = data_name.replace(' ', '_')

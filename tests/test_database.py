@@ -145,7 +145,7 @@ class TestMerging(unittest.TestCase):
 
     def test_merge_ids(self):
         self.db1.database.merge_databases(self.db2.dbfilename)
-        self.assertEqual([1, 2, 3, 4], [x[0] for x in self.db1.get_all_structure_names()])
+        self.assertEqual([1, 2, 3, 4], [x[0] for x in self.db1.get_structure_rows_by_ids()])
 
     def test_merge_cell_ids(self):
         self.db1.database.merge_databases(self.db2.dbfilename)

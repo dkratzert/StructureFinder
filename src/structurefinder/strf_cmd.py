@@ -114,7 +114,7 @@ def find_cell(args: Namespace):
         sys.exit()
     else:
         print('\n{} Structures found:'.format(len(idlist)))
-        searchresult = structures.get_all_structure_names(idlist)
+        searchresult = structures.get_structure_rows_by_ids(idlist)
     print('ID      |      path                                 '
           '                                    |  filename             |  data name  ')
     print('-' * 130)
