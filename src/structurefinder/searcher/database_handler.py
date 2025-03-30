@@ -11,10 +11,11 @@ Created on 09.02.2015
 """
 
 import sys
-from collections import namedtuple
+from dataclasses import dataclass
 from math import log
+from pathlib import Path
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError, Cursor
-from typing import List, Union, Tuple, Dict, Optional
+from typing import List, Union, Tuple, Dict, Optional, Literal, Callable
 
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.shelxfile.elements import sorted_atoms
@@ -25,7 +26,69 @@ __metaclass__ = type  # use new-style classes
 
 # db_enoding = 'ISO-8859-15'
 db_enoding = 'utf-8'
-default_columns = dict(dataname="Structure", filename="Structure", modification_time="Residuals", path="Structure")
+
+
+@dataclass(frozen=False)
+class Column:
+    name: str
+    position: int
+    table: Literal['Structure', 'Residuals']
+    visible: bool
+    string: Callable = lambda x: str(x)
+
+
+def pathrepr(value: bytes) -> str:
+    return str(Path(value.decode('utf-8')))
+
+
+def formula_weight_repr(value: bytes) -> str:
+    try:
+        return f"{value.decode('utf-8'):.1f}"
+    except ValueError:
+        return str(value)
+
+
+column_sources = {
+    "dataname"                 : Column(name="Data Name", position=1, table="Structure", visible=True),
+    "filename"                 : Column(name="Filename", position=2, table="Structure", visible=True),
+    "modification_time"        : Column(name="Modification Time", position=3, table="Residuals",
+                                        visible=True),
+    "path"                     : Column(name="Path", position=4, table="Structure", visible=True,
+                                        string=pathrepr),
+    "file_size"                : Column(name="File Size", position=5, table="Residuals", visible=True),
+    '_cell_formula_units_Z'    : Column(name="Formula", position=6, table="Residuals", visible=False),
+    '_space_group_name_H_M_alt': Column(name="Space Group", position=7, table="Residuals", visible=False),
+    '_space_group_IT_number'   : Column(name="Space Group Number", position=8, table="Residuals",
+                                        visible=False),
+    '_chemical_formula_sum'    : Column(name="Formula Sum", position=9, table="Residuals", visible=False),
+    '_chemical_formula_weight' : Column(name="Formula Weight", position=10, table="Residuals", visible=False,
+                                        string=formula_weight_repr),
+}
+default_columns = {column_sources}
+"""
+    '_exptl_crystal_colour'              : 'Residuals',
+    '_exptl_crystal_size_max'            : 'Residuals',
+    '_exptl_crystal_size_mid'            : 'Residuals',
+    '_exptl_crystal_size_min'            : 'Residuals',
+    '_exptl_absorpt_coefficient_mu'      : 'Residuals',
+    '_diffrn_ambient_temperature'        : 'Residuals',
+    '_diffrn_radiation_wavelength'       : 'Residuals',
+    '_diffrn_source'                     : 'Residuals',
+    '_diffrn_measurement_device_type'    : 'Residuals',
+    '_diffrn_reflns_theta_full'          : 'Residuals',
+    # θ to which available reflections are close to 100% complete (°)
+    '_diffrn_reflns_theta_max'           : 'Residuals',  # Maximum θ of measured reflections (°)
+    '_diffrn_measured_fraction_theta_max': 'Residuals',
+    # completeness, Fraction of unique reflections measured to θmax
+    '_reflns_Friedel_coverage'           : 'Residuals',
+    '_refine_ls_number_restraints'       : 'Residuals',
+    '_refine_ls_R_factor_gt'             : 'Residuals',
+    '_refine_ls_wR_factor_ref'           : 'Residuals',
+    '_refine_ls_shift_su_max'            : 'Residuals',
+    '_refine_diff_density_min'           : 'Residuals',
+    '_refine_diff_density_max'           : 'Residuals',
+    '_database_code_depnum_ccdc_archive' : 'Residuals',
+}"""
 
 
 class DatabaseRequest():

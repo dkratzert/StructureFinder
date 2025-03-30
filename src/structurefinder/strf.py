@@ -190,6 +190,8 @@ class StartStructureDB(QMainWindow):
         self.ui.labelsCheckBox.toggled.connect(self.show_labels)
         self.ui.helpPushButton.clicked.connect(self.show_help)
         self.ui.hideInArchivesCB.clicked.connect(self.recount)
+        # Column menu:
+        self.ui.cifList_tableView.header_menu.columns_changed.connect(self.show_full_list)
 
     def set_model_from_data(self, data: Union[list, tuple]):
         table_model = TableModel(parent=self, structures=data)
@@ -331,14 +333,9 @@ class StartStructureDB(QMainWindow):
         workbook = xlsxwriter.Workbook(filename)
         worksheet = workbook.add_worksheet()
         for row, index in enumerate(selection):
-            row_1_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.DATA)
-            row_2_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.FILENAME)
-            row_3_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.MODIFIED)
-            row_4_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.PATH)
-            worksheet.write(row, Column.DATA, row_1_data)
-            worksheet.write(row, Column.FILENAME, row_2_data)
-            worksheet.write(row, Column.MODIFIED, row_3_data)
-            worksheet.write(row, Column.PATH, row_4_data)
+            for column in self.ui.cifList_tableView.model().columnCount():
+                cell_data = self.ui.cifList_tableView.get_field_content(index.row(), column)
+                worksheet.write(row, column, cell_data)
         workbook.close()
 
     def on_browse_path_from_row(self, curdir: str):
@@ -1258,6 +1255,7 @@ class StartStructureDB(QMainWindow):
         except Exception:
             return None
         if self.structures:
+            self.structures.set_request_columns(self.ui.cifList_tableView.visible_columns)
             data = self.structures.get_structure_rows_by_ids()
             self.set_model_from_data(data)
         self.full_list = True

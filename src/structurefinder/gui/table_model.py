@@ -9,12 +9,12 @@ from structurefinder.searcher import worker
 
 archives = tuple([x.replace('*', '') for x in worker.archives])
 
-
-class Column(IntEnum):
+print('TODO: remove this')
+"""class Column(IntEnum):
     DATA = 1
     FILENAME = 2
     MODIFIED = 3
-    PATH = 4
+    PATH = 4"""
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -69,6 +69,7 @@ class TableModel(QtCore.QAbstractTableModel):
         """
         if len(self._data) > 0:
             # prevent columns after the fourth colum to appear:
+            print('TODO columnCount')
             return len(Column) + 1
         else:
             return 0
@@ -104,7 +105,7 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
     def filterAcceptsRow(self, sourceRow: int, sourceParent: QModelIndex) -> bool:
         if not self.filter_enabled:
             return True
-
+        print('TODO Filter archives')
         # Get the text of the row at sourceRow
         index = self.sourceModel().index(sourceRow, Column.PATH, sourceParent)
         text = self.sourceModel().data(index, Qt.DisplayRole)
