@@ -11,8 +11,9 @@ Created on 09.02.2015
 """
 
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, fields, asdict, field
 from math import log
+from multiprocessing.connection import default_family
 from pathlib import Path
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError, Cursor
 from typing import List, Union, Tuple, Dict, Optional, Literal, Callable
@@ -35,6 +36,7 @@ class Column:
     table: Literal['Structure', 'Residuals']
     visible: bool
     string: Callable = lambda x: str(x)
+    default: bool = False
 
 
 def pathrepr(value: bytes) -> str:
@@ -48,23 +50,29 @@ def formula_weight_repr(value: bytes) -> str:
         return str(value)
 
 
-column_sources = {
-    "dataname"                 : Column(name="Data Name", position=1, table="Structure", visible=True),
-    "filename"                 : Column(name="Filename", position=2, table="Structure", visible=True),
-    "modification_time"        : Column(name="Modification Time", position=3, table="Residuals",
-                                        visible=True),
-    "path"                     : Column(name="Path", position=4, table="Structure", visible=True,
-                                        string=pathrepr),
-    "file_size"                : Column(name="File Size", position=5, table="Residuals", visible=True),
-    '_cell_formula_units_Z'    : Column(name="Formula", position=6, table="Residuals", visible=False),
-    '_space_group_name_H_M_alt': Column(name="Space Group", position=7, table="Residuals", visible=False),
-    '_space_group_IT_number'   : Column(name="Space Group Number", position=8, table="Residuals",
-                                        visible=False),
-    '_chemical_formula_sum'    : Column(name="Formula Sum", position=9, table="Residuals", visible=False),
-    '_chemical_formula_weight' : Column(name="Formula Weight", position=10, table="Residuals", visible=False,
-                                        string=formula_weight_repr),
-}
-default_columns = {column_sources}
+#@dataclass(frozen=False)
+class ColumnSources:
+    dataname: Column = Column(name="Data Name", position=1, table="Structure", visible=True, default=True)
+    filename: Column = Column(name="Filename", position=2, table="Structure", visible=True, default=True)
+    modification_time: Column = Column(name="Modification Time", position=3, table="Residuals", visible=True,
+                                       default=True)
+    path: Column = Column(name="Path", position=4, table="Structure", visible=True, string=pathrepr, default=True)
+    file_size: Column = Column(name="File Size", position=5, table="Residuals", visible=True)
+    _cell_formula_units_Z: Column = Column(name="Formula", position=6, table="Residuals", visible=False)
+    _space_group_name_H_M_alt: Column = Column(name="Space Group", position=7, table="Residuals", visible=False)
+    _space_group_IT_number: Column = Column(name="Space Group Number", position=8, table="Residuals", visible=False)
+    _chemical_formula_sum: Column = Column(name="Formula Sum", position=9, table="Residuals", visible=False)
+    _chemical_formula_weight: Column = Column(name="Formula Weight", position=10, table="Residuals", visible=False,
+                                              string=formula_weight_repr)
+
+    def default_columns(self) -> List[str]:
+        fields = []
+        for attr in self.__dir__():
+            if isinstance(getattr(self, attr), Column) and self.__getattribute__(attr).default:
+                fields.append(attr)
+        return fields
+
+
 """
     '_exptl_crystal_colour'              : 'Residuals',
     '_exptl_crystal_size_max'            : 'Residuals',
