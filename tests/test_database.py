@@ -12,6 +12,49 @@ class TestDatabase(unittest.TestCase):
         dbfilename = 'tests/test-data/test.sql'
         self.db = database_handler.StructureTable(dbfilename)
 
+    def test_get_structure_rows_by_ids_without_id(self):
+        rows = self.db.get_structure_rows_by_ids()
+        assert len(rows) == 263
+        assert rows[0] == (1,
+                           b'hubert',
+                           b'hubert2.cif',
+                           '2017-08-15',
+                           b'/Users/daniel/GitHub/StructureFinder/test-data')
+
+    def test_get_structure_rows_by_ids_with_id(self):
+        rows = self.db.get_structure_rows_by_ids([1, 3])
+        assert len(rows) == 2
+        assert rows[0] == (1,
+                           b'hubert',
+                           b'hubert2.cif',
+                           '2017-08-15',
+                           b'/Users/daniel/GitHub/StructureFinder/test-data')
+
+    def test_get_structure_rows_by_ids_with_columns_set(self):
+        columns = {'_cell_formula_units_Z'    : 'Residuals',
+                   '_chemical_formula_sum'    : 'Residuals',
+                   '_exptl_crystal_colour'    : 'Residuals',
+                   '_chemical_formula_weight' : 'Residuals',
+                   '_space_group_IT_number'   : 'Residuals',
+                   '_space_group_name_H_M_alt': 'Residuals'}
+        self.db.set_request_columns(columns)
+        rows = self.db.get_structure_rows_by_ids([23])
+        assert rows[0] == (23,
+                           4,
+                           'C3 H9 Br0.962 Cd Cl2.038 O S',
+                           'colourless',
+                           '354.7',
+                           62,
+                           'P n m a')
+
+    def test_get_structure_rows_by_ids_with_columns_from_both_set(self):
+        columns = {'_chemical_formula_sum': 'Residuals',
+                   'dataname'             : 'Structure',
+                   }
+        self.db.set_request_columns(columns)
+        rows = self.db.get_structure_rows_by_ids([23])
+        assert rows[0] == (23, 'C3 H9 Br0.962 Cd Cl2.038 O S', b'2004800')
+
     def test_text_search(self):
         by_strings = self.db.find_by_strings('NTD51a')
         self.assertEqual((237,), by_strings)

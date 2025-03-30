@@ -8,27 +8,10 @@ Created on 09.02.2015
 * notice you can do whatever you want with this stuff. If we meet some day, and
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
-
-@author: daniel
-
-
-from PyQt5.QtSql import QSqlQuery, QSqlDatabase
-
-con = QSqlDatabase.addDatabase("QSQLITE")
-con.setDatabaseName("/Users/daniel/Documents/GitHub/StructureFinder/structuredb.sqlite")
-
-query = QSqlQuery()
-query.exec('''SELECT Name, element, x, y, z FROM ATOMS''')
-while query.next():
-    results.append(query.value(0), query.value(1), query.value(2), query.value(3), query.value(4))
-query.finish()
-
-con.close()
-con.isOpen()
-- False
-QSqlDatabase::removeDatabase("sales")
 """
+
 import sys
+from collections import namedtuple
 from math import log
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError, Cursor
 from typing import List, Union, Tuple, Dict, Optional
@@ -42,6 +25,7 @@ __metaclass__ = type  # use new-style classes
 
 # db_enoding = 'ISO-8859-15'
 db_enoding = 'utf-8'
+default_columns = dict(dataname="Structure", filename="Structure", modification_time="Residuals", path="Structure")
 
 
 class DatabaseRequest():
@@ -452,7 +436,6 @@ class DatabaseRequest():
             if DEBUG:
                 print('db request:', request, 'args:', args)
             self.cur.execute(request, *args)
-            # last_rowid = self.cur.lastrowid
         except OperationalError as e:
             self.con.rollback()
             print(e, "\nDB execution error")
@@ -503,6 +486,7 @@ class StructureTable():
         :param dbfile: database file path
         :type dbfile: str
         """
+        self.visible_columns = default_columns
         self.dbfilename = dbfile
         self.database = DatabaseRequest(dbfile)
 
@@ -553,17 +537,24 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return rows
 
+    def set_request_columns(self, columns: Dict[str, str]):
+        self.visible_columns = columns
+
+    def reset_default_columns(self):
+        self.visible_columns = default_columns
+
     def get_structure_rows_by_ids(self, ids: Union[List, Tuple, None] = None) -> List:
-        req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
-                        FROM Structure AS str 
-                        INNER JOIN Residuals AS res ON res.StructureId == str.Id '''
+        columns_str = ", ".join([f"{self.visible_columns[col]}.{col}" for col in self.visible_columns.keys()])
+        query = f"""SELECT Structure.Id, {columns_str}
+                    FROM Structure 
+                    INNER JOIN Residuals ON Residuals.StructureId = Structure.Id
+                """
         if ids:
             ids = tuple(ids)
             placeholders = ', '.join('?' * len(ids))
-            req = req + f''' WHERE str.Id in ({placeholders})'''
-            rows = self.database.db_request(req, ids)
-            return rows
-        return self.database.db_request(req)
+            query = f'''{query} WHERE Structure.Id in ({placeholders})'''
+            return self.database.db_request(query, ids)
+        return self.database.db_request(query)
 
     def get_filepath(self, structure_id) -> str:
         """

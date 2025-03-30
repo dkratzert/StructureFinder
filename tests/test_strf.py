@@ -8,6 +8,7 @@ from pathlib import Path
 from time import sleep
 from typing import Union
 
+import pytest
 from PyQt5.QtCore import Qt, QDate, QEventLoop
 from PyQt5.QtGui import QIcon
 from PyQt5.QtTest import QTest
@@ -121,7 +122,7 @@ class TestApplication(unittest.TestCase):
         clp = QApplication.clipboard().text()
         self.assertEqual("10.360 18.037 25.764 127.030 129.810 90.510", clp)
 
-    # @unittest.skip('Does not work')
+    # @pytest.mark.skip(reason="Not working an all systems'")
     def test_save_db(self):
         """
         Saves the current database to a file.
@@ -138,7 +139,7 @@ class TestApplication(unittest.TestCase):
         self.assertEqual(False, testfile.exists())
         self.assertEqual('Database saved.', self.myapp.statusBar().currentMessage())
 
-    # @unittest.skip('Not working an all systems')
+    # @pytest.mark.skip(reason="Not working an all systems'")
     def test_index_db1(self):
         """
         Test index and save
@@ -148,19 +149,19 @@ class TestApplication(unittest.TestCase):
         self.myapp.show_full_list()
         self.assertEqual(22, self.get_row_count_from_table())
 
-    # @unittest.skip('Not working an all systems')
+    # @pytest.mark.skip(reason="Not working an all systems'")
     def test_index_db2(self):
         self.myapp.import_file_dirs('gui')
         self.wait_for_worker()
         self.assertEqual(0, self.get_row_count_from_table())
 
-    # @unittest.skip('Not working an all systems')
+    # @pytest.mark.skip(reason="Not working an all systems'")
     def test_index_db3(self):
         self.myapp.import_file_dirs('tests/test-data/tst')
         self.wait_for_worker()
         self.assertEqual(3, self.get_row_count_from_table())
 
-    # @unittest.skip('Not working an all systems')
+    # @pytest.mark.skip(reason="Not working an all systems'")
     def test_index_db_only_res_files(self):
         self.myapp.ui.add_cif.setChecked(False)
         self.myapp.ui.add_res.setChecked(True)
@@ -168,7 +169,7 @@ class TestApplication(unittest.TestCase):
         self.wait_for_worker()
         self.assertEqual(1, self.get_row_count_from_table())
 
-    # @unittest.skip('Not working an all systems')
+    # @pytest.mark.skip(reason="Not working an all systems'")
     def test_index_db_only_cif_files(self):
         self.myapp.ui.add_cif.setChecked(True)
         self.myapp.ui.add_res.setChecked(False)
