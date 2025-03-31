@@ -1,5 +1,3 @@
-from enum import IntEnum
-from pathlib import Path
 from typing import Any, Union, List
 
 from PyQt5 import QtCore
@@ -59,7 +57,6 @@ class TableModel(QtCore.QAbstractTableModel):
         the length (only works if all rows are an equal length)
         """
         if len(self._data) > 0:
-            # prevent columns after the fourth colum to appear:
             return columns.number_of_visible_columns() + 1
         else:
             return 0
@@ -95,9 +92,10 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
     def filterAcceptsRow(self, sourceRow: int, sourceParent: QModelIndex) -> bool:
         if not self.filter_enabled:
             return True
-        print('TODO Filter archives')
+        if not columns.path.visible:
+            return False
         # Get the text of the row at sourceRow
-        index = self.sourceModel().index(sourceRow, Column.PATH, sourceParent)
+        index = self.sourceModel().index(sourceRow, columns.path.position, sourceParent)
         text = self.sourceModel().data(index, Qt.DisplayRole)
 
         if text.endswith(archives):

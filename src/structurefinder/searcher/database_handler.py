@@ -48,6 +48,7 @@ def formula_weight_repr(value: bytes) -> str:
     except ValueError:
         return str(value)
 
+
 def size_repr(value: bytes) -> str:
     if isinstance(value, bytes):
         size = int(value.decode('utf-8'))
@@ -77,7 +78,8 @@ class ColumnSources:
                                        default=True)
     path: Column = Column(name="Path", position=4, table="Structure", visible=True, string_method=pathrepr,
                           default=True)
-    file_size: Column = Column(name="File Size [MB]", position=5, table="Residuals", visible=False, string_method=size_repr)
+    file_size: Column = Column(name="File Size [MB]", position=5, table="Residuals", visible=False,
+                               string_method=size_repr)
     _cell_formula_units_Z: Column = Column(name="Formula", position=6, table="Residuals", visible=False)
     _space_group_name_H_M_alt: Column = Column(name="Space Group", position=7, table="Residuals", visible=False)
     _space_group_IT_number: Column = Column(name="Space Group Number", position=8, table="Residuals", visible=False)
@@ -136,13 +138,14 @@ class ColumnSources:
                 return col
         return None
 
-    def visible_headers(self)-> List[str]:
+    def visible_headers(self) -> List[str]:
         headers = ['Id']
         for colstr in self.all_column_names():
             col = getattr(self, colstr)
             if col.visible:
                 headers.append(col.name)
         return headers
+
 
 columns = ColumnSources()
 

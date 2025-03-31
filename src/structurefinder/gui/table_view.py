@@ -1,15 +1,11 @@
 import sys
-from collections.abc import Callable
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Union, Dict, List, Literal
+from typing import Union, List
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QCursor
 
 from structurefinder import strf
-
 from structurefinder.searcher.database_handler import columns
 
 
@@ -35,7 +31,6 @@ class HeaderContextMenu(QtWidgets.QHeaderView):
         menu.exec_(event.globalPos())
 
     def toggle_column(self, column_name: str, show: bool) -> None:
-        print(f'Column toggled: {column_name}, show: {show}')
         if show:
             columns.__getattribute__(column_name).visible = True
         else:
