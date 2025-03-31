@@ -47,6 +47,7 @@ from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import database_handler, constants, misc
 from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
+from structurefinder.searcher.database_handler import columns
 from structurefinder.searcher.filecrawler import excluded_names
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, \
@@ -132,6 +133,9 @@ class StartStructureDB(QMainWindow):
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
+        # headers = self.settings.load_visible_headers()
+        ##if headers:
+        #   columns.set_visible_headers(headers)
 
     def set_initial_button_states(self):
         self.ui.appendDatabasePushButton.setDisabled(True)
@@ -1015,7 +1019,6 @@ class StartStructureDB(QMainWindow):
         self.statusBar().showMessage(f"Found {self.table_model.rowCount()} structures.")
         return True
 
-
     def search_cell_idlist(self, cell: list) -> list:
         """
         Searches for a unit cell and resturns a list of found database ids.
@@ -1248,7 +1251,7 @@ class StartStructureDB(QMainWindow):
         Displays the complete list of structures
         [structure_id, meas, path, filename, data]
         """
-        data = []
+        # self.settings.save_visible_headers(columns.visible_headers())
         try:
             if not self.structures:
                 return None

@@ -26,7 +26,9 @@ class TableModel(QtCore.QAbstractTableModel):
         if col == columns.path.position and role == Qt.DisplayRole:
             return columns.path.string_method(value)
         if role == Qt.DisplayRole:
-            return columns.col_from(col).string_method(value)
+            col = columns.col_from(col)
+            if col:
+                return col.string_method(value)
 
     def setHeaderData(self, section, orientation, data, role=Qt.EditRole):
         if orientation == Qt.Horizontal and role in (Qt.DisplayRole, Qt.EditRole):
@@ -73,12 +75,6 @@ class TableModel(QtCore.QAbstractTableModel):
     def clear(self):
         self.resetInternalData()
 
-    def sort(self, column: int, order: Qt.SortOrder = ...) -> None:
-        self.layoutAboutToBeChanged.emit()
-        self._data.sort(key=lambda x: x[column], reverse=True if order == Qt.DescendingOrder else False)
-        self.layoutChanged.emit()
-        # super(TableModel, self).sort(column, order)
-
 
 class CustomProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, parent=None):
@@ -88,6 +84,11 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
     def setFilterEnabled(self, enabled):
         self.filter_enabled = bool(enabled)
         self.invalidateFilter()
+
+    def sort(self, column: int, order: Qt.SortOrder = ...) -> None:
+        self.layoutAboutToBeChanged.emit()
+        self.sourceModel()._data.sort(key=lambda x: x[column], reverse=True if order == Qt.DescendingOrder else False)
+        self.layoutChanged.emit()
 
     def filterAcceptsRow(self, sourceRow: int, sourceParent: QModelIndex) -> bool:
         if not self.filter_enabled:

@@ -1,5 +1,6 @@
 from collections import namedtuple
 from pathlib import Path
+from typing import List
 
 from PyQt5.QtCore import QSettings, QPoint, QSize
 
@@ -67,11 +68,22 @@ class StructureFinderSettings():
         self.settings.endGroup()
         return exe_path
 
+    def load_visible_headers(self) -> List[str]:
+        self.settings.beginGroup("Headers")
+        headers = self.settings.value("visible")
+        self.settings.endGroup()
+        return headers or []
+
     def save_window_position(self, position: QPoint, size: QSize, maximized: bool) -> None:
         self.settings.beginGroup("MainWindow")
         self.settings.setValue("position", position)
         self.settings.setValue("size", size)
         self.settings.setValue('maximized', maximized)
+        self.settings.endGroup()
+
+    def save_visible_headers(self, columns: List[str]):
+        self.settings.beginGroup("Headers")
+        self.settings.setValue("visible", columns)
         self.settings.endGroup()
 
     def load_window_position(self) -> 'Position':

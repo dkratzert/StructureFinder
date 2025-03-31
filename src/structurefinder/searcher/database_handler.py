@@ -43,18 +43,20 @@ def pathrepr(value: Union[str, bytes]) -> str:
 
 
 def formula_weight_repr(value: bytes) -> str:
-    try:
+    if isinstance(value, bytes):
         return f"{value.decode('utf-8'):.1f}"
-    except ValueError:
-        return str(value)
+    else:
+        return f"{value:.1f}"
 
 
 def size_repr(value: bytes) -> str:
     if isinstance(value, bytes):
-        size = int(value.decode('utf-8'))
-    else:
+        value = value.decode('utf-8')
+    try:
         size = int(value)
-    return f'{(size / (1024 * 1024)):.2f}'
+        return f'{(size / (1024 * 1024)):.2f}'
+    except (ValueError, TypeError):
+        return value
 
 
 @dataclass(frozen=False)
@@ -114,7 +116,7 @@ class ColumnSources:
     def is_visible(self, column: str) -> bool:
         return getattr(self, column).visible
 
-    def visible_columns(self) -> str:
+    def current_columns(self) -> str:
         visible = {}
         for colstr in self.all_column_names():
             col: Column = getattr(self, colstr)
@@ -145,6 +147,14 @@ class ColumnSources:
             if col.visible:
                 headers.append(col.name)
         return headers
+
+    def set_visible_headers(self, columns: List[str]) -> List[str]:
+        for colstr in self.all_column_names():
+            col = getattr(self, colstr)
+            if colstr in columns:
+                col.visible = True
+            else:
+                col.visible = False
 
 
 columns = ColumnSources()
@@ -690,7 +700,7 @@ class StructureTable():
         self.visible_columns = default_columns"""
 
     def get_structure_rows_by_ids(self, ids: Union[List, Tuple, None] = None) -> List:
-        query = f"""SELECT Structure.Id, {columns.visible_columns()}
+        query = f"""SELECT Structure.Id, {columns.current_columns()}
                     FROM Structure 
                     INNER JOIN Residuals ON Residuals.StructureId = Structure.Id
                 """

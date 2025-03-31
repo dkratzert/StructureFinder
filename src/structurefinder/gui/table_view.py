@@ -16,6 +16,7 @@ class HeaderContextMenu(QtWidgets.QHeaderView):
         super().__init__(QtCore.Qt.Horizontal, parent)
         self.table = parent
         self.available_columns = columns.all_column_names()
+        self.setSortIndicatorShown(True)
 
     def contextMenuEvent(self, event):
         """
@@ -38,21 +39,19 @@ class HeaderContextMenu(QtWidgets.QHeaderView):
         self.columns_changed.emit(column_name)
 
 
+
 class StructuresListTableView(QtWidgets.QTableView):
     save_excel_triggered = pyqtSignal()
     open_save_path = pyqtSignal(str)
-
-    # columns_changed = pyqtSignal()
 
     def __init__(self, parent):
         super().__init__(parent)
         self.setContextMenuPolicy(Qt.DefaultContextMenu)
         self.doubleClicked.connect(self._on_open_file_path)
-        self.horizontalHeader().setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.horizontalHeader().setSectionsClickable(True)
+        self.setSortingEnabled(True)
         self.header_menu = HeaderContextMenu(self)
+        self.header_menu.setSectionsClickable(True)
         self.setHorizontalHeader(self.header_menu)
-        self.setColumnHidden(0, True)  # the Id
         self.hideColumn(0)
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
