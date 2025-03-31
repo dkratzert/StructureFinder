@@ -118,10 +118,7 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
             if isinstance(value, bytes):
                 value = value.decode('utf-8', 'ignore')
             try:
-                if '.' in value:
-                    return float(value)
-                elif value.isdigit():
-                    return int(value)
+                return float(value)
             except (TypeError, ValueError):
                 if value is None:
                     return 0
