@@ -37,7 +37,7 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidget
 from structurefinder.ccdc.query import search_csd, parse_results
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.strf_main import Ui_stdbMainwindow
-from structurefinder.gui.table_model import TableModel, CustomProxyModel, Column
+from structurefinder.gui.table_model import TableModel, CustomProxyModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
@@ -1255,7 +1255,6 @@ class StartStructureDB(QMainWindow):
         except Exception:
             return None
         if self.structures:
-            self.structures.set_request_columns(self.ui.cifList_tableView.visible_columns)
             data = self.structures.get_structure_rows_by_ids()
             self.set_model_from_data(data)
         self.full_list = True

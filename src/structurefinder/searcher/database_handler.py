@@ -11,9 +11,8 @@ Created on 09.02.2015
 """
 
 import sys
-from dataclasses import dataclass, fields, asdict, field
+from dataclasses import dataclass
 from math import log
-from multiprocessing.connection import default_family
 from pathlib import Path
 from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError, Cursor
 from typing import List, Union, Tuple, Dict, Optional, Literal, Callable
@@ -29,18 +28,18 @@ __metaclass__ = type  # use new-style classes
 db_enoding = 'utf-8'
 
 
-@dataclass(frozen=False)
-class Column:
-    name: str
-    position: int
-    table: Literal['Structure', 'Residuals']
-    visible: bool
-    string: Callable = lambda x: str(x)
-    default: bool = False
+def default_repr(value: Union[str, bytes]) -> str:
+    if isinstance(value, bytes):
+        return value.decode('utf-8')
+    else:
+        return value
 
 
-def pathrepr(value: bytes) -> str:
-    return str(Path(value.decode('utf-8')))
+def pathrepr(value: Union[str, bytes]) -> str:
+    if isinstance(value, bytes):
+        return str(Path(value.decode('utf-8')))
+    else:
+        return str(Path(value))
 
 
 def formula_weight_repr(value: bytes) -> str:
@@ -49,29 +48,103 @@ def formula_weight_repr(value: bytes) -> str:
     except ValueError:
         return str(value)
 
+def size_repr(value: bytes) -> str:
+    if isinstance(value, bytes):
+        size = int(value.decode('utf-8'))
+    else:
+        size = int(value)
+    return f'{(size / (1024 * 1024)):.2f}'
 
-#@dataclass(frozen=False)
+
+@dataclass(frozen=False)
+class Column:
+    name: str
+    position: int
+    table: Literal['Structure', 'Residuals']
+    visible: bool
+    string_method: Callable = default_repr
+    default: bool = False
+    default_position: int = 0
+
+
 class ColumnSources:
+    """
+    List of columns available in the table. The position is one-indexed, because 0 is the Id.
+    """
     dataname: Column = Column(name="Data Name", position=1, table="Structure", visible=True, default=True)
     filename: Column = Column(name="Filename", position=2, table="Structure", visible=True, default=True)
     modification_time: Column = Column(name="Modification Time", position=3, table="Residuals", visible=True,
                                        default=True)
-    path: Column = Column(name="Path", position=4, table="Structure", visible=True, string=pathrepr, default=True)
-    file_size: Column = Column(name="File Size", position=5, table="Residuals", visible=True)
+    path: Column = Column(name="Path", position=4, table="Structure", visible=True, string_method=pathrepr,
+                          default=True)
+    file_size: Column = Column(name="File Size [MB]", position=5, table="Residuals", visible=False, string_method=size_repr)
     _cell_formula_units_Z: Column = Column(name="Formula", position=6, table="Residuals", visible=False)
     _space_group_name_H_M_alt: Column = Column(name="Space Group", position=7, table="Residuals", visible=False)
     _space_group_IT_number: Column = Column(name="Space Group Number", position=8, table="Residuals", visible=False)
     _chemical_formula_sum: Column = Column(name="Formula Sum", position=9, table="Residuals", visible=False)
     _chemical_formula_weight: Column = Column(name="Formula Weight", position=10, table="Residuals", visible=False,
-                                              string=formula_weight_repr)
+                                              string_method=formula_weight_repr)
+    _exptl_crystal_colour: Column = Column(name="Crystal Color", position=11, table="Residuals", visible=False)
+
+    def reset_defaults(self):
+        for num, colstr in enumerate(self.all_column_names()):
+            col: Column = getattr(self, colstr)
+            col.position = num
+            if col.default:
+                col.visible = True
+            else:
+                col.visible = False
 
     def default_columns(self) -> List[str]:
         fields = []
-        for attr in self.__dir__():
-            if isinstance(getattr(self, attr), Column) and self.__getattribute__(attr).default:
+        for attr in self.all_column_names():
+            if self.__getattribute__(attr).default:
                 fields.append(attr)
         return fields
 
+    def all_column_names(self) -> List[str]:
+        columns = []
+        for attr in self.__dir__():
+            if isinstance(getattr(self, attr), Column):
+                columns.append(attr)
+        return columns
+
+    def is_visible(self, column: str) -> bool:
+        return getattr(self, column).visible
+
+    def visible_columns(self) -> str:
+        visible = {}
+        for colstr in self.all_column_names():
+            col: Column = getattr(self, colstr)
+            if col.visible:
+                visible.update({colstr: col})
+        visible = dict(sorted(visible.items(), key=lambda item: item[1].position))
+        return ', '.join([f'{val.table}.{key}' for key, val in visible.items()])
+
+    def number_of_visible_columns(self) -> int:
+        visible = 0
+        for colstr in self.all_column_names():
+            col: Column = getattr(self, colstr)
+            if col.visible:
+                visible += 1
+        return visible
+
+    def col_from(self, index: int) -> Union[None, Column]:
+        for colstr in self.all_column_names():
+            col: Column = getattr(self, colstr)
+            if col.position == index:
+                return col
+        return None
+
+    def visible_headers(self)-> List[str]:
+        headers = ['Id']
+        for colstr in self.all_column_names():
+            col = getattr(self, colstr)
+            if col.visible:
+                headers.append(col.name)
+        return headers
+
+columns = ColumnSources()
 
 """
     '_exptl_crystal_colour'              : 'Residuals',
@@ -557,7 +630,6 @@ class StructureTable():
         :param dbfile: database file path
         :type dbfile: str
         """
-        self.visible_columns = default_columns
         self.dbfilename = dbfile
         self.database = DatabaseRequest(dbfile)
 
@@ -608,15 +680,14 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return rows
 
-    def set_request_columns(self, columns: Dict[str, str]):
+    """def set_request_columns(self, columns: Dict[str, str]):
         self.visible_columns = columns
 
     def reset_default_columns(self):
-        self.visible_columns = default_columns
+        self.visible_columns = default_columns"""
 
     def get_structure_rows_by_ids(self, ids: Union[List, Tuple, None] = None) -> List:
-        columns_str = ", ".join([f"{self.visible_columns[col]}.{col}" for col in self.visible_columns.keys()])
-        query = f"""SELECT Structure.Id, {columns_str}
+        query = f"""SELECT Structure.Id, {columns.visible_columns()}
                     FROM Structure 
                     INNER JOIN Residuals ON Residuals.StructureId = Structure.Id
                 """

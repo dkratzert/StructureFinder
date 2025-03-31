@@ -6,38 +6,29 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex, Qt
 
 from structurefinder.searcher import worker
+from structurefinder.searcher.database_handler import columns
 
 archives = tuple([x.replace('*', '') for x in worker.archives])
-
-print('TODO: remove this')
-"""class Column(IntEnum):
-    DATA = 1
-    FILENAME = 2
-    MODIFIED = 3
-    PATH = 4"""
 
 
 class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, structures=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.horizontalHeaders = ['Id', 'Data Name', 'File Name', 'Last Modified', 'Path']
         self._data: List[List[str]] = structures or []
+
+    @property
+    def horizontalHeaders(self):
+        return columns.visible_headers()
 
     def data(self, index: QModelIndex, role: int = None) -> Union[str, None]:
         row, col = index.row(), index.column()
         value = self._data[row][col]
-        if col == Column.MODIFIED and role == Qt.DisplayRole:
-            return str(value)
-        if col == Column.PATH and role == Qt.DisplayRole:
-            if isinstance(value, bytes):
-                return str(Path(value.decode('utf-8')))
-            else:
-                return str(Path(value))
+        if col == columns.modification_time.position and role == Qt.DisplayRole:
+            return columns.modification_time.string_method(value)
+        if col == columns.path.position and role == Qt.DisplayRole:
+            return columns.path.string_method(value)
         if role == Qt.DisplayRole:
-            if isinstance(value, bytes):
-                return value.decode('utf-8')
-            else:
-                return value
+            return columns.col_from(col).string_method(value)
 
     def setHeaderData(self, section, orientation, data, role=Qt.EditRole):
         if orientation == Qt.Horizontal and role in (Qt.DisplayRole, Qt.EditRole):
@@ -69,8 +60,7 @@ class TableModel(QtCore.QAbstractTableModel):
         """
         if len(self._data) > 0:
             # prevent columns after the fourth colum to appear:
-            print('TODO columnCount')
-            return len(Column) + 1
+            return columns.number_of_visible_columns() + 1
         else:
             return 0
 

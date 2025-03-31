@@ -10,21 +10,16 @@ from PyQt5.QtGui import QCursor
 
 from structurefinder import strf
 
-from structurefinder.searcher.database_handler import default_columns
-
+from structurefinder.searcher.database_handler import columns
 
 
 class HeaderContextMenu(QtWidgets.QHeaderView):
-    columns_changed = pyqtSignal()
+    columns_changed = pyqtSignal(str)
 
-    def __init__(self,
-                 parent: 'StructuresListTableView',
-                 available_columns: List[str],
-                 visible_columns: List[str]):
+    def __init__(self, parent: 'StructuresListTableView', available_columns: List[str]):
         super().__init__(QtCore.Qt.Horizontal, parent)
         self.table = parent
-        self.available_columns = available_columns  # All possible columns
-        self.visible_columns = visible_columns  # Currently displayed columns
+        self.available_columns = available_columns
 
     def contextMenuEvent(self, event):
         """
@@ -34,7 +29,7 @@ class HeaderContextMenu(QtWidgets.QHeaderView):
         for column_name in self.available_columns:
             action = QtWidgets.QAction(f"{column_name}", self.table)
             action.setCheckable(True)
-            action.setChecked(column_name in self.visible_columns)
+            action.setChecked(columns.is_visible(column_name))
             action.triggered.connect(lambda checked, col=column_name: self.toggle_column(col, checked))
             menu.addAction(action)
         menu.exec_(event.globalPos())
@@ -42,10 +37,10 @@ class HeaderContextMenu(QtWidgets.QHeaderView):
     def toggle_column(self, column_name: str, show: bool) -> None:
         print(f'Column toggled: {column_name}, show: {show}')
         if show:
-            self.visible_columns.append(column_name)
+            columns.__getattribute__(column_name).visible = True
         else:
-            self.visible_columns.remove(column_name)
-        self.columns_changed.emit()
+            columns.__getattribute__(column_name).visible = False
+        self.columns_changed.emit(column_name)
 
 
 class StructuresListTableView(QtWidgets.QTableView):
@@ -58,19 +53,11 @@ class StructuresListTableView(QtWidgets.QTableView):
         super().__init__(parent)
         self.setContextMenuPolicy(Qt.DefaultContextMenu)
         self.doubleClicked.connect(self._on_open_file_path)
-        self.available_columns: List[str] = list(column_sources.keys())
-        self.visible_columns: Dict[str, str] = default_columns.copy()
+        self.available_columns: List[str] = columns.all_column_names()
         self.horizontalHeader().setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.horizontalHeader().setSectionsClickable(True)
-        self.header_menu = HeaderContextMenu(self, self.available_columns, list(self.visible_columns.keys()))
+        self.header_menu = HeaderContextMenu(self, self.available_columns)
         self.setHorizontalHeader(self.header_menu)
-        self.header_menu.columns_changed.connect(self.set_visible_columns)
-
-    def set_visible_columns(self):
-        columns = {}
-        for column_name in self.header_menu.visible_columns:
-            columns.update({column_name: column_sources[column_name]})
-        self.visible_columns = columns
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         context_menu = QtWidgets.QMenu(self)
@@ -93,7 +80,7 @@ class StructuresListTableView(QtWidgets.QTableView):
 
     def _on_open_file_path(self) -> None:
         try:
-            path_data = self.get_field_content(self.currentIndex().row(), Column.PATH)
+            path_data = self.get_field_content(self.currentIndex().row(), columns.path.position)
         except IndexError:
             path_data = ''
         self.open_save_path.emit(path_data)
