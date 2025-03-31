@@ -867,7 +867,8 @@ class StartStructureDB(QMainWindow):
         self.clear_fields()
         cell = self.structures.get_cell_by_id(structure_id)
         if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
-            self.ui.cellSearchCSDLineEdit.setText("  ".join([str(round(x, 5)) for x in cell[:6]]))
+            with suppress(TypeError):
+                self.ui.cellSearchCSDLineEdit.setText("  ".join([str(round(x, 5)) for x in cell[:6]]))
             with suppress(KeyError, TypeError):
                 cstring = cif_dic['_space_group_centring_type']
                 self.ui.lattCentComboBox.setCurrentIndex(centering_letter_2_num[cstring])
