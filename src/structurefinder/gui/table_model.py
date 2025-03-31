@@ -24,6 +24,8 @@ class TableModel(QtCore.QAbstractTableModel):
         if role == Qt.DisplayRole and col > 0:
             colmethod = columns.col_from(col - 1)
             return colmethod.string_method(value)
+        if col == 0:
+            return value
 
     def setHeaderData(self, section, orientation, data, role=Qt.EditRole):
         if orientation == Qt.Horizontal and role in (Qt.DisplayRole, Qt.EditRole):

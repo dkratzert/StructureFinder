@@ -52,7 +52,6 @@ class StructuresListTableView(QtWidgets.QTableView):
         self.header_menu = HeaderContextMenu(self)
         self.header_menu.setSectionsClickable(True)
         self.setHorizontalHeader(self.header_menu)
-        self.hideColumn(0)
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         context_menu = QtWidgets.QMenu(self)
@@ -85,9 +84,6 @@ class StructuresListTableView(QtWidgets.QTableView):
             pass
         super().mousePressEvent(e)
 
-    def refresh_data(self):
-        """ Refresh table data based on currently visible columns. """
-        pass
 
 
 if __name__ == "__main__":
