@@ -15,7 +15,7 @@ class HeaderContextMenu(QtWidgets.QHeaderView):
     def __init__(self, parent: 'StructuresListTableView'):
         super().__init__(QtCore.Qt.Horizontal, parent)
         self.table = parent
-        self.available_columns = columns.all_column_names()
+        self.available_columns = columns.all_column_names
         self.setSortIndicatorShown(True)
 
     def contextMenuEvent(self, event):

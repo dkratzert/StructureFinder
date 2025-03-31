@@ -16,19 +16,14 @@ class TableModel(QtCore.QAbstractTableModel):
 
     @property
     def horizontalHeaders(self):
-        return columns.visible_headers()
+        return columns.visible_header_names()
 
     def data(self, index: QModelIndex, role: int = None) -> Union[str, None]:
         row, col = index.row(), index.column()
         value = self._data[row][col]
-        if col == columns.modification_time.position and role == Qt.DisplayRole:
-            return columns.modification_time.string_method(value)
-        if col == columns.path.position and role == Qt.DisplayRole:
-            return columns.path.string_method(value)
-        if role == Qt.DisplayRole:
-            col = columns.col_from(col)
-            if col:
-                return col.string_method(value)
+        if role == Qt.DisplayRole and col > 0:
+            colmethod = columns.col_from(col - 1)
+            return colmethod.string_method(value)
 
     def setHeaderData(self, section, orientation, data, role=Qt.EditRole):
         if orientation == Qt.Horizontal and role in (Qt.DisplayRole, Qt.EditRole):

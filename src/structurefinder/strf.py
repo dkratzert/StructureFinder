@@ -133,8 +133,8 @@ class StartStructureDB(QMainWindow):
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
-        # headers = self.settings.load_visible_headers()
-        ##if headers:
+        #headers = self.settings.load_visible_headers()
+        #if headers:
         #   columns.set_visible_headers(headers)
 
     def set_initial_button_states(self):
@@ -1275,6 +1275,7 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
         self.statusBar().showMessage(f'Found {self.table_model.rowCount()} structures.', msecs=0)
+        self.ui.cifList_tableView.resizeColumnToContents(columns.path.position)
 
     def clear_fields(self) -> None:
         """

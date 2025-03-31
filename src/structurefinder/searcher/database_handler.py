@@ -30,7 +30,7 @@ db_enoding = 'utf-8'
 
 def default_repr(value: Union[str, bytes]) -> str:
     if isinstance(value, bytes):
-        return value.decode('utf-8')
+        return value.decode('utf-8', errors='ignore')
     else:
         return value
 
@@ -39,22 +39,44 @@ def pathrepr(value: Union[str, bytes]) -> str:
     if isinstance(value, bytes):
         return str(Path(value.decode('utf-8')))
     else:
-        return str(Path(value))
+        if value:
+            return str(Path(value))
+        else:
+            return ''
 
 
 def formula_weight_repr(value: bytes) -> str:
+    # print('formula_weight_repr', value)
     if isinstance(value, bytes):
-        return f"{value.decode('utf-8'):.1f}"
-    else:
-        return f"{value:.1f}"
+        value = f"{value.decode('utf-8'):.2f}"
+    try:
+        return f"{value:.2f}"
+    except (ValueError, TypeError):
+        return value
+
+
+def cell_repr(value: bytes) -> str:
+    # print('cell_repr', value)
+    if isinstance(value, bytes):
+        value = f"{value.decode('utf-8'):.5f}"
+    try:
+        return f"{value:.5f}"
+    except (ValueError, TypeError):
+        return value
+
+
+def ccdc_repr(value: bytes) -> str:
+    if isinstance(value, bytes):
+        value = value.decode('utf-8')
+    return value.removeprefix('CCDC ')
 
 
 def size_repr(value: bytes) -> str:
+    # print('size_repr', value)
     if isinstance(value, bytes):
         value = value.decode('utf-8')
     try:
-        size = int(value)
-        return f'{(size / (1024 * 1024)):.2f}'
+        return f'{(int(value) / (1024 * 1024)):.2f}'
     except (ValueError, TypeError):
         return value
 
@@ -63,11 +85,22 @@ def size_repr(value: bytes) -> str:
 class Column:
     name: str
     position: int
-    table: Literal['Structure', 'Residuals']
+    table: Literal['Structure', 'Residuals', 'cell']
     visible: bool
     string_method: Callable = default_repr
     default: bool = False
     default_position: int = 0
+
+
+"""
+    '_refine_ls_number_restraints'       : 'Residuals',
+    '_refine_ls_R_factor_gt'             : 'Residuals',
+    '_refine_ls_wR_factor_ref'           : 'Residuals',
+    '_refine_ls_shift_su_max'            : 'Residuals',
+    '_refine_diff_density_min'           : 'Residuals',
+    '_refine_diff_density_max'           : 'Residuals',
+    '_database_code_depnum_ccdc_archive' : 'Residuals',
+}"""
 
 
 class ColumnSources:
@@ -82,16 +115,45 @@ class ColumnSources:
                           default=True)
     file_size: Column = Column(name="File Size [MB]", position=5, table="Residuals", visible=False,
                                string_method=size_repr)
-    _cell_formula_units_Z: Column = Column(name="Formula", position=6, table="Residuals", visible=False)
-    _space_group_name_H_M_alt: Column = Column(name="Space Group", position=7, table="Residuals", visible=False)
-    _space_group_IT_number: Column = Column(name="Space Group Number", position=8, table="Residuals", visible=False)
-    _chemical_formula_sum: Column = Column(name="Formula Sum", position=9, table="Residuals", visible=False)
-    _chemical_formula_weight: Column = Column(name="Formula Weight", position=10, table="Residuals", visible=False,
+    a: Column = Column(name="a", position=6, table="cell", visible=False, string_method=cell_repr)
+    b: Column = Column(name="b", position=7, table="cell", visible=False, string_method=cell_repr)
+    c: Column = Column(name="c", position=8, table="cell", visible=False, string_method=cell_repr)
+    alpha: Column = Column(name="alpha", position=9, table="cell", visible=False, string_method=cell_repr)
+    beta: Column = Column(name="beta", position=10, table="cell", visible=False, string_method=cell_repr)
+    gamma: Column = Column(name="gamma", position=11, table="cell", visible=False, string_method=cell_repr)
+    _cell_formula_units_Z: Column = Column(name="Z Value", position=12, table="Residuals", visible=False)
+    _space_group_name_H_M_alt: Column = Column(name="Space Group", position=13, table="Residuals", visible=False)
+    _space_group_IT_number: Column = Column(name="Space Group Number", position=14, table="Residuals", visible=False)
+    _chemical_formula_sum: Column = Column(name="Formula Sum", position=15, table="Residuals", visible=False)
+    _chemical_formula_weight: Column = Column(name="Formula Weight", position=16, table="Residuals", visible=False,
                                               string_method=formula_weight_repr)
-    _exptl_crystal_colour: Column = Column(name="Crystal Color", position=11, table="Residuals", visible=False)
+    _exptl_crystal_colour: Column = Column(name="Crystal Color", position=17, table="Residuals", visible=False)
+    _exptl_crystal_size_max: Column = Column(name="Crystal Size Max", position=18, table="Residuals", visible=False)
+    _exptl_crystal_size_mid: Column = Column(name="Crystal Size Mid", position=19, table="Residuals", visible=False)
+    _exptl_crystal_size_min: Column = Column(name="Crystal Size Min", position=20, table="Residuals", visible=False)
+    _exptl_absorpt_coefficient_mu: Column = Column(name="Absorption [mm–3]", position=21, table="Residuals",
+                                                   visible=False)
+    _diffrn_ambient_temperature: Column = Column(name="Temperature [K]", position=22, table="Residuals", visible=False)
+    _diffrn_radiation_wavelength: Column = Column(name="Wavelength [Å]", position=23, table="Residuals", visible=False)
+    _diffrn_source: Column = Column(name="Radiation source", position=24, table="Residuals", visible=False)
+    _diffrn_measurement_device_type: Column = Column(name="Measurement Device", position=25, table="Residuals",
+                                                     visible=False)
+    _diffrn_reflns_theta_full: Column = Column(name="Theta (full)", position=26, table="Residuals", visible=False)
+    _diffrn_reflns_theta_max: Column = Column(name="Theta (max)", position=27, table="Residuals", visible=False)
+    _diffrn_measured_fraction_theta_max: Column = Column(name="Completeness", position=28, table="Residuals",
+                                                         visible=False)
+    _reflns_Friedel_coverage: Column = Column(name="Friedel Coverage", position=29, table="Residuals", visible=False)
+    _refine_diff_density_min: Column = Column(name="Density Peak", position=30, table="Residuals", visible=False)
+    _refine_diff_density_max: Column = Column(name="Density Hole", position=31, table="Residuals", visible=False)
+    _database_code_depnum_ccdc_archive: Column = Column(name="CCDC Number", position=32, table="Residuals",
+                                                        visible=False, string_method=ccdc_repr)
+
+    def __init__(self):
+        self.all_column_names = self._all_column_names()
+        self.positions = dict((name, col) for col, name in zip(self.colums_list(), self.all_column_names))
 
     def reset_defaults(self):
-        for num, colstr in enumerate(self.all_column_names()):
+        for num, colstr in enumerate(self.all_column_names):
             col: Column = getattr(self, colstr)
             col.position = num
             if col.default:
@@ -101,12 +163,12 @@ class ColumnSources:
 
     def default_columns(self) -> List[str]:
         fields = []
-        for attr in self.all_column_names():
+        for attr in self.all_column_names:
             if self.__getattribute__(attr).default:
                 fields.append(attr)
         return fields
 
-    def all_column_names(self) -> List[str]:
+    def _all_column_names(self) -> List[str]:
         columns = []
         for attr in self.__dir__():
             if isinstance(getattr(self, attr), Column):
@@ -118,7 +180,7 @@ class ColumnSources:
 
     def current_columns(self) -> str:
         visible = {}
-        for colstr in self.all_column_names():
+        for colstr in self.all_column_names:
             col: Column = getattr(self, colstr)
             if col.visible:
                 visible.update({colstr: col})
@@ -127,29 +189,43 @@ class ColumnSources:
 
     def number_of_visible_columns(self) -> int:
         visible = 0
-        for colstr in self.all_column_names():
+        for colstr in self.all_column_names:
             col: Column = getattr(self, colstr)
             if col.visible:
                 visible += 1
         return visible
 
+    def colums_list(self) -> List[Column]:
+        columns = []
+        for col in self.all_column_names:
+            columns.append(getattr(self, col))
+        return columns
+
     def col_from(self, index: int) -> Union[None, Column]:
-        for colstr in self.all_column_names():
-            col: Column = getattr(self, colstr)
-            if col.position == index:
-                return col
-        return None
+        try:
+            headers = self.visible_headers()
+            return self.positions[headers[index]]
+        except IndexError:
+            return None
 
     def visible_headers(self) -> List[str]:
+        headers = []
+        for colstr in self.all_column_names:
+            col = getattr(self, colstr)
+            if col.visible:
+                headers.append(colstr)
+        return headers
+
+    def visible_header_names(self) -> List[str]:
         headers = ['Id']
-        for colstr in self.all_column_names():
+        for colstr in self.all_column_names:
             col = getattr(self, colstr)
             if col.visible:
                 headers.append(col.name)
         return headers
 
-    def set_visible_headers(self, columns: List[str]) -> List[str]:
-        for colstr in self.all_column_names():
+    def set_visible_headers(self, columns: List[str]) -> None:
+        for colstr in self.all_column_names:
             col = getattr(self, colstr)
             if colstr in columns:
                 col.visible = True
@@ -158,31 +234,6 @@ class ColumnSources:
 
 
 columns = ColumnSources()
-
-"""
-    '_exptl_crystal_colour'              : 'Residuals',
-    '_exptl_crystal_size_max'            : 'Residuals',
-    '_exptl_crystal_size_mid'            : 'Residuals',
-    '_exptl_crystal_size_min'            : 'Residuals',
-    '_exptl_absorpt_coefficient_mu'      : 'Residuals',
-    '_diffrn_ambient_temperature'        : 'Residuals',
-    '_diffrn_radiation_wavelength'       : 'Residuals',
-    '_diffrn_source'                     : 'Residuals',
-    '_diffrn_measurement_device_type'    : 'Residuals',
-    '_diffrn_reflns_theta_full'          : 'Residuals',
-    # θ to which available reflections are close to 100% complete (°)
-    '_diffrn_reflns_theta_max'           : 'Residuals',  # Maximum θ of measured reflections (°)
-    '_diffrn_measured_fraction_theta_max': 'Residuals',
-    # completeness, Fraction of unique reflections measured to θmax
-    '_reflns_Friedel_coverage'           : 'Residuals',
-    '_refine_ls_number_restraints'       : 'Residuals',
-    '_refine_ls_R_factor_gt'             : 'Residuals',
-    '_refine_ls_wR_factor_ref'           : 'Residuals',
-    '_refine_ls_shift_su_max'            : 'Residuals',
-    '_refine_diff_density_min'           : 'Residuals',
-    '_refine_diff_density_max'           : 'Residuals',
-    '_database_code_depnum_ccdc_archive' : 'Residuals',
-}"""
 
 
 class DatabaseRequest():
@@ -693,16 +744,11 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return rows
 
-    """def set_request_columns(self, columns: Dict[str, str]):
-        self.visible_columns = columns
-
-    def reset_default_columns(self):
-        self.visible_columns = default_columns"""
-
     def get_structure_rows_by_ids(self, ids: Union[List, Tuple, None] = None) -> List:
         query = f"""SELECT Structure.Id, {columns.current_columns()}
                     FROM Structure 
                     INNER JOIN Residuals ON Residuals.StructureId = Structure.Id
+                    INNER JOIN cell ON cell.StructureId = Structure.Id
                 """
         if ids:
             ids = tuple(ids)
