@@ -1,5 +1,5 @@
 import sys
-from typing import Union, List
+from typing import Union
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt, pyqtSignal
@@ -12,10 +12,10 @@ from structurefinder.searcher.database_handler import columns
 class HeaderContextMenu(QtWidgets.QHeaderView):
     columns_changed = pyqtSignal(str)
 
-    def __init__(self, parent: 'StructuresListTableView', available_columns: List[str]):
+    def __init__(self, parent: 'StructuresListTableView'):
         super().__init__(QtCore.Qt.Horizontal, parent)
         self.table = parent
-        self.available_columns = available_columns
+        self.available_columns = columns.all_column_names()
 
     def contextMenuEvent(self, event):
         """
@@ -48,11 +48,11 @@ class StructuresListTableView(QtWidgets.QTableView):
         super().__init__(parent)
         self.setContextMenuPolicy(Qt.DefaultContextMenu)
         self.doubleClicked.connect(self._on_open_file_path)
-        self.available_columns: List[str] = columns.all_column_names()
         self.horizontalHeader().setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.horizontalHeader().setSectionsClickable(True)
-        self.header_menu = HeaderContextMenu(self, self.available_columns)
+        self.header_menu = HeaderContextMenu(self)
         self.setHorizontalHeader(self.header_menu)
+        self.setColumnHidden(0, True)  # the Id
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         context_menu = QtWidgets.QMenu(self)
