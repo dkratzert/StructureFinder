@@ -32,9 +32,9 @@ class HeaderContextMenu(QtWidgets.QHeaderView):
 
     def toggle_column(self, column_name: str, show: bool) -> None:
         if show:
-            columns.__getattribute__(column_name).visible = True
+            getattr(columns, column_name).visible = True
         else:
-            columns.__getattribute__(column_name).visible = False
+            getattr(columns, column_name).visible = False
         self.columns_changed.emit(column_name)
 
 
@@ -53,6 +53,7 @@ class StructuresListTableView(QtWidgets.QTableView):
         self.header_menu = HeaderContextMenu(self)
         self.setHorizontalHeader(self.header_menu)
         self.setColumnHidden(0, True)  # the Id
+        self.hideColumn(0)
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         context_menu = QtWidgets.QMenu(self)
