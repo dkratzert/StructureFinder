@@ -8,14 +8,14 @@ from pathlib import Path
 from time import sleep
 from typing import Union
 
-import pytest
-from PyQt5.QtCore import Qt, QDate, QEventLoop
+from PyQt5.QtCore import QDate, QEventLoop, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtTest import QTest
 from PyQt5.QtWidgets import QApplication
 
 from structurefinder import strf
 from structurefinder.misc.version import VERSION
+from structurefinder.searcher import database_handler
 from structurefinder.searcher.misc import COL_FILE, COL_ID
 
 """
@@ -26,11 +26,14 @@ These tests only run with pytest, because they rely on the PYTEST_CURRENT_TEST e
 class TestApplication(unittest.TestCase):
 
     def setUp(self) -> None:
+        database_handler.columns.reset_defaults()
         strf.app.setWindowIcon(QIcon('./icons/strf.png'))
         # Has to be without version number, because QWebengine stores data in ApplicationName directory:
         strf.app.setApplicationName('StructureFinder')
         self.myapp = strf.StartStructureDB(db_file_name='./tests/test-data/test.sql')
         self.myapp.setWindowTitle(f'StructureFinder v{VERSION}')
+        self.myapp.ui.hideInArchivesCB.setChecked(False)
+        self.myapp.settings.save_visible_headers([])
 
     def tearDown(self) -> None:
         self.myapp.close()
