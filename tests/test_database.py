@@ -10,6 +10,7 @@ from structurefinder.strf_cmd import run_index
 class TestDatabase(unittest.TestCase):
     def setUp(self) -> None:
         dbfilename = 'tests/test-data/test.sql'
+        database_handler.columns.reset_defaults()
         self.db = database_handler.StructureTable(dbfilename)
 
     def test_get_structure_rows_by_ids_without_id(self):
@@ -31,34 +32,44 @@ class TestDatabase(unittest.TestCase):
                            b'/Users/daniel/GitHub/StructureFinder/test-data')
 
     def test_get_structure_rows_by_ids_with_columns_set(self):
-        columns = {'_cell_formula_units_Z'    : 'Residuals',
-                   '_chemical_formula_sum'    : 'Residuals',
-                   '_exptl_crystal_colour'    : 'Residuals',
-                   '_chemical_formula_weight' : 'Residuals',
-                   '_space_group_IT_number'   : 'Residuals',
-                   '_space_group_name_H_M_alt': 'Residuals'}
-        self.db.set_request_columns(columns)
+        database_handler.columns._cell_formula_units_Z.visible = True
+        database_handler.columns._cell_formula_units_Z.position = 1
+        database_handler.columns._chemical_formula_sum.visible = True
+        database_handler.columns._chemical_formula_sum.position = 2
+        database_handler.columns._exptl_crystal_colour.visible = True
+        database_handler.columns._exptl_crystal_colour.position = 3
+        database_handler.columns._chemical_formula_weight.visible = True
+        database_handler.columns._chemical_formula_weight.position = 4
+        database_handler.columns._space_group_IT_number.visible = True
+        database_handler.columns._space_group_IT_number.position = 5
+        database_handler.columns._space_group_name_H_M_alt.visible = True
+        database_handler.columns.dataname.visible = False
+        database_handler.columns.filename.visible = False
+        database_handler.columns.path.visible = False
+        #database_handler.columns.file_size.visible = False
+        database_handler.columns.modification_time.visible = False
+
         rows = self.db.get_structure_rows_by_ids([23])
         assert rows[0] == (23,
                            4,
                            'C3 H9 Br0.962 Cd Cl2.038 O S',
-                           'colourless',
-                           '354.7',
-                           62,
-                           'P n m a')
+                           'colourless', '354.7', 62, 'P n m a')
 
     def test_get_structure_rows_by_ids_with_columns_from_both_set(self):
-        columns = {'_chemical_formula_sum': 'Residuals',
-                   'dataname'             : 'Structure',
-                   }
-        self.db.set_request_columns(columns)
+        database_handler.columns._chemical_formula_sum.visible = True
+        database_handler.columns._chemical_formula_sum.position = 1
+        database_handler.columns.dataname.visible = True
+        database_handler.columns.dataname.position = 2
+        database_handler.columns.filename.visible = False
+        database_handler.columns.modification_time.visible = False
+        database_handler.columns.path.visible = False
         rows = self.db.get_structure_rows_by_ids([23])
         assert rows[0] == (23, 'C3 H9 Br0.962 Cd Cl2.038 O S', b'2004800')
 
     def test_text_search(self):
         by_strings = self.db.find_by_strings('NTD51a')
         self.assertEqual((237,), by_strings)
-        # and also case insensitive:
+        # and also case-insensitive:
         by_strings = self.db.find_by_strings('ntd51A')
         self.assertEqual((237,), by_strings)
 
@@ -175,6 +186,7 @@ class TestMerging(unittest.TestCase):
         del self.db2
         Path(self.test_dir).joinpath(Path(self.db1_file)).unlink(missing_ok=True)
         Path(self.test_dir).joinpath(Path(self.db2_file)).unlink(missing_ok=True)
+        [x.unlink() for x in Path(self.test_dir).glob('*.*')]
         Path(self.test_dir).rmdir()
 
     def test_number_of_entries(self):

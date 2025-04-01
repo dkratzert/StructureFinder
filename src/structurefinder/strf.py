@@ -37,7 +37,7 @@ from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidget
 from structurefinder.ccdc.query import search_csd, parse_results
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.strf_main import Ui_stdbMainwindow
-from structurefinder.gui.table_model import TableModel, CustomProxyModel, Column
+from structurefinder.gui.table_model import TableModel, CustomProxyModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
@@ -47,6 +47,7 @@ from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import database_handler, constants, misc
 from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
+from structurefinder.searcher.database_handler import columns
 from structurefinder.searcher.filecrawler import excluded_names
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, \
@@ -132,6 +133,9 @@ class StartStructureDB(QMainWindow):
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
+        headers = self.settings.load_visible_headers()
+        if headers:
+            columns.set_visible_headers(headers)
 
     def set_initial_button_states(self):
         self.ui.appendDatabasePushButton.setDisabled(True)
@@ -190,6 +194,8 @@ class StartStructureDB(QMainWindow):
         self.ui.labelsCheckBox.toggled.connect(self.show_labels)
         self.ui.helpPushButton.clicked.connect(self.show_help)
         self.ui.hideInArchivesCB.clicked.connect(self.recount)
+        # Column menu:
+        self.ui.cifList_tableView.header_menu.columns_changed.connect(self.show_full_list)
 
     def set_model_from_data(self, data: Union[list, tuple]):
         table_model = TableModel(parent=self, structures=data)
@@ -331,14 +337,9 @@ class StartStructureDB(QMainWindow):
         workbook = xlsxwriter.Workbook(filename)
         worksheet = workbook.add_worksheet()
         for row, index in enumerate(selection):
-            row_1_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.DATA)
-            row_2_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.FILENAME)
-            row_3_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.MODIFIED)
-            row_4_data = self.ui.cifList_tableView.get_field_content(index.row(), Column.PATH)
-            worksheet.write(row, Column.DATA, row_1_data)
-            worksheet.write(row, Column.FILENAME, row_2_data)
-            worksheet.write(row, Column.MODIFIED, row_3_data)
-            worksheet.write(row, Column.PATH, row_4_data)
+            for column in self.ui.cifList_tableView.model().columnCount():
+                cell_data = self.ui.cifList_tableView.get_field_content(index.row(), column)
+                worksheet.write(row, column, cell_data)
         workbook.close()
 
     def on_browse_path_from_row(self, curdir: str):
@@ -866,7 +867,8 @@ class StartStructureDB(QMainWindow):
         self.clear_fields()
         cell = self.structures.get_cell_by_id(structure_id)
         if self.ui.cellSearchCSDLineEdit.isEnabled() and cell:
-            self.ui.cellSearchCSDLineEdit.setText("  ".join([str(round(x, 5)) for x in cell[:6]]))
+            with suppress(TypeError):
+                self.ui.cellSearchCSDLineEdit.setText("  ".join([str(round(x, 5)) for x in cell[:6]]))
             with suppress(KeyError, TypeError):
                 cstring = cif_dic['_space_group_centring_type']
                 self.ui.lattCentComboBox.setCurrentIndex(centering_letter_2_num[cstring])
@@ -1017,7 +1019,6 @@ class StartStructureDB(QMainWindow):
             self.set_model_from_data([])
         self.statusBar().showMessage(f"Found {self.table_model.rowCount()} structures.")
         return True
-
 
     def search_cell_idlist(self, cell: list) -> list:
         """
@@ -1251,7 +1252,7 @@ class StartStructureDB(QMainWindow):
         Displays the complete list of structures
         [structure_id, meas, path, filename, data]
         """
-        data = []
+        self.settings.save_visible_headers(columns.visible_headers())
         try:
             if not self.structures:
                 return None
@@ -1275,6 +1276,7 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
         self.statusBar().showMessage(f'Found {self.table_model.rowCount()} structures.', msecs=0)
+        self.ui.cifList_tableView.resizeColumnToContents(columns.path.position)
 
     def clear_fields(self) -> None:
         """

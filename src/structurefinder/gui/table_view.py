@@ -1,10 +1,43 @@
+import sys
 from typing import Union
 
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QCursor
 
-from structurefinder.gui.table_model import Column
+from structurefinder import strf
+from structurefinder.searcher.database_handler import columns
+
+
+class HeaderContextMenu(QtWidgets.QHeaderView):
+    columns_changed = pyqtSignal(str)
+
+    def __init__(self, parent: 'StructuresListTableView'):
+        super().__init__(QtCore.Qt.Horizontal, parent)
+        self.table = parent
+        self.available_columns = columns.all_column_names
+        self.setSortIndicatorShown(True)
+
+    def contextMenuEvent(self, event):
+        """
+        Right-click menu for the horizontal header.
+        """
+        menu = QtWidgets.QMenu(self.table)
+        for column_name in self.available_columns:
+            action = QtWidgets.QAction(f"{column_name}", self.table)
+            action.setCheckable(True)
+            action.setChecked(columns.is_visible(column_name))
+            action.triggered.connect(lambda checked, col=column_name: self.toggle_column(col, checked))
+            menu.addAction(action)
+        menu.exec_(event.globalPos())
+
+    def toggle_column(self, column_name: str, show: bool) -> None:
+        if show:
+            getattr(columns, column_name).visible = True
+        else:
+            getattr(columns, column_name).visible = False
+        self.columns_changed.emit(column_name)
+
 
 
 class StructuresListTableView(QtWidgets.QTableView):
@@ -15,6 +48,10 @@ class StructuresListTableView(QtWidgets.QTableView):
         super().__init__(parent)
         self.setContextMenuPolicy(Qt.DefaultContextMenu)
         self.doubleClicked.connect(self._on_open_file_path)
+        self.setSortingEnabled(True)
+        self.header_menu = HeaderContextMenu(self)
+        self.header_menu.setSectionsClickable(True)
+        self.setHorizontalHeader(self.header_menu)
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         context_menu = QtWidgets.QMenu(self)
@@ -37,7 +74,7 @@ class StructuresListTableView(QtWidgets.QTableView):
 
     def _on_open_file_path(self) -> None:
         try:
-            path_data = self.get_field_content(self.currentIndex().row(), Column.PATH)
+            path_data = self.get_field_content(self.currentIndex().row(), columns.path.position)
         except IndexError:
             path_data = ''
         self.open_save_path.emit(path_data)
@@ -46,3 +83,10 @@ class StructuresListTableView(QtWidgets.QTableView):
         if e.button() == Qt.RightButton:
             pass
         super().mousePressEvent(e)
+
+
+
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    myapp = strf.StartStructureDB(db_file_name='./tests/test-data/test.sql')
+    app.exec_()

@@ -76,6 +76,7 @@ class MyZipReader(MyZipBase):
                 if self.zfile.NameToInfo[name].file_size < 150000000:
                     doc = gemmi.cif.Document()
                     doc.source = name
+                    self.cifname = name
                     doc.parse_string(self.zfile.read(name).decode('ascii', 'ignore'))
                     if doc:
                         yield doc
