@@ -133,9 +133,6 @@ class StartStructureDB(QMainWindow):
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
-        headers = self.settings.load_visible_headers()
-        if headers:
-            columns.set_visible_headers(headers)
 
     def set_initial_button_states(self):
         self.ui.appendDatabasePushButton.setDisabled(True)
@@ -196,6 +193,15 @@ class StartStructureDB(QMainWindow):
         self.ui.hideInArchivesCB.clicked.connect(self.recount)
         # Column menu:
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.show_full_list)
+        self.ui.cifList_tableView.header_menu.columns_changed.connect(self.save_headers)
+
+    def save_headers(self):
+        self.settings.save_visible_headers(columns.visible_headers())
+
+    def load_headers(self):
+        headers = self.settings.load_visible_headers()
+        if headers and isinstance(headers, list):
+            columns.set_visible_headers(headers)
 
     def set_model_from_data(self, data: Union[list, tuple]):
         table_model = TableModel(parent=self, structures=data)
@@ -235,6 +241,9 @@ class StartStructureDB(QMainWindow):
         """Is called when the main window changes its state."""
         if event.type() == QtCore.QEvent.WindowStateChange:
             self._savesize()
+
+    def close(self):
+        self.save_headers()
 
     def _savesize(self) -> None:
         """Saves the main window size nd position."""
@@ -1152,6 +1161,7 @@ class StartStructureDB(QMainWindow):
         self.clear_fields()
         self.dbfilename = file_name
         self.structures = database_handler.StructureTable(self.dbfilename)
+        self.load_headers()
         try:
             self.show_full_list()
         except DatabaseError:
@@ -1252,7 +1262,6 @@ class StartStructureDB(QMainWindow):
         Displays the complete list of structures
         [structure_id, meas, path, filename, data]
         """
-        self.settings.save_visible_headers(columns.visible_headers())
         try:
             if not self.structures:
                 return None

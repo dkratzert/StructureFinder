@@ -45,8 +45,7 @@ def pathrepr(value: Union[str, bytes]) -> str:
             return ''
 
 
-def formula_weight_repr(value: bytes) -> str:
-    # print('formula_weight_repr', value)
+def float_two_digit_repr(value: bytes) -> str:
     if isinstance(value, bytes):
         value = f"{value.decode('utf-8'):.2f}"
     try:
@@ -143,7 +142,7 @@ class ColumnSources:
                                             data_type=float_type)
     _chemical_formula_sum: Column = Column(name="Formula Sum", position=16, table="Residuals", visible=False)
     _chemical_formula_weight: Column = Column(name="Formula Weight", position=17, table="Residuals", visible=False,
-                                              string_method=formula_weight_repr, data_type=float_type)
+                                              string_method=float_two_digit_repr, data_type=float_type)
     _exptl_crystal_colour: Column = Column(name="Crystal Color", position=18, table="Residuals", visible=False)
     _exptl_crystal_size_max: Column = Column(name="Crystal Size Max", position=19, table="Residuals", visible=False,
                                              data_type=float_type)
@@ -152,7 +151,7 @@ class ColumnSources:
     _exptl_crystal_size_min: Column = Column(name="Crystal Size Min", position=21, table="Residuals", visible=False,
                                              data_type=float_type)
     _exptl_absorpt_coefficient_mu: Column = Column(name="Absorption [mm–3]", position=22, table="Residuals",
-                                                   visible=False, data_type=float_type)
+                                                   visible=False, string_method=float_two_digit_repr, data_type=float_type)
     _diffrn_ambient_temperature: Column = Column(name="Temperature [K]", position=23, table="Residuals", visible=False,
                                                  data_type=float_type)
     _diffrn_radiation_wavelength: Column = Column(name="Wavelength [Å]", position=24, table="Residuals", visible=False,
@@ -175,9 +174,9 @@ class ColumnSources:
     _database_code_depnum_ccdc_archive: Column = Column(name="CCDC Number", position=32, table="Residuals",
                                                         visible=False, string_method=ccdc_repr, data_type=float_type)
     _refine_ls_R_factor_gt: Column = Column(name="R1 Value", position=33, table="Residuals",
-                                                        visible=False, string_method=formula_weight_repr, data_type=float_type)
+                                            visible=False, string_method=float_two_digit_repr, data_type=float_type)
     _refine_ls_wR_factor_ref: Column = Column(name="wR2 Value", position=34, table="Residuals",
-                                                        visible=False, string_method=formula_weight_repr, data_type=float_type)
+                                              visible=False, string_method=float_two_digit_repr, data_type=float_type)
 
     def __init__(self):
         self.all_column_names = self._all_column_names()
