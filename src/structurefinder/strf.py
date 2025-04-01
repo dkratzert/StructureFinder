@@ -133,9 +133,9 @@ class StartStructureDB(QMainWindow):
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
-        #headers = self.settings.load_visible_headers()
-        #if headers:
-        #   columns.set_visible_headers(headers)
+        headers = self.settings.load_visible_headers()
+        if headers:
+            columns.set_visible_headers(headers)
 
     def set_initial_button_states(self):
         self.ui.appendDatabasePushButton.setDisabled(True)
@@ -1252,7 +1252,7 @@ class StartStructureDB(QMainWindow):
         Displays the complete list of structures
         [structure_id, meas, path, filename, data]
         """
-        # self.settings.save_visible_headers(columns.visible_headers())
+        self.settings.save_visible_headers(columns.visible_headers())
         try:
             if not self.structures:
                 return None

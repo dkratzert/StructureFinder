@@ -6,7 +6,7 @@ from PyQt5.QtCore import QModelIndex, Qt
 from structurefinder.searcher import worker
 from structurefinder.searcher.database_handler import columns
 
-archives = tuple([x.replace('*', '') for x in worker.archives])
+archives = tuple([x.replace("*", "") for x in worker.archives])
 
 
 class TableModel(QtCore.QAbstractTableModel):
@@ -39,18 +39,12 @@ class TableModel(QtCore.QAbstractTableModel):
         return super().setHeaderData(section, orientation, data, role)
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
-        """if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            try:
-                return self.horizontalHeaders[section]
-            except IndexError:
-                pass
-        return super().headerData(section, orientation, role)"""
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
                 return self.horizontalHeaders[section]
             elif orientation == QtCore.Qt.Vertical:
-                return str(section + 1)  # Zeilennummerierung
-        return None
+                return str(section + 1)
+        return super().headerData(section, orientation, role)
 
     def rowCount(self, parent=None, *args, **kwargs):
         """
@@ -80,12 +74,6 @@ class TableModel(QtCore.QAbstractTableModel):
     def clear(self):
         self.resetInternalData()
 
-    """def sort(self, column: int, order: Qt.SortOrder = ...) -> None:
-        self.layoutAboutToBeChanged.emit()
-        self._data.sort(key=lambda x: x[column], reverse=True if order == Qt.DescendingOrder else False)
-        self.layoutChanged.emit()
-        # super(TableModel, self).sort(column, order)"""
-
     def sort(self, column: int, order: Qt.SortOrder = ...):
         def convert(value):
             try:
@@ -94,7 +82,10 @@ class TableModel(QtCore.QAbstractTableModel):
                 return value.casefold() if isinstance(value, str) else value
 
         self.layoutAboutToBeChanged.emit()
-        self._data.sort(key=lambda row: convert(row[column]), reverse=(order == QtCore.Qt.DescendingOrder))
+        self._data.sort(
+            key=lambda row: convert(row[column]),
+            reverse=(order == QtCore.Qt.DescendingOrder),
+        )
         self.layoutChanged.emit()
 
 
@@ -109,26 +100,15 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
 
     """def sort(self, column: int, order: Qt.SortOrder = ...) -> None:
         self.layoutAboutToBeChanged.emit()
-        print(column)
         self.sourceModel()._data.sort(key=lambda x: x[column], reverse=True if order == Qt.DescendingOrder else False)
         self.layoutChanged.emit()"""
 
     def sort(self, column: int, order: Qt.SortOrder = ...):
-        def convert(value: Union[bytes, str], column: int):
-            if isinstance(value, bytes):
-                value = value.decode('utf-8', 'ignore')
-            try:
-                return float(value)
-            except (TypeError, ValueError):
-                if value is None:
-                    return 0
-            return value.casefold() if isinstance(value, str) else str(value)
-
         self.layoutAboutToBeChanged.emit()
-        try:
-            self.sourceModel()._data.sort(key=lambda row: convert(row[column], column), reverse=(order == QtCore.Qt.DescendingOrder))
-        except TypeError:
-            self.sourceModel()._data.sort(key=lambda row: str(row[column]), reverse=(order == QtCore.Qt.DescendingOrder))
+        self.sourceModel()._data.sort(
+            key=lambda row: columns.col_from(column - 1).data_type(row[column]),
+            reverse=(order == QtCore.Qt.DescendingOrder),
+        )
         self.layoutChanged.emit()
 
     def filterAcceptsRow(self, sourceRow: int, sourceParent: QModelIndex) -> bool:

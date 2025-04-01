@@ -81,21 +81,35 @@ def size_repr(value: bytes) -> str:
         return value
 
 
+def float_type(value: Union[str, bytes]) -> float:
+    if isinstance(value, bytes):
+        value = value.decode("utf-8", "ignore")
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0
+
+
+def string_type(value: Union[bytes, str]):
+    if isinstance(value, bytes):
+        value = value.decode("utf-8", "ignore")
+    return value.casefold() if isinstance(value, str) else str(value)
+
+
 @dataclass(frozen=False)
 class Column:
     name: str
     position: int
-    table: Literal['Structure', 'Residuals', 'cell']
+    table: Literal["Structure", "Residuals", "cell"]
     visible: bool
     string_method: Callable = default_repr
     default: bool = False
     default_position: int = 0
+    data_type: Callable = string_type
 
 
 """
     '_refine_ls_number_restraints'       : 'Residuals',
-    '_refine_ls_R_factor_gt'             : 'Residuals',
-    '_refine_ls_wR_factor_ref'           : 'Residuals',
     '_refine_ls_shift_su_max'            : 'Residuals',
     '_refine_diff_density_min'           : 'Residuals',
     '_refine_diff_density_max'           : 'Residuals',
@@ -114,39 +128,56 @@ class ColumnSources:
     path: Column = Column(name="Path", position=4, table="Structure", visible=True, string_method=pathrepr,
                           default=True)
     file_size: Column = Column(name="File Size [MB]", position=5, table="Residuals", visible=False,
-                               string_method=size_repr)
-    a: Column = Column(name="a", position=6, table="cell", visible=False, string_method=cell_repr)
-    b: Column = Column(name="b", position=7, table="cell", visible=False, string_method=cell_repr)
-    c: Column = Column(name="c", position=8, table="cell", visible=False, string_method=cell_repr)
-    alpha: Column = Column(name="alpha", position=9, table="cell", visible=False, string_method=cell_repr)
-    beta: Column = Column(name="beta", position=10, table="cell", visible=False, string_method=cell_repr)
-    gamma: Column = Column(name="gamma", position=11, table="cell", visible=False, string_method=cell_repr)
-    _cell_formula_units_Z: Column = Column(name="Z Value", position=12, table="Residuals", visible=False)
-    _space_group_name_H_M_alt: Column = Column(name="Space Group", position=13, table="Residuals", visible=False)
-    _space_group_IT_number: Column = Column(name="Space Group Number", position=14, table="Residuals", visible=False)
-    _chemical_formula_sum: Column = Column(name="Formula Sum", position=15, table="Residuals", visible=False)
-    _chemical_formula_weight: Column = Column(name="Formula Weight", position=16, table="Residuals", visible=False,
-                                              string_method=formula_weight_repr)
-    _exptl_crystal_colour: Column = Column(name="Crystal Color", position=17, table="Residuals", visible=False)
-    _exptl_crystal_size_max: Column = Column(name="Crystal Size Max", position=18, table="Residuals", visible=False)
-    _exptl_crystal_size_mid: Column = Column(name="Crystal Size Mid", position=19, table="Residuals", visible=False)
-    _exptl_crystal_size_min: Column = Column(name="Crystal Size Min", position=20, table="Residuals", visible=False)
-    _exptl_absorpt_coefficient_mu: Column = Column(name="Absorption [mm–3]", position=21, table="Residuals",
-                                                   visible=False)
-    _diffrn_ambient_temperature: Column = Column(name="Temperature [K]", position=22, table="Residuals", visible=False)
-    _diffrn_radiation_wavelength: Column = Column(name="Wavelength [Å]", position=23, table="Residuals", visible=False)
-    _diffrn_source: Column = Column(name="Radiation source", position=24, table="Residuals", visible=False)
-    _diffrn_measurement_device_type: Column = Column(name="Measurement Device", position=25, table="Residuals",
+                               string_method=size_repr, data_type=float_type)
+    a: Column = Column(name="a", position=6, table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    b: Column = Column(name="b", position=7, table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    c: Column = Column(name="c", position=8, table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    alpha: Column = Column(name="alpha", position=9, table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    beta: Column = Column(name="beta", position=10, table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    gamma: Column = Column(name="gamma", position=11, table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    volume: Column = Column(name="Volume", position=12, table="cell", visible=False, string_method=cell_repr,
+                            data_type=float_type)
+    _cell_formula_units_Z: Column = Column(name="Z Value", position=13, table="Residuals", visible=False, data_type=float_type)
+    _space_group_name_H_M_alt: Column = Column(name="Space Group", position=14, table="Residuals", visible=False)
+    _space_group_IT_number: Column = Column(name="Space Group Number", position=15, table="Residuals", visible=False,
+                                            data_type=float_type)
+    _chemical_formula_sum: Column = Column(name="Formula Sum", position=16, table="Residuals", visible=False)
+    _chemical_formula_weight: Column = Column(name="Formula Weight", position=17, table="Residuals", visible=False,
+                                              string_method=formula_weight_repr, data_type=float_type)
+    _exptl_crystal_colour: Column = Column(name="Crystal Color", position=18, table="Residuals", visible=False)
+    _exptl_crystal_size_max: Column = Column(name="Crystal Size Max", position=19, table="Residuals", visible=False,
+                                             data_type=float_type)
+    _exptl_crystal_size_mid: Column = Column(name="Crystal Size Mid", position=20, table="Residuals", visible=False,
+                                             data_type=float_type)
+    _exptl_crystal_size_min: Column = Column(name="Crystal Size Min", position=21, table="Residuals", visible=False,
+                                             data_type=float_type)
+    _exptl_absorpt_coefficient_mu: Column = Column(name="Absorption [mm–3]", position=22, table="Residuals",
+                                                   visible=False, data_type=float_type)
+    _diffrn_ambient_temperature: Column = Column(name="Temperature [K]", position=23, table="Residuals", visible=False,
+                                                 data_type=float_type)
+    _diffrn_radiation_wavelength: Column = Column(name="Wavelength [Å]", position=24, table="Residuals", visible=False,
+                                                  data_type=float_type)
+    _diffrn_source: Column = Column(name="Radiation source", position=25, table="Residuals", visible=False)
+    _diffrn_measurement_device_type: Column = Column(name="Measurement Device", position=26, table="Residuals",
                                                      visible=False)
-    _diffrn_reflns_theta_full: Column = Column(name="Theta (full)", position=26, table="Residuals", visible=False)
-    _diffrn_reflns_theta_max: Column = Column(name="Theta (max)", position=27, table="Residuals", visible=False)
-    _diffrn_measured_fraction_theta_max: Column = Column(name="Completeness", position=28, table="Residuals",
-                                                         visible=False)
-    _reflns_Friedel_coverage: Column = Column(name="Friedel Coverage", position=29, table="Residuals", visible=False)
-    _refine_diff_density_min: Column = Column(name="Density Peak", position=30, table="Residuals", visible=False)
-    _refine_diff_density_max: Column = Column(name="Density Hole", position=31, table="Residuals", visible=False)
+    _diffrn_reflns_theta_full: Column = Column(name="Theta (full)", position=27, table="Residuals", visible=False,
+                                               data_type=float_type)
+    _diffrn_reflns_theta_max: Column = Column(name="Theta (max)", position=28, table="Residuals", visible=False,
+                                              data_type=float_type)
+    _diffrn_measured_fraction_theta_max: Column = Column(name="Completeness", position=29, table="Residuals",
+                                                         visible=False, data_type=float_type)
+    _reflns_Friedel_coverage: Column = Column(name="Friedel Coverage", position=30, table="Residuals", visible=False,
+                                              data_type=float_type)
+    _refine_diff_density_min: Column = Column(name="Density Hole", position=30, table="Residuals", visible=False,
+                                              data_type=float_type)
+    _refine_diff_density_max: Column = Column(name="Density Peak", position=31, table="Residuals", visible=False,
+                                              data_type=float_type)
     _database_code_depnum_ccdc_archive: Column = Column(name="CCDC Number", position=32, table="Residuals",
-                                                        visible=False, string_method=ccdc_repr)
+                                                        visible=False, string_method=ccdc_repr, data_type=float_type)
+    _refine_ls_R_factor_gt: Column = Column(name="R1 Value", position=33, table="Residuals",
+                                                        visible=False, string_method=formula_weight_repr, data_type=float_type)
+    _refine_ls_wR_factor_ref: Column = Column(name="wR2 Value", position=34, table="Residuals",
+                                                        visible=False, string_method=formula_weight_repr, data_type=float_type)
 
     def __init__(self):
         self.all_column_names = self._all_column_names()
@@ -202,10 +233,15 @@ class ColumnSources:
         return columns
 
     def col_from(self, index: int) -> Union[None, Column]:
+        """
+        Keep in mind that the Id header is not shown, so index must be -=1.
+        """
+        headers = []
         try:
             headers = self.visible_headers()
             return self.positions[headers[index]]
         except IndexError:
+            print(f'Could not find column {index} in visible headers: {headers}')
             return None
 
     def visible_headers(self) -> List[str]:

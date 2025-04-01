@@ -8,7 +8,6 @@ Created on 09.02.2015
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
 
-@author: daniel
 """
 
 import os
@@ -55,7 +54,7 @@ def write_file(inplist: List, name: str) -> None:
             ofile.write("%s" % line)  # write the new file
 
 
-def find_binary_string(file, string: str, seek: int, size: int, return_ascii: bool = False) -> Union[str, bytes]:
+def find_binary_string(file, string: str, seek: int, size: int, return_ascii: bool = False) -> Union[None, str, bytes]:
     """
     finds a string in a binary file
     :rtype: str
