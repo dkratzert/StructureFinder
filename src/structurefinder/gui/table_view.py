@@ -40,6 +40,10 @@ class HeaderContextMenu(QtWidgets.QHeaderView):
             getattr(columns, column_name).visible = False
         self.columns_changed.emit(column_name)
 
+    def reset_sorting(self):
+        """Resets the sorting of the table."""
+        self.setSortIndicator(-1, Qt.AscendingOrder)
+        self.table.model().sort(-1)
 
 
 class StructuresListTableView(QtWidgets.QTableView):
@@ -85,7 +89,6 @@ class StructuresListTableView(QtWidgets.QTableView):
         if e.button() == Qt.RightButton:
             pass
         super().mousePressEvent(e)
-
 
 
 if __name__ == "__main__":

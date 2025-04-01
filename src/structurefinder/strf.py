@@ -1267,6 +1267,7 @@ class StartStructureDB(QMainWindow):
                 return None
         except Exception:
             return None
+        self.ui.cifList_tableView.header_menu.reset_sorting()
         if self.structures:
             data = self.structures.get_structure_rows_by_ids()
             self.set_model_from_data(data)

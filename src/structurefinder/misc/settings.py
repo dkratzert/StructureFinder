@@ -71,7 +71,7 @@ class StructureFinderSettings():
     def load_visible_headers(self) -> List[str]:
         self.settings.beginGroup("Headers")
         headers = self.settings.value("visible")
-        print(f'Loaded headers: {headers}')
+        # print(f'Loaded headers: {headers}')
         self.settings.endGroup()
         return headers or []
 
@@ -86,7 +86,7 @@ class StructureFinderSettings():
         self.settings.beginGroup("Headers")
         self.settings.setValue("visible", columns)
         self.settings.endGroup()
-        print(f'Saved visible headers: {columns}')
+        # print(f'Saved visible headers: {columns}')
 
     def load_window_position(self) -> 'Position':
         """
