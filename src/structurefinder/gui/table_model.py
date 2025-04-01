@@ -98,11 +98,6 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
         self.filter_enabled = bool(enabled)
         self.invalidateFilter()
 
-    """def sort(self, column: int, order: Qt.SortOrder = ...) -> None:
-        self.layoutAboutToBeChanged.emit()
-        self.sourceModel()._data.sort(key=lambda x: x[column], reverse=True if order == Qt.DescendingOrder else False)
-        self.layoutChanged.emit()"""
-
     def sort(self, column: int, order: Qt.SortOrder = ...):
         self.layoutAboutToBeChanged.emit()
         self.sourceModel()._data.sort(

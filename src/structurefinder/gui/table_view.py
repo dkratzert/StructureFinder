@@ -17,6 +17,8 @@ class HeaderContextMenu(QtWidgets.QHeaderView):
         self.table = parent
         self.available_columns = columns.all_column_names
         self.setSortIndicatorShown(True)
+        self.setSectionsMovable(True)  # Allow users to drag & drop column headers
+        self.setDragEnabled(True)
 
     def contextMenuEvent(self, event):
         """
