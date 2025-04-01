@@ -114,22 +114,7 @@ class Column:
         Column._counter += 1  # Increment for the next column
 
 
-class ColumnMeta(type):
-    """Metaclass to automatically number Column positions as they appear in the class definition..
-    """
-
-    def __new__(cls, name, bases, class_dict):
-        counter = 1  # Start from 1 since 0 is reserved for Id
-        new_class_dict = {}
-        for attr_name, attr_value in class_dict.items():
-            if isinstance(attr_value, Column):
-                attr_value.position = counter
-                counter += 1
-            new_class_dict[attr_name] = attr_value
-        return super().__new__(cls, name, bases, new_class_dict)
-
-
-class ColumnSources:#(metaclass=ColumnMeta):
+class ColumnSources:
     """
     List of columns available in the table. The position is one-indexed.
     """
