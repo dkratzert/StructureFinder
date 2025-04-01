@@ -109,6 +109,7 @@ class MyTarReader(MyZipBase):
             for name in self.filenames:
                 doc = gemmi.cif.Document()
                 doc.source = name
+                self.cifname = name
                 doc.parse_string(self.tfile.extractfile(name).read().decode('ascii', 'ignore'))
                 if doc:
                     yield doc
