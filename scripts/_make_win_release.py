@@ -2,16 +2,14 @@
 This script has to be run from the main dir e.g. D:\GitHub\StructureFinder
 """
 import hashlib
-import os
 import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 
 # noinspection PyUnresolvedReferences
-from PyQt5 import uic
 from scripts.compile_ui_files import compile_ui
-from scripts.version_numbers import disable_debug, pypath, isspath, process_iss
+from scripts.version_numbers import disable_debug, isspath, process_iss, pypath
 from structurefinder.misc.version import VERSION
 
 app_path = str(Path(__file__).resolve().parent.parent)
