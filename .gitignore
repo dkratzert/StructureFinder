@@ -90,3 +90,4 @@ get-pip.py
 vc_redist.x64.exe
 .python-version
 /src/structurefinder.egg-info
+/scripts/starter/structurefinder/x64
