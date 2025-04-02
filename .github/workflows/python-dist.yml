@@ -30,7 +30,7 @@ jobs:
     name: publish
     runs-on: ubuntu-latest
     environment:
-      name: pypi
+      name: publish
       url: https://pypi.org/p/structurefinder
     permissions:
       contents: read
