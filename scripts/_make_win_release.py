@@ -1,11 +1,8 @@
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
-
-"""
+r"""
 This script has to be run from the main dir e.g. D:\GitHub\StructureFinder
 """
 import hashlib
-import os
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -15,29 +12,20 @@ main_path = str(Path(__file__).resolve().parent)
 pathadd = [app_path, main_path, str(Path(app_path) / 'src')]
 sys.path.extend(pathadd)
 
-import subprocess
-
-# noinspection PyUnresolvedReferences
-from PyQt5 import uic
-
-from scripts.version_numbers import disable_debug, pypath
-from structurefinder.misc.version import VERSION
+from scripts.compile_ui_files import compile_ui  # noqa: E402
+from scripts.version_numbers import disable_debug, isspath, process_iss, pypath  # noqa: E402
+from structurefinder.misc.version import VERSION  # noqa: E402
 
 print("Updating version numbers to version {} ...".format(VERSION))
+
+for i in isspath:
+    process_iss(i)
 
 # disable all debug variables:
 for i in pypath:
     disable_debug(i)
 
 print("Version numbers updated.")
-
-try:
-    print(os.path.abspath('./src/structurefinder/gui'))
-    uic.compileUiDir('./src/structurefinder/gui')
-    print('recompiled ui')
-except:
-    print("Unable to compile UI!")
-    raise
 
 
 def sha512_checksum(filename, block_size=65536):
@@ -74,6 +62,8 @@ def compile_python_files():
 
 
 if __name__ == '__main__':
+    compile_ui()
+    compile_python_files()
     # Make binary distributions:
     make_installer()
 

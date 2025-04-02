@@ -45,11 +45,20 @@ def pathrepr(value: Union[str, bytes]) -> str:
             return ''
 
 
-def float_two_digit_repr(value: bytes) -> str:
+def float_two_digit_repr(value: Union[str, bytes]) -> str:
     if isinstance(value, bytes):
-        value = f"{value.decode('utf-8'):.2f}"
+        value = value.decode('utf-8', "ignore")
     try:
-        return f"{value:.2f}"
+        return f"{float(value):.2f}"
+    except (ValueError, TypeError):
+        return value
+
+
+def float_one_digit_repr(value: Union[str, bytes]) -> str:
+    if isinstance(value, bytes):
+        value = value.decode('utf-8', "ignore")
+    try:
+        return f"{float(value):.1f}"
     except (ValueError, TypeError):
         return value
 
@@ -57,7 +66,7 @@ def float_two_digit_repr(value: bytes) -> str:
 def cell_repr(value: bytes) -> str:
     # print('cell_repr', value)
     if isinstance(value, bytes):
-        value = value.decode('utf-8')
+        value = value.decode('utf-8', "ignore")
     try:
         return f"{value:.4f}"
     except (ValueError, TypeError):
@@ -66,7 +75,7 @@ def cell_repr(value: bytes) -> str:
 
 def ccdc_repr(value: bytes) -> str:
     if isinstance(value, bytes):
-        value = value.decode('utf-8')
+        value = value.decode('utf-8', "ignore")
     return value.removeprefix('CCDC ')
 
 
@@ -132,7 +141,8 @@ class ColumnSources:
     alpha: Column = Column(name="alpha [°]", table="cell", visible=False, string_method=cell_repr, data_type=float_type)
     beta: Column = Column(name="beta [°]", table="cell", visible=False, string_method=cell_repr, data_type=float_type)
     gamma: Column = Column(name="gamma [°]", table="cell", visible=False, string_method=cell_repr, data_type=float_type)
-    volume: Column = Column(name="Volume", table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    volume: Column = Column(name="Volume", table="cell", visible=False, string_method=float_one_digit_repr,
+                            data_type=float_type)
     _cell_formula_units_Z: Column = Column(name="Z Value", table="Residuals", visible=False, data_type=float_type)
     _space_group_name_H_M_alt: Column = Column(name="Space Group", table="Residuals", visible=False)
     _space_group_IT_number: Column = Column(name="Space Group Number", table="Residuals", visible=False,
