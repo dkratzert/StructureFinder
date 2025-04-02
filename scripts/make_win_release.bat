@@ -12,7 +12,7 @@ rem git pull
 CALL scripts\_create_dist.bat
 
 CALL venv\Scripts\activate.bat
-CALL pip install qtpy
+rem CALL pip install qtpy
 
 CALL venv\Scripts\python.exe scripts\_make_win_release.py
 

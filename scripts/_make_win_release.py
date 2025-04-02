@@ -1,4 +1,4 @@
-"""
+r"""
 This script has to be run from the main dir e.g. D:\GitHub\StructureFinder
 """
 import hashlib
