@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List
 
 from PyQt5.QtCore import QSettings, QPoint, QSize
+from PyQt5.uic.Compiler.qtproxies import QtCore
 
 Position = namedtuple('Position', 'size, position, maximized')
 
@@ -87,6 +88,17 @@ class StructureFinderSettings():
         self.settings.setValue("visible", columns)
         self.settings.endGroup()
         # print(f'Saved visible headers: {columns}')
+
+    def save_column_state(self, state: QtCore.QByteArray) -> None:
+        self.settings.beginGroup("Headers")
+        self.settings.setValue("column_order", state)
+        self.settings.endGroup()
+
+    def load_column_state(self) -> QtCore.QByteArray:
+        self.settings.beginGroup("Headers")
+        state: QtCore.QByteArray = self.settings.value("column_order", None)
+        self.settings.endGroup()
+        return state
 
     def load_window_position(self) -> 'Position':
         """

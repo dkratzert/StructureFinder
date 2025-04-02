@@ -197,11 +197,19 @@ class StartStructureDB(QMainWindow):
 
     def save_headers(self):
         self.settings.save_visible_headers(columns.visible_headers())
+        # TDDO: Doesn't work:
+        # self.settings.save_column_state(self.ui.cifList_tableView.horizontalHeader().saveState())
 
     def load_headers(self):
         headers = self.settings.load_visible_headers()
         if headers and isinstance(headers, list):
             columns.set_visible_headers(headers)
+        # TDDO: Doesn't work:
+        """
+        column_order = self.settings.load_column_state()
+        if column_order:
+            ok = self.ui.cifList_tableView.horizontalHeader().restoreState(column_order)
+            print(f'state restored {ok}')"""
 
     def set_model_from_data(self, data: Union[list, tuple]):
         table_model = TableModel(parent=self, structures=data)
@@ -244,6 +252,10 @@ class StartStructureDB(QMainWindow):
 
     def close(self):
         self.save_headers()
+
+    def closeEvent(self, event):
+        self.save_headers()
+        super().closeEvent(event)
 
     def _savesize(self) -> None:
         """Saves the main window size nd position."""

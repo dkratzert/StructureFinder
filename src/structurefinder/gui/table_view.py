@@ -9,7 +9,7 @@ from structurefinder import strf
 from structurefinder.searcher.database_handler import columns
 
 
-class HeaderContextMenu(QtWidgets.QHeaderView):
+class CustomHorizontalHeaderView(QtWidgets.QHeaderView):
     columns_changed = pyqtSignal(str)
 
     def __init__(self, parent: 'StructuresListTableView'):
@@ -55,7 +55,7 @@ class StructuresListTableView(QtWidgets.QTableView):
         self.setContextMenuPolicy(Qt.DefaultContextMenu)
         self.doubleClicked.connect(self._on_open_file_path)
         self.setSortingEnabled(True)
-        self.header_menu = HeaderContextMenu(self)
+        self.header_menu = CustomHorizontalHeaderView(self)
         self.header_menu.setSectionsClickable(True)
         self.setHorizontalHeader(self.header_menu)
 
