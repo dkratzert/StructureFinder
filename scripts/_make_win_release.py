@@ -7,15 +7,14 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# noinspection PyUnresolvedReferences
-from scripts.compile_ui_files import compile_ui
-from scripts.version_numbers import disable_debug, isspath, process_iss, pypath
-from structurefinder.misc.version import VERSION
-
 app_path = str(Path(__file__).resolve().parent.parent)
 main_path = str(Path(__file__).resolve().parent)
 pathadd = [app_path, main_path, str(Path(app_path) / 'src')]
 sys.path.extend(pathadd)
+
+from scripts.compile_ui_files import compile_ui  # noqa: E402
+from scripts.version_numbers import disable_debug, isspath, process_iss, pypath  # noqa: E402
+from structurefinder.misc.version import VERSION  # noqa: E402
 
 print("Updating version numbers to version {} ...".format(VERSION))
 
