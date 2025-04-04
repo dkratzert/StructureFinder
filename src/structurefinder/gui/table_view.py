@@ -25,6 +25,16 @@ class CustomHorizontalHeaderView(QtWidgets.QHeaderView):
         Right-click menu for the horizontal header.
         """
         menu = QtWidgets.QMenu(self.table)
+        menu.setStyleSheet("""
+                QMenu {
+                    background-color: #f0f0f0;
+                    color: black;
+                }
+                QMenu::item:selected {
+                    background-color: #3874f2;
+                    color: white;
+                }
+            """)
         for column_name in self.available_columns:
             action = QtWidgets.QAction(f"{column_name}", self.table)
             action.setCheckable(True)
