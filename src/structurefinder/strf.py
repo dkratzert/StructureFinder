@@ -52,6 +52,7 @@ from structurefinder.searcher.filecrawler import excluded_names
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, \
     regular_results_parameters
+from structurefinder.searcher.search_worker import SearchWorker
 from structurefinder.searcher.worker import Worker
 from structurefinder.shelxfile.shelx import ShelXFile
 
@@ -640,18 +641,24 @@ class StartStructureDB(QMainWindow):
         self.ui.p4pCellButton.setDisabled(True)
         self.ui.appendDatabasePushButton.setDisabled(True)
         self.ui.importDatabaseButton.setDisabled(True)
+
         self.thread = QThread()
-        self.worker = Worker(searchpath=startdir, add_res_files=self.ui.add_res.isChecked(), excludes=excluded_names,
-                             add_cif_files=self.ui.add_cif.isChecked(), lastid=lastid, structures=self.structures)
+        self.worker = SearchWorker(startdir)
+        self.worker.progress.connect(self.progress.setValue)
+        #self.worker.found.connect(self.show_result)
+        #self.worker.finished.connect(self.search_done)
+
+        #self.worker = Worker(searchpath=startdir, add_res_files=self.ui.add_res.isChecked(), excludes=excluded_names,
+        #                     add_cif_files=self.ui.add_cif.isChecked(), lastid=lastid, structures=self.structures)
         self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.index_files)
+        self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.worker.finished.connect(lambda x: self.statusBar().showMessage(x))
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.abort_import_button.hide)
         self.worker.progress.connect(self.report_progress)
-        self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
+        #self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
         self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir))
         self.statusBar().showMessage('Searching potential files...')
