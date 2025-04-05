@@ -19,13 +19,14 @@ class SearchWorker(QObject):
         self._is_running = False
 
     def run(self):
-        for result in find_files("/Users/daniel/Documents/GitHub/StructureFinder",
-                                 exclude_dirs=EXCLUDED_NAMES, progress_callback=lambda x: self.progress.emit(x)):
+        for num, result in enumerate(find_files(self.root_dir, exclude_dirs=EXCLUDED_NAMES,
+                                                progress_callback=lambda percent: self.progress.emit(percent))):
             if self.stop:
                 break
-            print(result)
+            #print(result)
+            #self.progress.emit(num)
             #self.found.emit(result)
-        self.progress.emit(100)
+        self.progress.emit(0)
         print('finished')
         self.finished.emit()
 
