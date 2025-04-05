@@ -46,12 +46,12 @@ def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, progress_call
         dirnames[:] = [d for d in dirnames
                        if not is_excluded(os.path.join(dirpath, d), exclude_dirs)]
         total = len(filenames)
-        for filename in filenames:
+        for num, filename in enumerate(filenames):
             filepath = os.path.join(dirpath, filename)
             if is_excluded(filepath, exclude_dirs):
                 continue
             if progress_callback:
-                progress_callback(int((i + 1) / total * 100))
+                progress_callback(int((num + 1) / total * 100))
 
             if filename.lower().endswith(exts):
                 yield from file_result(filename, filepath)

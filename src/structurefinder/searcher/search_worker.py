@@ -10,6 +10,7 @@ class SearchWorker(QObject):
 
     def __init__(self, root_dir):
         super().__init__()
+        self.stop = False
         self.root_dir = root_dir
         self.exclude_dirs = EXCLUDED_NAMES
         self._is_running = True
@@ -19,6 +20,12 @@ class SearchWorker(QObject):
 
     def run(self):
         for result in find_files("/Users/daniel/Documents/GitHub/StructureFinder",
-                                 exclude_dirs=EXCLUDED_NAMES, progress_callback=lambda: self.progress.emit):
-            self.found.emit(result)
+                                 exclude_dirs=EXCLUDED_NAMES, progress_callback=lambda x: self.progress.emit(x)):
+            if self.stop:
+                break
+            print(result)
+            #self.found.emit(result)
+        self.progress.emit(100)
+        print('finished')
         self.finished.emit()
+
