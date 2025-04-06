@@ -109,7 +109,6 @@ def search_in_zip(zip_path: str, exts: tuple[str] | set[str], exclude_dirs: Iter
             for file in archive.namelist():
                 filepath = os.path.basename(file)
                 if is_excluded_dir(filepath, exclude_dirs):
-                    print(f'Skipping {filepath}')
                     continue
                 if file.lower().endswith(exts):
                     with archive.open(file) as f:
@@ -147,5 +146,7 @@ def search_in_7z(sevenz_path: str, exts: Iterable[str], exclude_dirs: Iterable[s
 
 if __name__ == '__main__':
     # app = QApplication(sys.argv)
-    for result in find_files("/Users/daniel/Documents/GitHub/StructureFinder", exclude_dirs=EXCLUDED_NAMES):
+    for num, result in enumerate(find_files("/Users/daniel/Documents/GitHub/StructureFinder", exclude_dirs=EXCLUDED_NAMES)):
         print(result)
+    print(num)
+    assert num == 254

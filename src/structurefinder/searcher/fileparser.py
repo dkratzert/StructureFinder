@@ -21,9 +21,9 @@ from gemmi import cif
 DEBUG = False
 
 
-class CifFile(object):
+class CifFile:
 
-    def __init__(self, options=None):
+    def __init__(self):
         """
         A cif file parsing object optimized for speed and simplicity.
         It can not handle multi cif files.
@@ -31,8 +31,6 @@ class CifFile(object):
         self.doc: Union[None, gemmi.cif.Document] = None
         self.block: Union[None, gemmi.cif.Block] = None
         self.cell: Union[None, gemmi.UnitCell] = None
-        if options is None:
-            options = {'modification_time': "", 'file_size': ""}
         # This is a set of keys that are already there:
         self.cif_data: Dict[str, Union[str, Any]] = {
             "data"                                : '',

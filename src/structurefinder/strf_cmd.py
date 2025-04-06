@@ -1,7 +1,6 @@
 import argparse
 import sys
 import time
-import os
 from argparse import Namespace
 from contextlib import suppress
 from pathlib import Path
@@ -12,12 +11,13 @@ import gemmi
 from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core.lattice import Lattice
-from structurefinder.searcher.crawler2 import find_files, EXCLUDED_NAMES, FileType
+from structurefinder.searcher.crawler2 import find_files, EXCLUDED_NAMES, FileType, Result
 from structurefinder.searcher.database_handler import DatabaseRequest, StructureTable
-from structurefinder.searcher.filecrawler import excluded_names, fill_db_with_cif_data
+from structurefinder.searcher.filecrawler import fill_db_with_cif_data
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
-from structurefinder.searcher.worker import Worker
+
+debug = False
 
 parser = argparse.ArgumentParser(
     description=f'Command line version {VERSION} of StructureFinder to collect .cif/.res files to a '
@@ -143,9 +143,7 @@ def run_index(args=None):
         if args.delete:
             try:
                 dbf = Path(dbfilename)
-                dbf.unlink()
-            except FileNotFoundError:
-                pass
+                dbf.unlink(missing_ok=True)
             except PermissionError:
                 print(f'Could not access database file "{dbfilename}". Is it used elsewhere?')
                 print('Giving up...')
@@ -153,7 +151,6 @@ def run_index(args=None):
         db, structures = get_database(dbfilename)
         time1 = time.perf_counter()
         for p in args.dir:
-            # the command line version
             lastid = db.get_lastrowid()
             if not lastid:
                 lastid = 1
@@ -161,30 +158,11 @@ def run_index(args=None):
                 lastid += 1
             try:
                 for num, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES, progress_callback=None)):
-                    options = {}
+
                     # options['modification_time'] = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(result.file_path)))
                     # options['file_size'] = int(os.stat(str(fullpath)).st_size)
                     if result.file_type == FileType.CIF:
-                        cif = CifFile(options=options)
-                        cif.cif_data['file_size'] = result.file_size
-                        cif.cif_data['modification_time'] = result.modification_time
-                        doc = gemmi.cif.Document()
-                        # with suppress(Exception):
-                        try:
-                            doc.parse_string(result.file_content)
-                        except ValueError:
-                            continue
-                        cif.parsefile(doc)
-                        #
-                        if cif.block:
-                            tst = fill_db_with_cif_data(cif,
-                                                        filename=result.filename,
-                                                        path=result.file_path,
-                                                        structure_id=lastid,
-                                                        structures=structures)
-                        else:
-                            print(f'File has no block:', result)
-
+                        process_cif(lastid, result, structures)
                         lastid += 1
                 print(num)
             except OSError as e:
@@ -212,6 +190,29 @@ def run_index(args=None):
         import os
         if "PYTEST_CURRENT_TEST" not in os.environ:
             check_update()
+
+
+def process_cif(lastid: int, result: Result, structures: StructureTable) -> bool:
+    cif = CifFile()
+    cif.cif_data['file_size'] = result.file_size
+    cif.cif_data['modification_time'] = result.modification_time
+    doc = gemmi.cif.Document()
+    try:
+        doc.parse_string(result.file_content)
+    except ValueError:
+        return False
+    cif.parsefile(doc)
+    if cif.block:
+        ok = fill_db_with_cif_data(cif,
+                                   filename=result.filename,
+                                   path=result.file_path,
+                                   structure_id=lastid,
+                                   structures=structures)
+        if not ok:
+            return False
+    elif debug:
+        print(f'File has no block:', result)
+    return True
 
 
 def merge_database(args: Namespace):
