@@ -23,6 +23,7 @@ from typing import Generator, Tuple, List, Union
 import gemmi
 
 from structurefinder.searcher import database_handler
+from structurefinder.searcher.crawler2 import Result
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import get_value
 from structurefinder.shelxfile.shelx import ShelXFile
@@ -227,8 +228,7 @@ def add_atoms(cif, structure_id, structures):
     return sum_formula_dict
 
 
-def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id: int,
-                          structures: database_handler.StructureTable, options: dict):
+def fill_db_with_res_data(res: ShelXFile, result: Result, structure_id: int, structures: database_handler.StructureTable):
     if not res.cell:
         return False
     if not all([res.cell.a, res.cell.b, res.cell.c, res.cell.al, res.cell.be, res.cell.ga]):
@@ -237,7 +237,7 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
         return False
     # Unused value:
     measurement_id = 1
-    structures.fill_structures_table(path, filename, structure_id, measurement_id, res.titl)
+    structures.fill_structures_table(result.file_path, result.filename, structure_id, measurement_id, res.titl)
     structures.fill_cell_table(structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.al,
                                res.cell.be, res.cell.ga, res.cell.volume)
     for at in res.atoms:
@@ -254,7 +254,9 @@ def fill_db_with_res_data(res: ShelXFile, filename: str, path: str, structure_id
                                     at.sof,
                                     at.part.n,
                                     round(at.xc, 5), round(at.yc, 5), round(at.zc, 5))
-    cif = CifFile(options=options)
+    cif = CifFile()
+    cif.cif_data['file_size'] = result.file_size
+    cif.cif_data['modification_time'] = result.modification_time
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     try:
         symmops = "\n".join([x.to_fractional() for x in res.symmcards])

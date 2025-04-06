@@ -630,11 +630,6 @@ class StartStructureDB(QMainWindow):
             self.progress.hide()
             self.abort_import_button.hide()
             return
-        lastid = self.structures.database.get_lastrowid()
-        if not lastid:
-            lastid = 1
-        else:
-            lastid += 1
         self.ui.importDirButton.setDisabled(True)
         self.ui.appendDirButton.setDisabled(True)
         self.ui.closeDatabaseButton.setDisabled(True)
@@ -643,7 +638,7 @@ class StartStructureDB(QMainWindow):
         self.ui.importDatabaseButton.setDisabled(True)
 
         self.thread = QThread()
-        self.worker = SearchWorker(startdir)
+        self.worker = SearchWorker(startdir, self.structures)
         self.worker.progress.connect(self.progress.setValue)
         #self.worker.found.connect(self.show_result)
         #self.worker.finished.connect(self.search_done)

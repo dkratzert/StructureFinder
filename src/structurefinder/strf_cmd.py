@@ -13,11 +13,12 @@ from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core.lattice import Lattice
 from structurefinder.searcher.crawler2 import find_files, EXCLUDED_NAMES, FileType, Result
 from structurefinder.searcher.database_handler import DatabaseRequest, StructureTable
-from structurefinder.searcher.filecrawler import fill_db_with_cif_data
+from structurefinder.searcher.filecrawler import fill_db_with_cif_data, fill_db_with_res_data
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
+from structurefinder.shelxfile.shelx import ShelXFile
 
-debug = False
+DEBUG = False
 
 parser = argparse.ArgumentParser(
     description=f'Command line version {VERSION} of StructureFinder to collect .cif/.res files to a '
@@ -124,8 +125,8 @@ def find_cell(args: Namespace):
           '                                    |  filename             |  data name  ')
     print('-' * 130)
     for res in searchresult:
-        Id = res[0]
-        dataname, filename, path = [x.decode('utf-8') for x in res if isinstance(x, bytes)]
+        Id, dataname, filename, size, path = [x.decode('utf-8') if isinstance(x, bytes) else x for x in res]
+        # Id, path, filename, dataname
         print(f'{Id:<7} | {path:77s} | {filename:<21s} | {dataname:s}')
 
 
@@ -150,37 +151,26 @@ def run_index(args=None):
                 sys.exit()
         db, structures = get_database(dbfilename)
         time1 = time.perf_counter()
+        lastid = db.get_lastrowid()
+        if not lastid:
+            lastid = 1
+        else:
+            lastid += 1
         for p in args.dir:
-            lastid = db.get_lastrowid()
-            if not lastid:
-                lastid = 1
-            else:
-                lastid += 1
             try:
                 for num, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES, progress_callback=None)):
-
-                    # options['modification_time'] = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(result.file_path)))
-                    # options['file_size'] = int(os.stat(str(fullpath)).st_size)
                     if result.file_type == FileType.CIF:
                         process_cif(lastid, result, structures)
-                        lastid += 1
-                print(num)
+                    if result.file_type == FileType.RES:
+                        process_res(lastid, result, structures)
+                    lastid += 1
             except OSError as e:
                 print(f"Unable to collect files: in path '{p}'")
                 print(e)
             except KeyboardInterrupt:
                 sys.exit()
             print("---------------------")
-        structures.database.commit_db()
-        try:
-            if db and structures:
-                db.init_textsearch()
-                db.init_author_search()
-                db.populate_fulltext_search_table()
-                db.populate_author_fulltext_search()
-                db.make_indexes()
-        except TypeError:
-            print('No valid files found. They might be in excluded subdirectories.')
+        finish_database(db, structures)
         time2 = time.perf_counter()
         diff = time2 - time1
         m, s = divmod(diff, 60)
@@ -190,6 +180,19 @@ def run_index(args=None):
         import os
         if "PYTEST_CURRENT_TEST" not in os.environ:
             check_update()
+
+
+def finish_database(db, structures):
+    structures.database.commit_db()
+    try:
+        if db and structures:
+            db.init_textsearch()
+            db.init_author_search()
+            db.populate_fulltext_search_table()
+            db.populate_author_fulltext_search()
+            db.make_indexes()
+    except TypeError:
+        print('No valid files found. They might be in excluded subdirectories.')
 
 
 def process_cif(lastid: int, result: Result, structures: StructureTable) -> bool:
@@ -210,8 +213,26 @@ def process_cif(lastid: int, result: Result, structures: StructureTable) -> bool
                                    structures=structures)
         if not ok:
             return False
-    elif debug:
+    elif DEBUG:
         print(f'File has no block:', result)
+    return True
+
+
+def process_res(lastid: int, result: Result, structures: StructureTable) -> bool:
+    try:
+        res = ShelXFile(result.file_path)
+    except Exception as e:
+        if DEBUG:
+            print(e)
+            print(f"Could not parse (.res): {result.file_type}")
+        return False
+    if res:
+        with suppress(Exception):
+            tst = fill_db_with_res_data(res, result=result, structure_id=lastid, structures=structures)
+    if not tst:
+        if DEBUG:
+            print('res file not added:', result.file_path)
+        return False
     return True
 
 
@@ -273,5 +294,7 @@ def main():
 
 
 if __name__ == '__main__':
+    Path('test.sqlite').unlink(missing_ok=True)
     main()
-    # find_cell('10.5086  20.9035  20.5072   90.000   94.130   90.000'.split())
+    find_cell(
+        Namespace(cell='10.5086  20.9035  20.5072   90.000   94.130   90.000'.split(), outfile='test.sqlite'))

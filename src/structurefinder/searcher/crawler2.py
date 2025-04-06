@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-import fnmatch
 import os
-import re
-import sys
 import tarfile
 import zipfile
 from collections.abc import Iterable, Callable
 from dataclasses import dataclass
 from enum import Enum
-
-from structurefinder.searcher.filecrawler import archives
 
 EXCLUDED_NAMES = {'ROOT',
                   '.OLEX',
@@ -29,6 +24,9 @@ EXCLUDED_NAMES = {'ROOT',
 class FileType(Enum):
     CIF = 3
     RES = 4
+
+
+suffix_to_type = {'.cif': FileType.CIF, '.res': FileType.RES}
 
 
 @dataclass(frozen=True)
@@ -77,6 +75,8 @@ def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, progress_call
                 filepath = os.path.join(dirpath, filename)
                 yield from search_in_zip(filepath, exts, exclude_dirs)
             elif is_tarfile(filename):
+                print('TODO: Implement tar indexing')
+                continue
                 filepath = os.path.join(dirpath, filename)
                 yield from search_in_tar(filepath, exts)
             elif filename.endswith(".7z"):
@@ -98,7 +98,7 @@ def is_zipfile(filename: str) -> bool:
 
 def file_result(filename, filepath):
     with open(filepath, 'rb') as fobj:
-        yield Result(file_type=FileType.CIF if filename.lower().endswith(".cif") else FileType.RES,
+        yield Result(file_type=suffix_to_type.get(filepath.lower()[-4:]),
                      file_content=fobj.read().decode('latin1', 'replace'),
                      filename=filename, file_path=filepath)
 
@@ -110,9 +110,10 @@ def search_in_zip(zip_path: str, exts: tuple[str] | set[str], exclude_dirs: Iter
                 filepath = os.path.basename(file)
                 if is_excluded_dir(filepath, exclude_dirs):
                     continue
-                if file.lower().endswith(exts):
+                lower_file = file.lower()
+                if lower_file.endswith(exts):
                     with archive.open(file) as f:
-                        yield Result(file_type=FileType.CIF if file.lower().endswith(".cif") else FileType.RES,
+                        yield Result(file_type=suffix_to_type.get(lower_file[-4:]),
                                      archive_path=zip_path,
                                      filename=file,
                                      file_content=f.read().decode('latin1', 'replace'),
@@ -129,7 +130,7 @@ def search_in_tar(tar_path: str, exts: Iterable[str], exclude_dirs: Iterable[str
                 if member.name.lower().endswith(exts) and member.isfile():
                     f = archive.extractfile(member)
                     if f:
-                        yield ("tar", tar_path, member.name, f.read())
+                        yield Result("tar", tar_path, member.name, f.read())
     except Exception as e:
         print(f"[TAR] Error in {tar_path}: {e}")
 
@@ -146,7 +147,8 @@ def search_in_7z(sevenz_path: str, exts: Iterable[str], exclude_dirs: Iterable[s
 
 if __name__ == '__main__':
     # app = QApplication(sys.argv)
-    for num, result in enumerate(find_files("/Users/daniel/Documents/GitHub/StructureFinder", exclude_dirs=EXCLUDED_NAMES)):
+    for num, result in enumerate(
+        find_files("/Users/daniel/Documents/GitHub/StructureFinder", exclude_dirs=EXCLUDED_NAMES)):
         print(result)
     print(num)
     assert num == 254
