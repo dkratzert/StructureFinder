@@ -101,8 +101,8 @@ class CifFile(object):
             "_publ_contact_author_name"           : '',
             "_publ_contact_author"                : '',
             "_publ_author_name"                   : '',
-            "modification_time"                   : options['modification_time'],
-            "file_size"                           : options['file_size'],
+            "modification_time"                   : '',
+            "file_size"                           : '',
             "calculated_formula_sum"              : '',
         }
 

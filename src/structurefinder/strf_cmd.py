@@ -1,16 +1,21 @@
 import argparse
 import sys
 import time
+import os
 from argparse import Namespace
 from contextlib import suppress
 from pathlib import Path
 from sqlite3 import DatabaseError
 
+import gemmi
+
 from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core.lattice import Lattice
+from structurefinder.searcher.crawler2 import find_files, EXCLUDED_NAMES, FileType
 from structurefinder.searcher.database_handler import DatabaseRequest, StructureTable
-from structurefinder.searcher.filecrawler import excluded_names
+from structurefinder.searcher.filecrawler import excluded_names, fill_db_with_cif_data
+from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
 from structurefinder.searcher.worker import Worker
 
@@ -142,7 +147,7 @@ def run_index(args=None):
             except FileNotFoundError:
                 pass
             except PermissionError:
-                print(f'Could not acess database file "{dbfilename}". Is it used elsewhere?')
+                print(f'Could not access database file "{dbfilename}". Is it used elsewhere?')
                 print('Giving up...')
                 sys.exit()
         db, structures = get_database(dbfilename)
@@ -155,14 +160,40 @@ def run_index(args=None):
             else:
                 lastid += 1
             try:
-                _ = Worker(searchpath=p, add_res_files=args.fillres, add_cif_files=args.fillcif, lastid=lastid,
-                           structures=structures, excludes=args.ex if args.ex else excluded_names, standalone=True)
+                for num, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES, progress_callback=None)):
+                    options = {}
+                    # options['modification_time'] = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(result.file_path)))
+                    # options['file_size'] = int(os.stat(str(fullpath)).st_size)
+                    if result.file_type == FileType.CIF:
+                        cif = CifFile(options=options)
+                        cif.cif_data['file_size'] = result.file_size
+                        cif.cif_data['modification_time'] = result.modification_time
+                        doc = gemmi.cif.Document()
+                        # with suppress(Exception):
+                        try:
+                            doc.parse_string(result.file_content)
+                        except ValueError:
+                            continue
+                        cif.parsefile(doc)
+                        #
+                        if cif.block:
+                            tst = fill_db_with_cif_data(cif,
+                                                        filename=result.filename,
+                                                        path=result.file_path,
+                                                        structure_id=lastid,
+                                                        structures=structures)
+                        else:
+                            print(f'File has no block:', result)
+
+                        lastid += 1
+                print(num)
             except OSError as e:
-                print("Unable to collect files:")
+                print(f"Unable to collect files: in path '{p}'")
                 print(e)
             except KeyboardInterrupt:
                 sys.exit()
             print("---------------------")
+        structures.database.commit_db()
         try:
             if db and structures:
                 db.init_textsearch()

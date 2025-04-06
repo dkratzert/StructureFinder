@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+import fnmatch
 import os
+import re
 import sys
 import tarfile
 import zipfile
+from collections.abc import Iterable, Callable
 from dataclasses import dataclass
 from enum import Enum
 
-EXCLUDED_NAMES = ('ROOT',
+from structurefinder.searcher.filecrawler import archives
+
+EXCLUDED_NAMES = {'ROOT',
                   '.OLEX',
                   'olex',
                   'TMP',
@@ -18,12 +23,12 @@ EXCLUDED_NAMES = ('ROOT',
                   'BrukerShelXlesaves',
                   'shelXlesaves',
                   '__private__',
-                  'autostructure_private')
+                  'autostructure_private'}
 
 
 class FileType(Enum):
-    FILE = 1
-    ARCHIVE = 2
+    CIF = 3
+    RES = 4
 
 
 @dataclass(frozen=True)
@@ -33,81 +38,92 @@ class Result:
     file_path: str | bytes
     file_content: str
     archive_path: str | None = None
+    modification_time: int = 0
+    file_size: int = 0
+
+    @property
+    def in_archive(self) -> bool:
+        return bool(self.archive_path)
 
     def __repr__(self):
         return f'Result: {self.filename} ({self.file_type}) in {self.file_path} \n{self.file_content[:160]}\n'
 
 
-def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, progress_callback=None):
+def is_excluded_dir(dirpath: str, exclude_dirs: Iterable[str]) -> bool:
+    dirname = os.path.basename(dirpath)
+    for ex in exclude_dirs:
+        if dirname.lower() == ex:
+            return True
+    return False
+
+
+def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, progress_callback: Callable = None):
     if exclude_dirs is None:
         exclude_dirs = set()
+    exclude_dirs = set([x.lower() for x in exclude_dirs])
 
     for dirpath, dirnames, filenames in os.walk(root_dir):
-        dirnames[:] = [d for d in dirnames
-                       if not is_excluded(os.path.join(dirpath, d), exclude_dirs)]
+        if is_excluded_dir(dirpath, exclude_dirs):
+            continue
         total = len(filenames)
         for num, filename in enumerate(filenames):
-            filepath = os.path.join(dirpath, filename)
-            if is_excluded(filepath, exclude_dirs):
-                continue
             if progress_callback:
                 progress_callback(int((num + 1) / total * 100))
 
             if filename.lower().endswith(exts):
+                filepath = os.path.join(dirpath, filename)
                 yield from file_result(filename, filepath)
-            elif zipfile.is_zipfile(filepath):
-                yield from search_in_zip(filepath, exts)
-            elif tarfile.is_tarfile(filepath):
+            elif is_zipfile(filename):
+                filepath = os.path.join(dirpath, filename)
+                yield from search_in_zip(filepath, exts, exclude_dirs)
+            elif is_tarfile(filename):
+                filepath = os.path.join(dirpath, filename)
                 yield from search_in_tar(filepath, exts)
-            elif filename.lower().endswith(".7z"):
+            elif filename.endswith(".7z"):
+                filepath = os.path.join(dirpath, filename)
                 yield from search_in_7z(filepath, exts)
+
+
+def is_tarfile(filename: str) -> bool:
+    if filename.lower().endswith(".tar.gz"):
+        return True
+    return False
+
+
+def is_zipfile(filename: str) -> bool:
+    if filename.lower().endswith(".zip"):
+        return True
+    return False
 
 
 def file_result(filename, filepath):
     with open(filepath, 'rb') as fobj:
-        yield Result(file_type=FileType.FILE,
+        yield Result(file_type=FileType.CIF if filename.lower().endswith(".cif") else FileType.RES,
                      file_content=fobj.read().decode('latin1', 'replace'),
                      filename=filename, file_path=filepath)
 
 
-def is_excluded(path, exclude_dirs):
-    path = os.path.abspath(path)
-    for ex in exclude_dirs:
-        ex = os.path.abspath(ex)
-        if os.path.commonpath([path, ex]) == ex:
-            return True
-    return False
-
-
-def is_internal_excluded(internal_path, exclude_dirs):
-    if exclude_dirs is None:
-        return False
-    for ex in exclude_dirs:
-        ex = ex.replace("\\", "/").rstrip("/") + "/"
-        if internal_path.startswith(ex):
-            return True
-    return False
-
-
-def search_in_zip(zip_path, exts, exclude_dirs=None):
+def search_in_zip(zip_path: str, exts: tuple[str] | set[str], exclude_dirs: Iterable[str] = None):
     try:
         with zipfile.ZipFile(zip_path, 'r') as archive:
             for file in archive.namelist():
-                norm_path = file.replace("\\", "/")  # falls Windows ZIPs
-                if is_internal_excluded(norm_path, exclude_dirs):
+                filepath = os.path.basename(file)
+                if is_excluded_dir(filepath, exclude_dirs):
+                    print(f'Skipping {filepath}')
                     continue
-                if norm_path.lower().endswith(exts):
+                if file.lower().endswith(exts):
                     with archive.open(file) as f:
-                        yield Result(file_type=FileType.ARCHIVE,
+                        yield Result(file_type=FileType.CIF if file.lower().endswith(".cif") else FileType.RES,
                                      archive_path=zip_path,
                                      filename=file,
                                      file_content=f.read().decode('latin1', 'replace'),
                                      file_path=file)
     except Exception as e:
         print(f"[ZIP] Error in {zip_path}: {e}")
+        # raise
 
 
-def search_in_tar(tar_path, exts):
+def search_in_tar(tar_path: str, exts: Iterable[str], exclude_dirs: Iterable[str] = None):
     try:
         with tarfile.open(tar_path, 'r:*') as archive:
             for member in archive.getmembers():
@@ -119,7 +135,7 @@ def search_in_tar(tar_path, exts):
         print(f"[TAR] Error in {tar_path}: {e}")
 
 
-def search_in_7z(sevenz_path, exts):
+def search_in_7z(sevenz_path: str, exts: Iterable[str], exclude_dirs: Iterable[str] = None):
     try:
         with py7zr.SevenZipFile(sevenz_path, mode='r') as archive:
             for name, bio in archive.readall().items():
@@ -130,6 +146,6 @@ def search_in_7z(sevenz_path, exts):
 
 
 if __name__ == '__main__':
-    #app = QApplication(sys.argv)
+    # app = QApplication(sys.argv)
     for result in find_files("/Users/daniel/Documents/GitHub/StructureFinder", exclude_dirs=EXCLUDED_NAMES):
         print(result)

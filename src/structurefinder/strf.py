@@ -654,6 +654,7 @@ class StartStructureDB(QMainWindow):
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
+        self.worker.finished.connect(self.progress.hide)
         #self.worker.finished.connect(lambda x: self.statusBar().showMessage(x))
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.abort_import_button.hide)

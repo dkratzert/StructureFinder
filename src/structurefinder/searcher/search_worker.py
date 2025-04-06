@@ -24,6 +24,7 @@ class SearchWorker(QObject):
             if self.stop:
                 break
             #print(result)
+            #print(num)
             #self.progress.emit(num)
             #self.found.emit(result)
         self.progress.emit(0)
