@@ -151,9 +151,9 @@ def run_index(args=None):
                 print(f'Could not access database file "{dbfilename}". Is it used elsewhere?')
                 print('Giving up...')
                 sys.exit()
-        db, structures = get_database(dbfilename)
+        structures = get_database(dbfilename)
         time1 = time.perf_counter()
-        lastid = db.get_lastrowid()
+        lastid = structures.database.get_lastrowid()
         if not lastid:
             lastid = 1
         else:
@@ -175,7 +175,7 @@ def run_index(args=None):
             except KeyboardInterrupt:
                 sys.exit()
             print("---------------------")
-        finish_database(db, structures)
+        finish_database(structures)
         time2 = time.perf_counter()
         diff = time2 - time1
         m, s = divmod(diff, 60)
@@ -191,8 +191,9 @@ def progress(value: float) -> None:
     print(f'-> {value}', end='\r')
 
 
-def finish_database(db, structures):
+def finish_database(structures: StructureTable):
     structures.database.commit_db()
+    db = structures.database
     try:
         if db and structures:
             db.init_textsearch()
@@ -238,11 +239,10 @@ def process_res(lastid: int, result: Result, structures: StructureTable) -> bool
         return False
     if res:
         with suppress(Exception):
-            tst = fill_db_with_res_data(res, result=result, structure_id=lastid, structures=structures)
-    if not tst:
-        if DEBUG:
-            print('res file not added:', result.file_path, result.filename)
-        return False
+            if not fill_db_with_res_data(res, result=result, structure_id=lastid, structures=structures):
+                if DEBUG:
+                    print('res file not added:', result.file_path, result.filename)
+                return False
     return True
 
 
@@ -273,11 +273,11 @@ def merge_database(args: Namespace):
         print('\nCan not merge same file together!\n')
         return
     print(f'Merging {merge_file_name.resolve()} into {dbfile.resolve()}:\n')
-    db, structures = get_database(dbfile)
-    db.merge_databases(str(merge_file_name))
+    structures = get_database(dbfile)
+    structures.database.merge_databases(str(merge_file_name))
 
 
-def get_database(dbfilename):
+def get_database(dbfilename: Path | str) -> StructureTable:
     db = DatabaseRequest(dbfilename)
     try:
         db.initialize_db()
@@ -286,7 +286,7 @@ def get_database(dbfilename):
         print(f'The Database {dbfilename} is corrupt. Unable to open it!')
         sys.exit()
     structures = StructureTable(dbfilename)
-    return db, structures
+    return structures
 
 
 def main():
@@ -306,7 +306,7 @@ def main():
             files = '.res files'
         else:
             files = '.cif files'
-        print(f'Collecting {files} from {', '.join(args.dir)} to database.')
+        print(f'Collecting {files} from {", ".join(args.dir)} to database.')
         run_index(args)
 
 

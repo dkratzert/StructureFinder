@@ -29,12 +29,13 @@ from xml.etree.ElementTree import ParseError
 
 import gemmi.cif
 import qtawesome as qta
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread, QPoint
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox, QPushButton
 from shelxfile import Shelxfile
 
+from structurefinder import strf_cmd
 from structurefinder.ccdc.query import search_csd, parse_results
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.strf_main import Ui_stdbMainwindow
@@ -95,7 +96,7 @@ class StartStructureDB(QMainWindow):
         font = QtGui.QFont()
         font.setStyleHint(QtGui.QFont.Monospace)
         self.ui.SHELXplainTextEdit.setFont(font)
-        self.statusBar().showMessage(f'StructureFinder version {VERSION}')
+        self.statusbar: QtWidgets.QStatusBar = self.statusBar()
         self.upd = None
         self.maxfiles = 0
         self.dbfdesc = None
@@ -103,9 +104,12 @@ class StartStructureDB(QMainWindow):
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         self.abort_import_button = QPushButton('Abort Indexing')
         self.progress = QProgressBar(self)
-        self.ui.statusbar.addWidget(self.progress)
+        self.progress.setFixedWidth(150)
+        self.statusbar.addPermanentWidget(self.progress)
         self.ui.appendDirButton.setDisabled(True)
-        self.ui.statusbar.addWidget(self.abort_import_button)
+        self.statusbar.addPermanentWidget(self.abort_import_button)
+        self.abort_import_button.hide()
+        self.statusbar.hide()
         self.structures: Optional[database_handler.StructureTable] = None
         self.apx = None
         self.structureId = 0
@@ -120,6 +124,7 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
+        self.statusbar.showMessage(f'StructureFinder version {VERSION}')
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         # self.ui.cifList_tableView.addAction(self.ui.actionGo_to_All_CIF_Tab)
@@ -634,7 +639,9 @@ class StartStructureDB(QMainWindow):
         self.ui.importDatabaseButton.setDisabled(True)
 
         self.thread = QThread()
-        self.worker = SearchWorker(startdir, self.structures)
+        self.worker = SearchWorker(startdir, self.structures,
+                                   add_res=self.ui.add_res.isChecked(),
+                                   add_cif=self.ui.add_cif.isChecked())
         self.worker.progress.connect(self.progress.setValue)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
@@ -665,31 +672,16 @@ class StartStructureDB(QMainWindow):
         self.maxfiles = number
 
     def report_progress(self, progress: int):
-        self.statusBar().showMessage('')
+        self.statusbar.showMessage(f'Inspected {progress} files')
         self.progressbar(progress, 0, self.maxfiles)
 
     def do_work_after_indexing(self, startdir: str):
         self.progress.hide()
-        # TODO: Do I need this here? It is already done in worker.py?
-        try:
-            self.structures.database.init_textsearch()
-            self.structures.database.init_author_search()
-        except OperationalError as e:
-            print(e)
-            print('No fulltext search module found.')
-        try:
-            self.structures.database.populate_fulltext_search_table()
-            self.structures.database.populate_author_fulltext_search()
-        except OperationalError as e:
-            print(e)
-            print('No fulltext search compiled into sqlite.')
-        self.structures.database.make_indexes()
-        self.structures.database.commit_db()
+        strf_cmd.finish_database(self.structures)
         self.ui.cifList_tableView.show()
         self.show_full_list()
         self.settings.save_current_index_dir(str(Path(startdir)))
         self.enable_buttons()
-        # self.statusBar().showMessage(f'Found {self.maxfiles} files.')
 
     def enable_buttons(self):
         self.ui.appendDatabasePushButton.setEnabled(True)
