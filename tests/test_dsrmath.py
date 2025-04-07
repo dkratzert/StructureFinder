@@ -1,6 +1,6 @@
-from structurefinder.shelxfile.dsrmath import SymmetryElement
-from structurefinder.shelxfile.dsrmath import fraction_of
-from structurefinder.shelxfile.shelx import ShelXFile
+from shelxfile.misc.dsrmath import SymmetryElement
+from shelxfile.misc.dsrmath import fraction_of
+from shelxfile.shelx import ShelXFile
 
 
 def test_to_fractional():

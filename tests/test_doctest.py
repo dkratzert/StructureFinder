@@ -2,7 +2,7 @@ import doctest
 import unittest
 
 from structurefinder.searcher import database_handler, fileparser
-from structurefinder.shelxfile import shelx, misc
+from shelxfile import shelx, misc
 
 
 class DoctestsTest(unittest.TestCase):

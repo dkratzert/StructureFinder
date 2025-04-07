@@ -2,7 +2,7 @@ import unittest
 
 from structurefinder.searcher.misc import get_list_of_elements, format_sum_formula, is_a_nonzero_file, \
     get_error_from_value
-from structurefinder.shelxfile.misc import range_resolver, wrap_line, multiline_test, chunks
+from shelxfile.refine import range_resolver, wrap_line, multiline_test, chunks
 
 
 class TestListOfElements(unittest.TestCase):
