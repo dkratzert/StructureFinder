@@ -18,7 +18,7 @@ from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
 from shelxfile import Shelxfile
 
-DEBUG = True
+DEBUG = False
 
 parser = argparse.ArgumentParser(
     description=f'Command line version {VERSION} of StructureFinder to collect .cif/.res files to a '

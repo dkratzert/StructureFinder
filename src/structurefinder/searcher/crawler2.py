@@ -6,12 +6,13 @@ import time
 import zipfile
 from collections.abc import Iterable, Callable
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from typing import Any, Generator
 
 import py7zr
 
-DEBUG = True
+DEBUG = False
 
 EXCLUDED_NAMES = {'ROOT',
                   '.OLEX',
@@ -115,11 +116,10 @@ def file_result(filename: str, filepath: str) -> Generator[Result, Any, None]:
 def search_in_zip(zip_path: str, exts: tuple[str] | set[str], exclude_dirs: Iterable[str] = None):
     try:
         with zipfile.ZipFile(zip_path, 'r') as archive:
-            for file in archive.namelist():
+            for info, file in zip(archive.infolist(), archive.namelist()):
                 filepath = os.path.basename(file)
                 if is_excluded_dir(filepath, exclude_dirs):
                     continue
-                print(archive.getinfo(file))
                 lower_file = file.lower()
                 if lower_file.endswith(exts):
                     with archive.open(file) as f:
@@ -128,11 +128,11 @@ def search_in_zip(zip_path: str, exts: tuple[str] | set[str], exclude_dirs: Iter
                                      filename=file,
                                      file_content=f.read().decode('latin1', 'replace'),
                                      file_path=zip_path,
-                                     modification_time='')#time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(file))))
+                                     modification_time=datetime(*info.date_time).strftime('%Y-%m-%d'))
     except Exception as e:
         if DEBUG:
             print(f"[ZIP] Error in {zip_path}: {e}")
-        raise
+        #raise
 
 
 def search_in_tar(tar_path: str, exts: tuple[str], exclude_dirs: Iterable[str] = None):
@@ -148,7 +148,9 @@ def search_in_tar(tar_path: str, exts: tuple[str], exclude_dirs: Iterable[str] =
                                      archive_path=tar_path,
                                      filename=os.path.basename(file.name),
                                      file_content=f.read().decode('latin1', 'replace'),
-                                     file_path=tar_path)
+                                     file_path=tar_path,
+                                     file_size=file.size,
+                                     modification_time=time.strftime('%Y-%m-%d', time.gmtime(file.mtime)))
     except Exception as e:
         if DEBUG:
             print(f"[TAR] Error in {tar_path}: {e}")
@@ -156,6 +158,7 @@ def search_in_tar(tar_path: str, exts: tuple[str], exclude_dirs: Iterable[str] =
 
 def search_in_7z(sevenz_path: str, exts: tuple[str], exclude_dirs: Iterable[str] = None):
     try:
+        r"""
         with py7zr.SevenZipFile(sevenz_path, mode='r') as archive:
             for name, bio in archive.readall().items():
                 lower_file = name.lower()
@@ -166,6 +169,24 @@ def search_in_7z(sevenz_path: str, exts: tuple[str], exclude_dirs: Iterable[str]
                                      filename=name,
                                      file_content=bio.read().decode('latin1', 'replace'),
                                      file_path=sevenz_path)
+        """
+        with py7zr.SevenZipFile(sevenz_path, mode='r') as archive:
+            for entry in archive.list():  # ArchiveFileEntry-Objekte
+                name = entry.filename
+                lower_file = name.lower()
+                if lower_file.endswith(exts):
+                    file_dict = archive.read([name])
+                    bio = file_dict.get(name)
+                    if bio:
+                        yield Result(
+                            file_type=suffix_to_type.get(lower_file[-4:]),
+                            archive_path=sevenz_path,
+                            filename=name,
+                            file_content=bio.read().decode('latin1', 'replace'),
+                            file_path=sevenz_path,
+                            modification_time=entry.creationtime,
+                            file_size=entry.uncompressed
+                        )
     except Exception as e:
         if DEBUG:
             print(f"[7Z] Error in {sevenz_path}: {e}")
