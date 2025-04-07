@@ -33,6 +33,7 @@ from PyQt5 import QtGui, QtCore
 from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread, QPoint
 from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
     QMessageBox, QPushButton
+from shelxfile import Shelxfile
 
 from structurefinder.ccdc.query import search_csd, parse_results
 from structurefinder.displaymol.sdm import SDM
@@ -48,13 +49,10 @@ from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import database_handler, constants, misc
 from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
 from structurefinder.searcher.database_handler import columns
-from structurefinder.searcher.filecrawler import excluded_names
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, \
     regular_results_parameters
 from structurefinder.searcher.search_worker import SearchWorker
-from structurefinder.searcher.worker import Worker
-from structurefinder.shelxfile.shelx import ShelXFile
 
 DEBUG = False
 
@@ -1234,7 +1232,8 @@ class StartStructureDB(QMainWindow):
 
     def search_for_res_cell(self, fname):
         if fname:
-            shx = ShelXFile(fname)
+            shx = Shelxfile()
+            shx.read_file(fname)
         else:
             return
         if shx and shx.cell:
