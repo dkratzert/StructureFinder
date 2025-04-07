@@ -12,13 +12,13 @@ from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core.lattice import Lattice
 from structurefinder.searcher.crawler2 import find_files, EXCLUDED_NAMES, FileType, Result
-from structurefinder.searcher.database_handler import DatabaseRequest, StructureTable
+from structurefinder.searcher.database_handler import DatabaseRequest, StructureTable, columns
 from structurefinder.searcher.filecrawler import fill_db_with_cif_data, fill_db_with_res_data
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
 from shelxfile import Shelxfile
 
-DEBUG = False
+DEBUG = True
 
 parser = argparse.ArgumentParser(
     description=f'Command line version {VERSION} of StructureFinder to collect .cif/.res files to a '
@@ -120,14 +120,16 @@ def find_cell(args: Namespace):
         sys.exit()
     else:
         print('\n{} Structures found:'.format(len(idlist)))
+        columns.modification_time.visible = True
+        columns.file_size.visible = True
         searchresult = structures.get_structure_rows_by_ids(idlist)
-    print('ID      |      path                                 '
-          '                                    |  filename             |  data name  ')
+    print('ID      |  filename             |  data name      |      path                                 '
+          '                                    | Modification time')
     print('-' * 130)
     for res in searchresult:
-        Id, dataname, filename, size, path = [x.decode('utf-8') if isinstance(x, bytes) else x for x in res]
+        Id, dataname, filename, mod_time, path, size = [x.decode('utf-8') if isinstance(x, bytes) else x for x in res]
         # Id, path, filename, dataname
-        print(f'{Id:<7} | {path:77s} | {filename:<21s} | {dataname:s}')
+        print(f'{Id:<7} | {filename:<21s} | {dataname:15s} | {path:77s} | {mod_time}')
 
 
 def run_index(args=None):
@@ -160,13 +162,16 @@ def run_index(args=None):
             try:
                 for num, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES, progress_callback=None)):
                     if result.file_type == FileType.CIF:
-                        process_cif(lastid, result, structures)
-                    if result.file_type == FileType.RES:
-                        process_res(lastid, result, structures)
-                    lastid += 1
+                        if process_cif(lastid, result, structures):
+                            lastid += 1
+                    elif result.file_type == FileType.RES:
+                        if process_res(lastid, result, structures):
+                            lastid += 1
             except OSError as e:
                 print(f"Unable to collect files: in path '{p}'")
                 print(e)
+                if DEBUG:
+                    raise
             except KeyboardInterrupt:
                 sys.exit()
             print("---------------------")
@@ -180,6 +185,10 @@ def run_index(args=None):
         import os
         if "PYTEST_CURRENT_TEST" not in os.environ:
             check_update()
+
+
+def progress(value: float) -> None:
+    print(f'-> {value}', end='\r')
 
 
 def finish_database(db, structures):
@@ -214,7 +223,7 @@ def process_cif(lastid: int, result: Result, structures: StructureTable) -> bool
         if not ok:
             return False
     elif DEBUG:
-        print(f'File has no block:', result)
+        print('File has no block:', result)
     return True
 
 
@@ -232,7 +241,7 @@ def process_res(lastid: int, result: Result, structures: StructureTable) -> bool
             tst = fill_db_with_res_data(res, result=result, structure_id=lastid, structures=structures)
     if not tst:
         if DEBUG:
-            print('res file not added:', result.file_path)
+            print('res file not added:', result.file_path, result.filename)
         return False
     return True
 
@@ -291,6 +300,13 @@ def main():
             parser.print_help()
             print("\n --> No valid search directory given.\n")
             sys.exit()
+        if args.fillres and args.fillcif:
+            files = '.res and .cif files'
+        elif args.fillres:
+            files = '.res files'
+        else:
+            files = '.cif files'
+        print(f'Collecting {files} from {', '.join(args.dir)} to database.')
         run_index(args)
 
 

@@ -661,7 +661,7 @@ class DatabaseRequest():
         Retrurns the last rowid of a loaded database.
         """
         try:
-            return self.db_fetchone("""SELECT max(id) FROM Structure""")[0]
+            return self.db_fetchone("""SELECT max(id) FROM Structure""")[0] or 0
         except (TypeError, IndexError):
             # No database or empty table:
             return 0

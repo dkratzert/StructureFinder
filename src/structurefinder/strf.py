@@ -654,7 +654,7 @@ class StartStructureDB(QMainWindow):
         self.worker.progress.connect(self.report_progress)
         #self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
-        #self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir))
+        self.worker.finished.connect(lambda: self.do_work_after_indexing(startdir))
         self.statusBar().showMessage('Searching potential files...')
         self.statusBar().show()
         self.abort_import_button.clicked.connect(self.abort_indexing)
@@ -880,7 +880,7 @@ class StartStructureDB(QMainWindow):
     def redraw_molecule(self) -> None:
         self.view_molecule()
 
-    def display_properties(self, structure_id, cif_dic):
+    def display_properties(self, structure_id, cif_dic: CifFile):
         """
         Displays the residuals from the cif file
         _refine_ls_number_reflns -> unique reflect. (Independent reflections)
@@ -958,18 +958,19 @@ class StartStructureDB(QMainWindow):
         except KeyError:
             pass
         try:
-            dat_param = cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters']
+            dat_param = int(cif_dic['_refine_ls_number_reflns']) / int(cif_dic['_refine_ls_number_parameters'])
         except (ValueError, ZeroDivisionError, TypeError):
             dat_param = 0.0
         self.ui.dataReflnsLineEdit.setText(f"{dat_param:<5.1f}")
         self.ui.numParametersLineEdit.setText(f"{cif_dic['_refine_ls_number_parameters']}")
-        wavelen = cif_dic['_diffrn_radiation_wavelength']
         thetamax = cif_dic['_diffrn_reflns_theta_max']
         # d = lambda/2sin(theta):
         try:
+            wavelen = float(cif_dic['_diffrn_radiation_wavelength'])
             d = wavelen / (2 * sin(radians(thetamax)))
         except(ZeroDivisionError, TypeError):
             d = 0.0
+            wavelen = 0.0
         self.ui.numRestraintsLineEdit.setText(f"{cif_dic['_refine_ls_number_restraints']}")
         self.ui.thetaMaxLineEdit.setText(f"{thetamax}")
         self.ui.thetaFullLineEdit.setText(f"{cif_dic['_diffrn_reflns_theta_full']}")

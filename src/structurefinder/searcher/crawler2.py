@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import os
 import tarfile
+import time
 import zipfile
 from collections.abc import Iterable, Callable
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any, Generator
 
 import py7zr
 
-DEBUG = False
+DEBUG = True
 
 EXCLUDED_NAMES = {'ROOT',
                   '.OLEX',
@@ -40,7 +42,7 @@ class Result:
     file_path: str | bytes
     file_content: str
     archive_path: str | None = None
-    modification_time: int = 0
+    modification_time: str = ''
     file_size: int = 0
 
     @property
@@ -72,37 +74,42 @@ def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, progress_call
             if progress_callback:
                 progress_callback(int((num + 1) / total * 100))
 
-            if filename.lower().endswith(exts):
+            lower_filename = filename.lower()
+            if lower_filename.endswith(exts):
                 filepath = os.path.join(dirpath, filename)
                 yield from file_result(filename, filepath)
-            elif is_zipfile(filename):
+            elif is_zipfile(lower_filename):
                 filepath = os.path.join(dirpath, filename)
                 yield from search_in_zip(filepath, exts, exclude_dirs)
-            elif is_tarfile(filename):
+            elif is_tarfile(lower_filename):
                 filepath = os.path.join(dirpath, filename)
                 yield from search_in_tar(filepath, exts)
-            elif filename.endswith(".7z"):
+            elif is_7z_file(lower_filename):
                 filepath = os.path.join(dirpath, filename)
                 yield from search_in_7z(filepath, exts)
 
 
+def is_7z_file(filename: str) -> bool:
+    return filename.endswith(".7z")
+
+
 def is_tarfile(filename: str) -> bool:
-    if filename.lower().endswith(".tar.gz"):
-        return True
-    return False
+    return filename.endswith(".tar.gz")
 
 
 def is_zipfile(filename: str) -> bool:
-    if filename.lower().endswith(".zip"):
-        return True
-    return False
+    return filename.endswith(".zip")
 
 
-def file_result(filename, filepath):
+def file_result(filename: str, filepath: str) -> Generator[Result, Any, None]:
+    mod_time = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(filepath)))
+    size = os.stat(filepath).st_size
     with open(filepath, 'rb') as fobj:
         yield Result(file_type=suffix_to_type.get(filepath.lower()[-4:]),
                      file_content=fobj.read().decode('latin1', 'replace'),
-                     filename=filename, file_path=os.path.dirname(filepath))
+                     filename=filename, file_path=os.path.dirname(filepath),
+                     modification_time=mod_time,
+                     file_size=size)
 
 
 def search_in_zip(zip_path: str, exts: tuple[str] | set[str], exclude_dirs: Iterable[str] = None):
@@ -112,6 +119,7 @@ def search_in_zip(zip_path: str, exts: tuple[str] | set[str], exclude_dirs: Iter
                 filepath = os.path.basename(file)
                 if is_excluded_dir(filepath, exclude_dirs):
                     continue
+                print(archive.getinfo(file))
                 lower_file = file.lower()
                 if lower_file.endswith(exts):
                     with archive.open(file) as f:
@@ -119,24 +127,26 @@ def search_in_zip(zip_path: str, exts: tuple[str] | set[str], exclude_dirs: Iter
                                      archive_path=zip_path,
                                      filename=file,
                                      file_content=f.read().decode('latin1', 'replace'),
-                                     file_path=zip_path)
+                                     file_path=zip_path,
+                                     modification_time='')#time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(file))))
     except Exception as e:
         if DEBUG:
             print(f"[ZIP] Error in {zip_path}: {e}")
-        # raise
+        raise
 
 
 def search_in_tar(tar_path: str, exts: tuple[str], exclude_dirs: Iterable[str] = None):
     try:
         with tarfile.open(tar_path, 'r:*') as archive:
             for file in archive.getmembers():
+                # file.name also has the path inside the archive in front:
                 lower_file = file.name.lower()
                 if lower_file.endswith(exts) and file.isfile():
                     f = archive.extractfile(file)
                     if f:
                         yield Result(file_type=suffix_to_type.get(lower_file[-4:]),
                                      archive_path=tar_path,
-                                     filename=file.name,
+                                     filename=os.path.basename(file.name),
                                      file_content=f.read().decode('latin1', 'replace'),
                                      file_path=tar_path)
     except Exception as e:
@@ -163,8 +173,8 @@ def search_in_7z(sevenz_path: str, exts: tuple[str], exclude_dirs: Iterable[str]
 
 if __name__ == '__main__':
     # app = QApplication(sys.argv)
-    for num, result in enumerate(find_files("/Users/daniel/Documents/GitHub/StructureFinder",
+    for num, result in enumerate(find_files("/Users/daniel/Documents/GitHub",
                                             exclude_dirs=EXCLUDED_NAMES)):
         print(result)
-    print(num)
-    assert num == 254
+        print(num)
+    #assert num == 254
