@@ -12,3 +12,5 @@ gemmi<0.7.0
 gunicorn
 xlsxwriter
 qtawesome
+shelxfile
+py7zr
