@@ -26,7 +26,7 @@ from structurefinder.searcher import database_handler
 from structurefinder.searcher.crawler2 import Result
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import get_value
-from structurefinder.shelxfile.shelx import ShelXFile
+from shelxfile import Shelxfile
 
 DEBUG = False
 
@@ -228,18 +228,19 @@ def add_atoms(cif, structure_id, structures):
     return sum_formula_dict
 
 
-def fill_db_with_res_data(res: ShelXFile, result: Result, structure_id: int, structures: database_handler.StructureTable):
+def fill_db_with_res_data(res: Shelxfile, result: Result, structure_id: int, structures: database_handler.StructureTable):
     if not res.cell:
         return False
-    if not all([res.cell.a, res.cell.b, res.cell.c, res.cell.al, res.cell.be, res.cell.ga]):
+    if not all([res.cell.a, res.cell.b, res.cell.c, res.cell.alpha, res.cell.beta, res.cell.gamma]):
         return False
     if not res.cell.volume:
         return False
     # Unused value:
     measurement_id = 1
-    structures.fill_structures_table(result.file_path, result.filename, structure_id, measurement_id, res.titl)
-    structures.fill_cell_table(structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.al,
-                               res.cell.be, res.cell.ga, res.cell.volume)
+    path = result.file_path if not result.archive_path else result.archive_path
+    structures.fill_structures_table(path, result.filename, structure_id, measurement_id, res.titl)
+    structures.fill_cell_table(structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.alpha,
+                               res.cell.beta, res.cell.gamma, res.cell.volume)
     for at in res.atoms:
         if at.qpeak:
             continue
@@ -270,30 +271,30 @@ def fill_db_with_res_data(res: ShelXFile, result: Result, structure_id: int, str
         except Exception:
             pass
     try:
-        cif.cif_data["calculated_formula_sum"] = res.sum_formula_ex_dict()
+        cif.cif_data["calculated_formula_sum"] = res.sum_formula_exact_as_dict()
     except ZeroDivisionError:
         pass
     try:
         cif.cif_data["_chemical_formula_sum"] = res.sum_formula_exact
     except ZeroDivisionError:
         pass
-    cif.cif_data["_diffrn_radiation_wavelength"] = res.wavelen
+    cif.cif_data["_diffrn_radiation_wavelength"] = res.wavelength
     if res.R1:
         cif.cif_data["_refine_ls_R_factor_gt"] = res.R1
-    if res.wR2:
-        cif.cif_data["_refine_ls_wR_factor_ref"] = res.wR2
+    if res.wr2:
+        cif.cif_data["_refine_ls_wR_factor_ref"] = res.wr2
     if res.parameters:
         cif.cif_data['_refine_ls_number_parameters'] = res.parameters
     if res.data:
         cif.cif_data['_refine_ls_number_reflns'] = res.data
     if res.num_restraints:
         cif.cif_data['_refine_ls_number_restraints'] = res.num_restraints
-    if res.temp_in_Kelvin:
-        cif.cif_data['_diffrn_ambient_temperature'] = round(res.temp_in_Kelvin, 5)
-    if res.dhole:
-        cif.cif_data['_refine_diff_density_min'] = res.dhole
-    if res.hpeak:
-        cif.cif_data['_refine_diff_density_max'] = res.hpeak
+    if res.temp_in_kelvin:
+        cif.cif_data['_diffrn_ambient_temperature'] = round(res.temp_in_kelvin, 5)
+    if res.deepest_hole:
+        cif.cif_data['_refine_diff_density_min'] = res.deepest_hole
+    if res.highest_peak:
+        cif.cif_data['_refine_diff_density_max'] = res.highest_peak
     if res.latt:
         cif.cif_data['_space_group_centring_type'] = res.latt.N_str
     if cif.cif_data["_space_group_symop_operation_xyz"]:

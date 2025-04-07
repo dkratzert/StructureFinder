@@ -18,7 +18,7 @@ from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError,
 from typing import List, Union, Tuple, Dict, Optional, Literal, Callable
 
 from structurefinder.searcher.fileparser import CifFile
-from structurefinder.shelxfile.elements import sorted_atoms
+from shelxfile.misc.elements import sorted_atoms
 
 DEBUG = False
 

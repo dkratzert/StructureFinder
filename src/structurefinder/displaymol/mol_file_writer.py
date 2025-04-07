@@ -4,7 +4,7 @@ MOl V3000 format
 import math
 import os
 
-from structurefinder.shelxfile.elements import get_radius_from_element
+from shelxfile.misc.elements import get_radius_from_element
 
 
 class MolFile(object):

@@ -16,7 +16,7 @@ from structurefinder.searcher.database_handler import DatabaseRequest, Structure
 from structurefinder.searcher.filecrawler import fill_db_with_cif_data, fill_db_with_res_data
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
-from structurefinder.shelxfile.shelx import ShelXFile
+from shelxfile import Shelxfile
 
 DEBUG = False
 
@@ -220,7 +220,8 @@ def process_cif(lastid: int, result: Result, structures: StructureTable) -> bool
 
 def process_res(lastid: int, result: Result, structures: StructureTable) -> bool:
     try:
-        res = ShelXFile(result.file_path)
+        res = Shelxfile()
+        res.read_string(result.file_content)
     except Exception as e:
         if DEBUG:
             print(e)

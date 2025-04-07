@@ -7,6 +7,10 @@ from collections.abc import Iterable, Callable
 from dataclasses import dataclass
 from enum import Enum
 
+import py7zr
+
+DEBUG = False
+
 EXCLUDED_NAMES = {'ROOT',
                   '.OLEX',
                   'olex',
@@ -75,8 +79,6 @@ def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, progress_call
                 filepath = os.path.join(dirpath, filename)
                 yield from search_in_zip(filepath, exts, exclude_dirs)
             elif is_tarfile(filename):
-                print('TODO: Implement tar indexing')
-                continue
                 filepath = os.path.join(dirpath, filename)
                 yield from search_in_tar(filepath, exts)
             elif filename.endswith(".7z"):
@@ -100,7 +102,7 @@ def file_result(filename, filepath):
     with open(filepath, 'rb') as fobj:
         yield Result(file_type=suffix_to_type.get(filepath.lower()[-4:]),
                      file_content=fobj.read().decode('latin1', 'replace'),
-                     filename=filename, file_path=filepath)
+                     filename=filename, file_path=os.path.dirname(filepath))
 
 
 def search_in_zip(zip_path: str, exts: tuple[str] | set[str], exclude_dirs: Iterable[str] = None):
@@ -117,38 +119,52 @@ def search_in_zip(zip_path: str, exts: tuple[str] | set[str], exclude_dirs: Iter
                                      archive_path=zip_path,
                                      filename=file,
                                      file_content=f.read().decode('latin1', 'replace'),
-                                     file_path=file)
+                                     file_path=zip_path)
     except Exception as e:
-        print(f"[ZIP] Error in {zip_path}: {e}")
+        if DEBUG:
+            print(f"[ZIP] Error in {zip_path}: {e}")
         # raise
 
 
-def search_in_tar(tar_path: str, exts: Iterable[str], exclude_dirs: Iterable[str] = None):
+def search_in_tar(tar_path: str, exts: tuple[str], exclude_dirs: Iterable[str] = None):
     try:
         with tarfile.open(tar_path, 'r:*') as archive:
-            for member in archive.getmembers():
-                if member.name.lower().endswith(exts) and member.isfile():
-                    f = archive.extractfile(member)
+            for file in archive.getmembers():
+                lower_file = file.name.lower()
+                if lower_file.endswith(exts) and file.isfile():
+                    f = archive.extractfile(file)
                     if f:
-                        yield Result("tar", tar_path, member.name, f.read())
+                        yield Result(file_type=suffix_to_type.get(lower_file[-4:]),
+                                     archive_path=tar_path,
+                                     filename=file.name,
+                                     file_content=f.read().decode('latin1', 'replace'),
+                                     file_path=tar_path)
     except Exception as e:
-        print(f"[TAR] Error in {tar_path}: {e}")
+        if DEBUG:
+            print(f"[TAR] Error in {tar_path}: {e}")
 
 
-def search_in_7z(sevenz_path: str, exts: Iterable[str], exclude_dirs: Iterable[str] = None):
+def search_in_7z(sevenz_path: str, exts: tuple[str], exclude_dirs: Iterable[str] = None):
     try:
         with py7zr.SevenZipFile(sevenz_path, mode='r') as archive:
             for name, bio in archive.readall().items():
-                if name.lower().endswith(exts):
-                    yield ("7z", sevenz_path, name, bio.read())
+                lower_file = name.lower()
+                if lower_file.endswith(exts):
+                    if bio:
+                        yield Result(file_type=suffix_to_type.get(lower_file[-4:]),
+                                     archive_path=sevenz_path,
+                                     filename=name,
+                                     file_content=bio.read().decode('latin1', 'replace'),
+                                     file_path=sevenz_path)
     except Exception as e:
-        print(f"[7Z] Error in {sevenz_path}: {e}")
+        if DEBUG:
+            print(f"[7Z] Error in {sevenz_path}: {e}")
 
 
 if __name__ == '__main__':
     # app = QApplication(sys.argv)
-    for num, result in enumerate(
-        find_files("/Users/daniel/Documents/GitHub/StructureFinder", exclude_dirs=EXCLUDED_NAMES)):
+    for num, result in enumerate(find_files("/Users/daniel/Documents/GitHub/StructureFinder",
+                                            exclude_dirs=EXCLUDED_NAMES)):
         print(result)
     print(num)
     assert num == 254
