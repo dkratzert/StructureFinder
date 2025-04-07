@@ -103,7 +103,6 @@ class StartStructureDB(QMainWindow):
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         self.abort_import_button = QPushButton('Abort Indexing')
         self.progress = QProgressBar(self)
-        self.progress.setFormat('')
         self.ui.statusbar.addWidget(self.progress)
         self.ui.appendDirButton.setDisabled(True)
         self.ui.statusbar.addWidget(self.abort_import_button)
@@ -115,7 +114,6 @@ class StartStructureDB(QMainWindow):
         self.show()
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
-        self.decide_import = True
         self.ui.cellcheckExeLineEdit.setText(self.settings.load_ccdc_exe_path())
         self.connect_signals_and_slots()
         self.set_initial_button_states()
@@ -158,7 +156,7 @@ class StartStructureDB(QMainWindow):
         self.ui.importDirButton.clicked.connect(self.import_file_dirs)
         self.ui.appendDirButton.clicked.connect(self.append_file_dirs)
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
-        # self.abort_import_button.clicked.connect(self.abort_import)
+        self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
         self.ui.adv_SearchPushButton.clicked.connect(self.advanced_search)
@@ -621,7 +619,7 @@ class StartStructureDB(QMainWindow):
             self.close_db()
             self.start_db()
         self.progressbar(1, 0, 20)
-        # self.abort_import_button.show()
+        self.abort_import_button.show()
         if not startdir:
             startdir = self.get_startdir_from_dialog()
         if not startdir:
@@ -638,21 +636,15 @@ class StartStructureDB(QMainWindow):
         self.thread = QThread()
         self.worker = SearchWorker(startdir, self.structures)
         self.worker.progress.connect(self.progress.setValue)
-        #self.worker.found.connect(self.show_result)
-        #self.worker.finished.connect(self.search_done)
-
-        #self.worker = Worker(searchpath=startdir, add_res_files=self.ui.add_res.isChecked(), excludes=excluded_names,
-        #                     add_cif_files=self.ui.add_cif.isChecked(), lastid=lastid, structures=self.structures)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
         self.worker.finished.connect(self.progress.hide)
-        #self.worker.finished.connect(lambda x: self.statusBar().showMessage(x))
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.abort_import_button.hide)
         self.worker.progress.connect(self.report_progress)
-        #self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
+        self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
         self.worker.finished.connect(lambda: self.do_work_after_indexing(startdir))
         self.statusBar().showMessage('Searching potential files...')
@@ -717,8 +709,6 @@ class StartStructureDB(QMainWindow):
         self.progress.setMaximum(max)
         self.progress.setMinimum(min)
         self.progress.show()
-        # if curr == max:
-        #    self.progress.hide()
 
     def close_db(self, copy_on_close: str = None) -> bool:
         """
@@ -769,7 +759,7 @@ class StartStructureDB(QMainWindow):
         """
         This slot means, import was aborted.
         """
-        self.decide_import = False
+        self.worker.stop()
 
     def start_db(self):
         """
@@ -968,7 +958,7 @@ class StartStructureDB(QMainWindow):
         try:
             wavelen = float(cif_dic['_diffrn_radiation_wavelength'])
             d = wavelen / (2 * sin(radians(thetamax)))
-        except(ZeroDivisionError, TypeError):
+        except(ZeroDivisionError, TypeError, ValueError):
             d = 0.0
             wavelen = 0.0
         self.ui.numRestraintsLineEdit.setText(f"{cif_dic['_refine_ls_number_restraints']}")
