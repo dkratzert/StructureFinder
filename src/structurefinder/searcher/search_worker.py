@@ -1,3 +1,6 @@
+import time
+from timeit import timeit
+
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from structurefinder.searcher.crawler import EXCLUDED_NAMES, FileType, find_files
@@ -24,6 +27,7 @@ class SearchWorker(QObject):
         print('Stopping index worker...')
 
     def run(self):
+        t1 = time.perf_counter()
         exts = ('.cif', '.res')
         if self.add_res and not self.add_cif:
             exts = ('.res',)
@@ -46,3 +50,5 @@ class SearchWorker(QObject):
             self.progress.emit(num)
         self.progress.emit(0)
         self.finished.emit()
+        t2 = time.perf_counter()
+        print(f'Finished index worker at {t2 - t1:2f} seconds', )

@@ -347,7 +347,7 @@ class CifFile:
                                                          part if part else ('0',) * len(labels),
                                                          occ if occ else ('1.000000',) * len(labels),
                                                          u_eq):
-            yield atom(label=label, type=type, x=x, y=y, z=z, part=part, occ=occ, u_eq=u_eq)
+            yield atom(label=label, type=type[:2].strip('+-'), x=x, y=y, z=z, part=part, occ=occ, u_eq=u_eq)
 
     @property
     def atoms_orth(self):
@@ -355,7 +355,7 @@ class CifFile:
         for at in self.atoms:
             x, y, z = self.cell.orthogonalize(
                 gemmi.Fractional(cif.as_number(at.x), cif.as_number(at.y), cif.as_number(at.z)))
-            yield atom(label=at.label, type=at.type, x=x, y=y, z=z,
+        yield atom(label=at.label, type=at.type[:2].strip('+-'), x=x, y=y, z=z,
                        part=at.part, occ=at.occ, u_eq=at.u_eq)
 
     @property

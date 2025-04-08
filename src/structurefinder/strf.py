@@ -128,7 +128,7 @@ class StartStructureDB(QMainWindow):
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         self.abort_import_button = QPushButton('Abort Indexing')
         self.progress = QProgressBar(self)
-        self.progress.setFixedWidth(150)
+        #self.progress.setFixedWidth(150)
         self.statusbar.addPermanentWidget(self.progress)
         self.ui.appendDirButton.setDisabled(True)
         self.statusbar.addPermanentWidget(self.abort_import_button)
