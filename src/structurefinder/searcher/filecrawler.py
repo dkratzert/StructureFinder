@@ -16,17 +16,15 @@ Created on 09.02.2015
 import fnmatch
 import os
 import re
-import tarfile
-import zipfile
-from typing import Generator, Tuple, List, Union
+from typing import Tuple, List
 
 import gemmi
+from shelxfile import Shelxfile
 
 from structurefinder.searcher import database_handler
 from structurefinder.searcher.crawler2 import Result
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import get_value
-from shelxfile import Shelxfile
 
 DEBUG = False
 
@@ -43,84 +41,7 @@ excluded_names = ('ROOT',
                   '__private__',
                   'autostructure_private')
 
-archives = ['*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz']
-
-
-class MyZipBase(object):
-    def __init__(self, filepath: str) -> None:
-        self.filepath = filepath
-        self.cifname = ''
-        self.cifpath = ''
-        self.filenames: Union[List, None] = None
-
-
-class MyZipReader(MyZipBase):
-    def __init__(self, filepath):
-        """
-        extracts .cif files from zip files
-        """
-        super().__init__(filepath)
-        self.zfile = zipfile.ZipFile(self.filepath)
-        self.filenames = [x for x in self.zfile.namelist() if x.endswith('.cif')]
-
-    def __len__(self):
-        return len(self.filenames)
-
-    def __iter__(self) -> Generator:
-        """
-        returns an iterator of cif files in the zipfile as list.
-        """
-        try:
-            for name in self.filenames:
-                if name.startswith('__'):
-                    continue
-                if self.zfile.NameToInfo[name].file_size < 150000000:
-                    doc = gemmi.cif.Document()
-                    doc.source = name
-                    self.cifname = name
-                    doc.parse_string(self.zfile.read(name).decode('ascii', 'ignore'))
-                    if doc:
-                        yield doc
-                    else:
-                        continue
-        except Exception as e:
-            if DEBUG:
-                print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
-                print(e, self.filepath)  # filepath is not utf-8 save
-            yield None
-
-
-class MyTarReader(MyZipBase):
-    def __init__(self, filepath):
-        """
-        extracts .cif files from tar.gz files
-        """
-        super().__init__(filepath)
-        self.tfile = tarfile.open(self.filepath, mode='r')
-        self.filenames = [x for x in self.tfile.getnames() if x.endswith('.cif')]
-
-    def __len__(self):
-        return len(self.filenames)
-
-    def __iter__(self) -> Generator:
-        """
-        returns an iterator of cif files in the zipfile as list.
-        """
-        try:
-            for name in self.filenames:
-                doc = gemmi.cif.Document()
-                doc.source = name
-                self.cifname = name
-                doc.parse_string(self.tfile.extractfile(name).read().decode('ascii', 'ignore'))
-                if doc:
-                    yield doc
-                else:
-                    continue
-        except Exception as e:
-            if DEBUG:
-                print("Error: '{}' in file {}".format(e, self.filepath.encode(encoding='utf-8', errors='ignore')))
-                print(e, self.filepath)  # filepath is not utf-8 save
-            yield None
+archives = ['*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '.7z']
 
 
 def filewalker_walk(startdir: str, patterns: list, excludes: List[str]) -> Tuple[Tuple[str, str], ...]:

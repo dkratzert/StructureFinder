@@ -17,6 +17,7 @@ from typing import List, Dict, Union, Any
 
 import gemmi.cif
 from gemmi import cif
+from gemmi.cif import Column
 
 DEBUG = False
 
@@ -339,8 +340,8 @@ class CifFile:
         """
         Atoms from the CIF where values are returned as string like in the CIF with esds.
         """
-        labels: List[str] = self.block.find_loop('_atom_site_label')
-        types: List[str] = self.block.find_loop('_atom_site_type_symbol')
+        labels: Column = self.block.find_loop('_atom_site_label')
+        types: Column = self.block.find_loop('_atom_site_type_symbol')
         x = self.block.find_loop('_atom_site_fract_x')
         y = self.block.find_loop('_atom_site_fract_y')
         z = self.block.find_loop('_atom_site_fract_z')

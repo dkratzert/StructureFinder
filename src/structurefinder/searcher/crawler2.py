@@ -95,7 +95,7 @@ def is_7z_file(filename: str) -> bool:
 
 
 def is_tarfile(filename: str) -> bool:
-    return filename.endswith(".tar.gz")
+    return filename.endswith(('*.tar.gz', '*.tar.bz2', '*.tgz'))
 
 
 def is_zipfile(filename: str) -> bool:
@@ -113,7 +113,9 @@ def file_result(filename: str, filepath: str) -> Generator[Result, Any, None]:
                      file_size=size)
 
 
-def search_in_zip(zip_path: str, exts: tuple[str] | set[str], exclude_dirs: Iterable[str] = None):
+def search_in_zip(zip_path: str,
+                  exts: tuple[str] | set[str],
+                  exclude_dirs: Iterable[str] = None) -> Generator[Result, Any, None]:
     try:
         with zipfile.ZipFile(zip_path, 'r') as archive:
             for info, file in zip(archive.infolist(), archive.namelist()):
@@ -132,13 +134,18 @@ def search_in_zip(zip_path: str, exts: tuple[str] | set[str], exclude_dirs: Iter
     except Exception as e:
         if DEBUG:
             print(f"[ZIP] Error in {zip_path}: {e}")
-        #raise
+        # raise
+    return None
 
 
-def search_in_tar(tar_path: str, exts: tuple[str], exclude_dirs: Iterable[str] = None):
+def search_in_tar(tar_path: str,
+                  exts: tuple[str],
+                  exclude_dirs: Iterable[str] = None) -> Generator[Result, Any, None]:
     try:
         with tarfile.open(tar_path, 'r:*') as archive:
             for file in archive.getmembers():
+                if is_excluded_dir(file.name, exclude_dirs):
+                    continue
                 # file.name also has the path inside the archive in front:
                 lower_file = file.name.lower()
                 if lower_file.endswith(exts) and file.isfile():
@@ -156,7 +163,7 @@ def search_in_tar(tar_path: str, exts: tuple[str], exclude_dirs: Iterable[str] =
             print(f"[TAR] Error in {tar_path}: {e}")
 
 
-def search_in_7z(sevenz_path: str, exts: tuple[str], exclude_dirs: Iterable[str] = None):
+def search_in_7z(sevenz_path: str, exts: tuple[str]) -> Generator[Result, Any, None]:
     try:
         r"""
         with py7zr.SevenZipFile(sevenz_path, mode='r') as archive:
@@ -198,4 +205,4 @@ if __name__ == '__main__':
                                             exclude_dirs=EXCLUDED_NAMES)):
         print(result)
         print(num)
-    #assert num == 254
+    # assert num == 254

@@ -11,12 +11,15 @@ import gemmi
 from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core.lattice import Lattice
+from structurefinder.searcher import spinner
 from structurefinder.searcher.crawler2 import find_files, EXCLUDED_NAMES, FileType, Result
 from structurefinder.searcher.database_handler import DatabaseRequest, StructureTable, columns
 from structurefinder.searcher.filecrawler import fill_db_with_cif_data, fill_db_with_res_data
 from structurefinder.searcher.fileparser import CifFile
 from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
 from shelxfile import Shelxfile
+
+from structurefinder.searcher.spinner import Spinner
 
 DEBUG = False
 
@@ -97,7 +100,7 @@ def find_cell(args: Namespace):
         dbfilename = args.outfile
     else:
         dbfilename = 'structuredb.sqlite'
-    db, structures = get_database(dbfilename)
+    structures = get_database(dbfilename)
     volume = vol_unitcell(*cell)
     atol, ltol, vol_threshold = regular_results_parameters(volume)
     # the fist number in the result is the structureid:
@@ -174,7 +177,7 @@ def run_index(args=None):
                     raise
             except KeyboardInterrupt:
                 sys.exit()
-            print("---------------------")
+            print("\n---------------------")
         finish_database(structures)
         time2 = time.perf_counter()
         diff = time2 - time1
@@ -290,6 +293,7 @@ def get_database(dbfilename: Path | str) -> StructureTable:
 
 
 def main():
+    spin = Spinner()
     args = parser.parse_args()
     if args.cell:
         find_cell(args)
@@ -307,7 +311,9 @@ def main():
         else:
             files = '.cif files'
         print(f'Collecting {files} from {", ".join(args.dir)} to database.')
+        spin.start()
         run_index(args)
+        spin.stop()
 
 
 if __name__ == '__main__':
