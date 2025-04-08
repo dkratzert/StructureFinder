@@ -14,10 +14,13 @@ This file is for updating the various version number definitions for each STRF r
 isspath = ["./scripts/strf-install_win64.iss"]
 pypath = ["src/structurefinder/shelxfile/shelx.py",
           "src/structurefinder/strf.py",
+          "src/structurefinder/strf_cmd.py",
           "src/structurefinder/shelxfile/misc.py",
           "src/structurefinder/searcher/database_handler.py",
-          'src/structurefinder/searcher/filecrawler.py',
-          'src/structurefinder/searcher/worker.py',
+          'src/structurefinder/searcher/db_filler.py',
+          'src/structurefinder/searcher/search_worker.py',
+          'src/structurefinder/searcher/misc.py',
+          'src/structurefinder/searcher/cif_file.py',
           "src/structurefinder/displaymol/sdm.py",
           'src/structurefinder/ccdc/query.py'
           ]

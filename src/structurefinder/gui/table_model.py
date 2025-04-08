@@ -3,10 +3,10 @@ from typing import Any, Union, List
 from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex, Qt
 
-from structurefinder.searcher import worker
+import structurefinder.searcher.constants
 from structurefinder.searcher.database_handler import columns
 
-archives = tuple([x.replace("*", "") for x in worker.archives])
+archives = tuple([x.replace("*", "") for x in structurefinder.searcher.constants.archives])
 
 
 class TableModel(QtCore.QAbstractTableModel):

@@ -9,7 +9,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPalette, QImage, QResizeEvent
 
-from structurefinder.shelxfile.elements import get_radius_from_element, element2color
+from shelxfile.misc.elements import get_radius_from_element, element2color
 
 """
 A 2D molecule drawing widget. Feed it with a list (or generator) of atoms of this type:
@@ -297,9 +297,10 @@ def display(atoms: List[Atomtuple]):
 
 
 if __name__ == "__main__":
-    from structurefinder.shelxfile.shelx import ShelXFile
+    from shelxfile import Shelxfile
 
-    shx = ShelXFile('tests/test-data/p21c.res')
+    shx = Shelxfile()
+    shx.read_file('tests/test-data/p21c.res')
     # atoms = [x.cart_coords for x in shx.atoms]
     # cif = CifContainer('tests/test-data/p21c.cif')
     # cif = CifContainer(r'../41467_2015.cif')

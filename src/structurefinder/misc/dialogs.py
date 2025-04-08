@@ -9,7 +9,7 @@ from structurefinder.misc.version import VERSION
 
 def bug_found_warning(logfile) -> None:
     window = QMainWindow()
-    title = f'Congratulations, you found a bug in StructureFinder!'
+    title = 'Congratulations, you found a bug in StructureFinder!'
     text = (f'<br>Please send the file <br><br>'
             f'<a href=file:{os.sep * 2}{logfile.resolve()}>{logfile.resolve()}</a> '
             f'<br><br>to Daniel Kratzert: '

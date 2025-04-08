@@ -17,13 +17,14 @@ from typing import List, Dict, Union, Any
 
 import gemmi.cif
 from gemmi import cif
+from gemmi.cif import Column
 
 DEBUG = False
 
 
-class CifFile(object):
+class CifFile:
 
-    def __init__(self, options=None):
+    def __init__(self):
         """
         A cif file parsing object optimized for speed and simplicity.
         It can not handle multi cif files.
@@ -31,8 +32,6 @@ class CifFile(object):
         self.doc: Union[None, gemmi.cif.Document] = None
         self.block: Union[None, gemmi.cif.Block] = None
         self.cell: Union[None, gemmi.UnitCell] = None
-        if options is None:
-            options = {'modification_time': "", 'file_size': ""}
         # This is a set of keys that are already there:
         self.cif_data: Dict[str, Union[str, Any]] = {
             "data"                                : '',
@@ -101,18 +100,12 @@ class CifFile(object):
             "_publ_contact_author_name"           : '',
             "_publ_contact_author"                : '',
             "_publ_author_name"                   : '',
-            "modification_time"                   : options['modification_time'],
-            "file_size"                           : options['file_size'],
+            "modification_time"                   : '',
+            "file_size"                           : '',
             "calculated_formula_sum"              : '',
         }
 
     def parsefile(self, doc: cif.Document) -> bool:
-        """
-        This method parses the cif file. Currently, only single items and atoms are supported.
-        :param txt: cif file as list without line endings
-        :return: cif file content
-        :rtype: dict
-        """
         self.global_data = None
         self.doc: gemmi.cif.Document = doc
         if self.doc.find_block('global'):
@@ -341,8 +334,8 @@ class CifFile(object):
         """
         Atoms from the CIF where values are returned as string like in the CIF with esds.
         """
-        labels: List[str] = self.block.find_loop('_atom_site_label')
-        types: List[str] = self.block.find_loop('_atom_site_type_symbol')
+        labels: Column = self.block.find_loop('_atom_site_label')
+        types: Column = self.block.find_loop('_atom_site_type_symbol')
         x = self.block.find_loop('_atom_site_fract_x')
         y = self.block.find_loop('_atom_site_fract_y')
         z = self.block.find_loop('_atom_site_fract_z')

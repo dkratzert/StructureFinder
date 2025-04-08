@@ -1,6 +1,8 @@
 StructureFinder Changelog
 -------------------------
-* v81 Added possibility to activate more table columns with right-click menu on table header.  
+* v81 Improved internal structure of the indexer. This made it slightly faster and more maintainable.
+      Added .7zip file support. Better support for unusual .res files.
+* v81 Added possibility to activate more table columns with right-click menu on table header.
       Fixed CIF file names from archives in table. 
       Improved sorting of columns. Columns are now movable.  
 * v80 A missing directory doesn't let the program crash anymore on file open actions. A double click or 

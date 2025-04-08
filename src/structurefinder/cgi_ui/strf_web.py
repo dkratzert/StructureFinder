@@ -4,18 +4,33 @@ import os
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import List, Dict, Union, Tuple
+from shutil import which
+from typing import Dict, List, Tuple, Union
 from xml.etree.ElementTree import ParseError
 
 from gemmi.cif import Style
 
-from structurefinder.ccdc.query import get_cccsd_path, search_csd, parse_results
+from structurefinder.ccdc.query import get_cccsd_path, parse_results, search_csd
+from structurefinder.displaymol.mol_file_writer import MolFile
+from structurefinder.displaymol.sdm import SDM
 from structurefinder.misc.exporter import cif_data_to_document
 from structurefinder.misc.version import VERSION
-from structurefinder.searcher.constants import centering_letter_2_num, centering_num_2_letter
+from structurefinder.pymatgen.core import lattice
+from structurefinder.searcher.constants import (
+    centering_letter_2_num,
+    centering_num_2_letter,
+)
 from structurefinder.searcher.database_handler import StructureTable
-from structurefinder.searcher.misc import is_valid_cell, format_sum_formula, regular_results_parameters, vol_unitcell, \
-    get_list_of_elements, more_results_parameters, is_a_nonzero_file, combine_results
+from structurefinder.searcher.misc import (
+    combine_results,
+    format_sum_formula,
+    get_list_of_elements,
+    is_a_nonzero_file,
+    is_valid_cell,
+    more_results_parameters,
+    regular_results_parameters,
+    vol_unitcell,
+)
 
 parser = ArgumentParser(prog='strf_web',
                         description=f'StructureFinder Web Server v{VERSION}')
@@ -47,12 +62,15 @@ if pyver[0] == 3 and pyver[1] < 4:
     print("You need Python 3.4 and up in oder to run this program!")
     sys.exit()
 
-from shutil import which
-
-from structurefinder.cgi_ui.bottle import Bottle, static_file, template, redirect, request, response, HTTPResponse
-from structurefinder.displaymol.mol_file_writer import MolFile
-from structurefinder.displaymol.sdm import SDM
-from structurefinder.pymatgen.core import lattice
+from structurefinder.cgi_ui.bottle import (  # noqa: E402
+    Bottle,
+    HTTPResponse,
+    redirect,
+    request,
+    response,
+    static_file,
+    template,
+)
 
 app = application = Bottle()
 

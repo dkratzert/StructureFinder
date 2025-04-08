@@ -1,7 +1,7 @@
 import unittest
 
 
-from structurefinder.shelxfile.elements import get_radius, get_radius_from_element, \
+from shelxfile.misc.elements import get_radius, get_radius_from_element, \
     get_atomic_number, get_atomlabel, get_element
 
 

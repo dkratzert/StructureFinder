@@ -3,7 +3,7 @@ import unittest
 from structurefinder.pymatgen.core import lattice
 from structurefinder.searcher import database_handler
 from structurefinder.searcher.misc import regular_results_parameters, more_results_parameters
-from structurefinder.shelxfile.dsrmath import vol_unitcell
+from shelxfile.misc.dsrmath import vol_unitcell
 
 
 class TestSearch(unittest.TestCase):

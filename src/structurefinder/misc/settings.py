@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List
 
 from PyQt5.QtCore import QSettings, QPoint, QSize
-from PyQt5.uic.Compiler.qtproxies import QtCore
+from PyQt5 import QtCore
 
 Position = namedtuple('Position', 'size, position, maximized')
 

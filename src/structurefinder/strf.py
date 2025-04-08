@@ -20,24 +20,42 @@ import time
 import traceback
 from contextlib import suppress
 from datetime import date
-from math import sin, radians
+from math import radians, sin
 from os.path import isfile, samefile
 from pathlib import Path
-from sqlite3 import DatabaseError, ProgrammingError, OperationalError
-from typing import Union, Optional, List
+from sqlite3 import DatabaseError, ProgrammingError
+from typing import List, Optional, Union
 from xml.etree.ElementTree import ParseError
 
 import gemmi.cif
 import qtawesome as qta
-from PyQt5 import QtGui, QtCore
-from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread, QPoint
-from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
-    QMessageBox, QPushButton
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import (
+    QDate,
+    QEvent,
+    QItemSelection,
+    QModelIndex,
+    QPoint,
+    Qt,
+    QThread,
+    pyqtSlot,
+)
+from PyQt5.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QMainWindow,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QTreeWidgetItem,
+)
+from shelxfile import Shelxfile
 
-from structurefinder.ccdc.query import search_csd, parse_results
+from structurefinder import strf_cmd
+from structurefinder.ccdc.query import parse_results, search_csd
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.strf_main import Ui_stdbMainwindow
-from structurefinder.gui.table_model import TableModel, CustomProxyModel
+from structurefinder.gui.table_model import CustomProxyModel, TableModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
@@ -45,15 +63,21 @@ from structurefinder.misc.settings import StructureFinderSettings
 from structurefinder.misc.version import VERSION
 from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
 from structurefinder.pymatgen.core import lattice
-from structurefinder.searcher import database_handler, constants, misc
-from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
+from structurefinder.searcher import constants, database_handler, misc
+from structurefinder.searcher.cif_file import CifFile
+from structurefinder.searcher.constants import (
+    centering_letter_2_num,
+    centering_num_2_letter,
+)
 from structurefinder.searcher.database_handler import columns
-from structurefinder.searcher.filecrawler import excluded_names
-from structurefinder.searcher.fileparser import CifFile
-from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, \
-    regular_results_parameters
-from structurefinder.searcher.worker import Worker
-from structurefinder.shelxfile.shelx import ShelXFile
+from structurefinder.searcher.misc import (
+    combine_results,
+    elements,
+    is_valid_cell,
+    more_results_parameters,
+    regular_results_parameters,
+)
+from structurefinder.searcher.search_worker import SearchWorker
 
 DEBUG = False
 
@@ -96,7 +120,7 @@ class StartStructureDB(QMainWindow):
         font = QtGui.QFont()
         font.setStyleHint(QtGui.QFont.Monospace)
         self.ui.SHELXplainTextEdit.setFont(font)
-        self.statusBar().showMessage(f'StructureFinder version {VERSION}')
+        self.statusbar: QtWidgets.QStatusBar = self.statusBar()
         self.upd = None
         self.maxfiles = 0
         self.dbfdesc = None
@@ -104,10 +128,12 @@ class StartStructureDB(QMainWindow):
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         self.abort_import_button = QPushButton('Abort Indexing')
         self.progress = QProgressBar(self)
-        self.progress.setFormat('')
-        self.ui.statusbar.addWidget(self.progress)
+        self.progress.setFixedWidth(150)
+        self.statusbar.addPermanentWidget(self.progress)
         self.ui.appendDirButton.setDisabled(True)
-        self.ui.statusbar.addWidget(self.abort_import_button)
+        self.statusbar.addPermanentWidget(self.abort_import_button)
+        self.abort_import_button.hide()
+        self.statusbar.hide()
         self.structures: Optional[database_handler.StructureTable] = None
         self.apx = None
         self.structureId = 0
@@ -116,13 +142,13 @@ class StartStructureDB(QMainWindow):
         self.show()
         self.setAcceptDrops(True)
         self.full_list = True  # indicator if the full structures list is shown
-        self.decide_import = True
         self.ui.cellcheckExeLineEdit.setText(self.settings.load_ccdc_exe_path())
         self.connect_signals_and_slots()
         self.set_initial_button_states()
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
+        self.statusbar.showMessage(f'StructureFinder version {VERSION}')
         # Actions for certain gui elements:
         self.ui.cellField.addAction(self.ui.actionCopy_Unit_Cell)
         # self.ui.cifList_tableView.addAction(self.ui.actionGo_to_All_CIF_Tab)
@@ -159,7 +185,7 @@ class StartStructureDB(QMainWindow):
         self.ui.importDirButton.clicked.connect(self.import_file_dirs)
         self.ui.appendDirButton.clicked.connect(self.append_file_dirs)
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
-        # self.abort_import_button.clicked.connect(self.abort_import)
+        self.abort_import_button.clicked.connect(self.abort_import)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
         self.ui.adv_SearchPushButton.clicked.connect(self.advanced_search)
@@ -622,38 +648,36 @@ class StartStructureDB(QMainWindow):
             self.close_db()
             self.start_db()
         self.progressbar(1, 0, 20)
-        # self.abort_import_button.show()
+        self.abort_import_button.show()
         if not startdir:
             startdir = self.get_startdir_from_dialog()
         if not startdir:
             self.progress.hide()
             self.abort_import_button.hide()
             return
-        lastid = self.structures.database.get_lastrowid()
-        if not lastid:
-            lastid = 1
-        else:
-            lastid += 1
         self.ui.importDirButton.setDisabled(True)
         self.ui.appendDirButton.setDisabled(True)
         self.ui.closeDatabaseButton.setDisabled(True)
         self.ui.p4pCellButton.setDisabled(True)
         self.ui.appendDatabasePushButton.setDisabled(True)
         self.ui.importDatabaseButton.setDisabled(True)
+
         self.thread = QThread()
-        self.worker = Worker(searchpath=startdir, add_res_files=self.ui.add_res.isChecked(), excludes=excluded_names,
-                             add_cif_files=self.ui.add_cif.isChecked(), lastid=lastid, structures=self.structures)
+        self.worker = SearchWorker(startdir, self.structures,
+                                   add_res=self.ui.add_res.isChecked(),
+                                   add_cif=self.ui.add_cif.isChecked())
+        self.worker.progress.connect(self.progress.setValue)
         self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.index_files)
+        self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
-        self.worker.finished.connect(lambda x: self.statusBar().showMessage(x))
+        self.worker.finished.connect(self.progress.hide)
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.abort_import_button.hide)
         self.worker.progress.connect(self.report_progress)
         self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
-        self.thread.finished.connect(lambda: self.do_work_after_indexing(startdir))
+        self.worker.finished.connect(lambda: self.do_work_after_indexing(startdir))
         self.statusBar().showMessage('Searching potential files...')
         self.statusBar().show()
         self.abort_import_button.clicked.connect(self.abort_indexing)
@@ -672,31 +696,16 @@ class StartStructureDB(QMainWindow):
         self.maxfiles = number
 
     def report_progress(self, progress: int):
-        self.statusBar().showMessage('')
+        self.statusbar.showMessage(f'Inspected {progress} files')
         self.progressbar(progress, 0, self.maxfiles)
 
     def do_work_after_indexing(self, startdir: str):
         self.progress.hide()
-        # TODO: Do I need this here? It is already done in worker.py?
-        try:
-            self.structures.database.init_textsearch()
-            self.structures.database.init_author_search()
-        except OperationalError as e:
-            print(e)
-            print('No fulltext search module found.')
-        try:
-            self.structures.database.populate_fulltext_search_table()
-            self.structures.database.populate_author_fulltext_search()
-        except OperationalError as e:
-            print(e)
-            print('No fulltext search compiled into sqlite.')
-        self.structures.database.make_indexes()
-        self.structures.database.commit_db()
+        strf_cmd.finish_database(self.structures)
         self.ui.cifList_tableView.show()
         self.show_full_list()
         self.settings.save_current_index_dir(str(Path(startdir)))
         self.enable_buttons()
-        # self.statusBar().showMessage(f'Found {self.maxfiles} files.')
 
     def enable_buttons(self):
         self.ui.appendDatabasePushButton.setEnabled(True)
@@ -716,8 +725,6 @@ class StartStructureDB(QMainWindow):
         self.progress.setMaximum(max)
         self.progress.setMinimum(min)
         self.progress.show()
-        # if curr == max:
-        #    self.progress.hide()
 
     def close_db(self, copy_on_close: str = None) -> bool:
         """
@@ -768,7 +775,7 @@ class StartStructureDB(QMainWindow):
         """
         This slot means, import was aborted.
         """
-        self.decide_import = False
+        self.worker.stop()
 
     def start_db(self):
         """
@@ -879,7 +886,7 @@ class StartStructureDB(QMainWindow):
     def redraw_molecule(self) -> None:
         self.view_molecule()
 
-    def display_properties(self, structure_id, cif_dic):
+    def display_properties(self, structure_id, cif_dic: CifFile):
         """
         Displays the residuals from the cif file
         _refine_ls_number_reflns -> unique reflect. (Independent reflections)
@@ -957,18 +964,19 @@ class StartStructureDB(QMainWindow):
         except KeyError:
             pass
         try:
-            dat_param = cif_dic['_refine_ls_number_reflns'] / cif_dic['_refine_ls_number_parameters']
+            dat_param = int(cif_dic['_refine_ls_number_reflns']) / int(cif_dic['_refine_ls_number_parameters'])
         except (ValueError, ZeroDivisionError, TypeError):
             dat_param = 0.0
         self.ui.dataReflnsLineEdit.setText(f"{dat_param:<5.1f}")
         self.ui.numParametersLineEdit.setText(f"{cif_dic['_refine_ls_number_parameters']}")
-        wavelen = cif_dic['_diffrn_radiation_wavelength']
         thetamax = cif_dic['_diffrn_reflns_theta_max']
         # d = lambda/2sin(theta):
         try:
+            wavelen = float(cif_dic['_diffrn_radiation_wavelength'])
             d = wavelen / (2 * sin(radians(thetamax)))
-        except(ZeroDivisionError, TypeError):
+        except(ZeroDivisionError, TypeError, ValueError):
             d = 0.0
+            wavelen = 0.0
         self.ui.numRestraintsLineEdit.setText(f"{cif_dic['_refine_ls_number_restraints']}")
         self.ui.thetaMaxLineEdit.setText(f"{thetamax}")
         self.ui.thetaFullLineEdit.setText(f"{cif_dic['_diffrn_reflns_theta_full']}")
@@ -1231,7 +1239,8 @@ class StartStructureDB(QMainWindow):
 
     def search_for_res_cell(self, fname):
         if fname:
-            shx = ShelXFile(fname)
+            shx = Shelxfile()
+            shx.read_file(fname)
         else:
             return
         if shx and shx.cell:
@@ -1335,30 +1344,47 @@ class StartStructureDB(QMainWindow):
         self.table_model.clear()
 
 
-def my_exception_hook(exctype, value, error_traceback):
+def my_exception_hook(exctype: type[BaseException], value: BaseException, error_traceback: traceback,
+                      exit=True) -> None:
     """
     Hooks into Exceptions to create debug reports.
     """
-    errortext = f'StructureFinder V{VERSION} crash report\n\n'
-    errortext += 'Please send also the corresponding CIF file, if possible.\n\n'
-    errortext += f'Python {sys.version}\n'
-    errortext += f'{sys.platform} \n'
-    errortext += f'{time.asctime(time.localtime(time.time()))} \n'
-    errortext += 'StructureFinder crashed during the following operation: \n'
-    errortext += '-' * 80 + '\n'
-    errortext += ''.join(traceback.format_tb(error_traceback)) + '\n'
-    errortext += f'{str(exctype.__name__)} : '
-    errortext += f'{str(value)} \n'
-    errortext += '-' * 80 + '\n'
+    errortext = (f'StructureFinder V{VERSION} crash report\n\n'
+                 f'Please send also the corresponding CIF/RES file, if possible. \n'
+                 f'Python {sys.version}\n'
+                 f'Platform: {sys.platform}\n'
+                 f'Date: {time.asctime(time.localtime(time.time()))}\n'
+                 f'StructureFinder crashed during the following operation:\n\n'
+                 f'{"-" * 120}\n'
+                 # f'{"".join(traceback.format_tb(error_traceback))}\n'
+                 # f'{str(exctype.__name__)}: '
+                 # f'{str(value)} \n'
+                 # f'{"-" * 120}\n'
+                 )
+
+    # Walk through the traceback and extract local variables
+    for frame, _ in traceback.walk_tb(error_traceback):
+        errortext += (f'File "{frame.f_code.co_filename}", line {frame.f_lineno}, in '
+                      f'{frame.f_code.co_qualname}(...):\n')
+        newline = '\n'
+        errortext += '  Locals: \n    '
+        errortext += "    ".join(
+            [f"  {k}:{newline}          {'          '.join([x + newline for x in repr(v).splitlines()])}" for k, v in
+             frame.f_locals.items()]) + '\n\n'
+
+    errortext += f'{"-" * 120}\n'
+    errortext += f'{str(exctype.__name__)}: {str(value)} \n'
+    errortext += f'{"-" * 120}\n'
+
     logfile = Path.home().joinpath(Path(r'StructureFinder-crash.txt'))
     try:
         logfile.write_text(errortext)
     except PermissionError:
         pass
     sys.__excepthook__(exctype, value, error_traceback)
-    # Hier Fenster für meldung öffnen
     bug_found_warning(logfile)
-    sys.exit(1)
+    if exit:
+        sys.exit(1)
 
 
 def main():
