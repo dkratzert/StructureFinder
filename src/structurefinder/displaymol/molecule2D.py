@@ -68,7 +68,10 @@ class MoleculeWidget(QtWidgets.QWidget):
         for at in atoms:
             if at[0].startswith('Q'):
                 continue
-            self.atoms.append(Atom(at[2], at[3], at[4], at[0], at[1], at[5]))
+            try:
+                self.atoms.append(Atom(at[2], at[3], at[4], at[0], at[1], at[5]))
+            except KeyError as e:
+                print(f'Unknown element: {e} in atom {at}', )
         if len(self.atoms) > 400:
             self.bond_width = 1
         self.connections = self.get_conntable_from_atoms()
