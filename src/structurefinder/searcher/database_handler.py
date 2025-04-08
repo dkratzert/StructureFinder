@@ -85,7 +85,7 @@ def size_repr(value: bytes) -> str:
     if isinstance(value, bytes):
         value = value.decode('utf-8')
     try:
-        return f'{(int(value) / (1024 * 1024)):.2f}'
+        return f'{int(value) / (1024 * 1024):.2f}'
     except (ValueError, TypeError):
         return value
 
@@ -296,7 +296,7 @@ class DatabaseRequest():
         self.dbfile = dbfile
         self.con = connect(dbfile, check_same_thread=False)
         self.con.execute("PRAGMA foreign_keys = ON")
-        ## These make requests faster: ###
+        # These make requests faster:
         self.con.execute("PRAGMA main.journal_mode = MEMORY;")
         self.con.execute("PRAGMA temp.journal_mode = MEMORY;")
         self.con.execute("PRAGMA main.cache_size = -20000;")

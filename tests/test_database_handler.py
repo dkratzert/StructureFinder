@@ -13,6 +13,21 @@ class TestDatabase(unittest.TestCase):
         database_handler.columns.reset_defaults()
         self.db = database_handler.StructureTable(dbfilename)
 
+    def test_column(self):
+        c = database_handler.Column(name='foo', table='Structure', visible=True)
+        # This is initialized after all other columns, therefore 38:
+        assert c.position == 38
+
+    def test_column_sources(self):
+        columns = database_handler.columns
+        columns.reset_defaults()
+        assert columns.current_columns() == (
+            'Structure.dataname, Structure.filename, Residuals.modification_time, '
+            'Structure.path')
+        assert columns.visible_headers() == ['dataname', 'filename', 'modification_time', 'path']
+        assert columns.visible_header_names() == ['Id', 'Data Name', 'Filename', 'Modification Time', 'Path']
+        assert columns.default_columns() == ['dataname', 'filename', 'modification_time', 'path']
+
     def test_get_structure_rows_by_ids_without_id(self):
         rows = self.db.get_structure_rows_by_ids()
         assert len(rows) == 263
@@ -46,7 +61,7 @@ class TestDatabase(unittest.TestCase):
         database_handler.columns.dataname.visible = False
         database_handler.columns.filename.visible = False
         database_handler.columns.path.visible = False
-        #database_handler.columns.file_size.visible = False
+        # database_handler.columns.file_size.visible = False
         database_handler.columns.modification_time.visible = False
 
         rows = self.db.get_structure_rows_by_ids([23])
@@ -248,6 +263,41 @@ class TestMerging(unittest.TestCase):
         db1_row4.pop('Id')
         db1_row4.pop('StructureId')
         self.assertDictEqual(db2_row2, db1_row4)
+
+
+def test_string_type():
+    assert database_handler.string_type('foo') == 'foo'
+    assert database_handler.string_type(5) == '5'
+    assert database_handler.string_type(5.8) == '5.8'
+    assert database_handler.string_type(b'5.8') == '5.8'
+
+
+def test_float_type():
+    assert database_handler.float_type(1) == 1.0
+    assert database_handler.float_type(1.5) == 1.5
+    assert database_handler.float_type('1') == 1.0
+    assert database_handler.float_type(b'1') == 1.0
+
+
+def test_size_repr():
+    # Not convertible to int:
+    assert database_handler.size_repr('foo') == 'foo'
+    assert database_handler.size_repr(12344325) == '11.77'
+    assert database_handler.size_repr('12344325') == '11.77'
+    assert database_handler.size_repr(b'12344325') == '11.77'
+    assert database_handler.size_repr(b'12344325') == '11.77'
+
+
+def test_ccdc_repr():
+    assert database_handler.ccdc_repr('CCDC 21341324') == '21341324'
+    assert database_handler.ccdc_repr('21341324') == '21341324'
+    assert database_handler.ccdc_repr(b'21341324') == '21341324'
+
+
+def test_default_repr():
+    assert database_handler.default_repr('foo') == 'foo'
+    assert database_handler.default_repr('123.678') == '123.678'
+    assert database_handler.default_repr(b'123.678') == '123.678'
 
 
 if __name__ == '__main__':
