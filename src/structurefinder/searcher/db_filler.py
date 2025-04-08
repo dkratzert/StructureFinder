@@ -13,71 +13,16 @@ Created on 09.02.2015
 @author: Daniel Kratzert
 """
 
-import fnmatch
-import os
-import re
-from typing import Tuple, List
 
 import gemmi
 from shelxfile import Shelxfile
 
 from structurefinder.searcher import database_handler
-from structurefinder.searcher.crawler2 import Result
-from structurefinder.searcher.fileparser import CifFile
+from structurefinder.searcher.crawler import Result
+from structurefinder.searcher.cif_file import CifFile
 from structurefinder.searcher.misc import get_value
 
 DEBUG = False
-
-excluded_names = ('ROOT',
-                  '.OLEX',
-                  'olex',
-                  'TMP',
-                  'TEMP',
-                  'Papierkorb',
-                  'Recycle.Bin',
-                  'dsrsaves',
-                  'BrukerShelXlesaves',
-                  'shelXlesaves',
-                  '__private__',
-                  'autostructure_private')
-
-archives = ['*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '.7z']
-
-
-def filewalker_walk(startdir: str, patterns: list, excludes: List[str]) -> Tuple[Tuple[str, str], ...]:
-    """
-    walks through the filesystem starting from startdir and searches
-    for files with ending endings.
-
-    Since os.walk() uses scandir, it is as fast as pathlib.
-    """
-    filelist = []
-    print('collecting {} files below '.format(', '.join(patterns)) + startdir)
-    for root, _, files in os.walk(startdir):
-        for filen in files:
-            omit = False
-            if any(fnmatch.fnmatch(filen, pattern) for pattern in patterns):
-                for ex in excludes:
-                    if re.search(ex, root, re.I):
-                        omit = True
-                        break
-                if omit:
-                    continue
-                fullpath = os.path.abspath(os.path.join(root, filen))
-                try:
-                    if os.stat(fullpath).st_size == 0:
-                        continue
-                except Exception:
-                    continue
-                if filen == 'xd_geo.cif':  # Exclude xdgeom cif files
-                    continue
-                if filen == 'xd_four.cif':  # Exclude xdfourier cif files
-                    continue
-                # This is much faster than yield():
-                filelist.append((root, filen))
-            else:
-                continue
-    return tuple(filelist)
 
 
 def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: int,
@@ -232,18 +177,3 @@ def fill_db_with_res_data(res: Shelxfile, result: Result, structure_id: int, str
         pass
     structures.fill_residuals_table(structure_id, cif)
     return True
-
-
-if __name__ == '__main__':
-    z = MyTarReader('./tests/test-data/106c.tar.bz2')
-
-    for i in z:
-        print(i)
-
-    # filewalker_walk('./')
-    # z = zipopener('./tests/test-data/Archiv.zip')
-    # print(z)
-
-    # fp = create_file_list('../test-data/', 'zip')
-    # for i in fp:
-    #    print(i)

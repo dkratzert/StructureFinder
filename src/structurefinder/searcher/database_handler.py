@@ -14,11 +14,12 @@ import sys
 from dataclasses import dataclass
 from math import log
 from pathlib import Path
-from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError, Cursor
-from typing import List, Union, Tuple, Dict, Optional, Literal, Callable
+from sqlite3 import Cursor, InterfaceError, OperationalError, ProgrammingError, connect
+from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
-from structurefinder.searcher.fileparser import CifFile
 from shelxfile.misc.elements import sorted_atoms
+
+from structurefinder.searcher.cif_file import CifFile
 
 DEBUG = False
 

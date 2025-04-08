@@ -106,12 +106,6 @@ class CifFile:
         }
 
     def parsefile(self, doc: cif.Document) -> bool:
-        """
-        This method parses the cif file. Currently, only single items and atoms are supported.
-        :param txt: cif file as list without line endings
-        :return: cif file content
-        :rtype: dict
-        """
         self.global_data = None
         self.doc: gemmi.cif.Document = doc
         if self.doc.find_block('global'):

@@ -7,18 +7,28 @@ from pathlib import Path
 from sqlite3 import DatabaseError
 
 import gemmi
+from shelxfile import Shelxfile
 
 from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core.lattice import Lattice
-from structurefinder.searcher import spinner
-from structurefinder.searcher.crawler2 import find_files, EXCLUDED_NAMES, FileType, Result
-from structurefinder.searcher.database_handler import DatabaseRequest, StructureTable, columns
-from structurefinder.searcher.filecrawler import fill_db_with_cif_data, fill_db_with_res_data
-from structurefinder.searcher.fileparser import CifFile
-from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
-from shelxfile import Shelxfile
-
+from structurefinder.searcher.crawler import (
+    EXCLUDED_NAMES,
+    FileType,
+    Result,
+    find_files,
+)
+from structurefinder.searcher.database_handler import (
+    DatabaseRequest,
+    StructureTable,
+    columns,
+)
+from structurefinder.searcher.db_filler import (
+    fill_db_with_cif_data,
+    fill_db_with_res_data,
+)
+from structurefinder.searcher.cif_file import CifFile
+from structurefinder.searcher.misc import regular_results_parameters, vol_unitcell
 from structurefinder.searcher.spinner import Spinner
 
 DEBUG = False
@@ -136,6 +146,8 @@ def find_cell(args: Namespace):
 
 
 def run_index(args=None):
+    spin = Spinner()
+    total_files = 0
     if not args:
         print('')
     else:
@@ -161,15 +173,18 @@ def run_index(args=None):
             lastid = 1
         else:
             lastid += 1
+        spin.start()
         for p in args.dir:
+            num = 0
             try:
-                for num, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES, progress_callback=None)):
+                for num, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES)):
                     if result.file_type == FileType.CIF:
                         if process_cif(lastid, result, structures):
                             lastid += 1
                     elif result.file_type == FileType.RES:
                         if process_res(lastid, result, structures):
                             lastid += 1
+                total_files += num
             except OSError as e:
                 print(f"Unable to collect files: in path '{p}'")
                 print(e)
@@ -177,13 +192,15 @@ def run_index(args=None):
                     raise
             except KeyboardInterrupt:
                 sys.exit()
-            print("\n---------------------")
+        spin.stop()
+        print(f'    Files considered: {total_files}')
+        print("---------------------")
         finish_database(structures)
         time2 = time.perf_counter()
         diff = time2 - time1
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
-        print(f"\nTotal {len(structures)} cif/res files in '{str(Path(dbfilename).resolve())}'. "
+        print(f"Total added {len(structures)} .cif/.res files to '{str(Path(dbfilename).resolve())}'. "
               f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
         import os
         if "PYTEST_CURRENT_TEST" not in os.environ:
@@ -293,7 +310,6 @@ def get_database(dbfilename: Path | str) -> StructureTable:
 
 
 def main():
-    spin = Spinner()
     args = parser.parse_args()
     if args.cell:
         find_cell(args)
@@ -310,14 +326,11 @@ def main():
             files = '.res files'
         else:
             files = '.cif files'
-        print(f'Collecting {files} from {", ".join(args.dir)} to database.')
-        spin.start()
+        print(f'Collecting {files} below {", ".join(args.dir)} to database.')
         run_index(args)
-        spin.stop()
 
 
 if __name__ == '__main__':
     Path('test.sqlite').unlink(missing_ok=True)
     main()
-    find_cell(
-        Namespace(cell='10.5086  20.9035  20.5072   90.000   94.130   90.000'.split(), outfile='test.sqlite'))
+    # find_cell(Namespace(cell='10.5086  20.9035  20.5072   90.000   94.130   90.000'.split(), outfile='test.sqlite'))

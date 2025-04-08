@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QObject, pyqtSignal
 
-from structurefinder.searcher.crawler2 import EXCLUDED_NAMES, FileType, find_files
+from structurefinder.searcher.crawler import EXCLUDED_NAMES, FileType, find_files
 from structurefinder.searcher.database_handler import StructureTable
 from structurefinder.strf_cmd import process_cif, process_res
 
@@ -36,7 +36,6 @@ class SearchWorker(QObject):
             lastid += 1
         for num, result in enumerate(find_files(self.root_dir, exclude_dirs=EXCLUDED_NAMES, exts=exts)):
             if self._stop:
-                print('Stopped.')
                 break
             if result.file_type == FileType.CIF:
                 if process_cif(lastid, result, self.structures):
@@ -46,5 +45,4 @@ class SearchWorker(QObject):
                     lastid += 1
             self.progress.emit(num)
         self.progress.emit(0)
-        print('finished')
         self.finished.emit()

@@ -20,26 +20,42 @@ import time
 import traceback
 from contextlib import suppress
 from datetime import date
-from math import sin, radians
+from math import radians, sin
 from os.path import isfile, samefile
 from pathlib import Path
-from sqlite3 import DatabaseError, ProgrammingError, OperationalError
-from typing import Union, Optional, List
+from sqlite3 import DatabaseError, ProgrammingError
+from typing import List, Optional, Union
 from xml.etree.ElementTree import ParseError
 
 import gemmi.cif
 import qtawesome as qta
-from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtCore import QModelIndex, pyqtSlot, QDate, QEvent, Qt, QItemSelection, QThread, QPoint
-from PyQt5.QtWidgets import QApplication, QFileDialog, QProgressBar, QTreeWidgetItem, QMainWindow, \
-    QMessageBox, QPushButton
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import (
+    QDate,
+    QEvent,
+    QItemSelection,
+    QModelIndex,
+    QPoint,
+    Qt,
+    QThread,
+    pyqtSlot,
+)
+from PyQt5.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QMainWindow,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QTreeWidgetItem,
+)
 from shelxfile import Shelxfile
 
 from structurefinder import strf_cmd
-from structurefinder.ccdc.query import search_csd, parse_results
+from structurefinder.ccdc.query import parse_results, search_csd
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.strf_main import Ui_stdbMainwindow
-from structurefinder.gui.table_model import TableModel, CustomProxyModel
+from structurefinder.gui.table_model import CustomProxyModel, TableModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
@@ -47,12 +63,20 @@ from structurefinder.misc.settings import StructureFinderSettings
 from structurefinder.misc.version import VERSION
 from structurefinder.p4pfile.p4p_reader import P4PFile, read_file_to_list
 from structurefinder.pymatgen.core import lattice
-from structurefinder.searcher import database_handler, constants, misc
-from structurefinder.searcher.constants import centering_num_2_letter, centering_letter_2_num
+from structurefinder.searcher import constants, database_handler, misc
+from structurefinder.searcher.cif_file import CifFile
+from structurefinder.searcher.constants import (
+    centering_letter_2_num,
+    centering_num_2_letter,
+)
 from structurefinder.searcher.database_handler import columns
-from structurefinder.searcher.fileparser import CifFile
-from structurefinder.searcher.misc import is_valid_cell, elements, combine_results, more_results_parameters, \
-    regular_results_parameters
+from structurefinder.searcher.misc import (
+    combine_results,
+    elements,
+    is_valid_cell,
+    more_results_parameters,
+    regular_results_parameters,
+)
 from structurefinder.searcher.search_worker import SearchWorker
 
 DEBUG = False
@@ -1320,30 +1344,47 @@ class StartStructureDB(QMainWindow):
         self.table_model.clear()
 
 
-def my_exception_hook(exctype, value, error_traceback):
+def my_exception_hook(exctype: type[BaseException], value: BaseException, error_traceback: traceback,
+                      exit=True) -> None:
     """
     Hooks into Exceptions to create debug reports.
     """
-    errortext = f'StructureFinder V{VERSION} crash report\n\n'
-    errortext += 'Please send also the corresponding CIF file, if possible.\n\n'
-    errortext += f'Python {sys.version}\n'
-    errortext += f'{sys.platform} \n'
-    errortext += f'{time.asctime(time.localtime(time.time()))} \n'
-    errortext += 'StructureFinder crashed during the following operation: \n'
-    errortext += '-' * 80 + '\n'
-    errortext += ''.join(traceback.format_tb(error_traceback)) + '\n'
-    errortext += f'{str(exctype.__name__)} : '
-    errortext += f'{str(value)} \n'
-    errortext += '-' * 80 + '\n'
+    errortext = (f'StructureFinder V{VERSION} crash report\n\n'
+                 f'Please send also the corresponding CIF/RES file, if possible. \n'
+                 f'Python {sys.version}\n'
+                 f'Platform: {sys.platform}\n'
+                 f'Date: {time.asctime(time.localtime(time.time()))}\n'
+                 f'StructureFinder crashed during the following operation:\n\n'
+                 f'{"-" * 120}\n'
+                 # f'{"".join(traceback.format_tb(error_traceback))}\n'
+                 # f'{str(exctype.__name__)}: '
+                 # f'{str(value)} \n'
+                 # f'{"-" * 120}\n'
+                 )
+
+    # Walk through the traceback and extract local variables
+    for frame, _ in traceback.walk_tb(error_traceback):
+        errortext += (f'File "{frame.f_code.co_filename}", line {frame.f_lineno}, in '
+                      f'{frame.f_code.co_qualname}(...):\n')
+        newline = '\n'
+        errortext += '  Locals: \n    '
+        errortext += "    ".join(
+            [f"  {k}:{newline}          {'          '.join([x + newline for x in repr(v).splitlines()])}" for k, v in
+             frame.f_locals.items()]) + '\n\n'
+
+    errortext += f'{"-" * 120}\n'
+    errortext += f'{str(exctype.__name__)}: {str(value)} \n'
+    errortext += f'{"-" * 120}\n'
+
     logfile = Path.home().joinpath(Path(r'StructureFinder-crash.txt'))
     try:
         logfile.write_text(errortext)
     except PermissionError:
         pass
     sys.__excepthook__(exctype, value, error_traceback)
-    # Hier Fenster für meldung öffnen
     bug_found_warning(logfile)
-    sys.exit(1)
+    if exit:
+        sys.exit(1)
 
 
 def main():

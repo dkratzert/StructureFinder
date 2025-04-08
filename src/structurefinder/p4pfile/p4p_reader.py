@@ -46,7 +46,7 @@ class P4PFile():
         self.zeros = None
         self.source = None
         self.volume = None
-        self.ortmatrix = None 
+        self.ortmatrix = None
         try:
             self.parse_p4p()
         except Exception:

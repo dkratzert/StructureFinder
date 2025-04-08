@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
 import gemmi
 
-from structurefinder.searcher.fileparser import CifFile
+from structurefinder.searcher.cif_file import CifFile
 
 
 def export_to_cif_file(cif: Dict, filename: str):

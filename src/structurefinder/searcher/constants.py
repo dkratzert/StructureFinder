@@ -44,4 +44,4 @@ celltxt = """
    </html>
     """
 
-
+archives = ['*.zip', '*.tar.gz', '*.tar.bz2', '*.tgz', '.7z']

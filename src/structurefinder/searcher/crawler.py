@@ -4,7 +4,7 @@ import os
 import tarfile
 import time
 import zipfile
-from collections.abc import Iterable, Callable
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -62,19 +62,14 @@ def is_excluded_dir(dirpath: str, exclude_dirs: Iterable[str]) -> bool:
     return False
 
 
-def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, progress_callback: Callable = None):
+def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None):
     if exclude_dirs is None:
         exclude_dirs = set()
     exclude_dirs = set([x.lower() for x in exclude_dirs])
-
     for dirpath, dirnames, filenames in os.walk(root_dir):
         if is_excluded_dir(dirpath, exclude_dirs):
             continue
-        total = len(filenames)
         for num, filename in enumerate(filenames):
-            if progress_callback:
-                progress_callback(int((num + 1) / total * 100))
-
             lower_filename = filename.lower()
             if lower_filename.endswith(exts):
                 filepath = os.path.join(dirpath, filename)
@@ -102,7 +97,7 @@ def is_zipfile(filename: str) -> bool:
     return filename.endswith(".zip")
 
 
-def file_result(filename: str, filepath: str) -> Generator[Result, Any, None]:
+def file_result(filename: str, filepath: str | bytes) -> Generator[Result, Any, None]:
     mod_time = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(filepath)))
     size = os.stat(filepath).st_size
     with open(filepath, 'rb') as fobj:
@@ -113,7 +108,7 @@ def file_result(filename: str, filepath: str) -> Generator[Result, Any, None]:
                      file_size=size)
 
 
-def search_in_zip(zip_path: str,
+def search_in_zip(zip_path: str | bytes,
                   exts: tuple[str] | set[str],
                   exclude_dirs: Iterable[str] = None) -> Generator[Result, Any, None]:
     try:
@@ -138,7 +133,7 @@ def search_in_zip(zip_path: str,
     return None
 
 
-def search_in_tar(tar_path: str,
+def search_in_tar(tar_path: str | bytes,
                   exts: tuple[str],
                   exclude_dirs: Iterable[str] = None) -> Generator[Result, Any, None]:
     try:
@@ -163,10 +158,10 @@ def search_in_tar(tar_path: str,
             print(f"[TAR] Error in {tar_path}: {e}")
 
 
-def search_in_7z(sevenz_path: str, exts: tuple[str]) -> Generator[Result, Any, None]:
+def search_in_7z(sevenz_path: str | bytes, exts: tuple[str]) -> Generator[Result, Any, None]:
     try:
         r"""
-        with py7zr.SevenZipFile(sevenz_path, mode='r') as archive:
+        #with py7zr.SevenZipFile(sevenz_path, mode='r') as archive:
             for name, bio in archive.readall().items():
                 lower_file = name.lower()
                 if lower_file.endswith(exts):
