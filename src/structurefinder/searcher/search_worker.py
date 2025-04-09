@@ -58,4 +58,4 @@ class SearchWorker(QObject):
         self.progress.emit(0)
         self.finished.emit()
         t2 = time.perf_counter()
-        print(f'Finished index worker at {t2 - t1:2f} seconds', )
+        print(f'Finished index worker at {t2 - t1:.2f} seconds')

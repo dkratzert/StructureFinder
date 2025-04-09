@@ -152,7 +152,7 @@ def find_cell(args: Namespace):
         print(f'{Id:<7} | {filename:<21s} | {dataname:15s} | {path:77s} | {mod_time}')
 
 
-def run_index(args=None):
+def run_index(args: Namespace = None):
     if not args:
         print('')
     else:

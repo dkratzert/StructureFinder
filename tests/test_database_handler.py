@@ -184,13 +184,13 @@ class TestMerging(unittest.TestCase):
         self.db1_file = str(uuid.uuid4()) + '.sqlite'
         self.db2_file = str(uuid.uuid4()) + '.sqlite'
         Path(self.test_dir).mkdir(exist_ok=True)
-        Args = namedtuple('Args', 'dir, outfile, fillcif, fillres, delete, ex')
+        Args = namedtuple('Args', 'dir, outfile, fillcif, fillres, delete, ex, no_archive')
         args1 = Args(dir=['tests/test-data/051a'], outfile=f'{self.test_dir}/{self.db1_file}', fillcif=True,
                      fillres=True,
-                     delete=True, ex='')
+                     delete=True, ex='', no_archive=False)
         args2 = Args(dir=['tests/test-data/106c'], outfile=f'{self.test_dir}/{self.db2_file}', fillcif=True,
                      fillres=True,
-                     delete=True, ex='')
+                     delete=True, ex='', no_archive=False)
         run_index(args1)
         run_index(args2)
         self.db1 = database_handler.StructureTable(f'{self.test_dir}/{self.db1_file}')
