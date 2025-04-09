@@ -661,12 +661,11 @@ class StartStructureDB(QMainWindow):
         self.ui.p4pCellButton.setDisabled(True)
         self.ui.appendDatabasePushButton.setDisabled(True)
         self.ui.importDatabaseButton.setDisabled(True)
-
         self.thread = QThread()
         self.worker = SearchWorker(startdir, self.structures,
                                    add_res=self.ui.add_res.isChecked(),
                                    add_cif=self.ui.add_cif.isChecked(),
-                                   no_archives=False)
+                                   no_archives=self.ui.ignoreArchivesCB.isChecked())
         self.worker.progress.connect(self.progress.setValue)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
@@ -834,7 +833,7 @@ class StartStructureDB(QMainWindow):
         if status:
             self.ui.DatabaseNameDisplayLabel.setText('')
             self.statusBar().showMessage("Database saved.", msecs=5000)
-            # self.open_database_file(save_name)
+            self.open_database_file(save_name)
 
     def eventFilter(self, object, event):
         """Event filter for mouse clicks."""

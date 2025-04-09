@@ -28,16 +28,11 @@
        <string/>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_10">
-       <item alignment="Qt::AlignLeft">
+       <item>
         <widget class="QPushButton" name="importDirButton">
-         <property name="minimumSize">
-          <size>
-           <width>185</width>
-           <height>0</height>
-          </size>
-         </property>
          <property name="font">
           <font>
+           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -49,16 +44,11 @@
          </property>
         </widget>
        </item>
-       <item alignment="Qt::AlignLeft">
+       <item>
         <widget class="QPushButton" name="appendDirButton">
-         <property name="minimumSize">
-          <size>
-           <width>185</width>
-           <height>0</height>
-          </size>
-         </property>
          <property name="font">
           <font>
+           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -71,29 +61,51 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="add_cif">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This option will import .cif files (crystallograpghic information file) into the database.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Index Options</string>
          </property>
-         <property name="text">
-          <string>import .cif files</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="add_res">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This option will import .res files from SHELXL into the database.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>import .res files</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_11">
+          <item>
+           <widget class="QCheckBox" name="add_cif">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This option will import .cif files (crystallograpghic information file) into the database.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>import .cif files</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="add_res">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This option will import .res files from SHELXL into the database.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>import .res files</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="ignoreArchivesCB">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Activating this option will not index .cif and .res files in .zip, .tar.gz, .7zip and other archives.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Ignore files in archives</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
@@ -113,10 +125,19 @@
         </spacer>
        </item>
        <item>
-        <widget class="QCheckBox" name="hideInArchivesCB">
-         <property name="text">
-          <string>hide files in archives</string>
+        <widget class="QGroupBox" name="groupBox_6">
+         <property name="title">
+          <string>View Options</string>
          </property>
+         <layout class="QVBoxLayout" name="verticalLayout_12">
+          <item>
+           <widget class="QCheckBox" name="hideInArchivesCB">
+            <property name="text">
+             <string>hide files in archives</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
@@ -135,16 +156,11 @@
          </property>
         </spacer>
        </item>
-       <item alignment="Qt::AlignLeft">
+       <item>
         <widget class="QPushButton" name="importDatabaseButton">
-         <property name="minimumSize">
-          <size>
-           <width>185</width>
-           <height>0</height>
-          </size>
-         </property>
          <property name="font">
           <font>
+           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -164,26 +180,21 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>40</height>
+           <height>6</height>
           </size>
          </property>
         </spacer>
        </item>
-       <item alignment="Qt::AlignLeft">
+       <item>
         <widget class="QPushButton" name="saveDatabaseButton">
-         <property name="minimumSize">
-          <size>
-           <width>185</width>
-           <height>0</height>
-          </size>
-         </property>
          <property name="font">
           <font>
+           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
          <property name="text">
-          <string>Save Database</string>
+          <string>Save Database      </string>
          </property>
         </widget>
        </item>
@@ -205,12 +216,6 @@
        </item>
        <item>
         <widget class="QPushButton" name="appendDatabasePushButton">
-         <property name="minimumSize">
-          <size>
-           <width>185</width>
-           <height>0</height>
-          </size>
-         </property>
          <property name="text">
           <string>Append a Database</string>
          </property>
@@ -232,14 +237,8 @@
          </property>
         </spacer>
        </item>
-       <item alignment="Qt::AlignLeft">
+       <item>
         <widget class="QPushButton" name="p4pCellButton">
-         <property name="minimumSize">
-          <size>
-           <width>185</width>
-           <height>0</height>
-          </size>
-         </property>
          <property name="text">
           <string>Import Cell from File</string>
          </property>
@@ -265,20 +264,8 @@
          </property>
         </widget>
        </item>
-       <item alignment="Qt::AlignLeft">
+       <item>
         <widget class="QPushButton" name="closeDatabaseButton">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>185</width>
-           <height>0</height>
-          </size>
-         </property>
          <property name="text">
           <string>Close Database</string>
          </property>
@@ -371,6 +358,7 @@
                   <widget class="QLabel" name="SpaceGrouplabel">
                    <property name="font">
                     <font>
+                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -430,6 +418,7 @@
                   <widget class="QLabel" name="wR2Label">
                    <property name="font">
                     <font>
+                     <weight>75</weight>
                      <italic>false</italic>
                      <bold>true</bold>
                     </font>
@@ -453,6 +442,7 @@
                   <widget class="QLabel" name="r1Label">
                    <property name="font">
                     <font>
+                     <weight>75</weight>
                      <italic>false</italic>
                      <bold>true</bold>
                     </font>
@@ -527,6 +517,7 @@
                   <widget class="QLabel" name="rintLabel">
                    <property name="font">
                     <font>
+                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -549,6 +540,7 @@
                   <widget class="QLabel" name="rsigmaLabel">
                    <property name="font">
                     <font>
+                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -600,6 +592,7 @@
                  </property>
                  <property name="font">
                   <font>
+                   <weight>75</weight>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -620,6 +613,7 @@
                   <widget class="QLabel" name="label">
                    <property name="font">
                     <font>
+                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -952,6 +946,7 @@
                   <widget class="QLabel" name="dataReflnsLabel">
                    <property name="font">
                     <font>
+                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -1025,6 +1020,7 @@
                   <widget class="QLabel" name="dLabel">
                    <property name="font">
                     <font>
+                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -1047,6 +1043,7 @@
                   <widget class="QLabel" name="completeLabel">
                    <property name="font">
                     <font>
+                     <weight>75</weight>
                      <bold>true</bold>
                     </font>
                    </property>
@@ -1406,6 +1403,7 @@ p, li { white-space: pre-wrap; }
              <widget class="QLabel" name="NotContainsLabel">
               <property name="font">
                <font>
+                <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
@@ -1495,6 +1493,7 @@ p, li { white-space: pre-wrap; }
               </property>
               <property name="font">
                <font>
+                <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
@@ -3256,6 +3255,7 @@ p, li { white-space: pre-wrap; }
                </property>
                <property name="font">
                 <font>
+                 <weight>50</weight>
                  <bold>false</bold>
                 </font>
                </property>
