@@ -665,7 +665,8 @@ class StartStructureDB(QMainWindow):
         self.thread = QThread()
         self.worker = SearchWorker(startdir, self.structures,
                                    add_res=self.ui.add_res.isChecked(),
-                                   add_cif=self.ui.add_cif.isChecked())
+                                   add_cif=self.ui.add_cif.isChecked(),
+                                   no_archives=False)
         self.worker.progress.connect(self.progress.setValue)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)

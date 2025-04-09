@@ -13,10 +13,16 @@ class SearchWorker(QObject):
     number_of_files = pyqtSignal(int)
     finished = pyqtSignal()
 
-    def __init__(self, root_dir: str, structures_db: StructureTable, add_res: bool, add_cif: bool) -> None:
+    def __init__(self,
+                 root_dir: str,
+                 structures_db: StructureTable,
+                 add_res: bool,
+                 add_cif: bool,
+                 no_archives: bool = False) -> None:
         super().__init__()
         self.add_res = add_res
         self.add_cif = add_cif
+        self.no_archives = no_archives
         self._stop = False
         self.root_dir = root_dir
         self.exclude_dirs = EXCLUDED_NAMES
@@ -38,7 +44,8 @@ class SearchWorker(QObject):
             lastid = 1
         else:
             lastid += 1
-        for num, result in enumerate(find_files(self.root_dir, exclude_dirs=EXCLUDED_NAMES, exts=exts)):
+        for num, result in enumerate(find_files(self.root_dir, exclude_dirs=EXCLUDED_NAMES,
+                                                exts=exts, no_archive=self.no_archives)):
             if self._stop:
                 break
             if result.file_type == FileType.CIF:

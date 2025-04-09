@@ -62,7 +62,7 @@ def is_excluded_dir(dirpath: str, exclude_dirs: Iterable[str]) -> bool:
     return False
 
 
-def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None):
+def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, no_archive=False):
     if exclude_dirs is None:
         exclude_dirs = set()
     exclude_dirs = set([x.lower() for x in exclude_dirs])
@@ -74,6 +74,8 @@ def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None):
             if lower_filename.endswith(exts):
                 filepath = os.path.join(dirpath, filename)
                 yield from file_result(filename, filepath)
+            elif no_archive:
+                continue
             elif is_zipfile(lower_filename):
                 filepath = os.path.join(dirpath, filename)
                 yield from search_in_zip(filepath, exts, exclude_dirs)

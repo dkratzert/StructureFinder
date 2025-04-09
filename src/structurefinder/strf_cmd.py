@@ -9,6 +9,7 @@ from sqlite3 import DatabaseError
 import gemmi
 from shelxfile import Shelxfile
 
+from structurefinder.gui.table_model import archives
 from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core.lattice import Lattice
@@ -87,6 +88,12 @@ parser.add_argument("-m",
                     default=False,
                     type=str,
                     help="Merges a database file into the file of '-o' option. Only -o is allowed in addition."
+                    )
+parser.add_argument("-na",
+                    dest='no_archive',
+                    default=False,
+                    action='store_true',
+                    help=f"Disables the collection of files in {', '.join(archives)} archives."
                     )
 
 
@@ -176,7 +183,7 @@ def run_index(args=None):
         archive_count = 0
         for p in args.dir:
             try:
-                for total_files, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES)):
+                for total_files, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES, no_archive=args.no_archive)):
                     if result.file_type == FileType.CIF:
                         if process_cif(lastid, result, structures):
                             cif_count += 1
