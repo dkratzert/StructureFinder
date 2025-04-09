@@ -155,7 +155,9 @@ def run_index(args: Namespace = None):
     if not args:
         print('')
     else:
-        if not any([args.fillres, args.fillcif]):
+        fill_cif = args.fillcif
+        file_res = args.fillres
+        if not any([file_res, fill_cif]):
             print("Error: You need to give either option -c, -r or both.")
             sys.exit()
         if args.outfile:
@@ -183,13 +185,13 @@ def run_index(args: Namespace = None):
         for p in args.dir:
             try:
                 for total_files, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES, no_archive=args.no_archive)):
-                    if result.file_type == FileType.CIF:
+                    if fill_cif and result.file_type == FileType.CIF:
                         if process_cif(lastid, result, structures):
                             cif_count += 1
                             lastid += 1
                             if result.in_archive:
                                 archive_count += 1
-                    elif result.file_type == FileType.RES:
+                    elif file_res and result.file_type == FileType.RES:
                         if process_res(lastid, result, structures):
                             res_count += 1
                             lastid += 1
