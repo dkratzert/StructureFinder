@@ -146,8 +146,6 @@ def find_cell(args: Namespace):
 
 
 def run_index(args=None):
-    spin = Spinner()
-    total_files = 0
     if not args:
         print('')
     else:
@@ -173,18 +171,28 @@ def run_index(args=None):
             lastid = 1
         else:
             lastid += 1
-        spin.start()
+        cif_count = 0
+        res_count = 0
+        archive_count = 0
         for p in args.dir:
-            num = 0
             try:
-                for num, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES)):
+                for total_files, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES)):
                     if result.file_type == FileType.CIF:
                         if process_cif(lastid, result, structures):
+                            cif_count += 1
                             lastid += 1
+                            if result.in_archive:
+                                archive_count += 1
                     elif result.file_type == FileType.RES:
                         if process_res(lastid, result, structures):
+                            res_count += 1
                             lastid += 1
-                total_files += num
+                            if result.in_archive:
+                                archive_count += 1
+                    if total_files % 100 == 0:
+                        print(f'\r{total_files:,} files found so far.', flush=True, end='')
+                else:
+                    print('\r\b', end='', flush=True)
             except OSError as e:
                 print(f"Unable to collect files: in path '{p}'")
                 print(e)
@@ -192,16 +200,16 @@ def run_index(args=None):
                     raise
             except KeyboardInterrupt:
                 sys.exit()
-        spin.stop()
-        print(f'    Files considered: {total_files}')
+        print()
         print("---------------------")
         finish_database(structures)
         time2 = time.perf_counter()
         diff = time2 - time1
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
-        print(f"Total added {len(structures)} .cif/.res files to '{str(Path(dbfilename).resolve())}'. "
-              f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
+        tmessage = (f'Added {len(structures)} files, ({cif_count} .cif, {res_count} .res files), ({archive_count} '
+                    f'in compressed archives) to database in: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s')
+        print(tmessage)
         import os
         if "PYTEST_CURRENT_TEST" not in os.environ:
             check_update()
@@ -326,7 +334,7 @@ def main():
             files = '.res files'
         else:
             files = '.cif files'
-        print(f'Collecting {files} below {", ".join(args.dir)} to database.')
+        print(f'Collecting {files} below  {", ".join(args.dir)}.')
         run_index(args)
 
 
