@@ -139,9 +139,11 @@ class TestApplication(unittest.TestCase):
         self.myapp.save_database(testfile.resolve())
         self.assertEqual(True, testfile.is_file())
         self.assertEqual(True, testfile.exists())
+        # Not anymore, because I reload the db after saving:
+        # self.assertEqual('Database saved.', self.myapp.statusBar().currentMessage())
+        self.myapp.close_db()
         Path.unlink(testfile)
         self.assertEqual(False, testfile.exists())
-        self.assertEqual('Database saved.', self.myapp.statusBar().currentMessage())
 
     # @pytest.mark.skip(reason="Not working an all systems'")
     def test_index_db1(self):
