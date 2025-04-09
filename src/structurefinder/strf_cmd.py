@@ -13,6 +13,7 @@ from structurefinder.gui.table_model import archives
 from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core.lattice import Lattice
+from structurefinder.searcher.cif_file import CifFile
 from structurefinder.searcher.crawler import (
     EXCLUDED_NAMES,
     FileType,
@@ -28,9 +29,7 @@ from structurefinder.searcher.db_filler import (
     fill_db_with_cif_data,
     fill_db_with_res_data,
 )
-from structurefinder.searcher.cif_file import CifFile
 from structurefinder.searcher.misc import regular_results_parameters, vol_unitcell
-from structurefinder.searcher.spinner import Spinner
 
 DEBUG = False
 
@@ -51,7 +50,7 @@ parser.add_argument("-e",
                     type=str,
                     action='append',
                     help='Directory names to be excluded from the file search. Default is:\n'
-                         '"ROOT", ".OLEX", "TMP", "TEMP", "Papierkorb", "Recycle.Bin" '
+                         f'{list(EXCLUDED_NAMES)} '
                          'Modifying -e option discards the default.')
 parser.add_argument("-o",
                     dest="outfile",
@@ -208,15 +207,16 @@ def run_index(args: Namespace = None):
             except KeyboardInterrupt:
                 sys.exit()
         print()
-        print("---------------------")
         finish_database(structures)
         time2 = time.perf_counter()
         diff = time2 - time1
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
-        tmessage = (f'Added {len(structures)} files, ({cif_count} .cif, {res_count} .res files), ({archive_count} '
+        tmessage = (f'Added {cif_count+res_count} files, ({cif_count} .cif, {res_count} .res files), ({archive_count} '
                     f'in compressed archives) to database in: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s')
         print(tmessage)
+        print("---------------------")
+        print(f"Total {len(structures)} cif/res files in '{Path(dbfilename).resolve()}'.")
         import os
         if "PYTEST_CURRENT_TEST" not in os.environ:
             check_update()
