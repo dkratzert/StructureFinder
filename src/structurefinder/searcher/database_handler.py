@@ -131,8 +131,8 @@ class ColumnSources:
 
     dataname: Column = Column(name="Data Name", table="Structure", visible=True,
                               default=True)
-    filename: Column = Column(name="Filename", table="Structure", visible=True, default=True)
-    modification_time: Column = Column(name="Modification Time", table="Residuals", visible=True, default=True)
+    filename: Column = Column(name="File Name", table="Structure", visible=True, default=True)
+    modification_time: Column = Column(name="Last Modified", table="Residuals", visible=True, default=True)
     path: Column = Column(name="Path", table="Structure", visible=True, string_method=pathrepr, default=True)
     file_size: Column = Column(name="File Size [MB]", table="Residuals", visible=False, string_method=size_repr,
                                data_type=float_type)

@@ -25,7 +25,7 @@ class TestDatabase(unittest.TestCase):
             'Structure.dataname, Structure.filename, Residuals.modification_time, '
             'Structure.path')
         assert columns.visible_headers() == ['dataname', 'filename', 'modification_time', 'path']
-        assert columns.visible_header_names() == ['Id', 'Data Name', 'Filename', 'Modification Time', 'Path']
+        assert columns.visible_header_names() == ['Id', 'Data Name', 'File Name', 'Last Modified', 'Path']
         assert columns.default_columns() == ['dataname', 'filename', 'modification_time', 'path']
 
     def test_get_structure_rows_by_ids_without_id(self):
