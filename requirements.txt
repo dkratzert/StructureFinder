@@ -2,7 +2,7 @@ docutils
 macholib
 numpy~=2.1
 pefile
-pyqt6
+pyqt6<9.0
 pyqt6-sip
 pywin32-ctypes~=0.2
 six
