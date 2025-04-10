@@ -1,15 +1,11 @@
 import sys
 
+from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtCore import Qt, QModelIndex
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRecord
-from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QMessageBox,
-    QTableView, QAbstractItemView, )
 
 
-class Contacts(QMainWindow):
+class Contacts(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("QTableView Example")
@@ -19,14 +15,14 @@ class Contacts(QMainWindow):
         # Set up the model
         self.model = ContactsModel()
         # Set up the view
-        self.table = QTableView()
+        self.table = QtWidgets.QTableView()
         self.table.setSortingEnabled(True)
         self.table.sortByColumn(0, 0)
         self.table.setModel(self.model.model)
         # self.table.resizeColumnsToContents()
-        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.resizeColumnsToContents()
-        self.table.setEditTriggers(QTableView.NoEditTriggers)
+        self.table.setEditTriggers(QtWidgets.QTableView.EditTrigger.NoEditTriggers)
         self.setCentralWidget(self.table)
 
 
@@ -47,7 +43,7 @@ class MyQSqlTableModel(QSqlTableModel):
         order = "ASC"
         if self.sort_order == 1:
             order = "DESC"
-        #return "GROUP BY Structure.Id, R.StructureId ORDER BY MAX(R.modification_time) {}".format(order)
+        # return "GROUP BY Structure.Id, R.StructureId ORDER BY MAX(R.modification_time) {}".format(order)
         if self.order_column == 3:
             return "ORDER BY R.modification_time {}".format(order)
         else:
@@ -59,9 +55,9 @@ class MyQSqlTableModel(QSqlTableModel):
         return super().sort(column, order)
 
     def selectStatement(self) -> str:
-        select =  "SELECT distinct filename, dataname, path, modification_time FROM Structure " \
-               "join Residuals as R on Structure.Id = R.StructureId " \
-                  "{}".format(self.orderByClause())
+        select = "SELECT distinct filename, dataname, path, modification_time FROM Structure " \
+                 "join Residuals as R on Structure.Id = R.StructureId " \
+                 "{}".format(self.orderByClause())
         print(select)
         return select
 
@@ -88,7 +84,7 @@ def create_connection():
     con = QSqlDatabase.addDatabase("QSQLITE")
     con.setDatabaseName("/Users/daniel/Documents/GitHub/StructureFinder/structuredb.sqlite")
     if not con.open():
-        QMessageBox.critical(
+        QtWidgets.QMessageBox.critical(
             None,
             "QTableView Example - Error!",
             "Database Error: %s" % con.lastError().databaseText(),
@@ -96,8 +92,9 @@ def create_connection():
         return False
     return True
 
+
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     if not create_connection():
         sys.exit(1)
     win = Contacts()

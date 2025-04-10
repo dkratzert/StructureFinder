@@ -49,10 +49,44 @@ COMMON_REPLACEMENTS = [
     (r'(QtCore\.)?Qt\.ItemIsEditable', r'QtCore.Qt.ItemFlag.ItemIsEditable'),
 
     # WindowFlags
-    (r'(QtCore\.)?Qt\.Window', r'QtCore.Qt.WindowType.Window'),
-    (r'(QtCore\.)?Qt\.Dialog', r'QtCore.Qt.WindowType.Dialog'),
-    (r'(QtCore\.)?Qt\.Tool', r'QtCore.Qt.WindowType.Tool'),
-    (r'(QtCore\.)?Qt\.Popup', r'QtCore.Qt.WindowType.Popup'),
+    (r'(QtCore\.)?Qt\.Window\W', r'QtCore.Qt.WindowType.Window'),
+    (r'(QtCore\.)?Qt\.Dialog\W', r'QtCore.Qt.WindowType.Dialog'),
+    (r'(QtCore\.)?Qt\.Too\W', r'QtCore.Qt.WindowType.Tool'),
+    (r'(QtCore\.)?Qt\.Popup\W', r'QtCore.Qt.WindowType.Popup'),
+    (r'(QtCore\.)?Qt\.Widget\W', r'QtCore.Qt.WindowType.Widget'),
+    (r'(QtCore\.)?Qt\.Sheet\W', r'QtCore.Qt.WindowType.Sheet'),
+    (r'(QtCore\.)?Qt\.Drawer\W', r'QtCore.Qt.WindowType.Drawer'),
+    (r'(QtCore\.)?Qt\.ToolTip\W', r'QtCore.Qt.WindowType.ToolTip'),
+    (r'(QtCore\.)?Qt\.SplashScreen\W', r'QtCore.Qt.WindowType.SplashScreen'),
+    (r'(QtCore\.)?Qt\.SubWindow\W', r'QtCore.Qt.WindowType.SubWindow'),
+    (r'(QtCore\.)?Qt\.ForeignWindow\W', r'QtCore.Qt.WindowType.ForeignWindow'),
+    (r'(QtCore\.)?Qt\.CoverWindow\W', r'QtCore.Qt.WindowType.CoverWindow'),
+
+    # WindowStates
+    (r'(QtCore\.)?Qt\.WindowNoState\W', r'QtCore.Qt.WindowState.WindowNoState'),
+    (r'(QtCore\.)?Qt\.WindowMinimized\W', r'QtCore.Qt.WindowState.WindowMinimized'),
+    (r'(QtCore\.)?Qt\.WindowMaximized\W', r'QtCore.Qt.WindowState.WindowMaximized'),
+    (r'(QtCore\.)?Qt\.WindowFullScreen\W', r'QtCore.Qt.WindowState.WindowFullScreen'),
+    (r'(QtCore\.)?Qt\.WindowActive\W', r'QtCore.Qt.WindowState.WindowActive'),
+
+    # WindowModality
+    (r'(QtCore\.)?Qt\.NonModal\W', r'QtCore.Qt.WindowModality.NonModal'),
+    (r'(QtCore\.)?Qt\.WindowModal\W', r'QtCore.Qt.WindowModality.WindowModal'),
+    (r'(QtCore\.)?Qt\.ApplicationModal\W', r'QtCore.Qt.WindowModality.ApplicationModal'),
+
+    # WidgetAttribute
+    (r'(QtCore\.)?Qt\.WA_DeleteOnClose\W', r'QtCore.Qt.WidgetAttribute.WA_DeleteOnClose'),
+
+    # TransformationMode
+    (r'(QtCore\.)?Qt\.FastTransformation\W', r'QtCore.Qt.TransformationMode.FastTransformation'),
+    (r'(QtCore\.)?Qt\.SmoothTransformation\W', r'QtCore.Qt.TransformationMode.SmoothTransformation'),
+
+    # ToolButtonStyle
+    (r'(QtCore\.)?Qt\.ToolButtonIconOnly\W', r'QtCore.Qt.ToolButtonStyle.ToolButtonIconOnly'),
+    (r'(QtCore\.)?Qt\.ToolButtonTextOnly\W', r'QtCore.Qt.ToolButtonStyle.ToolButtonTextOnly'),
+    (r'(QtCore\.)?Qt\.ToolButtonTextBesideIcon\W', r'QtCore.Qt.ToolButtonStyle.ToolButtonTextBesideIcon'),
+    (r'(QtCore\.)?Qt\.ToolButtonTextUnderIcon\W', r'QtCore.Qt.ToolButtonStyle.ToolButtonTextUnderIcon'),
+    (r'(QtCore\.)?Qt\.ToolButtonFollowStyle\W', r'QtCore.Qt.ToolButtonStyle.ToolButtonFollowStyle'),
 
     # TextInteraction
     (r'(QtCore\.)?Qt\.TextSelectableByMouse', r'QtCore.Qt.TextInteractionFlag.TextSelectableByMouse'),
@@ -77,7 +111,7 @@ COMMON_REPLACEMENTS = [
     (r'(QtCore\.)?Qt\.DisplayRole', r'QtCore.Qt.ItemDataRole.DisplayRole'),
     (r'(QtCore\.)?Qt\.Horizontal', r'QtCore.Qt.Orientation.Horizontal'),
 
-    #Image Formats
+    # Image Formats
     (r'QImage\.Format_', r'QImage.Format.Format_'),
     (r'(QtCore\.)?Qt\.white', r'QtCore.Qt.GlobalColor.white'),
     (r'(QtCore\.)?Qt\.red', r'QtCore.Qt.GlobalColor.red'),
@@ -118,6 +152,10 @@ COMMON_REPLACEMENTS = [
     (r'(QtGui\.)?QPalette\.Button', r'QtGui.QPalette.ColorRole.Button'),
     (r'(QtGui\.)?QPalette\.ButtonText', r'QtGui.QPalette.ColorRole.ButtonText'),
     (r'(QtGui\.)?QPalette\.BrightText', r'QtGui.QPalette.ColorRole.BrightText'),
+
+    # QtWidgets QtWidgets.QTableView.EditTrigger.NoEditTriggers
+    (r'(QtWidgets\.)?QAbstractItemView\.SelectRows', r'QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows'),
+    (r'(QtWidgets\.)?QTableView\.NoEditTriggers', r'QtWidgets.QTableView.EditTrigger.NoEditTriggers'),
 
     # Classes
     (r'\bQRegExp\b', r'QRegularExpression'),
