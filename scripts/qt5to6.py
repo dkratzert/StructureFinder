@@ -2,78 +2,124 @@ import os
 import re
 import shutil
 
+from PyQt6 import QtCore
+
 PYQT5_TO_PYQT6_IMPORTS = [
     (r'from\s+PyQt5\s+import\s+(QtWidgets|QtGui|QtCore|QtSvg)', r'from PyQt6 import \1'),
     (r'import\s+PyQt5\.(QtWidgets|QtGui|QtCore|QtSvg)', r'import PyQt6.\1'),
     (r'from\s+PyQt5\.(\w+)\s+import\s+(\w+)', r'from PyQt6.\1 import \2'),
+
 ]
 
 # Adjustments for Qt6 (e.g., enums and method renames)
 COMMON_REPLACEMENTS = [
-    # Methodenänderungen
-    (r'\.exec_\(.*?\)', r'.exec()'),
+    # Methods
+    (r'\.exec_\(', r'.exec('),
     (r'\.translate\(', r'.tr('),
     (r'\.setSectionResizeMode\(', r'.header().setSectionResizeMode('),
     (r'\.toUtf8\(\)', r'.encode()'),
     (r'\.isSignalConnected\(', r'.signalsBlocked('),  # ggf. prüfen, nicht immer gleichwertig
 
     # Qt Enums – QtCore.Qt
-    (r'QtCore\.Qt\.AlignVCenter', r'QtCore.Qt.AlignmentFlag.AlignVCenter'),
-    (r'QtCore\.Qt\.AlignHCenter', r'QtCore.Qt.AlignmentFlag.AlignHCenter'),
-    (r'QtCore\.Qt\.AlignLeft', r'QtCore.Qt.AlignmentFlag.AlignLeft'),
-    (r'QtCore\.Qt\.AlignRight', r'QtCore.Qt.AlignmentFlag.AlignRight'),
-    (r'QtCore\.Qt\.AlignTop', r'QtCore.Qt.AlignmentFlag.AlignTop'),
-    (r'QtCore\.Qt\.AlignBottom', r'QtCore.Qt.AlignmentFlag.AlignBottom'),
-    (r'QtCore\.Qt\.AlignCenter', r'QtCore.Qt.AlignmentFlag.AlignCenter'),
+    (r'(QtCore\.)?Qt\.AlignVCenter', r'QtCore.Qt.AlignmentFlag.AlignVCenter'),
+    (r'(QtCore\.)?Qt\.AlignHCenter', r'QtCore.Qt.AlignmentFlag.AlignHCenter'),
+    (r'(QtCore\.)?Qt\.AlignLeft', r'QtCore.Qt.AlignmentFlag.AlignLeft'),
+    (r'(QtCore\.)?Qt\.AlignRight', r'QtCore.Qt.AlignmentFlag.AlignRight'),
+    (r'(QtCore\.)?Qt\.AlignTop', r'QtCore.Qt.AlignmentFlag.AlignTop'),
+    (r'(QtCore\.)?Qt\.AlignBottom', r'QtCore.Qt.AlignmentFlag.AlignBottom'),
+    (r'(QtCore\.)?Qt\.AlignCenter', r'QtCore.Qt.AlignmentFlag.AlignCenter'),
 
-    (r'QtCore\.Qt\.Horizontal', r'QtCore.Qt.Orientation.Horizontal'),
-    (r'QtCore\.Qt\.Vertical', r'QtCore.Qt.Orientation.Vertical'),
+    (r'(QtCore\.)?Qt\.Horizontal', r'QtCore.Qt.Orientation.Horizontal'),
+    (r'(QtCore\.)?Qt\.Vertical', r'QtCore.Qt.Orientation.Vertical'),
 
-    (r'QtCore\.Qt\.LeftToRight', r'QtCore.Qt.LayoutDirection.LeftToRight'),
-    (r'QtCore\.Qt\.RightToLeft', r'QtCore.Qt.LayoutDirection.RightToLeft'),
+    (r'(QtCore\.)?Qt\.LeftToRight', r'QtCore.Qt.LayoutDirection.LeftToRight'),
+    (r'(QtCore\.)?Qt\.RightToLeft', r'QtCore.Qt.LayoutDirection.RightToLeft'),
 
     # QtCore.Key – Tastatur-Enums
-    (r'QtCore\.Qt\.Key_(\w+)', r'QtCore.Qt.Key.Key_\1'),
+    (r'(QtCore\.)?Qt\.Key_', r'QtCore.Qt.Key.Key_'),
 
     # Mouse Buttons
-    (r'QtCore\.Qt\.LeftButton', r'QtCore.Qt.MouseButton.LeftButton'),
-    (r'QtCore\.Qt\.RightButton', r'QtCore.Qt.MouseButton.RightButton'),
-    (r'QtCore\.Qt\.MiddleButton', r'QtCore.Qt.MouseButton.MiddleButton'),
+    (r'(QtCore\.)?Qt\.LeftButton', r'QtCore.Qt.MouseButton.LeftButton'),
+    (r'(QtCore\.)?Qt\.RightButton', r'QtCore.Qt.MouseButton.RightButton'),
+    (r'(QtCore\.)?Qt\.MiddleButton', r'QtCore.Qt.MouseButton.MiddleButton'),
 
     # ItemFlags
-    (r'QtCore\.Qt\.ItemIsSelectable', r'QtCore.Qt.ItemFlag.ItemIsSelectable'),
-    (r'QtCore\.Qt\.ItemIsEnabled', r'QtCore.Qt.ItemFlag.ItemIsEnabled'),
-    (r'QtCore\.Qt\.ItemIsEditable', r'QtCore.Qt.ItemFlag.ItemIsEditable'),
+    (r'(QtCore\.)?Qt\.ItemIsSelectable', r'QtCore.Qt.ItemFlag.ItemIsSelectable'),
+    (r'(QtCore\.)?Qt\.ItemIsEnabled', r'QtCore.Qt.ItemFlag.ItemIsEnabled'),
+    (r'(QtCore\.)?Qt\.ItemIsEditable', r'QtCore.Qt.ItemFlag.ItemIsEditable'),
 
     # WindowFlags
-    (r'QtCore\.Qt\.Window', r'QtCore.Qt.WindowType.Window'),
-    (r'QtCore\.Qt\.Dialog', r'QtCore.Qt.WindowType.Dialog'),
-    (r'QtCore\.Qt\.Tool', r'QtCore.Qt.WindowType.Tool'),
-    (r'QtCore\.Qt\.Popup', r'QtCore.Qt.WindowType.Popup'),
+    (r'(QtCore\.)?Qt\.Window', r'QtCore.Qt.WindowType.Window'),
+    (r'(QtCore\.)?Qt\.Dialog', r'QtCore.Qt.WindowType.Dialog'),
+    (r'(QtCore\.)?Qt\.Tool', r'QtCore.Qt.WindowType.Tool'),
+    (r'(QtCore\.)?Qt\.Popup', r'QtCore.Qt.WindowType.Popup'),
 
     # TextInteraction
-    (r'QtCore\.Qt\.TextSelectableByMouse', r'QtCore.Qt.TextInteractionFlag.TextSelectableByMouse'),
-    (r'QtCore\.Qt\.TextSelectableByKeyboard', r'QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard'),
+    (r'(QtCore\.)?Qt\.TextSelectableByMouse', r'QtCore.Qt.TextInteractionFlag.TextSelectableByMouse'),
+    (r'(QtCore\.)?Qt\.TextSelectableByKeyboard', r'QtCore.Qt.TextInteractionFlag.TextSelectableByKeyboard'),
 
     # Modifier Keys
-    (r'QtCore\.Qt\.ControlModifier', r'QtCore.Qt.KeyboardModifier.ControlModifier'),
-    (r'QtCore\.Qt\.ShiftModifier', r'QtCore.Qt.KeyboardModifier.ShiftModifier'),
+    (r'(QtCore\.)?Qt\.ControlModifier', r'QtCore.Qt.KeyboardModifier.ControlModifier'),
+    (r'(QtCore\.)?Qt\.ShiftModifier', r'QtCore.Qt.KeyboardModifier.ShiftModifier'),
 
     # Cursor
-    (r'QtCore\.Qt\.WaitCursor', r'QtCore.Qt.CursorShape.WaitCursor'),
-    (r'QtCore\.Qt\.ArrowCursor', r'QtCore.Qt.CursorShape.ArrowCursor'),
-    (r'QtCore\.Qt\.PointingHandCursor', r'QtCore.Qt.CursorShape.PointingHandCursor'),
+    (r'(QtCore\.)?Qt\.WaitCursor', r'QtCore.Qt.CursorShape.WaitCursor'),
+    (r'(QtCore\.)?Qt\.ArrowCursor', r'QtCore.Qt.CursorShape.ArrowCursor'),
+    (r'(QtCore\.)?Qt\.PointingHandCursor', r'QtCore.Qt.CursorShape.PointingHandCursor'),
 
     # Sort order
-    (r'QtCore\.Qt\.AscendingOrder', r'QtCore.Qt.SortOrder.AscendingOrder'),
-    (r'(QtCore\.)[0,1]Qt\.DescendingOrder', r'QtCore.Qt.SortOrder.DescendingOrder'),
+    (r'(QtCore\.)?Qt\.AscendingOrder', r'QtCore.Qt.SortOrder.AscendingOrder'),
+    (r'(QtCore\.)?Qt\.DescendingOrder', r'QtCore.Qt.SortOrder.DescendingOrder'),
 
+    # Data roles
+    (r'(QtCore\.)?Qt\.EditRole', r'QtCore.Qt.ItemDataRole.EditRole'),
+    (r'(QtCore\.)?Qt\.DisplayRole', r'QtCore.Qt.ItemDataRole.DisplayRole'),
+    (r'(QtCore\.)?Qt\.DisplayRole', r'QtCore.Qt.ItemDataRole.DisplayRole'),
+    (r'(QtCore\.)?Qt\.Horizontal', r'QtCore.Qt.Orientation.Horizontal'),
 
-    # Signal/Slot Verbindung (wenn nötig z.B. bei PyQtSignal -> Signal)
-    #(r'pyqtSignal', r'Signal'),
-    #(r'pyqtSlot', r'Slot'),
+    #Image Formats
+    (r'QImage\.Format_', r'QImage.Format.Format_'),
+    (r'(QtCore\.)?Qt\.white', r'QtCore.Qt.GlobalColor.white'),
+    (r'(QtCore\.)?Qt\.red', r'QtCore.Qt.GlobalColor.red'),
+    (r'(QtCore\.)?Qt\.blue', r'QtCore.Qt.GlobalColor.blue'),
+    (r'(QtCore\.)?Qt\.darkBlue', r'QtCore.Qt.GlobalColor.darkBlue'),
+    (r'(QtCore\.)?Qt\.black', r'QtCore.Qt.GlobalColor.black'),
+    (r'(QtCore\.)?Qt\.green', r'QtCore.Qt.GlobalColor.green'),
+    (r'(QtCore\.)?Qt\.gray', r'QtCore.Qt.GlobalColor.gray'),
+    (r'(QtCore\.)?Qt\.lightGray', r'QtCore.Qt.GlobalColor.lightGray'),
+    (r'(QtCore\.)?Qt\.yellow', r'QtCore.Qt.GlobalColor.yellow'),
+    (r'(QtCore\.)?Qt\.darkGray', r'QtCore.Qt.GlobalColor.darkGray'),
+    (r'(QtCore\.)?Qt\.darkRed', r'QtCore.Qt.GlobalColor.darkRed'),
+    (r'(QtCore\.)?Qt\.darkGreen', r'QtCore.Qt.GlobalColor.darkGreen'),
+    (r'(QtCore\.)?Qt\.darkYellow', r'QtCore.Qt.GlobalColor.darkYellow'),
+    (r'(QtCore\.)?Qt\.magenta', r'QtCore.Qt.GlobalColor.magenta'),
+    (r'(QtCore\.)?Qt\.transparent', r'QtCore.Qt.GlobalColor.transparent'),
+    (r'(QtCore\.)?Qt\.cyan', r'QtCore.Qt.GlobalColor.cyan'),
+    (r'(QtCore\.)?Qt\.color0', r'QtCore.Qt.GlobalColor.color0'),
+    (r'(QtCore\.)?Qt\.color1', r'QtCore.Qt.GlobalColor.color1'),
 
-    # Klassenumbenennungen
+    # Render Hints
+    (r'QPainter\.Antialiasing', r'QPainter.RenderHint.Antialiasing'),
+    (r'QPainter\.TextAntialiasing', r'QPainter.RenderHint.TextAntialiasing'),
+    (r'QPainter\.SmoothPixmapTransform', r'QPainter.RenderHint.SmoothPixmapTransform'),
+    (r'QPainter\.VerticalSubpixelPositioning', r'QPainter.RenderHint.VerticalSubpixelPositioning'),
+    (r'QPainter\.LosslessImageRendering', r'QPainter.RenderHint.LosslessImageRendering'),
+    (r'QPainter\.NonCosmeticBrushPatterns', r'QPainter.RenderHint.NonCosmeticBrushPatterns'),
+
+    # ColorRoles
+    (r'(QtGui\.)?QPalette\.Window', r'QtGui.QPalette.ColorRole.Window'),
+    (r'(QtGui\.)?QPalette\.WindowText', r'QtGui.QPalette.ColorRole.WindowText'),
+    (r'(QtGui\.)?QPalette\.Base', r'QtGui.QPalette.ColorRole.Base'),
+    (r'(QtGui\.)?QPalette\.AlternateBase', r'QtGui.QPalette.ColorRole.AlternateBase'),
+    (r'(QtGui\.)?QPalette\.ToolTipBase', r'QtGui.QPalette.ColorRole.ToolTipBase'),
+    (r'(QtGui\.)?QPalette\.ToolTipText', r'QtGui.QPalette.ColorRole.ToolTipText'),
+    (r'(QtGui\.)?QPalette\.PlaceholderText', r'QtGui.QPalette.ColorRole.PlaceholderText'),
+    (r'(QtGui\.)?QPalette\.Text', r'QtGui.QPalette.ColorRole.Text'),
+    (r'(QtGui\.)?QPalette\.Button', r'QtGui.QPalette.ColorRole.Button'),
+    (r'(QtGui\.)?QPalette\.ButtonText', r'QtGui.QPalette.ColorRole.ButtonText'),
+    (r'(QtGui\.)?QPalette\.BrightText', r'QtGui.QPalette.ColorRole.BrightText'),
+
+    # Classes
     (r'\bQRegExp\b', r'QRegularExpression'),
     (r'\bQDesktopWidget\b', r'QScreen'),  # deprecated in Qt6
 ]
@@ -82,7 +128,6 @@ COMMON_REPLACEMENTS = [
 def process_py_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
-
     original_content = content
 
     for pattern, repl in PYQT5_TO_PYQT6_IMPORTS + COMMON_REPLACEMENTS:

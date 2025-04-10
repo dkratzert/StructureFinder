@@ -80,7 +80,7 @@ class ContactsModel:
         print(table_model.selectStatement())
         headers = ("Filename", "Data name", "Path", "Date")
         for column_index, header in enumerate(headers):
-            table_model.setHeaderData(column_index, Qt.Horizontal, header)
+            table_model.setHeaderData(column_index, QtCore.Qt.Orientation.Horizontal, header)
         return table_model
 
 

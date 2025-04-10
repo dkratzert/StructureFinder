@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List, Union
 
 import numpy as np
-from PyQt6 import QtWidgets
+from PyQt6 import QtWidgets, QtCore, QtGui
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPalette, QImage, QResizeEvent
 
@@ -39,7 +39,7 @@ class MoleculeWidget(QtWidgets.QWidget):
         self.y_angle = 0
         #
         pal = QPalette()
-        pal.setColor(QPalette.Window, Qt.white)
+        pal.setColor(QtGui.QPalette.ColorRole.Window, QtCore.Qt.GlobalColor.white)
         self.setAutoFillBackground(True)
         self.setPalette(pal)
         self.layout = QtWidgets.QVBoxLayout(self)
@@ -86,7 +86,7 @@ class MoleculeWidget(QtWidgets.QWidget):
     def paintEvent(self, event):
         if self.atoms:
             self.painter = QPainter(self)
-            self.painter.setRenderHint(QPainter.Antialiasing)
+            self.painter.setRenderHint(QPainter.RenderHint.Antialiasing)
             font = self.painter.font()
             font.setPixelSize(13)
             self.painter.setFont(font)
@@ -100,8 +100,8 @@ class MoleculeWidget(QtWidgets.QWidget):
         self.lastPos = event.pos()
 
     def save_image(self, filename: Path, image_scale=1.5):
-        image = QImage(self.size() * image_scale, QImage.Format_RGB32)
-        image.fill(Qt.white)
+        image = QImage(self.size() * image_scale, QImage.Format.Format_RGB32)
+        image.fill(QtCore.Qt.GlobalColor.white)
         imgpainter = QPainter(image)
         imgpainter.scale(image_scale, image_scale)
         self.render(imgpainter)
@@ -123,11 +123,11 @@ class MoleculeWidget(QtWidgets.QWidget):
         ], dtype=np.float32)
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        if event.buttons() == Qt.LeftButton:
+        if event.buttons() == QtCore.Qt.MouseButton.LeftButton:
             self.rotate_molecule(event)
-        elif event.buttons() == Qt.RightButton:
+        elif event.buttons() == QtCore.Qt.MouseButton.RightButton:
             self.zoom_molecule(event)
-        elif event.buttons() == Qt.MiddleButton:
+        elif event.buttons() == QtCore.Qt.MouseButton.MiddleButton:
             self.pan_molecule(event)
         self.lastPos = event.pos()
 
@@ -217,12 +217,12 @@ class MoleculeWidget(QtWidgets.QWidget):
         self.molecule_radius = r or 10
 
     def draw_bond(self, at1: 'Atom', at2: 'Atom', offset: int):
-        self.painter.setPen(QPen(Qt.darkGray, self.bond_width, Qt.SolidLine))
+        self.painter.setPen(QPen(QtCore.Qt.GlobalColor.darkGray, self.bond_width, Qt.SolidLine))
         self.painter.drawLine(at1.screenx + offset, at1.screeny + offset,
                               at2.screenx + offset, at2.screeny + offset)
 
     def draw_atom(self, atom: 'Atom'):
-        self.painter.setPen(QPen(Qt.black, 1, Qt.SolidLine))
+        self.painter.setPen(QPen(QtCore.Qt.GlobalColor.black, 1, Qt.SolidLine))
         self.painter.setBrush(QBrush(atom.color, Qt.SolidPattern))
         self.painter.drawEllipse(int(atom.screenx), int(atom.screeny), int(self.atoms_size), int(self.atoms_size))
 

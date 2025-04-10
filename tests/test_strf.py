@@ -9,10 +9,11 @@ from time import sleep
 from typing import Union
 
 import pytest
-from PyQt5.QtCore import QDate, QEventLoop, Qt
-from PyQt5.QtGui import QIcon
-from PyQt5.QtTest import QTest
-from PyQt5.QtWidgets import QApplication
+from PyQt6 import QtCore
+from PyQt6.QtCore import QDate, QEventLoop
+from PyQt6.QtGui import QIcon
+from PyQt6.QtTest import QTest
+from PyQt6.QtWidgets import QApplication
 
 from structurefinder import strf
 from structurefinder.misc.version import VERSION
@@ -122,7 +123,7 @@ class TestApplication(unittest.TestCase):
         Testing copy to clip board with double click on unit cell
         """
         self.myapp.ui.cifList_tableView.selectRow(0)
-        QTest.mouseDClick(self.myapp.ui.cellField, Qt.LeftButton, delay=5)
+        QTest.mouseDClick(self.myapp.ui.cellField, QtCore.Qt.MouseButton.LeftButton, delay=5)
         clp = QApplication.clipboard().text()
         self.assertEqual("10.360 18.037 25.764 127.030 129.810 90.510", clp)
 
@@ -210,7 +211,7 @@ class TestApplication(unittest.TestCase):
 
     def test_all_cif_values(self):
         self.myapp.ui.cifList_tableView.selectRow(249)
-        QTest.mouseClick(self.myapp.ui.allEntrysTab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.allEntrysTab, QtCore.Qt.MouseButton.LeftButton)
         self.assertEqual('Id', self.myapp.ui.allCifTreeWidget.topLevelItem(0).text(0))
         self.assertEqual('250', self.myapp.ui.allCifTreeWidget.topLevelItem(0).text(1))
         self.assertEqual('C107 H142 N14 O26', self.myapp.ui.allCifTreeWidget.topLevelItem(10).text(1))
@@ -218,12 +219,12 @@ class TestApplication(unittest.TestCase):
 
     def test_res_file_tab(self):
         self.myapp.ui.cifList_tableView.selectRow(2)
-        QTest.mouseClick(self.myapp.ui.SHELXtab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.SHELXtab, QtCore.Qt.MouseButton.LeftButton)
         self.assertEqual('REM Solution', self.myapp.ui.SHELXplainTextEdit.toPlainText()[:12])
 
     def test_res_file3(self):
         self.myapp.ui.cifList_tableView.selectRow(250)
-        QTest.mouseClick(self.myapp.ui.SHELXtab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.SHELXtab, QtCore.Qt.MouseButton.LeftButton)
         self.assertEqual('No SHELXL res file in cif found.', self.myapp.ui.SHELXplainTextEdit.toPlainText())
 
     @unittest.skip('Can not run this on Github')
@@ -232,7 +233,7 @@ class TestApplication(unittest.TestCase):
         Test if the unit cell of the current structure gets into the cellcheckcsd tab.
         """
         self.myapp.ui.cifList_tableView.selectRow(2)
-        QTest.mouseClick(self.myapp.ui.CCDCSearchTab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.CCDCSearchTab, QtCore.Qt.MouseButton.LeftButton)
         if platform.system() == 'Windows':
             self.assertEqual('23.6015  20.9757  26.1674  90.0  101.784  90.0',
                              self.myapp.ui.cellSearchCSDLineEdit.text())
@@ -243,48 +244,48 @@ class TestApplication(unittest.TestCase):
         Tests for unit cells in advanced search mode.
         """
         # click on advanced search tab:
-        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
         # fill in unit cell:
         self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
         # click on search button:
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check number of results:
         self.assertEqual(1, self.get_row_count_from_table())
         self.assertEqual("Found 1 structures.", self.myapp.statusBar().currentMessage())
 
     def test_advanced_with_more_results(self):
-        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
         # fill in unit cell:
         self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
         # avtivate more results checkbox:
-        QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, Qt.LeftButton, delay=10)
+        QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, QtCore.Qt.MouseButton.LeftButton, delay=10)
         self.myapp.ui.adv_moreResultscheckBox.setChecked(True)
         self.myapp.ui.adv_superlatticeCheckBox.setChecked(False)
         # click on search button:
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
         self.assertEqual(1, self.get_row_count_from_table())
 
     def test_advanced_with_more_results_and_superlattice(self):
-        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
         self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
         # avtivate more results checkbox:
-        # QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, Qt.LeftButton, delay=10)
+        # QTest.mouseClick(self.myapp.ui.adv_moreResultscheckBox, QtCore.Qt.MouseButton.LeftButton, delay=10)
         self.myapp.ui.adv_moreResultscheckBox.setChecked(True)
         self.myapp.ui.adv_superlatticeCheckBox.setChecked(True)
         # click on search button:
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
         self.assertEqual(1, self.get_row_count_from_table())
 
     def test_advanced_with_superlattice_only(self):
-        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
         self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
         # avtivate superlattice checkbox:
         self.myapp.ui.adv_moreResultscheckBox.setChecked(False)
         self.myapp.ui.adv_superlatticeCheckBox.setChecked(True)
         # click on search button:
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
         self.assertEqual(1, self.get_row_count_from_table())
 
@@ -293,9 +294,9 @@ class TestApplication(unittest.TestCase):
         Searching for text advanced.
         """
         # click on advanced search tab:
-        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
         self.myapp.ui.adv_textsearch.setText('SADI')
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         self.assertEqual(4, self.get_row_count_from_table())
         self.assertEqual('breit_tb13_85.cif', self.get_row_content(0, 2))
         self.assertEqual('p21c.cif', self.get_row_content(3, 2))
@@ -304,42 +305,42 @@ class TestApplication(unittest.TestCase):
 
     def test_search_text_with_exclude(self):
         # now exclude some:
-        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
         self.myapp.ui.adv_textsearch.setText('SADI')
         self.myapp.ui.adv_textsearch_excl.setText('breit')
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         self.assertEqual(2, self.get_row_count_from_table())
 
     def test_search_text_with_exclude_and_include_spgr(self):
-        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
         self.myapp.ui.adv_textsearch.setText('SADI')
         self.myapp.ui.adv_textsearch_excl.setText('breit')
         # additionally include only spgrp 14:
         self.myapp.ui.SpGrpComboBox.setCurrentIndex(14)
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         self.assertEqual(1, self.get_row_count_from_table())
 
     def test_search_text_and_elements(self):
-        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
         self.myapp.ui.adv_textsearch_excl.clear()
         self.myapp.ui.adv_textsearch.setText('Breit')
         self.myapp.ui.adv_elementsIncLineEdit.setText('C H O')
         self.myapp.ui.adv_elementsExclLineEdit.setText('N')
         # additionally include only spgrp 14:
         self.myapp.ui.SpGrpComboBox.setCurrentIndex(5)
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         self.assertEqual(2, self.get_row_count_from_table())
 
     # @unittest.skip
     def test_txt_elex_elin(self):
         self.myapp.ui.MaintabWidget.setCurrentIndex(3)
-        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
         self.assertEqual(True, self.myapp.ui.adv_searchtab.isVisible())
         self.myapp.ui.adv_textsearch.setText('Breit')
         self.myapp.ui.adv_elementsIncLineEdit.setText('C H O')
         self.myapp.ui.adv_elementsExclLineEdit.setText('N')
         self.myapp.ui.SpGrpComboBox.setCurrentIndex(5)
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         self.assertEqual(2, self.get_row_count_from_table())
 
     def test_zero_results_elexcl(self):
@@ -378,7 +379,7 @@ class TestApplication(unittest.TestCase):
 
     def test_superlatice_exclelements(self):
         # back to adv search tab:
-        QTest.mouseClick(self.myapp.ui.adv_searchtab, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
         self.myapp.ui.MaintabWidget.setCurrentIndex(3)
         # fill in unit cell:
         self.myapp.ui.adv_unitCellLineEdit.setText('10.930 12.716 15.709 90.000 90.000 90.000')
@@ -391,7 +392,7 @@ class TestApplication(unittest.TestCase):
         self.assertEqual(True, self.myapp.ui.adv_moreResultscheckBox.isChecked())
         self.assertEqual(True, self.myapp.ui.adv_superlatticeCheckBox.isChecked())
         # click on search button:
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
         self.assertEqual(1, self.myapp.ui.cifList_tableView.model().rowCount())
 
@@ -410,19 +411,19 @@ class TestApplication(unittest.TestCase):
         self.assertEqual(True, self.myapp.ui.adv_moreResultscheckBox.isChecked())
         self.assertEqual(True, self.myapp.ui.adv_superlatticeCheckBox.isChecked())
         # click on search button:
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
         self.assertEqual(1, self.get_row_count_from_table())
 
     def test_r1_val_find(self):
         self.myapp.ui.MaintabWidget.setCurrentIndex(3)
         self.myapp.ui.adv_R1_search_line.setText('2.5')
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         self.assertEqual(2, self.get_row_count_from_table())
 
     def test_r1_val_nofind(self):
         self.myapp.ui.MaintabWidget.setCurrentIndex(3)
         self.myapp.ui.adv_R1_search_line.setText('0')
-        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, Qt.LeftButton)
+        QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # returns full list:
         self.assertEqual(263, self.get_row_count_from_table())

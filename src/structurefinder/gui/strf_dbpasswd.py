@@ -11,7 +11,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_PasswdDialog(object):
     def setupUi(self, PasswdDialog):
         PasswdDialog.setObjectName("PasswdDialog")
-        PasswdDialog.setWindowModality(QtCore.Qt.WindowModality.ApplicationModal)
+        PasswdDialog.setWindowModality(QtCore.Qt.WindowType.WindowModality.ApplicationModal)
         PasswdDialog.resize(400, 213)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)

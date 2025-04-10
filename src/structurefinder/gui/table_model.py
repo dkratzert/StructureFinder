@@ -19,18 +19,18 @@ class TableModel(QtCore.QAbstractTableModel):
         return columns.visible_header_names()
 
     def data(self, index: QModelIndex, role: int = None) -> Union[str, None]:
-        if not index.isValid() or role != QtCore.Qt.DisplayRole:
+        if not index.isValid() or role != QtCore.Qt.ItemDataRole.DisplayRole:
             return None
         row, col = index.row(), index.column()
         value = self._data[row][col]
-        if role == Qt.DisplayRole and col > 0:
+        if role == QtCore.Qt.ItemDataRole.DisplayRole and col > 0:
             colmethod = columns.col_from(col - 1)
             return colmethod.string_method(value)
         if col == 0:
             return value
 
-    def setHeaderData(self, section, orientation, data, role=Qt.EditRole):
-        if orientation == Qt.Horizontal and role in (Qt.DisplayRole, Qt.EditRole):
+    def setHeaderData(self, section, orientation, data, role=Qt.ItemDataRole.EditRole):
+        if orientation == Qt.Orientation.Horizontal and role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
             try:
                 self.horizontalHeaders[section] = data
                 return True
@@ -38,8 +38,8 @@ class TableModel(QtCore.QAbstractTableModel):
                 return False
         return super().setHeaderData(section, orientation, data, role)
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if role == QtCore.Qt.DisplayRole:
+    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+        if role == QtCore.Qt.ItemDataRole.DisplayRole:
             if orientation == QtCore.Qt.Orientation.Horizontal:
                 return self.horizontalHeaders[section]
             elif orientation == QtCore.Qt.Orientation.Vertical:
@@ -66,7 +66,7 @@ class TableModel(QtCore.QAbstractTableModel):
         row, col = index.row(), index.column()
         if not index:
             return False
-        if index.isValid() and role == Qt.EditRole:
+        if index.isValid() and role == QtCore.Qt.ItemDataRole.EditRole:
             self._data[row][col] = value
             return True
         return False
@@ -84,7 +84,7 @@ class TableModel(QtCore.QAbstractTableModel):
         self.layoutAboutToBeChanged.emit()
         self._data.sort(
             key=lambda row: convert(row[column]),
-            reverse=(order == QtCore.Qt.DescendingOrder),
+            reverse=(order == QtCore.Qt.SortOrder.DescendingOrder),
         )
         self.layoutChanged.emit()
 
@@ -102,7 +102,7 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
         self.layoutAboutToBeChanged.emit()
         self.sourceModel()._data.sort(
             key=lambda row: columns.col_from(column - 1).data_type(row[column]),
-            reverse=(order == QtCore.Qt.DescendingOrder),
+            reverse=(order == QtCore.Qt.SortOrder.DescendingOrder),
         )
         self.layoutChanged.emit()
 
@@ -113,7 +113,7 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
             return False
         # Get the text of the row at sourceRow
         index = self.sourceModel().index(sourceRow, columns.path.position, sourceParent)
-        text = self.sourceModel().data(index, Qt.DisplayRole)
+        text = self.sourceModel().data(index, QtCore.Qt.ItemDataRole.DisplayRole)
 
         if text.endswith(archives):
             return False

@@ -90,7 +90,7 @@ else:
     application_path = Path(os.path.abspath(__file__)).parent.parent
 
 app = QApplication(sys.argv)
-app.setStyle("Fusion")
+app.setStyle("windowsvista")
 print(sys.version)
 
 
@@ -367,10 +367,12 @@ class StartStructureDB(QMainWindow):
         import xlsxwriter
         workbook = xlsxwriter.Workbook(filename)
         worksheet = workbook.add_worksheet()
+        for col, name in enumerate(columns.visible_header_names()):
+            worksheet.write(0, col, name)
         for row, index in enumerate(selection):
-            for column in self.ui.cifList_tableView.model().columnCount():
+            for column in range(self.ui.cifList_tableView.model().columnCount()):
                 cell_data = self.ui.cifList_tableView.get_field_content(index.row(), column)
-                worksheet.write(row, column, cell_data)
+                worksheet.write(row+1, column, cell_data)
         workbook.close()
 
     def on_browse_path_from_row(self, curdir: str):

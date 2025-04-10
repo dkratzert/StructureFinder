@@ -41,7 +41,7 @@ class CustomHorizontalHeaderView(QtWidgets.QHeaderView):
             action.setChecked(columns.is_visible(column_name))
             action.triggered.connect(lambda checked, col=column_name: self.toggle_column(col, checked))
             menu.addAction(action)
-        menu.exec()
+        menu.exec(event.globalPos())
 
     def toggle_column(self, column_name: str, show: bool) -> None:
         if show:
@@ -71,6 +71,16 @@ class StructuresListTableView(QtWidgets.QTableView):
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         context_menu = QtWidgets.QMenu(self)
+        context_menu.setStyleSheet("""
+                QMenu {
+                    background-color: #f0f0f0;
+                    color: black;
+                }
+                QMenu::item:selected {
+                    background-color: #3874f2;
+                    color: white;
+                }
+            """)
         save_excel = context_menu.addAction("Save as Excel File")
         context_menu.addAction(save_excel)
         open_path = context_menu.addAction("Open file path")
