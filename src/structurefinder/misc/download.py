@@ -1,7 +1,7 @@
 import sys
 
 import requests
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt6.QtCore import QThread, pyqtSignal
 
 from structurefinder.misc.version import VERSION
 
@@ -47,8 +47,8 @@ class MyDownloader(QThread):
 
 
 if __name__ == "__main__":
-    from PyQt5.QtWidgets import QWidget
-    from PyQt5.QtWidgets import QApplication
+    from PyQt6.QtWidgets import QWidget
+    from PyQt6.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     w = QWidget()
@@ -64,4 +64,4 @@ if __name__ == "__main__":
     upd.failed.connect(upd.failed_to_download)
     upd.progress.connect(upd.print_status)
     upd.start()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

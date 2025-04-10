@@ -1,9 +1,9 @@
 import sys
 from typing import Union
 
-from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QCursor
+from PyQt6 import QtWidgets, QtGui, QtCore
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QCursor
 
 from structurefinder import strf
 from structurefinder.searcher.database_handler import columns
@@ -13,7 +13,7 @@ class CustomHorizontalHeaderView(QtWidgets.QHeaderView):
     columns_changed = pyqtSignal(str)
 
     def __init__(self, parent: 'StructuresListTableView'):
-        super().__init__(QtCore.Qt.Horizontal, parent)
+        super().__init__(QtCore.Qt.Orientation.Horizontal, parent)
         self.table = parent
         self.available_columns = columns.all_column_names
         self.setSortIndicatorShown(True)
@@ -36,12 +36,12 @@ class CustomHorizontalHeaderView(QtWidgets.QHeaderView):
                 }
             """)
         for column_name in self.available_columns:
-            action = QtWidgets.QAction(f"{column_name}", self.table)
+            action = QtGui.QAction(f"{column_name}", self.table)
             action.setCheckable(True)
             action.setChecked(columns.is_visible(column_name))
             action.triggered.connect(lambda checked, col=column_name: self.toggle_column(col, checked))
             menu.addAction(action)
-        menu.exec_(event.globalPos())
+        menu.exec()
 
     def toggle_column(self, column_name: str, show: bool) -> None:
         if show:
@@ -52,7 +52,7 @@ class CustomHorizontalHeaderView(QtWidgets.QHeaderView):
 
     def reset_sorting(self):
         """Resets the sorting of the table."""
-        self.setSortIndicator(-1, Qt.AscendingOrder)
+        self.setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
         self.table.model().sort(-1)
 
 
@@ -62,7 +62,7 @@ class StructuresListTableView(QtWidgets.QTableView):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.setContextMenuPolicy(Qt.DefaultContextMenu)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.DefaultContextMenu)
         self.doubleClicked.connect(self._on_open_file_path)
         self.setSortingEnabled(True)
         self.header_menu = CustomHorizontalHeaderView(self)
@@ -96,7 +96,7 @@ class StructuresListTableView(QtWidgets.QTableView):
         self.open_save_path.emit(path_data)
 
     def mousePressEvent(self, e: QtGui.QMouseEvent) -> None:
-        if e.button() == Qt.RightButton:
+        if e.button() == Qt.MouseButton.RightButton:
             pass
         super().mousePressEvent(e)
 
@@ -104,4 +104,4 @@ class StructuresListTableView(QtWidgets.QTableView):
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     myapp = strf.StartStructureDB(db_file_name='./tests/test-data/test.sql')
-    app.exec_()
+    app.exec()

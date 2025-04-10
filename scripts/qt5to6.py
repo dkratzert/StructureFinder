@@ -64,9 +64,14 @@ COMMON_REPLACEMENTS = [
     (r'QtCore\.Qt\.ArrowCursor', r'QtCore.Qt.CursorShape.ArrowCursor'),
     (r'QtCore\.Qt\.PointingHandCursor', r'QtCore.Qt.CursorShape.PointingHandCursor'),
 
+    # Sort order
+    (r'QtCore\.Qt\.AscendingOrder', r'QtCore.Qt.SortOrder.AscendingOrder'),
+    (r'(QtCore\.)[0,1]Qt\.DescendingOrder', r'QtCore.Qt.SortOrder.DescendingOrder'),
+
+
     # Signal/Slot Verbindung (wenn nötig z.B. bei PyQtSignal -> Signal)
-    (r'pyqtSignal', r'Signal'),
-    (r'pyqtSlot', r'Slot'),
+    #(r'pyqtSignal', r'Signal'),
+    #(r'pyqtSlot', r'Slot'),
 
     # Klassenumbenennungen
     (r'\bQRegExp\b', r'QRegularExpression'),
@@ -124,5 +129,5 @@ def port_directory(root_dir):
 
 if __name__ == '__main__':
 
-    project_root = r'../src'
+    project_root = r'D:\_DEV\GitHub\StructureFinder\src'
     port_directory(project_root)

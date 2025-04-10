@@ -2,7 +2,7 @@ import ctypes
 import os
 from pathlib import Path
 
-from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from PyQt6.QtWidgets import QMainWindow, QMessageBox
 
 from structurefinder.misc.version import VERSION
 

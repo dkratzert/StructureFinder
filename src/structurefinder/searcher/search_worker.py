@@ -1,7 +1,6 @@
 import time
-from timeit import timeit
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSignal
 
 from structurefinder.searcher.crawler import EXCLUDED_NAMES, FileType, find_files
 from structurefinder.searcher.database_handler import StructureTable

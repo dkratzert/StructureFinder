@@ -2,9 +2,8 @@ docutils
 macholib
 numpy~=2.1
 pefile
-PyQt5~=5.15
-PyQt5-sip~=12.13
-PyQt5-stubs~=5.15
+pyqt6
+pyqt6-sip
 pywin32-ctypes~=0.2
 six
 requests

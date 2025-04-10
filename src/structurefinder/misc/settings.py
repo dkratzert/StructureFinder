@@ -2,8 +2,8 @@ from collections import namedtuple
 from pathlib import Path
 from typing import List
 
-from PyQt5.QtCore import QSettings, QPoint, QSize
-from PyQt5 import QtCore
+from PyQt6.QtCore import QSettings, QPoint, QSize
+from PyQt6 import QtCore
 
 Position = namedtuple('Position', 'size, position, maximized')
 

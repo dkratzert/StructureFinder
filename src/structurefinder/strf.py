@@ -29,26 +29,9 @@ from xml.etree.ElementTree import ParseError
 
 import gemmi.cif
 import qtawesome as qta
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import (
-    QDate,
-    QEvent,
-    QItemSelection,
-    QModelIndex,
-    QPoint,
-    Qt,
-    QThread,
-    pyqtSlot,
-)
-from PyQt5.QtWidgets import (
-    QApplication,
-    QFileDialog,
-    QMainWindow,
-    QMessageBox,
-    QProgressBar,
-    QPushButton,
-    QTreeWidgetItem,
-)
+from PyQt6 import QtCore, QtGui, QtWidgets
+from PyQt6.QtCore import QDate, QEvent, QItemSelection, QModelIndex, QPoint, Qt, QThread
+from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox, QProgressBar, QPushButton, QTreeWidgetItem
 from shelxfile import Shelxfile
 
 from structurefinder import strf_cmd
@@ -107,6 +90,7 @@ else:
     application_path = Path(os.path.abspath(__file__)).parent.parent
 
 app = QApplication(sys.argv)
+app.setStyle("Fusion")
 print(sys.version)
 
 
@@ -128,7 +112,7 @@ class StartStructureDB(QMainWindow):
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
         self.abort_import_button = QPushButton('Abort Indexing')
         self.progress = QProgressBar(self)
-        #self.progress.setFixedWidth(150)
+        # self.progress.setFixedWidth(150)
         self.statusbar.addPermanentWidget(self.progress)
         self.ui.appendDirButton.setDisabled(True)
         self.statusbar.addPermanentWidget(self.abort_import_button)
@@ -255,8 +239,8 @@ class StartStructureDB(QMainWindow):
             self.statusBar().showMessage(f"Database with {self.table_model.rowCount()} structures loaded", msecs=0)
 
     def show_help(self) -> None:
-        from PyQt5 import QtCore
-        from PyQt5.QtGui import QDesktopServices
+        from PyQt6 import QtCore
+        from PyQt6.QtGui import QDesktopServices
         QDesktopServices.openUrl(QtCore.QUrl('https://dkratzert.de/files/structurefinder/docs/'))
 
     def show_labels(self, value: bool):
@@ -318,12 +302,12 @@ class StartStructureDB(QMainWindow):
                         "<a href='https://dkratzert.de/structurefinder.html'>" \
                         "https://dkratzert.de/structurefinder.html</a>"
             box = QMessageBox()
-            box.setTextFormat(Qt.AutoText)
+            box.setTextFormat(Qt.TextFormat.AutoText)
             box.setWindowTitle(" ")
-            box.setTextInteractionFlags(Qt.TextBrowserInteraction)
+            box.setTextInteractionFlags(Qt.TextFlag.TextBrowserInteraction)
             if sys.platform.startswith("win"):
                 warn_text += r"<br><br>Updating now will end all running StructureFinder programs!"
-                update_button = box.addButton('Update Now', QMessageBox.AcceptRole)
+                update_button = box.addButton('Update Now', QMessageBox.ButtonRole.AcceptRole)
                 update_button.clicked.connect(lambda: do_update_program(str(remote_version)))
             box.setText(warn_text.format(remote_version))
             box.exec()
@@ -444,7 +428,6 @@ class StartStructureDB(QMainWindow):
                 ok = False
         return ok
 
-    @pyqtSlot('QString', name="elements_fields_check")
     def elements_fields_check(self):
         """
         """
@@ -837,7 +820,7 @@ class StartStructureDB(QMainWindow):
 
     def eventFilter(self, object, event):
         """Event filter for mouse clicks."""
-        if event.type() == QEvent.MouseButtonDblClick:
+        if event.type() == QEvent.Type.MouseButtonDblClick:
             self.copyUnitCell()
         return False
 
@@ -846,7 +829,7 @@ class StartStructureDB(QMainWindow):
         Event filter for key presses.
         Essentially searches for enter key presses in search fields and runs advanced search.
         """
-        if q_key_event.key() == Qt.Key_Return or q_key_event.key() == Qt.Key_Enter:
+        if q_key_event.key() == Qt.Key.Key_Return or q_key_event.key() == Qt.Key.Key_Enter:
             fields = [self.ui.adv_elementsExclLineEdit, self.ui.adv_elementsIncLineEdit, self.ui.adv_textsearch,
                       self.ui.adv_textsearch_excl, self.ui.adv_unitCellLineEdit, self.ui.adv_R1_search_line]
             for x in fields:
@@ -1341,7 +1324,7 @@ class StartStructureDB(QMainWindow):
         self.ui.SHELXplainTextEdit.clear()
         self.ui.cellField.clear()
         self.ui.render_widget.clear()
-        self.table_model.clear()
+        #self.table_model.clear()
 
 
 def my_exception_hook(exctype: type[BaseException], value: BaseException, error_traceback: traceback,
@@ -1401,7 +1384,7 @@ def main():
     myapp.raise_()
     myapp.setWindowTitle(f'StructureFinder v{VERSION}')
     try:
-        sys.exit(app.exec_())
+        sys.exit(app.exec())
     except KeyboardInterrupt:
         sys.exit()
 

@@ -1,7 +1,7 @@
 from typing import Any, Union, List
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import QModelIndex, Qt
+from PyQt6 import QtCore
+from PyQt6.QtCore import QModelIndex, Qt
 
 import structurefinder.searcher.constants
 from structurefinder.searcher.database_handler import columns
@@ -40,9 +40,9 @@ class TableModel(QtCore.QAbstractTableModel):
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == QtCore.Qt.DisplayRole:
-            if orientation == QtCore.Qt.Horizontal:
+            if orientation == QtCore.Qt.Orientation.Horizontal:
                 return self.horizontalHeaders[section]
-            elif orientation == QtCore.Qt.Vertical:
+            elif orientation == QtCore.Qt.Orientation.Vertical:
                 return str(section + 1)
         return super().headerData(section, orientation, role)
 

@@ -1,7 +1,7 @@
 import sys
 
-from PyQt5.QtCore import Qt, QModelIndex
-from PyQt5.QtSql import QSqlDatabase, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRecord
+from PyQt6.QtCore import Qt, QModelIndex
+from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRecord
 from PyQt5.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -102,4 +102,4 @@ if __name__ == '__main__':
         sys.exit(1)
     win = Contacts()
     win.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())

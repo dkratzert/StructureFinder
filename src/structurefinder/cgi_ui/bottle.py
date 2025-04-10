@@ -3967,7 +3967,7 @@ class SimpleTemplate(BaseTemplate):
         except UnicodeError:
             raise depr(0, 11, 'Unsupported template encodings.', 'Use utf-8 for templates.')
         parser = StplParser(source, encoding=encoding, syntax=self.syntax)
-        code = parser.translate()
+        code = parser.tr()
         self.encoding = parser.encoding
         return code
 

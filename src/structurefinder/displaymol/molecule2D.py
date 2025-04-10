@@ -5,9 +5,9 @@ from pathlib import Path
 from typing import List, Union
 
 import numpy as np
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPalette, QImage, QResizeEvent
+from PyQt6 import QtWidgets
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPalette, QImage, QResizeEvent
 
 from shelxfile.misc.elements import get_radius_from_element, element2color
 
@@ -296,7 +296,7 @@ def display(atoms: List[Atomtuple]):
     window.show()
     # render_widget.save_image(Path('myimage2.png'))
     # start the event loop
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":
