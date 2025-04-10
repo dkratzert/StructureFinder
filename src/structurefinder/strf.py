@@ -90,7 +90,8 @@ else:
     application_path = Path(os.path.abspath(__file__)).parent.parent
 
 app = QApplication(sys.argv)
-app.setStyle("windowsvista")
+if sys.platform == "win32":
+    app.setStyle("windowsvista")
 print(sys.version)
 
 
