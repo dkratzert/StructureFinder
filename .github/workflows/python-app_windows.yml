@@ -60,7 +60,7 @@ jobs:
           if [ "$RUNNER_OS" == "Linux" ]; then
             # Ubuntu needs this to be able to start pyqt6
             sudo apt-get update
-            sudo apt-get -qq install libxcb-xinerama0 pyqt6-dev-tool
+            sudo apt-get -qq install libxcb-xinerama0 pyqt6-dev-tools
             xvfb-run --auto-servernum pytest
           else
             pytest
