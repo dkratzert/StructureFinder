@@ -166,6 +166,23 @@ COMMON_REPLACEMENTS = [
     (r'(QtGui\.)?QPalette\.ButtonText', r'QtGui.QPalette.ColorRole.ButtonText'),
     (r'(QtGui\.)?QPalette\.BrightText', r'QtGui.QPalette.ColorRole.BrightText'),
 
+    # PenStyle
+    (r'(Qt\.)?NoPen\W', r'Qt.PenStyle.NoPen'),
+    (r'(Qt\.)?SolidLine\W', r'Qt.PenStyle.SolidLine'),
+    (r'(Qt\.)?DashLine\W', r'Qt.PenStyle.DashLine'),
+    (r'(Qt\.)?DotLine\W', r'Qt.PenStyle.DotLine'),
+    (r'(Qt\.)?DashDotLine\W', r'Qt.PenStyle.DashDotLine'),
+    (r'(Qt\.)?DashDotDotLine\W', r'Qt.PenStyle.DashDotDotLine'),
+    (r'(Qt\.)?CustomDashLine\W', r'Qt.PenStyle.CustomDashLine'),
+
+    # BrushStyle
+    (r'(Qt\.)?NoBrush\W', r'Qt.BrushStyle.NoBrush'),
+    (r'(Qt\.)?SolidPattern\W', r'Qt.BrushStyle.SolidPattern'),
+    (r'(Qt\.)?TexturePattern\W', r'Qt.BrushStyle.TexturePattern'),
+    (r'(Qt\.)?BDiagPattern\W', r'Qt.BrushStyle.BDiagPattern'),
+    (r'(Qt\.)?CrossPattern\W', r'Qt.BrushStyle.CrossPattern'),
+    (r'(Qt\.)?DiagCrossPattern\W', r'Qt.BrushStyle.DiagCrossPattern'),
+
     # QtWidgets QtWidgets.QTableView.EditTrigger.NoEditTriggers
     (r'(QtWidgets\.)?QAbstractItemView\.SelectRows', r'QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows'),
     (r'(QtWidgets\.)?QTableView\.NoEditTriggers', r'QtWidgets.QTableView.EditTrigger.NoEditTriggers'),
