@@ -78,6 +78,9 @@ COMMON_REPLACEMENTS = [
     # WidgetAttribute
     (r'(QtCore\.)?Qt\.WA_DeleteOnClose\W', r'QtCore.Qt.WidgetAttribute.WA_DeleteOnClose'),
 
+    #QFont
+    (r'(QtGui\.)?QFont\.Monospace\W', r'QtGui.QFont.StyleHint.Monospace'),
+
     # TransformationMode
     (r'(QtCore\.)?Qt\.FastTransformation\W', r'QtCore.Qt.TransformationMode.FastTransformation'),
     (r'(QtCore\.)?Qt\.SmoothTransformation\W', r'QtCore.Qt.TransformationMode.SmoothTransformation'),

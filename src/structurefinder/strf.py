@@ -102,7 +102,7 @@ class StartStructureDB(QMainWindow):
         self.ui.setupUi(self)
         self.set_window_size_and_position()
         font = QtGui.QFont()
-        font.setStyleHint(QtGui.QFont.Monospace)
+        font.setStyleHint(QtGui.QFont.StyleHint.Monospace)
         self.ui.SHELXplainTextEdit.setFont(font)
         self.statusbar: QtWidgets.QStatusBar = self.statusBar()
         self.upd = None
