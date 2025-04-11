@@ -3,6 +3,7 @@ import sys
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtCore import Qt, QModelIndex
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRecord
+from PyQt6 import QtWidgets
 
 
 class Contacts(QtWidgets.QMainWindow):
@@ -71,7 +72,7 @@ class ContactsModel:
         """Create and set up the model."""
         table_model = MyQSqlTableModel()
         table_model.setTable("Structure")
-        table_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
+        table_model.setEditStrategy(QSqlTableModel.EditStrategy.OnManualSubmit)
         table_model.select()
         print(table_model.selectStatement())
         headers = ("Filename", "Data name", "Path", "Date")
@@ -82,7 +83,7 @@ class ContactsModel:
 
 def create_connection():
     con = QSqlDatabase.addDatabase("QSQLITE")
-    con.setDatabaseName("/Users/daniel/Documents/GitHub/StructureFinder/structuredb.sqlite")
+    con.setDatabaseName("structuredb.sqlite")
     if not con.open():
         QtWidgets.QMessageBox.critical(
             None,
