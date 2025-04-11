@@ -343,7 +343,7 @@ class DatabaseRequest():
             return
         table_size = len(fetchone)
         placeholders = ', '.join('?' * table_size)
-        last_row_id = self.db_fetchone(f"""SELECT max(id) FROM {table_name}""")[0]
+        last_row_id = self.db_fetchone(f"""SELECT max(id) FROM {table_name}""")[0] or 0
         next_id = last_row_id + 1
         # noinspection SqlResolve
         for row in self.con.execute(f"select * FROM dba.{table_name}"):
