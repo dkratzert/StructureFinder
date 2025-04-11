@@ -1,3 +1,4 @@
+import ast
 import os
 import re
 import shutil
@@ -132,6 +133,11 @@ COMMON_REPLACEMENTS = [
     (r'(QtCore\.)?Qt\.color0', r'QtCore.Qt.GlobalColor.color0'),
     (r'(QtCore\.)?Qt\.color1', r'QtCore.Qt.GlobalColor.color1'),
 
+    # SQLtable
+    (r'(QtSql\.)?QSqlTableModel\.OnManualSubmit', r'QSqlTableModel.EditStrategy.OnManualSubmit'),
+    (r'(QtSql\.)?QSqlTableModel\.OnFieldChange', r'QSqlTableModel.EditStrategy.OnFieldChange'),
+    (r'(QtSql\.)?QSqlTableModel\.OnRowChange', r'QSqlTableModel.EditStrategy.OnRowChange'),
+
     # Render Hints
     (r'QPainter\.Antialiasing', r'QPainter.RenderHint.Antialiasing'),
     (r'QPainter\.TextAntialiasing', r'QPainter.RenderHint.TextAntialiasing'),
@@ -197,7 +203,8 @@ def process_ui_file(filepath):
             f.write(content)
         print(f"Updated UI file: {filepath}")
     else:
-        print(f"No changes in UI: {filepath}")
+        pass
+        # print(f"No changes in UI: {filepath}")
 
 
 def port_directory(root_dir):
@@ -211,6 +218,5 @@ def port_directory(root_dir):
 
 
 if __name__ == '__main__':
-
     project_root = r'D:\_DEV\GitHub\StructureFinder\src'
     port_directory(project_root)
