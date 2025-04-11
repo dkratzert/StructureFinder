@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 """
 Created on 09.02.2015
 
@@ -119,7 +118,7 @@ class StartStructureDB(QMainWindow):
         self.statusbar.addPermanentWidget(self.abort_import_button)
         self.abort_import_button.hide()
         self.statusbar.hide()
-        self.structures: Optional[database_handler.StructureTable] = None
+        self.structures: database_handler.StructureTable | None = None
         self.apx = None
         self.structureId = 0
         self.passwd = ''
@@ -222,7 +221,7 @@ class StartStructureDB(QMainWindow):
             ok = self.ui.cifList_tableView.horizontalHeader().restoreState(column_order)
             print(f'state restored {ok}')"""
 
-    def set_model_from_data(self, data: Union[list, tuple]):
+    def set_model_from_data(self, data: list | tuple):
         table_model = TableModel(parent=self, structures=data)
         proxy_model = CustomProxyModel(self)
         proxy_model.setSourceModel(table_model)
@@ -258,7 +257,7 @@ class StartStructureDB(QMainWindow):
 
     def changeEvent(self, event: QtCore.QEvent) -> None:
         """Is called when the main window changes its state."""
-        if event.type() == QtCore.QEvent.WindowStateChange:
+        if event.type() == QtCore.QEvent.Type.WindowStateChange:
             self._savesize()
 
     def close(self):
@@ -549,7 +548,6 @@ class StartStructureDB(QMainWindow):
             txt_ex = '*' + txt_ex + '*'
         spgr = self.ui.SpGrpComboBox.currentText()
         onlythese = self.ui.onlyTheseElementsCheckBox.isChecked()
-        #
         results = []
         cell_results = []
         spgr_results = []
@@ -596,7 +594,7 @@ class StartStructureDB(QMainWindow):
                                   txt_ex_results, txt_results, rval_results, states)
         self.display_structures_by_idlist(tuple(results))
 
-    def display_structures_by_idlist(self, idlist: Union[list, tuple]) -> None:
+    def display_structures_by_idlist(self, idlist: list | tuple) -> None:
         """
         Displays the structures with id in results list
         """
@@ -620,7 +618,7 @@ class StartStructureDB(QMainWindow):
     def get_startdir_from_dialog(self):
         return QFileDialog.getExistingDirectory(self, 'Open Directory', directory=self.settings.load_last_indexdir())
 
-    def append_file_dirs(self, startdir: Union[str, None] = None):
+    def append_file_dirs(self, startdir: str | None = None):
         """Appends new files to database instead of creating a new database"""
         self.import_file_dirs(startdir=startdir, append=True)
 
@@ -997,7 +995,7 @@ class StartStructureDB(QMainWindow):
         self.ui.allCifTreeWidget.resizeColumnToContents(1)
         return True
 
-    def find_dates(self, date1: str, date2: str) -> List[int]:
+    def find_dates(self, date1: str, date2: str) -> list[int]:
         """
         Returns a list if id between date1 and date2
         """
@@ -1179,12 +1177,12 @@ class StartStructureDB(QMainWindow):
                 pass
         except (TypeError, ProgrammingError):
             return False
-        print("Opened {}.".format(file_name))
+        print(f"Opened {file_name}.")
         self.settings.save_current_work_dir(str(Path(file_name).resolve().parent))
         self.ui.saveDatabaseButton.setEnabled(True)
         self.ui.appendDirButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
-        self.ui.DatabaseNameDisplayLabel.setText('Database opened: {}'.format(str(Path(file_name).resolve())))
+        self.ui.DatabaseNameDisplayLabel.setText(f'Database opened: {Path(file_name).resolve()!s}')
         self.display_number_of_structures()
         self.ui.appendDatabasePushButton.setEnabled(True)
         return True
@@ -1359,7 +1357,7 @@ def my_exception_hook(exctype: type[BaseException], value: BaseException, error_
              frame.f_locals.items()]) + '\n\n'
 
     errortext += f'{"-" * 120}\n'
-    errortext += f'{str(exctype.__name__)}: {str(value)} \n'
+    errortext += f'{exctype.__name__!s}: {value!s} \n'
     errortext += f'{"-" * 120}\n'
 
     logfile = Path.home().joinpath(Path(r'StructureFinder-crash.txt'))

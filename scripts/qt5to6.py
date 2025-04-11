@@ -133,6 +133,8 @@ COMMON_REPLACEMENTS = [
     (r'(QtCore\.)?Qt\.color0', r'QtCore.Qt.GlobalColor.color0'),
     (r'(QtCore\.)?Qt\.color1', r'QtCore.Qt.GlobalColor.color1'),
 
+    (r'(QtCore\.)?QEvent\.WindowStateChange', r'QtCore.QEvent.Type.WindowStateChange'),
+
     (r'(QtCore\.)?QSettings\.IniFormat', r'QtCore.QSettings.Format.IniFormat'),
 
     # SQLtable
@@ -186,7 +188,8 @@ def process_py_file(filepath):
             f.write(content)
         print(f"Ported: {filepath}")
     else:
-        print(f"No changes: {filepath}")
+        pass
+        # print(f"No changes: {filepath}")
 
 
 def process_ui_file(filepath):
