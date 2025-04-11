@@ -10,8 +10,7 @@ This file is for updating the various version number definitions for each STRF r
 """
 
 isspath = ["./scripts/strf-install_win64.iss"]
-pypath = ["src/structurefinder/shelxfile/shelx.py",
-          "src/structurefinder/strf.py",
+pypath = ["src/structurefinder/strf.py",
           "src/structurefinder/strf_cmd.py",
           "src/structurefinder/searcher/database_handler.py",
           'src/structurefinder/searcher/db_filler.py',
