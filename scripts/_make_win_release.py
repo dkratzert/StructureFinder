@@ -12,7 +12,7 @@ main_path = str(Path(__file__).resolve().parent)
 pathadd = [app_path, main_path, str(Path(app_path) / 'src')]
 sys.path.extend(pathadd)
 
-from scripts.compile_ui_files import compile_ui
+#from scripts.compile_ui_files import compile_ui
 from scripts.version_numbers import disable_debug, isspath, process_iss, pypath
 from structurefinder.misc.version import VERSION
 

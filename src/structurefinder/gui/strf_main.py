@@ -279,6 +279,7 @@ class Ui_stdbMainwindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.SumformLabel.sizePolicy().hasHeightForWidth())
         self.SumformLabel.setSizePolicy(sizePolicy)
+        self.SumformLabel.setMinimumSize(QtCore.QSize(15, 42))
         font = QtGui.QFont()
         font.setPointSize(11)
         font.setKerning(False)
