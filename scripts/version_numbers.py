@@ -1,7 +1,5 @@
 # /usr/bin/env python
-# -*- encoding: utf-8 -*-
 
-from __future__ import print_function
 
 from pathlib import Path
 
@@ -15,7 +13,6 @@ isspath = ["./scripts/strf-install_win64.iss"]
 pypath = ["src/structurefinder/shelxfile/shelx.py",
           "src/structurefinder/strf.py",
           "src/structurefinder/strf_cmd.py",
-          "src/structurefinder/shelxfile/misc.py",
           "src/structurefinder/searcher/database_handler.py",
           'src/structurefinder/searcher/db_filler.py',
           'src/structurefinder/searcher/search_worker.py',
@@ -32,11 +29,11 @@ def process_iss(filepath):
     for num, line in enumerate(iss_file):
         if line.startswith("#define MyAppVersion"):
             l = line.split()
-            l[2] = '"{}"'.format(VERSION)
+            l[2] = f'"{VERSION}"'
             iss_file[num] = " ".join(l)
             break
     iss_file = "\n".join(iss_file)
-    print("windows... {}, {}".format(VERSION, filepath))
+    print(f"windows... {VERSION}, {filepath}")
     pth.write_text(iss_file, encoding="UTF-8")
 
 
@@ -46,7 +43,7 @@ def disable_debug(filepath):
     for num, line in enumerate(file):
         if line.startswith("DEBUG") or line.startswith("PROFILE"):
             l = line.split()
-            print("DEBUG/PROFILE.. {}, {}".format(l[2], filepath))
+            print(f"DEBUG/PROFILE.. {l[2]}, {filepath}")
             l[2] = '{}'.format("False")
             file[num] = " ".join(l)
     iss_file = "\n".join(file)
@@ -54,7 +51,7 @@ def disable_debug(filepath):
 
 
 if __name__ == "__main__":
-    print("Updating version numbers to version {} ...".format(VERSION))
+    print(f"Updating version numbers to version {VERSION} ...")
 
     for i in isspath:
         process_iss(i)
