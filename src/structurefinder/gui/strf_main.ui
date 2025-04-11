@@ -609,6 +609,9 @@
                  <property name="fieldGrowthPolicy">
                   <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
                  </property>
+                 <property name="rightMargin">
+                  <number>0</number>
+                 </property>
                  <item row="1" column="0">
                   <widget class="QLabel" name="label">
                    <property name="font">
@@ -635,7 +638,7 @@
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>10</width>
+                     <width>15</width>
                      <height>42</height>
                     </size>
                    </property>
@@ -1187,11 +1190,20 @@ p, li { white-space: pre-wrap; }
                </widget>
               </item>
               <item>
-               <widget class="Line" name="line">
+               <spacer name="horizontalSpacer_5">
                 <property name="orientation">
-                 <enum>Qt::Vertical</enum>
+                 <enum>Qt::Horizontal</enum>
                 </property>
-               </widget>
+                <property name="sizeType">
+                 <enum>QSizePolicy::Minimum</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
               <item>
                <widget class="QLabel" name="txtSearchLabel">
