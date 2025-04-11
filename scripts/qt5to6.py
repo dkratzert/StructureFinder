@@ -133,6 +133,8 @@ COMMON_REPLACEMENTS = [
     (r'(QtCore\.)?Qt\.color0', r'QtCore.Qt.GlobalColor.color0'),
     (r'(QtCore\.)?Qt\.color1', r'QtCore.Qt.GlobalColor.color1'),
 
+    (r'(QtCore\.)?QSettings\.IniFormat', r'QtCore.QSettings.Format.IniFormat'),
+
     # SQLtable
     (r'(QtSql\.)?QSqlTableModel\.OnManualSubmit', r'QSqlTableModel.EditStrategy.OnManualSubmit'),
     (r'(QtSql\.)?QSqlTableModel\.OnFieldChange', r'QSqlTableModel.EditStrategy.OnFieldChange'),

@@ -1,19 +1,18 @@
 from collections import namedtuple
 from pathlib import Path
-from typing import List
 
-from PyQt6.QtCore import QSettings, QPoint, QSize
 from PyQt6 import QtCore
+from PyQt6.QtCore import QSettings, QPoint, QSize
 
 Position = namedtuple('Position', 'size, position, maximized')
 
 
-class StructureFinderSettings():
+class StructureFinderSettings:
     def __init__(self):
         self.software_name = 'StructureFinder'
         self.organization = 'DK'
         self.settings = QSettings(self.organization, self.software_name)
-        self.settings.setDefaultFormat(QSettings.IniFormat)
+        self.settings.setDefaultFormat(QSettings.Format.IniFormat)
 
     def save_current_work_dir(self, dir: str) -> None:
         """
@@ -69,7 +68,7 @@ class StructureFinderSettings():
         self.settings.endGroup()
         return exe_path
 
-    def load_visible_headers(self) -> List[str]:
+    def load_visible_headers(self) -> list[str]:
         self.settings.beginGroup("Headers")
         headers = self.settings.value("visible")
         # print(f'Loaded headers: {headers}')
@@ -83,7 +82,7 @@ class StructureFinderSettings():
         self.settings.setValue('maximized', maximized)
         self.settings.endGroup()
 
-    def save_visible_headers(self, columns: List[str]):
+    def save_visible_headers(self, columns: list[str]):
         self.settings.beginGroup("Headers")
         self.settings.setValue("visible", columns)
         self.settings.endGroup()
