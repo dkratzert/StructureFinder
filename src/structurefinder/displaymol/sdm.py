@@ -17,7 +17,7 @@ from typing import Union
 
 from numpy.random._common import namedtuple
 
-from shelxfile.shelx.cards import SymmetryElement, SymmCards
+from shelxfile.shelx.cards import SymmetryElement
 from shelxfile.misc.dsrmath import Matrix, Array
 from shelxfile.misc.misc import frac_to_cart
 from shelxfile.misc.elements import get_radius_from_element
@@ -103,9 +103,11 @@ class SDMItem(object):
         return False
 
     def __repr__(self):
-        return '{} {} {} {} dist: {} coval: {} sn: {} {}'.format(self.atom1.name, self.atom2.name, self.a1, self.a2,
-                                                                 self.dist, self.covalent,
-                                                                 self.symmetry_number, self.dddd)
+        try:
+            return (f'{self.atom1.name} {self.atom2.name} {self.a1} {self.a2} '
+                    f'dist: {self.dist} coval: {self.covalent} sn: {self.symmetry_number} {self.dddd}')
+        except AttributeError:
+            return 'Invalid atom parameters.'
 
 
 class SDM():
