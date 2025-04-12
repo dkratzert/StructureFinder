@@ -76,6 +76,11 @@ Type: files; Name: "{app}\*.pyc"
 
 [InstallDelete]
 ;Type: filesandordirs; Name: "{app}\*"
+Type: filesandordirs; Name: "{app}\Lib"
+Type: filesandordirs; Name: "{app}\Scripts"
+Type: filesandordirs; Name: "{app}\icons"
+Type: filesandordirs; Name: "{app}\structurefinder"
+Type: filesandordirs; Name: "{app}\python*.*"
 
 [Tasks]
 
