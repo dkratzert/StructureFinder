@@ -46,7 +46,7 @@ jobs:
         run: uv sync --all-extras --dev
 
       - name: Set up testing
-        run: uv flake8 pytest
+        run: uv add flake8 pytest
 
       - name: Lint with flake8
         run: |
