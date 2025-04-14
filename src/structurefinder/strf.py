@@ -23,7 +23,6 @@ from math import radians, sin
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError
-from typing import List, Optional, Union
 from xml.etree.ElementTree import ParseError
 
 import gemmi.cif
@@ -372,7 +371,7 @@ class StartStructureDB(QMainWindow):
         for row, index in enumerate(selection):
             for column in range(self.ui.cifList_tableView.model().columnCount()):
                 cell_data = self.ui.cifList_tableView.get_field_content(index.row(), column)
-                worksheet.write(row+1, column, cell_data)
+                worksheet.write(row + 1, column, cell_data)
         workbook.close()
 
     def on_browse_path_from_row(self, curdir: str):
@@ -1325,7 +1324,7 @@ class StartStructureDB(QMainWindow):
         self.ui.SHELXplainTextEdit.clear()
         self.ui.cellField.clear()
         self.ui.render_widget.clear()
-        #self.table_model.clear()
+        # self.table_model.clear()
 
 
 def my_exception_hook(exctype: type[BaseException], value: BaseException, error_traceback: traceback,
