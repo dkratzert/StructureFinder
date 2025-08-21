@@ -1,19 +1,19 @@
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
-from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QPushButton, QFileDialog
+from PyQt5.QtCore import QUrl
 import sys
 
 
 class WebViewer(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self._pdb_content_to_load = None  # Store PDB content to load after page is ready
         self.init_ui()
-
 
     def init_ui(self):
         # Create layout
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)  # Remove margins for full-size display
+        layout.setContentsMargins(0, 0, 0, 0)
 
         # Create QWebEngineView instance
         self.web_view = QWebEngineView()
@@ -21,6 +21,9 @@ class WebViewer(QWidget):
         # Enable JavaScript
         self.web_view.settings().setAttribute(
             self.web_view.settings().JavascriptEnabled, True)
+
+        # Connect loadFinished signal
+        self.web_view.loadFinished.connect(self._on_load_finished)
 
         # Add web view to layout
         layout.addWidget(self.web_view)
@@ -53,29 +56,37 @@ class WebViewer(QWidget):
                            </style>
                        </head>
                        <body>
-                       Hello
                        <div class="miew-container"></div>
                        <script>
-                           var viewer;
-                           (function () {
-                               viewer = new Miew({
-                                    //load: '1CRN',
-                                    container: document.querySelector('.miew-container'),
-                                    settings: {
-                                        fps: false  // This hides the frames counter
-                                    }
-                                });
+                           // Initialize global variables
+                           var mol = null;
+                           var viewer = null;
+
+                           (function() {
+                              var viewer = new Miew({
+                                container: document.getElementsByClassName('miew-container')[0],
+                                // required for the molecule data without residues, because default mode, Cartoon, visualizes residues
+                                reps: [{
+                                  mode: 'BS',
+                                  colorer: 'EL',
+                                  material: 'DF',
+                                }],
+                                // optional settings
+                                settings: {
+                                  bg: {color: 0xCCCCCC},
+                                  #fogFarFactor: 2,
+                                  fps: false,
+                                  axes: true,
+                                  resolution: 'high',
+                                },
+                              });
                                if (viewer.init()) {
-                                   viewer.run();
-                               }
-                    
-                           })();
+                                    viewer.run();
+                                    // please, load protein by the function here, not on Miew creation
+                                    viewer.load(mol, { sourceType: 'immediate', fileType: 'pdb' });
+                                  }
+                                })();
                            
-                        function loadPDBContent(pdbContent) {
-                               if (viewer) {
-                                   viewer.load('pdb:' + pdbContent);
-                               }
-                           }
                        </script>
                        </body>
                        </html>
@@ -88,6 +99,14 @@ class WebViewer(QWidget):
         """Set the HTML content of the web view"""
         self.web_view.setHtml(html_content)
 
+    def _on_load_finished(self, ok):
+        """Called when the page has finished loading"""
+        if ok and self._pdb_content_to_load:
+            js_code = (f"window.mol = '{self._pdb_content_to_load}';"
+                       "viewer.load(mol, { sourceType: 'immediate', fileType: 'pdb' });")
+            self.web_view.page().runJavaScript(js_code)
+            self._pdb_content_to_load = None
+
     def load_pdb_file(self, file_path):
         """Load a PDB file and display it in the viewer"""
         try:
@@ -95,12 +114,13 @@ class WebViewer(QWidget):
                 pdb_content = f.read()
                 # Escape special characters and newlines for JavaScript
                 pdb_content = pdb_content.replace('\\', '\\\\').replace('\n', '\\n').replace('\'', '\\\'')
-                js_code = f"loadPDBContent('{pdb_content}');"
-
-                self.web_view.page().runJavaScript(js_code)
-                #print(pdb_content)
+                self._pdb_content_to_load = pdb_content
+                #js_code = f"window.loadPDBContent('{pdb_content}');"
+                #self.web_view.page().runJavaScript(js_code)
+                self._on_load_finished(True)
         except Exception as e:
             print(f"Error loading PDB file: {str(e)}")
+
 
 
 class MainWindow(QMainWindow):
@@ -109,11 +129,32 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Web Viewer")
         self.setGeometry(100, 100, 800, 600)
 
-        # Create and set the central widget
-        self.web_viewer = WebViewer()
-        self.setCentralWidget(self.web_viewer)
+        # Create main widget to hold both the viewer and button
+        main_widget = QWidget()
+        main_layout = QVBoxLayout(main_widget)
 
-        self.web_viewer.load_pdb_file("/Users/daniel/Downloads/1crn.pdb")
+        # Create load button
+        load_button = QPushButton("Load PDB File")
+        load_button.clicked.connect(self.open_pdb_file)
+        main_layout.addWidget(load_button)
+
+        # Create and add the web viewer
+        self.web_viewer = WebViewer()
+        main_layout.addWidget(self.web_viewer)
+
+        # Set the main widget as central
+        self.setCentralWidget(main_widget)
+
+    def open_pdb_file(self):
+        """Open file dialog and load selected PDB file"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Open PDB File",
+            "",
+            "PDB Files (*.pdb);;All Files (*.*)"
+        )
+        if file_path:
+            self.web_viewer.load_pdb_file(file_path)
 
 
 if __name__ == '__main__':
