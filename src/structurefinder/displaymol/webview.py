@@ -59,7 +59,7 @@ class WebViewer(QWidget):
                            var viewer;
                            (function () {
                                viewer = new Miew({
-                                    load: '1CRN',
+                                    //load: '1CRN',
                                     container: document.querySelector('.miew-container'),
                                     settings: {
                                         fps: false  // This hides the frames counter
@@ -68,8 +68,14 @@ class WebViewer(QWidget):
                                if (viewer.init()) {
                                    viewer.run();
                                }
+                    
                            })();
-
+                           
+                        function loadPDBContent(pdbContent) {
+                               if (viewer) {
+                                   viewer.load('pdb:' + pdbContent);
+                               }
+                           }
                        </script>
                        </body>
                        </html>
@@ -82,6 +88,19 @@ class WebViewer(QWidget):
         """Set the HTML content of the web view"""
         self.web_view.setHtml(html_content)
 
+    def load_pdb_file(self, file_path):
+        """Load a PDB file and display it in the viewer"""
+        try:
+            with open(file_path, 'r') as f:
+                pdb_content = f.read()
+                # Escape special characters and newlines for JavaScript
+                pdb_content = pdb_content.replace('\\', '\\\\').replace('\n', '\\n').replace('\'', '\\\'')
+                js_code = f"loadPDBContent('{pdb_content}');"
+
+                self.web_view.page().runJavaScript(js_code)
+                #print(pdb_content)
+        except Exception as e:
+            print(f"Error loading PDB file: {str(e)}")
 
 
 class MainWindow(QMainWindow):
@@ -93,6 +112,8 @@ class MainWindow(QMainWindow):
         # Create and set the central widget
         self.web_viewer = WebViewer()
         self.setCentralWidget(self.web_viewer)
+
+        self.web_viewer.load_pdb_file("/Users/daniel/Downloads/1crn.pdb")
 
 
 if __name__ == '__main__':
