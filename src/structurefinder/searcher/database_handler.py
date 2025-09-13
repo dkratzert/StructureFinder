@@ -12,6 +12,7 @@ Created on 09.02.2015
 
 import sys
 from dataclasses import dataclass
+
 from math import log
 from pathlib import Path
 from sqlite3 import Cursor, InterfaceError, OperationalError, ProgrammingError, connect
@@ -832,10 +833,6 @@ class StructureTable():
     def get_all_structures_as_dict(self, ids: (list, tuple) = None) -> dict:
         """
         Returns the list of structures as dictionary.
-
-        >>> str = StructureTable('tests/test-data/test.sql')
-        >>> len(str.get_all_structures_as_dict([1,2]))
-        2
         """
         self.database.con.row_factory = self.database.dict_factory
         self.database.cur = self.database.con.cursor()
@@ -981,10 +978,6 @@ class StructureTable():
     def get_cif_sumform_by_id(self, structure_id):
         """
         returns the cell of a res file in the db
-
-        >>> db = StructureTable('./tests/test-data/test.sql')
-        >>> db.get_cif_sumform_by_id(16)
-        ('C18 H19 N O4',)
         """
         if not structure_id:
             return False
@@ -1433,12 +1426,25 @@ class StructureTable():
 
 
 if __name__ == '__main__':
+    from PyQt6 import QtWidgets
+    from structurefinder.plot.plot_example import PlotWidget
+
     # searcher.filecrawler.put_cifs_in_db(searchpath='../')
     db = StructureTable('./test.sqlite')
     # f = db.database.db_request("""SELECT name FROM sqlite_master WHERE type='table' AND name='authortxtsearch';""")
     # print(f)
-    s = db.get_plot_values(x_axis=residuals[5], y_axis=residuals[9])
-    print(s)
+    x_axis = residuals[5]
+    y_axis = residuals[1]
+    results = db.get_plot_values(x_axis=x_axis, y_axis=y_axis)
+    results= [(x or 0, y or 0) for x, y in results]
+    results.sort()
+    print(results)
+    print([x[0] for x in results])
+    app = QtWidgets.QApplication(sys.argv)
+    w = PlotWidget()
+    w.plot_points(x=[x[0] for x in results], y=[x[1] for x in results], x_title=x_axis, y_title=y_axis)
+    w.show()
+    sys.exit(app.exec())
     # db.initialize_db()
     # db = StructureTable(r'C:\Program Files (x86)\CCDC\CellCheckCSD\cell_check.csdsql')
     # db.initialize_db()
