@@ -1436,10 +1436,10 @@ if __name__ == '__main__':
     x_axis = residuals[5]
     y_axis = residuals[1]
     results = db.get_plot_values(x_axis=x_axis, y_axis=y_axis)
-    results= [(x or 0, y or 0) for x, y in results]
+    # results= [(x or 0, y or 0) for x, y in results]
+    results = [t for t in results if '' not in t]
     results.sort()
     print(results)
-    print([x[0] for x in results])
     app = QtWidgets.QApplication(sys.argv)
     w = PlotWidget()
     w.plot_points(x=[x[0] for x in results], y=[x[1] for x in results], x_title=x_axis, y_title=y_axis)
