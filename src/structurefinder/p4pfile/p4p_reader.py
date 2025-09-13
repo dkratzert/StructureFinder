@@ -14,7 +14,7 @@
 This file reads Bruker p4p files into a data structure.
 """
 
-from structurefinder.shelxfile.dsrmath import Matrix
+from shelxfile.misc.dsrmath import Matrix
 
 
 def read_file_to_list(p4pfile: str) -> list:
@@ -46,7 +46,7 @@ class P4PFile():
         self.zeros = None
         self.source = None
         self.volume = None
-        self.ortmatrix = None 
+        self.ortmatrix = None
         try:
             self.parse_p4p()
         except Exception:

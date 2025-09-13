@@ -41,12 +41,33 @@ You can concatenate words with ? and \*. For example foo*bar means
 
 Pro tip: Double click on the unit cell to copy the cell to the clip board.
 
+**Customizing columns**
+
+.. figure:: pics/strf_3.png
+   :width: 700
+
+   List of available columns.
+
+The columns shown in the table can be changed by right-click on the table header.
+The selcted columns will be saved during close of the application.
+
+
 **All CIF values tab**
+
+.. figure:: pics/strf_2.png
+   :width: 700
+
+   List of all CIF values for one structure.
 
 The 'All CIF values' tab shows all cif values available in the database.
 These are not necessarily all but most values from the cif file.
 
 **Advanced Search**
+
+.. figure:: pics/strf_adv.png
+   :width: 700
+
+   Advanced search tab.
 
 The 'Advanced Search' tab allows you to search for several options at a time and
 also allows to exclude parameters. I will add more options in the future and I

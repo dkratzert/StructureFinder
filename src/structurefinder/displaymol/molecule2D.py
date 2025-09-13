@@ -2,14 +2,13 @@ import sys
 from collections import namedtuple
 from math import sqrt, cos, sin, dist
 from pathlib import Path
-from typing import List, Union
 
 import numpy as np
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPalette, QImage, QResizeEvent
+from PyQt6 import QtWidgets, QtCore, QtGui
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPalette, QImage, QResizeEvent
 
-from structurefinder.shelxfile.elements import get_radius_from_element, element2color
+from shelxfile.misc.elements import get_radius_from_element, element2color
 
 """
 A 2D molecule drawing widget. Feed it with a list (or generator) of atoms of this type:
@@ -22,7 +21,6 @@ Atomtuple = namedtuple('Atomtuple', ('label', 'type', 'x', 'y', 'z', 'part'))
 
 
 class MoleculeWidget(QtWidgets.QWidget):
-    painter: QPainter
 
     def __init__(self, parent):
         super().__init__(parent=parent)
@@ -32,20 +30,18 @@ class MoleculeWidget(QtWidgets.QWidget):
         self.labels = False
         self.molecule_center = np.array([0, 0, 0])
         self.molecule_radius = 10
-        #
         self.lastPos = self.pos()
-        self.painter = Union[None, QPainter]
+        self.painter: QPainter | None = None
         self.x_angle = 0
         self.y_angle = 0
-        #
         pal = QPalette()
-        pal.setColor(QPalette.Window, Qt.white)
+        pal.setColor(QtGui.QPalette.ColorRole.Window, QtCore.Qt.GlobalColor.white)
         self.setAutoFillBackground(True)
         self.setPalette(pal)
         self.layout = QtWidgets.QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout)
-        self.atoms: List['Atom'] = []
+        self.atoms: list[Atom] = []
         self.connections = ()
         # Takes all atoms and bonds
         self.objects = []
@@ -62,13 +58,16 @@ class MoleculeWidget(QtWidgets.QWidget):
         self.labels = value
         self.update()
 
-    def open_molecule(self, atoms: List['Atomtuple'], labels=False):
+    def open_molecule(self, atoms: list[Atomtuple], labels=False):
         self.labels = labels
         self.atoms.clear()
         for at in atoms:
             if at[0].startswith('Q'):
                 continue
-            self.atoms.append(Atom(at[2], at[3], at[4], at[0], at[1], at[5]))
+            try:
+                self.atoms.append(Atom(at[2], at[3], at[4], at[0], at[1], at[5]))
+            except KeyError as e:
+                print(f'Unknown element: {e} in atom {at}', )
         if len(self.atoms) > 400:
             self.bond_width = 1
         self.connections = self.get_conntable_from_atoms()
@@ -83,7 +82,7 @@ class MoleculeWidget(QtWidgets.QWidget):
     def paintEvent(self, event):
         if self.atoms:
             self.painter = QPainter(self)
-            self.painter.setRenderHint(QPainter.Antialiasing)
+            self.painter.setRenderHint(QPainter.RenderHint.Antialiasing)
             font = self.painter.font()
             font.setPixelSize(13)
             self.painter.setFont(font)
@@ -97,8 +96,8 @@ class MoleculeWidget(QtWidgets.QWidget):
         self.lastPos = event.pos()
 
     def save_image(self, filename: Path, image_scale=1.5):
-        image = QImage(self.size() * image_scale, QImage.Format_RGB32)
-        image.fill(Qt.white)
+        image = QImage(self.size() * image_scale, QImage.Format.Format_RGB32)
+        image.fill(QtCore.Qt.GlobalColor.white)
         imgpainter = QPainter(image)
         imgpainter.scale(image_scale, image_scale)
         self.render(imgpainter)
@@ -120,31 +119,29 @@ class MoleculeWidget(QtWidgets.QWidget):
         ], dtype=np.float32)
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        if event.buttons() == Qt.LeftButton:
+        if event.buttons() == QtCore.Qt.MouseButton.LeftButton:
             self.rotate_molecule(event)
-        elif event.buttons() == Qt.RightButton:
+        elif event.buttons() == QtCore.Qt.MouseButton.RightButton:
             self.zoom_molecule(event)
-        elif event.buttons() == Qt.MiddleButton:
+        elif event.buttons() == QtCore.Qt.MouseButton.MiddleButton:
             self.pan_molecule(event)
         self.lastPos = event.pos()
 
     def pan_molecule(self, event):
-        self.molecule_center[0] += (self.lastPos.x() - event.x()) / 50
-        self.molecule_center[1] += (self.lastPos.y() - event.y()) / 50
+        self.molecule_center[0] += (self.lastPos.x() - event.pos().x()) / 50
+        self.molecule_center[1] += (self.lastPos.y() - event.pos().y()) / 50
         self.update()
 
     def zoom_molecule(self, event: QMouseEvent):
-        self.factor += (self.lastPos.y() - event.y()) / 350
-        if self.factor <= 0.005:
-            # Prevents zooming to infinity where nothing is visible:
-            self.factor = 0.005
-        self.zoom -= (self.lastPos.y() - event.y()) / 350
+        self.factor += (self.lastPos.y() - event.pos().y()) / 350
+        self.factor = max(0.005, self.factor)
+        self.zoom -= (self.lastPos.y() - event.pos().y()) / 350
         self.atoms_size = abs(self.factor * 70)
         self.update()
 
     def rotate_molecule(self, event):
-        self.y_angle = -(event.x() - self.lastPos.x()) / 80
-        self.x_angle = (event.y() - self.lastPos.y()) / 80
+        self.y_angle = -(event.pos().x() - self.lastPos.x()) / 80
+        self.x_angle = (event.pos().y() - self.lastPos.y()) / 80
         for num, at in enumerate(self.atoms):
             rotated2d = np.dot(self.rotate_y(), at.coordinate - self.molecule_center)
             x, y, z = np.dot(self.rotate_x(), rotated2d) + self.molecule_center
@@ -198,33 +195,30 @@ class MoleculeWidget(QtWidgets.QWidget):
         for at in self.atoms:
             for j in reversed(range(3)):
                 v = at.coordinate[j]
-                if v < min_[j]:
-                    min_[j] = v
-                if v > max_[j]:
-                    max_[j] = v
+                min_[j] = min(min_[j], v)
+                max_[j] = max(max_[j], v)
         c = np.array([0, 0, 0], dtype=np.float32)
         for j in reversed(range(3)):
             c[j] = (max_[j] + min_[j]) / 2
         r = 0
         for atom in self.atoms:
             d = dist(atom.coordinate, c) + 1.5
-            if d > r:
-                r = d
+            r = max(r, d)
         self.molecule_center = np.array(c, dtype=np.float32)
         self.molecule_radius = r or 10
 
     def draw_bond(self, at1: 'Atom', at2: 'Atom', offset: int):
-        self.painter.setPen(QPen(Qt.darkGray, self.bond_width, Qt.SolidLine))
+        self.painter.setPen(QPen(QtCore.Qt.GlobalColor.darkGray, self.bond_width, Qt.PenStyle.SolidLine))
         self.painter.drawLine(at1.screenx + offset, at1.screeny + offset,
                               at2.screenx + offset, at2.screeny + offset)
 
     def draw_atom(self, atom: 'Atom'):
-        self.painter.setPen(QPen(Qt.black, 1, Qt.SolidLine))
-        self.painter.setBrush(QBrush(atom.color, Qt.SolidPattern))
+        self.painter.setPen(QPen(QtCore.Qt.GlobalColor.black, 1, Qt.PenStyle.SolidLine))
+        self.painter.setBrush(QBrush(atom.color, Qt.BrushStyle.SolidPattern))
         self.painter.drawEllipse(int(atom.screenx), int(atom.screeny), int(self.atoms_size), int(self.atoms_size))
 
     def draw_label(self, atom: 'Atom'):
-        self.painter.setPen(QPen(QColor(100, 50, 5), 2, Qt.SolidLine))
+        self.painter.setPen(QPen(QColor(100, 50, 5), 2, Qt.PenStyle.SolidLine))
         self.painter.drawText(atom.screenx + 18, atom.screeny - 4, atom.name)
 
     def get_conntable_from_atoms(self, extra_param: float = 1.2) -> tuple:
@@ -255,8 +249,8 @@ class MoleculeWidget(QtWidgets.QWidget):
         return tuple(connections)
 
 
-class Atom(object):
-    __slots__ = ['coordinate', 'name', 'part', 'type_', 'screenx', 'screeny', 'radius']
+class Atom:
+    __slots__ = ['coordinate', 'name', 'part', 'radius', 'screenx', 'screeny', 'type_']
 
     def __init__(self, x: float, y: float, z: float, name: str, type_: str, part: int):
         self.coordinate = np.array([x, y, z], dtype=np.float32)
@@ -275,7 +269,7 @@ class Atom(object):
         return str((self.name, self.type_, self.coordinate))
 
 
-def display(atoms: List[Atomtuple]):
+def display(atoms: list[Atomtuple]):
     """
     This function is for testing purposes. 
     """
@@ -293,13 +287,14 @@ def display(atoms: List[Atomtuple]):
     window.show()
     # render_widget.save_image(Path('myimage2.png'))
     # start the event loop
-    sys.exit(app.exec_())
+    app.exec()
 
 
 if __name__ == "__main__":
-    from structurefinder.shelxfile.shelx import ShelXFile
+    from shelxfile import Shelxfile
 
-    shx = ShelXFile('tests/test-data/p21c.res')
+    shx = Shelxfile()
+    shx.read_file('tests/test-data/p21c.res')
     # atoms = [x.cart_coords for x in shx.atoms]
     # cif = CifContainer('tests/test-data/p21c.cif')
     # cif = CifContainer(r'../41467_2015.cif')

@@ -8,14 +8,12 @@ Created on 09.02.2015
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
 
-@author: daniel
 """
 
 import os
-import shutil
-from math import sqrt, cos, radians, log
+from math import cos, log, radians, sqrt
 from pathlib import Path
-from typing import List, Union, Dict, Tuple
+from typing import Dict, List, Tuple, Union
 
 from structurefinder.searcher import constants
 
@@ -44,88 +42,6 @@ elements = ['X', 'H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
             'Pm', 'Sm', 'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb',
             'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn',
             'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es']
-
-
-def write_file(inplist: List, name: str) -> None:
-    """
-    Writes the content of list to name.
-    """
-    with open(name, 'w') as ofile:
-        for line in inplist:  # modified reslist
-            ofile.write("%s" % line)  # write the new file
-
-
-def find_binary_string(file, string: str, seek: int, size: int, return_ascii: bool = False) -> Union[str, bytes]:
-    """
-    finds a string in a binary file
-    :rtype: str
-    :param file: file path
-    :param string: string to find
-    :param seek: go number of bytes ahead
-    :param size: return string of size
-    :param return_ascii: return as ascii or not
-    """
-    with open(file, 'rb') as f:
-        binary = f.read()
-        position = binary.find(bytes(string))
-        if position > 0:
-            f.seek(position + seek, 0)  # seek to version string
-            result = f.read(size)  # read version string
-            if return_ascii:
-                return result.decode('ascii')
-            else:
-                return result
-
-
-def walkdir(rootdir, include: str = None, exclude: List = None) -> list:
-    """
-    Returns a list of files in all subdirectories with full path.
-    :param rootdir: base path from which walk should start
-    :return: list of files
-
-    >>> walkdir("../setup/modpath.iss")
-    ['../setup/modpath.iss']
-    >>> walkdir("../setup/modpath.iss", exclude=['.iss'])
-    []
-    """
-    if not include:
-        include = ""
-    if not exclude:
-        exclude = ""
-    results = []
-    if not os.path.isdir(rootdir):
-        if os.path.splitext(rootdir)[1] in exclude:
-            return []
-        return [rootdir]
-    for root, subFolders, files in os.walk(rootdir):
-        for file in files:
-            fullfilepath = os.path.join(root, file)
-            if exclude:
-                if os.path.splitext(fullfilepath)[1] in exclude:
-                    continue
-            if include:
-                if os.path.splitext(fullfilepath)[1] in include:
-                    results.append(os.path.normpath(fullfilepath).replace('\\', '/'))
-            else:
-                results.append(os.path.normpath(fullfilepath).replace('\\', '/'))
-    return results
-
-
-def open_file_read(filename: str, asci: bool = True) -> Union[str, List]:
-    if asci:
-        state = 'r'
-    else:
-        state = 'rb'
-    with open(filename, '{0}'.format(state)) as f:
-        if asci:
-            try:
-                file_list = f.readlines()
-            except:
-                return [' ']
-            return file_list
-        else:
-            binary = f.read()
-            return binary
 
 
 def is_a_nonzero_file(filepath: Union[str, Path]) -> bool:
@@ -323,56 +239,6 @@ def get_list_of_elements(formula: str) -> Union[List[str], None]:
         else:
             return None
     return atlist
-
-
-def remove_file(filename: str) -> bool:
-    """
-    removes the file "filename" from disk
-    >>> remove_file('foobar')
-    True
-    """
-    if os.path.isfile(filename):
-        try:
-            os.remove(filename)
-        except(IOError, OSError):
-            print('Can not delete {}'.format(filename))
-            return False
-    return True
-
-
-def copy_file(source, target, move=False) -> None:
-    """
-    Copy a file from source to target. Source can be a single file or
-    a directory. Target can be a single file or a directory.
-    :param source: list or string
-    :param target: string
-    """
-    target_path = os.path.dirname(target)
-    source_file = os.path.basename(source)
-    listcopy = False
-    if isinstance(source, (list, tuple)):
-        listcopy = True
-    if not os.path.exists(target_path) and target_path != '':
-        try:
-            os.makedirs(target_path)
-        except(IOError, OSError):
-            print('Unable to create directory {}.'.format(target_path))
-    try:
-        if listcopy:
-            for filen in source:
-                if move:
-                    shutil.move(filen, target)
-                else:
-                    shutil.copy(filen, target)
-
-        else:
-            if move:
-                shutil.move(source, target)
-            else:
-                shutil.copy(source, target)
-    except IOError as e:
-        print('Unable to copy {}.'.format(source_file))
-        print(e)
 
 
 def is_valid_cell(cell: str = None) -> List[float]:

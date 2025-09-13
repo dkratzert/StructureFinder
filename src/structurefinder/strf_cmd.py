@@ -6,13 +6,32 @@ from contextlib import suppress
 from pathlib import Path
 from sqlite3 import DatabaseError
 
+import gemmi
+from shelxfile import Shelxfile
+
+from structurefinder.gui.table_model import archives
 from structurefinder.misc.update_check import is_update_needed
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core.lattice import Lattice
-from structurefinder.searcher.database_handler import DatabaseRequest, StructureTable
-from structurefinder.searcher.filecrawler import excluded_names
-from structurefinder.searcher.misc import vol_unitcell, regular_results_parameters
-from structurefinder.searcher.worker import Worker
+from structurefinder.searcher.cif_file import CifFile
+from structurefinder.searcher.crawler import (
+    EXCLUDED_NAMES,
+    FileType,
+    Result,
+    find_files,
+)
+from structurefinder.searcher.database_handler import (
+    DatabaseRequest,
+    StructureTable,
+    columns,
+)
+from structurefinder.searcher.db_filler import (
+    fill_db_with_cif_data,
+    fill_db_with_res_data,
+)
+from structurefinder.searcher.misc import regular_results_parameters, vol_unitcell
+
+DEBUG = False
 
 parser = argparse.ArgumentParser(
     description=f'Command line version {VERSION} of StructureFinder to collect .cif/.res files to a '
@@ -31,7 +50,7 @@ parser.add_argument("-e",
                     type=str,
                     action='append',
                     help='Directory names to be excluded from the file search. Default is:\n'
-                         '"ROOT", ".OLEX", "TMP", "TEMP", "Papierkorb", "Recycle.Bin" '
+                         f'{list(EXCLUDED_NAMES)} '
                          'Modifying -e option discards the default.')
 parser.add_argument("-o",
                     dest="outfile",
@@ -69,6 +88,12 @@ parser.add_argument("-m",
                     type=str,
                     help="Merges a database file into the file of '-o' option. Only -o is allowed in addition."
                     )
+parser.add_argument("-na",
+                    dest='no_archive',
+                    default=False,
+                    action='store_true',
+                    help=f"Disables the collection of files in {', '.join(archives)} archives."
+                    )
 
 
 def check_update():
@@ -91,7 +116,7 @@ def find_cell(args: Namespace):
         dbfilename = args.outfile
     else:
         dbfilename = 'structuredb.sqlite'
-    db, structures = get_database(dbfilename)
+    structures = get_database(dbfilename)
     volume = vol_unitcell(*cell)
     atol, ltol, vol_threshold = regular_results_parameters(volume)
     # the fist number in the result is the structureid:
@@ -114,21 +139,25 @@ def find_cell(args: Namespace):
         sys.exit()
     else:
         print('\n{} Structures found:'.format(len(idlist)))
-        searchresult = structures.get_all_structure_names(idlist)
-    print('ID      |      path                                 '
-          '                                    |  filename             |  data name  ')
+        columns.modification_time.visible = True
+        columns.file_size.visible = True
+        searchresult = structures.get_structure_rows_by_ids(idlist)
+    print('ID      |  filename             |  data name      |      path                                 '
+          '                                    | Modification time')
     print('-' * 130)
     for res in searchresult:
-        Id = res[0]
-        dataname, filename, path = [x.decode('utf-8') for x in res if isinstance(x, bytes)]
-        print(f'{Id:<7} | {path:77s} | {filename:<21s} | {dataname:s}')
+        Id, dataname, filename, mod_time, path, size = [x.decode('utf-8') if isinstance(x, bytes) else x for x in res]
+        # Id, path, filename, dataname
+        print(f'{Id:<7} | {filename:<21s} | {dataname:15s} | {path:77s} | {mod_time}')
 
 
-def run_index(args=None):
+def run_index(args: Namespace = None):
     if not args:
         print('')
     else:
-        if not any([args.fillres, args.fillcif]):
+        fill_cif = args.fillcif
+        file_res = args.fillres
+        if not any([file_res, fill_cif]):
             print("Error: You need to give either option -c, -r or both.")
             sys.exit()
         if args.outfile:
@@ -138,49 +167,120 @@ def run_index(args=None):
         if args.delete:
             try:
                 dbf = Path(dbfilename)
-                dbf.unlink()
-            except FileNotFoundError:
-                pass
+                dbf.unlink(missing_ok=True)
             except PermissionError:
-                print(f'Could not acess database file "{dbfilename}". Is it used elsewhere?')
+                print(f'Could not access database file "{dbfilename}". Is it used elsewhere?')
                 print('Giving up...')
                 sys.exit()
-        db, structures = get_database(dbfilename)
+        structures = get_database(dbfilename)
         time1 = time.perf_counter()
+        lastid = structures.database.get_lastrowid()
+        if not lastid:
+            lastid = 1
+        else:
+            lastid += 1
+        cif_count = 0
+        res_count = 0
+        archive_count = 0
         for p in args.dir:
-            # the command line version
-            lastid = db.get_lastrowid()
-            if not lastid:
-                lastid = 1
-            else:
-                lastid += 1
             try:
-                _ = Worker(searchpath=p, add_res_files=args.fillres, add_cif_files=args.fillcif, lastid=lastid,
-                           structures=structures, excludes=args.ex if args.ex else excluded_names, standalone=True)
+                for total_files, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES, no_archive=args.no_archive)):
+                    if fill_cif and result.file_type == FileType.CIF:
+                        if process_cif(lastid, result, structures):
+                            cif_count += 1
+                            lastid += 1
+                            if result.in_archive:
+                                archive_count += 1
+                    elif file_res and result.file_type == FileType.RES:
+                        if process_res(lastid, result, structures):
+                            res_count += 1
+                            lastid += 1
+                            if result.in_archive:
+                                archive_count += 1
+                    if total_files % 100 == 0:
+                        print(f'\r{total_files:,} files found so far.', flush=True, end='')
+                else:
+                    print('\r\b', end='', flush=True)
             except OSError as e:
-                print("Unable to collect files:")
+                print(f"Unable to collect files: in path '{p}'")
                 print(e)
+                if DEBUG:
+                    raise
             except KeyboardInterrupt:
                 sys.exit()
-            print("---------------------")
-        try:
-            if db and structures:
-                db.init_textsearch()
-                db.init_author_search()
-                db.populate_fulltext_search_table()
-                db.populate_author_fulltext_search()
-                db.make_indexes()
-        except TypeError:
-            print('No valid files found. They might be in excluded subdirectories.')
+        print()
+        finish_database(structures)
         time2 = time.perf_counter()
         diff = time2 - time1
         m, s = divmod(diff, 60)
         h, m = divmod(m, 60)
-        print(f"\nTotal {len(structures)} cif/res files in '{str(Path(dbfilename).resolve())}'. "
-              f"\nDuration: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s")
+        tmessage = (f'Added {cif_count+res_count} files, ({cif_count} .cif, {res_count} .res files), ({archive_count} '
+                    f'in compressed archives) to database in: {int(h):>2d} h, {int(m):>2d} m, {s:>3.2f} s')
+        print(tmessage)
+        print("---------------------")
+        print(f"Total {len(structures)} cif/res files in '{Path(dbfilename).resolve()}'.")
         import os
         if "PYTEST_CURRENT_TEST" not in os.environ:
             check_update()
+
+
+def progress(value: float) -> None:
+    print(f'-> {value}', end='\r')
+
+
+def finish_database(structures: StructureTable):
+    structures.database.commit_db()
+    db = structures.database
+    try:
+        if db and structures:
+            db.init_textsearch()
+            db.init_author_search()
+            db.populate_fulltext_search_table()
+            db.populate_author_fulltext_search()
+            db.make_indexes()
+    except TypeError:
+        print('No valid files found. They might be in excluded subdirectories.')
+
+
+def process_cif(lastid: int, result: Result, structures: StructureTable) -> bool:
+    cif = CifFile()
+    cif.cif_data['file_size'] = result.file_size
+    cif.cif_data['modification_time'] = result.modification_time
+    doc = gemmi.cif.Document()
+    try:
+        doc.parse_string(result.file_content)
+    except ValueError:
+        return False
+    cif.parsefile(doc)
+    if cif.block:
+        ok = fill_db_with_cif_data(cif,
+                                   filename=result.filename,
+                                   path=result.file_path,
+                                   structure_id=lastid,
+                                   structures=structures)
+        if not ok:
+            return False
+    elif DEBUG:
+        print('File has no block:', result)
+    return True
+
+
+def process_res(lastid: int, result: Result, structures: StructureTable) -> bool:
+    try:
+        res = Shelxfile()
+        res.read_string(result.file_content)
+    except Exception as e:
+        if DEBUG:
+            print(e)
+            print(f"Could not parse (.res): {result.file_type}")
+        return False
+    if res:
+        with suppress(Exception):
+            if not fill_db_with_res_data(res, result=result, structure_id=lastid, structures=structures):
+                if DEBUG:
+                    print('res file not added:', result.file_path, result.filename)
+                return False
+    return True
 
 
 def merge_database(args: Namespace):
@@ -210,11 +310,11 @@ def merge_database(args: Namespace):
         print('\nCan not merge same file together!\n')
         return
     print(f'Merging {merge_file_name.resolve()} into {dbfile.resolve()}:\n')
-    db, structures = get_database(dbfile)
-    db.merge_databases(str(merge_file_name))
+    structures = get_database(dbfile)
+    structures.database.merge_databases(str(merge_file_name))
 
 
-def get_database(dbfilename):
+def get_database(dbfilename: Path | str) -> StructureTable:
     db = DatabaseRequest(dbfilename)
     try:
         db.initialize_db()
@@ -223,7 +323,7 @@ def get_database(dbfilename):
         print(f'The Database {dbfilename} is corrupt. Unable to open it!')
         sys.exit()
     structures = StructureTable(dbfilename)
-    return db, structures
+    return structures
 
 
 def main():
@@ -237,9 +337,17 @@ def main():
             parser.print_help()
             print("\n --> No valid search directory given.\n")
             sys.exit()
+        if args.fillres and args.fillcif:
+            files = '.res and .cif files'
+        elif args.fillres:
+            files = '.res files'
+        else:
+            files = '.cif files'
+        print(f'Collecting {files} below  {", ".join(args.dir)}.')
         run_index(args)
 
 
 if __name__ == '__main__':
+    Path('test.sqlite').unlink(missing_ok=True)
     main()
-    # find_cell('10.5086  20.9035  20.5072   90.000   94.130   90.000'.split())
+    # find_cell(Namespace(cell='10.5086  20.9035  20.5072   90.000   94.130   90.000'.split(), outfile='test.sqlite'))

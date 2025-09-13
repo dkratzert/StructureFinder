@@ -8,33 +8,18 @@ Created on 09.02.2015
 * notice you can do whatever you want with this stuff. If we meet some day, and
 * you think this stuff is worth it, you can buy me a beer in return.
 * ----------------------------------------------------------------------------
-
-@author: daniel
-
-
-from PyQt5.QtSql import QSqlQuery, QSqlDatabase
-
-con = QSqlDatabase.addDatabase("QSQLITE")
-con.setDatabaseName("/Users/daniel/Documents/GitHub/StructureFinder/structuredb.sqlite")
-
-query = QSqlQuery()
-query.exec('''SELECT Name, element, x, y, z FROM ATOMS''')
-while query.next():
-    results.append(query.value(0), query.value(1), query.value(2), query.value(3), query.value(4))
-query.finish()
-
-con.close()
-con.isOpen()
-- False
-QSqlDatabase::removeDatabase("sales")
 """
-import sys
-from math import log
-from sqlite3 import OperationalError, ProgrammingError, connect, InterfaceError
-from typing import List, Union, Tuple, Dict, Optional
 
-from structurefinder.searcher.fileparser import CifFile
-from structurefinder.shelxfile.elements import sorted_atoms
+import sys
+from dataclasses import dataclass
+from math import log
+from pathlib import Path
+from sqlite3 import Cursor, InterfaceError, OperationalError, ProgrammingError, connect
+from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
+
+from shelxfile.misc.elements import sorted_atoms
+
+from structurefinder.searcher.cif_file import CifFile
 
 DEBUG = False
 
@@ -107,6 +92,261 @@ residuals = (
 
 # Residuals: TypeAlias = Literal[residuals]
 
+def default_repr(value: Union[str, bytes]) -> str:
+    if isinstance(value, bytes):
+        return value.decode('utf-8', errors='ignore')
+    else:
+        return value
+
+
+def pathrepr(value: Union[str, bytes]) -> str:
+    if isinstance(value, bytes):
+        return str(Path(value.decode('utf-8')))
+    else:
+        if value:
+            return str(Path(value))
+        else:
+            return ''
+
+
+def float_two_digit_repr(value: Union[str, bytes]) -> str:
+    if isinstance(value, bytes):
+        value = value.decode('utf-8', "ignore")
+    try:
+        return f"{float(value):.2f}"
+    except (ValueError, TypeError):
+        return value
+
+
+def float_one_digit_repr(value: Union[str, bytes]) -> str:
+    if isinstance(value, bytes):
+        value = value.decode('utf-8', "ignore")
+    try:
+        return f"{float(value):.1f}"
+    except (ValueError, TypeError):
+        return value
+
+
+def cell_repr(value: bytes) -> str:
+    # print('cell_repr', value)
+    if isinstance(value, bytes):
+        value = value.decode('utf-8', "ignore")
+    try:
+        return f"{value:.4f}"
+    except (ValueError, TypeError):
+        return value
+
+
+def ccdc_repr(value: bytes) -> str:
+    if isinstance(value, bytes):
+        value = value.decode('utf-8', "ignore")
+    return value.removeprefix('CCDC ')
+
+
+def size_repr(value: bytes) -> str:
+    # print('size_repr', value)
+    if isinstance(value, bytes):
+        value = value.decode('utf-8')
+    try:
+        return f'{int(value) / (1024 * 1024):.2f}'
+    except (ValueError, TypeError):
+        return value
+
+
+def float_type(value: Union[str, bytes]) -> float:
+    if isinstance(value, bytes):
+        value = value.decode("utf-8", "ignore")
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0
+
+
+def string_type(value: Union[bytes, str]):
+    if isinstance(value, bytes):
+        value = value.decode("utf-8", "ignore")
+    return value.casefold() if isinstance(value, str) else str(value)
+
+
+@dataclass(frozen=False)
+class Column:
+    name: str
+    table: Literal["Structure", "Residuals", "cell"]
+    visible: bool
+    position: int = 0
+    string_method: Callable = default_repr
+    default: bool = False
+    default_position: int = 0
+    data_type: Callable = string_type
+
+    _counter = 1  # Class-level counter to track positions
+
+    def __post_init__(self):
+        """Automatically assign the next available position to the column."""
+        self.position = Column._counter
+        Column._counter += 1  # Increment for the next column
+
+
+class ColumnSources:
+    """
+    List of columns available in the table. The position is one-indexed.
+    """
+
+    dataname: Column = Column(name="Data Name", table="Structure", visible=True,
+                              default=True)
+    filename: Column = Column(name="File Name", table="Structure", visible=True, default=True)
+    modification_time: Column = Column(name="Last Modified", table="Residuals", visible=True, default=True)
+    path: Column = Column(name="Path", table="Structure", visible=True, string_method=pathrepr, default=True)
+    file_size: Column = Column(name="File Size [MB]", table="Residuals", visible=False, string_method=size_repr,
+                               data_type=float_type)
+    a: Column = Column(name="a [Å]", table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    b: Column = Column(name="b [Å]", table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    c: Column = Column(name="c [Å]", table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    alpha: Column = Column(name="alpha [°]", table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    beta: Column = Column(name="beta [°]", table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    gamma: Column = Column(name="gamma [°]", table="cell", visible=False, string_method=cell_repr, data_type=float_type)
+    volume: Column = Column(name="Volume", table="cell", visible=False, string_method=float_one_digit_repr,
+                            data_type=float_type)
+    _cell_formula_units_Z: Column = Column(name="Z Value", table="Residuals", visible=False, data_type=float_type)
+    _space_group_name_H_M_alt: Column = Column(name="Space Group", table="Residuals", visible=False)
+    _space_group_IT_number: Column = Column(name="Space Group Number", table="Residuals", visible=False,
+                                            data_type=float_type)
+    _chemical_formula_sum: Column = Column(name="Formula Sum", table="Residuals", visible=False)
+    _chemical_formula_weight: Column = Column(name="Formula Weight", table="Residuals", visible=False,
+                                              string_method=float_two_digit_repr, data_type=float_type)
+    _refine_ls_R_factor_gt: Column = Column(name="R1 Value", table="Residuals",
+                                            visible=False, string_method=float_two_digit_repr, data_type=float_type)
+    _refine_ls_wR_factor_ref: Column = Column(name="wR2 Value", table="Residuals",
+                                              visible=False, string_method=float_two_digit_repr, data_type=float_type)
+    _exptl_crystal_colour: Column = Column(name="Crystal Color", table="Residuals",
+                                           visible=False)
+    _exptl_crystal_size_max: Column = Column(name="Crystal Size Max", table="Residuals", visible=False,
+                                             data_type=float_type)
+    _exptl_crystal_size_mid: Column = Column(name="Crystal Size Mid", table="Residuals", visible=False,
+                                             data_type=float_type)
+    _exptl_crystal_size_min: Column = Column(name="Crystal Size Min", table="Residuals", visible=False,
+                                             data_type=float_type)
+    _exptl_absorpt_coefficient_mu: Column = Column(name="Absorption [mm–3]", table="Residuals", visible=False,
+                                                   string_method=float_two_digit_repr,
+                                                   data_type=float_type)
+    _diffrn_ambient_temperature: Column = Column(name="Temperature [K]", table="Residuals", visible=False,
+                                                 data_type=float_type)
+    _diffrn_radiation_wavelength: Column = Column(name="Wavelength [Å]", table="Residuals", visible=False,
+                                                  data_type=float_type)
+    _diffrn_source: Column = Column(name="Radiation source", table="Residuals", visible=False)
+    _diffrn_measurement_device_type: Column = Column(name="Measurement Device", table="Residuals", visible=False)
+    _diffrn_reflns_theta_full: Column = Column(name="Theta (full)", table="Residuals", visible=False,
+                                               data_type=float_type)
+    _diffrn_reflns_theta_max: Column = Column(name="Theta (max)", table="Residuals", visible=False,
+                                              data_type=float_type)
+    _diffrn_measured_fraction_theta_max: Column = Column(name="Completeness", table="Residuals",
+                                                         visible=False, data_type=float_type)
+    _reflns_Friedel_coverage: Column = Column(name="Friedel Coverage", table="Residuals", visible=False,
+                                              data_type=float_type)
+    _refine_diff_density_min: Column = Column(name="Density Hole", table="Residuals", visible=False,
+                                              data_type=float_type)
+    _refine_diff_density_max: Column = Column(name="Density Peak", table="Residuals", visible=False,
+                                              data_type=float_type)
+    _refine_ls_shift_su_max: Column = Column(name="Max shift/esd", table="Residuals", visible=False,
+                                             data_type=float_type)
+    _refine_ls_number_restraints: Column = Column(name="Restraints", table="Residuals", visible=False,
+                                                  data_type=float_type)
+    _database_code_depnum_ccdc_archive: Column = Column(name="CCDC Number", table="Residuals", visible=False,
+                                                        string_method=ccdc_repr, data_type=float_type)
+
+    def __init__(self):
+        self.all_column_names = self._all_column_names()
+        self.positions = dict((name, col) for col, name in zip(self.colums_list(), self.all_column_names))
+
+    def reset_defaults(self):
+        for num, colstr in enumerate(self.all_column_names):
+            col: Column = getattr(self, colstr)
+            col.position = num
+            if col.default:
+                col.visible = True
+            else:
+                col.visible = False
+
+    def default_columns(self) -> List[str]:
+        fields = []
+        for attr in self.all_column_names:
+            if self.__getattribute__(attr).default:
+                fields.append(attr)
+        return fields
+
+    def _all_column_names(self) -> List[str]:
+        columns = []
+        for attr in self.__dir__():
+            if isinstance(getattr(self, attr), Column):
+                columns.append(attr)
+        return columns
+
+    def is_visible(self, column: str) -> bool:
+        return getattr(self, column).visible
+
+    def current_columns(self) -> str:
+        visible = {}
+        for colstr in self.all_column_names:
+            col: Column = getattr(self, colstr)
+            if col.visible:
+                visible.update({colstr: col})
+        visible = dict(sorted(visible.items(), key=lambda item: item[1].position))
+        return ', '.join([f'{val.table}.{key}' for key, val in visible.items()])
+
+    def number_of_visible_columns(self) -> int:
+        visible = 0
+        for colstr in self.all_column_names:
+            col: Column = getattr(self, colstr)
+            if col.visible:
+                visible += 1
+        return visible
+
+    def colums_list(self) -> List[Column]:
+        columns = []
+        for col in self.all_column_names:
+            columns.append(getattr(self, col))
+        return columns
+
+    def col_from(self, index: int) -> Union[None, Column]:
+        """
+        Keep in mind that the Id header is not shown, so index must be -=1.
+        """
+        headers = []
+        try:
+            headers = self.visible_headers()
+            return self.positions[headers[index]]
+        except IndexError:
+            print(f'Could not find column {index} in visible headers: {headers}')
+            return None
+
+    def visible_headers(self) -> List[str]:
+        headers = []
+        for colstr in self.all_column_names:
+            col = getattr(self, colstr)
+            if col.visible:
+                headers.append(colstr)
+        return headers
+
+    def visible_header_names(self) -> List[str]:
+        headers = ['Id']
+        for colstr in self.all_column_names:
+            col = getattr(self, colstr)
+            if col.visible:
+                headers.append(col.name)
+        return headers
+
+    def set_visible_headers(self, columns: List[str]) -> None:
+        for colstr in self.all_column_names:
+            col = getattr(self, colstr)
+            if colstr in columns:
+                col.visible = True
+            else:
+                col.visible = False
+
+
+columns = ColumnSources()
+
+
 class DatabaseRequest():
     def __init__(self, dbfile):
         """
@@ -119,7 +359,7 @@ class DatabaseRequest():
         self.dbfile = dbfile
         self.con = connect(dbfile, check_same_thread=False)
         self.con.execute("PRAGMA foreign_keys = ON")
-        ## These make requests faster: ###
+        # These make requests faster:
         self.con.execute("PRAGMA main.journal_mode = MEMORY;")
         self.con.execute("PRAGMA temp.journal_mode = MEMORY;")
         self.con.execute("PRAGMA main.cache_size = -20000;")
@@ -166,7 +406,7 @@ class DatabaseRequest():
             return
         table_size = len(fetchone)
         placeholders = ', '.join('?' * table_size)
-        last_row_id = self.db_fetchone(f"""SELECT max(id) FROM {table_name}""")[0]
+        last_row_id = self.db_fetchone(f"""SELECT max(id) FROM {table_name}""")[0] or 0
         next_id = last_row_id + 1
         # noinspection SqlResolve
         for row in self.con.execute(f"select * FROM dba.{table_name}"):
@@ -485,7 +725,7 @@ class DatabaseRequest():
         Retrurns the last rowid of a loaded database.
         """
         try:
-            return self.db_fetchone("""SELECT max(id) FROM Structure""")[0]
+            return self.db_fetchone("""SELECT max(id) FROM Structure""")[0] or 0
         except (TypeError, IndexError):
             # No database or empty table:
             return 0
@@ -515,20 +755,16 @@ class DatabaseRequest():
             if DEBUG:
                 print('db request:', request, 'args:', args)
             self.cur.execute(request, *args)
-            # last_rowid = self.cur.lastrowid
         except OperationalError as e:
+            self.con.rollback()
             print(e, "\nDB execution error")
             print('Request:', request)
             print('Arguments:', args)
             return []
-        rows = self.cur.fetchall()
-        if not rows:
-            return tuple()
-            # return last_rowid
-        else:
-            return rows
+        return self.cur.fetchall() or tuple()
 
-    def dict_factory(self, cursor, row):
+    @staticmethod
+    def dict_factory(cursor: Cursor, row: Tuple):
         d = {}
         for idx, col in enumerate(cursor.description):
             key = col[0]
@@ -619,27 +855,18 @@ class StructureTable():
         self.database.cur = self.database.con.cursor()
         return rows
 
-    def get_structures_by_idlist(self, ids: Union[List, Tuple]):
-        return self.get_all_structure_names(ids) if ids else []
-
-    def get_all_structure_names(self, ids: list = None) -> List:
-        """
-        returns all fragment names in the database, sorted by name
-        :returns [id, meas, path, filename, data]
-        >>> str = StructureTable('tests/test-data/test.sql')
-        >>> len(str.get_all_structure_names([1, 2]))
-        2
-        """
-        req = '''SELECT str.Id, str.dataname, str.filename, res.modification_time, str.path
-                        FROM Structure AS str 
-                        INNER JOIN Residuals AS res ON res.StructureId == str.Id '''
+    def get_structure_rows_by_ids(self, ids: Union[List, Tuple, None] = None) -> List:
+        query = f"""SELECT Structure.Id, {columns.current_columns()}
+                    FROM Structure 
+                    INNER JOIN Residuals ON Residuals.StructureId = Structure.Id
+                    INNER JOIN cell ON cell.StructureId = Structure.Id
+                """
         if ids:
             ids = tuple(ids)
             placeholders = ', '.join('?' * len(ids))
-            req = req + f''' WHERE str.Id in ({placeholders})'''
-            rows = self.database.db_request(req, ids)
-            return rows
-        return self.database.db_request(req)
+            query = f'''{query} WHERE Structure.Id in ({placeholders})'''
+            return self.database.db_request(query, ids)
+        return self.database.db_request(query)
 
     def get_filepath(self, structure_id) -> str:
         """
@@ -1162,7 +1389,7 @@ class StructureTable():
 
     def get_cif_export_data(self, structure_id):
         try:
-            data_name = bytes(self.get_all_structure_names([structure_id])[0][4]).decode('ascii', 'ignore')
+            data_name = bytes(self.get_structure_rows_by_ids([structure_id])[0][4]).decode('ascii', 'ignore')
         except IndexError:
             data_name = ''
         data_name = data_name.replace(' ', '_')

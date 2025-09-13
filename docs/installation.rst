@@ -17,10 +17,12 @@ Do the following steps in order to install and run StructureFinder in any Python
     >> pip install structurefinder
     >> strf  or strf_cmd  or  strf_web
 
-Next time, only
+For the next start, only
 
 .. code-block::
 
     >> source venv/bin/activate   (Windows: venv\Scripts\activate.bat)
     >> strf  or strf_cmd  or  strf_web
+
 is necessary.
+

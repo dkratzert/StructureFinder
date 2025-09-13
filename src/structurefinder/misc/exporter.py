@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict
 
-import gemmi as gemmi
+import gemmi
 
-from structurefinder.searcher.fileparser import CifFile
+from structurefinder.searcher.cif_file import CifFile
 
 
 def export_to_cif_file(cif: Dict, filename: str):
@@ -36,7 +38,7 @@ def cif_data_to_document(cif: Dict) -> gemmi.cif.Document:
     return doc
 
 
-def write_cif_to_disk(doc, filename):
+def write_cif_to_disk(doc: gemmi.cif.Document, filename: str) -> None:
     doc.write_file(filename, style=gemmi.cif.Style.Indent35)
 
 
@@ -49,7 +51,7 @@ def replace_float_values(val: str) -> str:
     return val
 
 
-def add_loop_to_block(block: 'gemmi.cif.Block', value: List[Dict]) -> None:
+def add_loop_to_block(block: gemmi.cif.Block, value: list[dict]) -> None:
     loop: Dict
     new_loop = None
     current_loop = None

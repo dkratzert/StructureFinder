@@ -1,6 +1,10 @@
 from pathlib import Path
+import sys
 
-from qtpy import uic
+
+
+from PyQt6 import uic
+
 
 
 def fix_comment(pyfile: Path, uifile: Path):

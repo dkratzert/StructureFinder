@@ -9,10 +9,11 @@ rem git restore *
 rem git switch master
 rem git pull
 
-CALL scripts\create_dist.bat
+CALL scripts\_create_dist.bat
 
 CALL venv\Scripts\activate.bat
+rem CALL pip install qtpy
 
-CALL venv\Scripts\python.exe scripts\make_win_release.py
+CALL venv\Scripts\python.exe scripts\_make_win_release.py
 
 CALL venv\Scripts\deactivate.bat

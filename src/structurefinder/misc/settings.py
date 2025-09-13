@@ -1,17 +1,18 @@
 from collections import namedtuple
 from pathlib import Path
 
-from PyQt5.QtCore import QSettings, QPoint, QSize
+from PyQt6 import QtCore
+from PyQt6.QtCore import QSettings, QPoint, QSize
 
 Position = namedtuple('Position', 'size, position, maximized')
 
 
-class StructureFinderSettings():
+class StructureFinderSettings:
     def __init__(self):
         self.software_name = 'StructureFinder'
         self.organization = 'DK'
         self.settings = QSettings(self.organization, self.software_name)
-        self.settings.setDefaultFormat(QSettings.IniFormat)
+        self.settings.setDefaultFormat(QSettings.Format.IniFormat)
 
     def save_current_work_dir(self, dir: str) -> None:
         """
@@ -23,11 +24,18 @@ class StructureFinderSettings():
 
     def load_last_workdir(self) -> str:
         self.settings.beginGroup('WorkDir')
-        lastdir = self.settings.value("dir", type=str)
-        if not Path(lastdir).exists():
-            lastdir = './'
+        last_dir = self.settings.value("dir", type=str)
         self.settings.endGroup()
-        return lastdir
+        last_dir = self._find_dir(last_dir)
+        return last_dir
+
+    def _find_dir(self, last_dir):
+        try:
+            if not Path(last_dir).exists():
+                last_dir = './'
+        except OSError:
+            last_dir = './'
+        return last_dir
 
     def save_current_index_dir(self, dir: str) -> None:
         """
@@ -40,9 +48,8 @@ class StructureFinderSettings():
     def load_last_indexdir(self) -> str:
         self.settings.beginGroup('IndexDir')
         lastdir = self.settings.value("dir", type=str)
-        if not Path(lastdir).exists():
-            lastdir = './'
         self.settings.endGroup()
+        lastdir = self._find_dir(lastdir)
         return lastdir
 
     def save_ccdc_exe_path(self, path: str) -> None:
@@ -61,12 +68,36 @@ class StructureFinderSettings():
         self.settings.endGroup()
         return exe_path
 
+    def load_visible_headers(self) -> list[str]:
+        self.settings.beginGroup("Headers")
+        headers = self.settings.value("visible")
+        # print(f'Loaded headers: {headers}')
+        self.settings.endGroup()
+        return headers or []
+
     def save_window_position(self, position: QPoint, size: QSize, maximized: bool) -> None:
         self.settings.beginGroup("MainWindow")
         self.settings.setValue("position", position)
         self.settings.setValue("size", size)
         self.settings.setValue('maximized', maximized)
         self.settings.endGroup()
+
+    def save_visible_headers(self, columns: list[str]):
+        self.settings.beginGroup("Headers")
+        self.settings.setValue("visible", columns)
+        self.settings.endGroup()
+        # print(f'Saved visible headers: {columns}')
+
+    def save_column_state(self, state: QtCore.QByteArray) -> None:
+        self.settings.beginGroup("Headers")
+        self.settings.setValue("column_order", state)
+        self.settings.endGroup()
+
+    def load_column_state(self) -> QtCore.QByteArray:
+        self.settings.beginGroup("Headers")
+        state: QtCore.QByteArray = self.settings.value("column_order", None)
+        self.settings.endGroup()
+        return state
 
     def load_window_position(self) -> 'Position':
         """

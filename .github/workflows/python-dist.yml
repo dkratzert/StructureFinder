@@ -7,11 +7,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.12
 
       - run: |
           python -m pip install --upgrade pip
@@ -21,24 +21,23 @@ jobs:
           pip install --upgrade build
           python -m build
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./dist
 
   pypi-publish:
     needs: [ 'build' ]
-    environment: 'publish'
-
-    name: upload release to PyPI
+    name: publish
     runs-on: ubuntu-latest
+    environment:
+      name: publish
+      url: https://pypi.org/p/structurefinder
     permissions:
       contents: read
-      # IMPORTANT: this permission is mandatory for trusted publishing
-      id-token: write
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
-      - uses: actions/download-artifact@v3
-
+      - uses: actions/download-artifact@v4
       - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1.8
+        uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: artifact/
