@@ -25,6 +25,8 @@ from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError
 from xml.etree.ElementTree import ParseError
 
+import gemmi
+gemmi.set_leak_warnings(False)
 import gemmi.cif
 import qtawesome as qta
 from PyQt6 import QtCore, QtGui, QtWidgets
