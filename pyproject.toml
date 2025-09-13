@@ -30,12 +30,13 @@ dependencies = [
     "pywin32-ctypes~=0.2",
     "six",
     "requests",
-    "gemmi<0.7.0",
+    "gemmi",
     "gunicorn",
     "xlsxwriter",
     "qtawesome",
     "shelxfile",
     "py7zr",
+    "matplotlib",
 ]
 [project.optional-dependencies]
 devel = [
