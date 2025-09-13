@@ -26,12 +26,15 @@ from sqlite3 import DatabaseError, ProgrammingError
 from xml.etree.ElementTree import ParseError
 
 import gemmi
-gemmi.set_leak_warnings(False)
+
+if hasattr(gemmi, 'set_leak_warnings'):
+    gemmi.set_leak_warnings(False)
 import gemmi.cif
 import qtawesome as qta
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import QDate, QEvent, QItemSelection, QModelIndex, QPoint, Qt, QThread
-from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox, QProgressBar, QPushButton, QTreeWidgetItem
+from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox, QProgressBar, QPushButton, \
+    QTreeWidgetItem
 from shelxfile import Shelxfile
 
 from structurefinder import strf_cmd
