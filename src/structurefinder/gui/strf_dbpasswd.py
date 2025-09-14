@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'D:\_DEV\GitHub\StructureFinder\src\structurefinder\gui\strf_dbpasswd.ui'
+# Form implementation generated from reading ui file '/Users/daniel/Documents/GitHub/StructureFinder/src/structurefinder/gui/strf_dbpasswd.ui'
 #
 # Form implementation generated from reading ui file 'strf_dbpasswd.ui'
 #

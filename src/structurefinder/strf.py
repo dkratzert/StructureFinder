@@ -19,6 +19,8 @@ import time
 import traceback
 from contextlib import suppress
 from datetime import date
+
+import numpy as np
 from math import radians, sin
 from os.path import isfile, samefile
 from pathlib import Path
@@ -26,6 +28,8 @@ from sqlite3 import DatabaseError, ProgrammingError
 from xml.etree.ElementTree import ParseError
 
 import gemmi
+
+from structurefinder.plot.plot_widget import PlotWidget
 
 if hasattr(gemmi, 'set_leak_warnings'):
     gemmi.set_leak_warnings(False)
@@ -55,7 +59,7 @@ from structurefinder.searcher.constants import (
     centering_letter_2_num,
     centering_num_2_letter,
 )
-from structurefinder.searcher.database_handler import columns
+from structurefinder.searcher.database_handler import columns, is_numeric
 from structurefinder.searcher.misc import (
     combine_results,
     elements,
@@ -147,6 +151,9 @@ class StartStructureDB(QMainWindow):
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
+            self.checkfor_version()
+        self.plot = PlotWidget(self)
+        self.ui.plot_area_verticalLayout.addWidget(self.plot)
 
     def set_initial_button_states(self):
         self.ui.appendDatabasePushButton.setDisabled(True)
@@ -208,6 +215,46 @@ class StartStructureDB(QMainWindow):
         # Column menu:
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.show_full_list)
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.save_headers)
+        #plot
+        self.ui.x_axis_plot_comboBox.currentIndexChanged.connect(self.plot_data)
+        self.ui.y_axis_plot_comboBox.currentIndexChanged.connect(self.plot_data)
+        residuals = list(database_handler.residuals)
+        residuals.remove('_shelx_res_file')
+        self.ui.x_axis_plot_comboBox.addItems(residuals)
+        self.ui.y_axis_plot_comboBox.addItems(residuals)
+
+    def to_float(self, value):
+        try:
+            return float(value)
+        except Exception:
+            return None
+
+    def to_int(self, value):
+        try:
+            return int(value)
+        except Exception:
+            return None
+
+    @staticmethod
+    def clean_numeric(data):
+        # Remove None, empty string, or non-numeric values
+        return np.array([v for v in data if isinstance(v, (int, float, np.integer, np.floating)) and v is not None])
+
+    def plot_data(self):
+        if not self.structures:
+            return
+        x_label = self.ui.x_axis_plot_comboBox.currentText()
+        y_label = self.ui.y_axis_plot_comboBox.currentText()
+        print(x_label, y_label)
+        results=self.structures.get_plot_values(x_axis=x_label, y_axis=y_label)
+        results = [t for t in results if all(is_numeric(v) for v in t)]
+        #results = [t for t in results if '' not in t]
+        #results = [t for t in results if None not in t]
+        #results = results[:1000]
+        #results.sort()
+        #print('###2', results, '###2', len(results))
+        #self.plot.plot_points(x=[x[0] for x in results], y=[x[1] for x in results], x_title=x_label, y_title=y_label)
+        self.plot.plot_points(results, x_title=x_label, y_title=y_label)
 
     def save_headers(self):
         self.settings.save_visible_headers(columns.visible_headers())

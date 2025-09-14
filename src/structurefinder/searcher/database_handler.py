@@ -13,6 +13,7 @@ Created on 09.02.2015
 import sys
 from dataclasses import dataclass
 
+import numpy as np
 from math import log
 from pathlib import Path
 from sqlite3 import Cursor, InterfaceError, OperationalError, ProgrammingError, connect
@@ -1417,7 +1418,7 @@ class StructureTable():
         return cif
 
     def get_plot_values(self, x_axis: str, y_axis: str):
-        req = f"SELECT {x_axis}, {y_axis} from Residuals"
+        req = f"SELECT StructureId, {x_axis}, {y_axis} from Residuals"
         result = self.database.db_request(req)
         if result:
             return result
@@ -1425,24 +1426,25 @@ class StructureTable():
             return []
 
 
+def is_numeric(val):
+    return isinstance(val, (int, float, np.integer, np.floating))
+
+
 if __name__ == '__main__':
     from PyQt6 import QtWidgets
-    from structurefinder.plot.plot_example import PlotWidget
+    from structurefinder.plot.plot_widget import PlotWidget
 
     # searcher.filecrawler.put_cifs_in_db(searchpath='../')
-    db = StructureTable('./test.sqlite')
+    db = StructureTable('../cod1.sqlite')
     # f = db.database.db_request("""SELECT name FROM sqlite_master WHERE type='table' AND name='authortxtsearch';""")
     # print(f)
-    x_axis = residuals[5]
-    y_axis = residuals[1]
+    x_axis, y_axis = '_diffrn_reflns_number', '_reflns_number_gt'
     results = db.get_plot_values(x_axis=x_axis, y_axis=y_axis)
-    # results= [(x or 0, y or 0) for x, y in results]
-    results = [t for t in results if '' not in t]
-    results.sort()
-    print(results)
+    results = [t for t in results if all(is_numeric(v) for v in t)]
+    # results.sort()
     app = QtWidgets.QApplication(sys.argv)
     w = PlotWidget()
-    w.plot_points(x=[x[0] for x in results], y=[x[1] for x in results], x_title=x_axis, y_title=y_axis)
+    w.plot_points(results, x_title=x_axis, y_title=y_axis)
     w.show()
     sys.exit(app.exec())
     # db.initialize_db()
