@@ -1,31 +1,18 @@
 import sys
 
 import numpy as np
-from qtpy import QtWidgets
+from PyQt6.QtCore import pyqtSignal
 
 from structurefinder.searcher.database_handler import is_numeric
 
-"""
-Ideas:
-
-* Two comboboxes for x and y values each
-* One x or y may be the db index number
-* Allow point, histogram or pie plot
-* Options to remove empty values or set them to zero
-* Histogram has counts as x axis
-* Each change in the gui replots the data
-* Allow mouse wheel zoom and drag of plot.
-
-Nice to have:
-* Show information about data point on mouse hover
-* 3D plot of three values
-"""
 from qtpy.QtWidgets import QApplication, QWidget, QVBoxLayout
 
 import pyqtgraph as pg
 
 
 class PlotWidget(QWidget):
+    point_clicked = pyqtSignal(int)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         layout = QVBoxLayout(self)
@@ -39,17 +26,23 @@ class PlotWidget(QWidget):
         self.plot_widget.clear()
         results = [t for t in results if all(is_numeric(v) for v in t)]
         spots = []
-        for id, xi, yi in results:
+        for num, xi, yi in results:
             spots.append({'pos'   : (xi, yi),
-                          'data'  : id,
+                          'data'  : num,
                           'symbol': 'o',
                           'size'  : 8,
                           # 'brush' : pg.mkBrush(0, 0, 255, 150)
                           })
         self.scatter = pg.ScatterPlotItem(spots=spots, hoverable=True)
+        self.scatter.sigClicked.connect(self._on_point_clicked)
         self.plot_widget.addItem(self.scatter)
         self.plot_widget.setLabel('bottom', x_title)
         self.plot_widget.setLabel('left', y_title)
+
+    def _on_point_clicked(self, scatter, points):
+        for p in points:
+            row_index = p.data()
+            self.point_clicked.emit(row_index)
 
     def plot_histogram(self, data, bins=10, x_title: str = '', y_title: str = ''):
         self.plot_widget.clear()
@@ -61,7 +54,6 @@ class PlotWidget(QWidget):
         self.plot_widget.addItem(bar_graph)
         self.plot_widget.setLabel('bottom', x_title)
         self.plot_widget.setLabel('left', y_title)
-
 
     def plot_histogram_text(self, data: list[tuple[str, int, int]], x_title: str = '', y_title: str = ''):
         """
@@ -90,13 +82,8 @@ class PlotWidget(QWidget):
             print(f'Error during histogram plot {e}')
             return
 
-        # Set axis labels
         self.plot_widget.setLabel('bottom', x_title)
         self.plot_widget.setLabel('left', y_title)
-
-        # Replace bottom axis ticks with category labels
-        #ax = self.plot_widget.getAxis('bottom')
-        #ax.setTicks([list(zip(x_positions, labels))])
 
 
 if __name__ == "__main__":

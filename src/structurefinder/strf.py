@@ -19,15 +19,14 @@ import time
 import traceback
 from contextlib import suppress
 from datetime import date
-
-import numpy as np
-from math import radians, sin
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError
 from xml.etree.ElementTree import ParseError
 
 import gemmi
+import numpy as np
+from math import radians, sin
 
 from structurefinder.plot.plot_widget import PlotWidget
 
@@ -59,7 +58,7 @@ from structurefinder.searcher.constants import (
     centering_letter_2_num,
     centering_num_2_letter,
 )
-from structurefinder.searcher.database_handler import columns, is_numeric
+from structurefinder.searcher.database_handler import columns
 from structurefinder.searcher.misc import (
     combine_results,
     elements,
@@ -153,6 +152,7 @@ class StartStructureDB(QMainWindow):
             self.checkfor_version()
             self.checkfor_version()
         self.plot = PlotWidget(self)
+        self.plot.point_clicked.connect(self.gotto_structure_id)
         self.ui.plot_area_verticalLayout.addWidget(self.plot)
         self.init_plot_comboboxes()
 
@@ -216,7 +216,7 @@ class StartStructureDB(QMainWindow):
         # Column menu:
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.show_full_list)
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.save_headers)
-        #plot
+        # plot
         self.ui.x_axis_plot_comboBox.currentIndexChanged.connect(self.plot_data)
         self.ui.y_axis_plot_comboBox.currentIndexChanged.connect(self.plot_data)
         self.ui.dotsRadioButton.clicked.connect(self.plot_data)
@@ -229,36 +229,25 @@ class StartStructureDB(QMainWindow):
         self.ui.ddradioButton.clicked.connect(lambda: self.ui.HistogramRadioButton.setChecked(False))
         self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.ddradioButton.setChecked(False))
         self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.dotsRadioButton.setChecked(False))
+        #shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+G"), self)
+        #shortcut.activated.connect(lambda: self.gotto_structure_id(300))
 
     def init_plot_comboboxes(self):
         residuals = list(database_handler.residuals)
         residuals.remove('_shelx_res_file')
+        self.ui.x_axis_plot_comboBox.blockSignals(True)
+        self.ui.y_axis_plot_comboBox.blockSignals(True)
         self.ui.x_axis_plot_comboBox.addItems(residuals)
         self.ui.y_axis_plot_comboBox.addItems(residuals)
-
-    def to_float(self, value):
-        try:
-            return float(value)
-        except Exception:
-            return None
-
-    def to_int(self, value):
-        try:
-            return int(value)
-        except Exception:
-            return None
-
-    @staticmethod
-    def clean_numeric(data):
-        # Remove None, empty string, or non-numeric values
-        return [v for v in data if isinstance(v, (int, float, np.integer, np.floating)) and v is not None]
+        self.ui.x_axis_plot_comboBox.blockSignals(False)
+        self.ui.y_axis_plot_comboBox.blockSignals(False)
 
     def plot_data(self):
         if not self.structures:
             return
         x_label = self.ui.x_axis_plot_comboBox.currentText()
         y_label = self.ui.y_axis_plot_comboBox.currentText()
-        results=self.structures.get_plot_values(x_axis=x_label, y_axis=y_label)
+        results = self.structures.get_plot_values(x_axis=x_label, y_axis=y_label)
         if self.ui.dotsRadioButton.isChecked():
             print('plotting points')
             self.plot.plot_points(results, x_title=x_label, y_title=y_label)
@@ -297,6 +286,19 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_tableView.hideColumn(0)
         self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
         self.ui.cifList_tableView.resizeColumnToContents(3)
+
+    def gotto_structure_id(self, value: int):
+        table = self.ui.cifList_tableView
+        model = table.model()
+        vheader = table.verticalHeader()
+        for row in range(model.rowCount()):
+            header_value = vheader.model().headerData(row, QtCore.Qt.Orientation.Vertical)
+            if int(header_value) == int(value):
+                idx = model.index(row, 0)
+                table.scrollTo(idx)
+                table.selectRow(row)
+                print(f"Scrolled to row {row} (vertical header {value})")
+                return
 
     def recount(self):
         if hasattr(self, 'table_model'):
