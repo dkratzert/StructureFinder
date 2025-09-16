@@ -1436,15 +1436,22 @@ if __name__ == '__main__':
 
     # searcher.filecrawler.put_cifs_in_db(searchpath='../')
     db = StructureTable('../cod1.sqlite')
+    db = StructureTable('test.sqlite')
     # f = db.database.db_request("""SELECT name FROM sqlite_master WHERE type='table' AND name='authortxtsearch';""")
     # print(f)
-    x_axis, y_axis = '_diffrn_reflns_number', '_reflns_number_gt'
+    x_axis, y_axis = 'StructureId', '_cell_formula_units_Z'
+    #'_diffrn_reflns_number', '_reflns_number_gt'
+    # StructureId
+    # _cell_formula_units_Z
+    # _space_group_IT_number
     results = db.get_plot_values(x_axis=x_axis, y_axis=y_axis)
     results = [t for t in results if all(is_numeric(v) for v in t)]
     # results.sort()
     app = QtWidgets.QApplication(sys.argv)
     w = PlotWidget()
-    w.plot_points(results, x_title=x_axis, y_title=y_axis)
+    # w.plot_points(results, x_title=x_axis, y_title=y_axis)
+    print(results)
+    w.plot_histogram(results, x_title=x_axis, y_title=y_axis, bins=max(len(results) // 100, 20))
     w.show()
     sys.exit(app.exec())
     # db.initialize_db()

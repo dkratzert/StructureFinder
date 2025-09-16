@@ -154,6 +154,7 @@ class StartStructureDB(QMainWindow):
             self.checkfor_version()
         self.plot = PlotWidget(self)
         self.ui.plot_area_verticalLayout.addWidget(self.plot)
+        self.init_plot_comboboxes()
 
     def set_initial_button_states(self):
         self.ui.appendDatabasePushButton.setDisabled(True)
@@ -218,6 +219,18 @@ class StartStructureDB(QMainWindow):
         #plot
         self.ui.x_axis_plot_comboBox.currentIndexChanged.connect(self.plot_data)
         self.ui.y_axis_plot_comboBox.currentIndexChanged.connect(self.plot_data)
+        self.ui.dotsRadioButton.clicked.connect(self.plot_data)
+        self.ui.HistogramRadioButton.clicked.connect(self.plot_data)
+        self.ui.ddradioButton.hide()
+        self.ui.ddradioButton.clicked.connect(self.plot_data)
+        self.ui.dotsRadioButton.clicked.connect(lambda: self.ui.ddradioButton.setChecked(False))
+        self.ui.dotsRadioButton.clicked.connect(lambda: self.ui.HistogramRadioButton.setChecked(False))
+        self.ui.ddradioButton.clicked.connect(lambda: self.ui.dotsRadioButton.setChecked(False))
+        self.ui.ddradioButton.clicked.connect(lambda: self.ui.HistogramRadioButton.setChecked(False))
+        self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.ddradioButton.setChecked(False))
+        self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.dotsRadioButton.setChecked(False))
+
+    def init_plot_comboboxes(self):
         residuals = list(database_handler.residuals)
         residuals.remove('_shelx_res_file')
         self.ui.x_axis_plot_comboBox.addItems(residuals)
@@ -238,23 +251,23 @@ class StartStructureDB(QMainWindow):
     @staticmethod
     def clean_numeric(data):
         # Remove None, empty string, or non-numeric values
-        return np.array([v for v in data if isinstance(v, (int, float, np.integer, np.floating)) and v is not None])
+        return [v for v in data if isinstance(v, (int, float, np.integer, np.floating)) and v is not None]
 
     def plot_data(self):
         if not self.structures:
             return
         x_label = self.ui.x_axis_plot_comboBox.currentText()
         y_label = self.ui.y_axis_plot_comboBox.currentText()
-        print(x_label, y_label)
         results=self.structures.get_plot_values(x_axis=x_label, y_axis=y_label)
-        results = [t for t in results if all(is_numeric(v) for v in t)]
-        #results = [t for t in results if '' not in t]
-        #results = [t for t in results if None not in t]
-        #results = results[:1000]
-        #results.sort()
-        #print('###2', results, '###2', len(results))
-        #self.plot.plot_points(x=[x[0] for x in results], y=[x[1] for x in results], x_title=x_label, y_title=y_label)
-        self.plot.plot_points(results, x_title=x_label, y_title=y_label)
+        if self.ui.dotsRadioButton.isChecked():
+            print('plotting points')
+            self.plot.plot_points(results, x_title=x_label, y_title=y_label)
+        elif self.ui.HistogramRadioButton.isChecked():
+            print('plotting histogram')
+            self.plot.plot_histogram_text(results, x_title=x_label, y_title=y_label)
+        elif self.ui.ddradioButton.isChecked():
+            print('plotting 3D')
+            pass
 
     def save_headers(self):
         self.settings.save_visible_headers(columns.visible_headers())

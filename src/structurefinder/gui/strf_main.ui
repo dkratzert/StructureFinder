@@ -3408,21 +3408,24 @@ p, li { white-space: pre-wrap; }
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_14">
                  <item>
-                  <widget class="QRadioButton" name="radioButton">
+                  <widget class="QRadioButton" name="dotsRadioButton">
                    <property name="text">
                     <string>Dots</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QRadioButton" name="radioButton_2">
+                  <widget class="QRadioButton" name="HistogramRadioButton">
                    <property name="text">
                     <string>Histogram</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QRadioButton" name="radioButton_3">
+                  <widget class="QRadioButton" name="ddradioButton">
                    <property name="text">
                     <string>3D</string>
                    </property>
