@@ -173,7 +173,7 @@ def string_type(value: Union[bytes, str]):
 @dataclass(frozen=False)
 class Column:
     name: str
-    table: Literal["Structure", "Residuals", "cell"]
+    table: Literal["Structure", "Residuals", "cell", "authors"]
     visible: bool
     position: int = 0
     string_method: Callable = default_repr
@@ -255,6 +255,15 @@ class ColumnSources:
                                                   data_type=float_type)
     _database_code_depnum_ccdc_archive: Column = Column(name="CCDC Number", table="Residuals", visible=False,
                                                         string_method=ccdc_repr, data_type=float_type)
+    _audit_author_name: Column = Column(name="CIF Author", table="authors", visible=False, data_type=string_type)
+    _audit_contact_author_name: Column = Column(name="CIF contact author", table="authors", visible=False,
+                                                data_type=string_type)
+    _publ_author_name: Column = Column(name="Publ  author", table="authors", visible=False,
+                                       data_type=string_type)
+    _publ_contact_author_name: Column = Column(name="Publ contact author name", table="authors", visible=False,
+                                               data_type=string_type)
+    _publ_contact_author: Column = Column(name="Publ contact author", table="authors", visible=False,
+                                          data_type=string_type)
 
     def __init__(self):
         self.all_column_names = self._all_column_names()
@@ -858,6 +867,7 @@ class StructureTable():
                     FROM Structure 
                     INNER JOIN Residuals ON Residuals.StructureId = Structure.Id
                     INNER JOIN cell ON cell.StructureId = Structure.Id
+                    INNER JOIN authors ON authors.StructureId = Structure.Id 
                 """
         if ids:
             ids = tuple(ids)
@@ -1440,7 +1450,7 @@ if __name__ == '__main__':
     # f = db.database.db_request("""SELECT name FROM sqlite_master WHERE type='table' AND name='authortxtsearch';""")
     # print(f)
     x_axis, y_axis = 'StructureId', '_cell_formula_units_Z'
-    #'_diffrn_reflns_number', '_reflns_number_gt'
+    # '_diffrn_reflns_number', '_reflns_number_gt'
     # StructureId
     # _cell_formula_units_Z
     # _space_group_IT_number
