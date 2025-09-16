@@ -1418,7 +1418,7 @@ class StructureTable():
         return cif
 
     def get_plot_values(self, x_axis: str, y_axis: str):
-        req = f"SELECT StructureId, {x_axis}, {y_axis} from Residuals"
+        req = f"SELECT Id, {x_axis}, {y_axis} from Residuals"
         result = self.database.db_request(req)
         if result:
             return result

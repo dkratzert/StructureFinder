@@ -297,7 +297,6 @@ class StartStructureDB(QMainWindow):
                 idx = model.index(row, 0)
                 table.scrollTo(idx)
                 table.selectRow(row)
-                print(f"Scrolled to row {row} (vertical header {value})")
                 return
 
     def recount(self):

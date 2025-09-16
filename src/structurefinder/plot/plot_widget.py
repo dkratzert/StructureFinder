@@ -89,6 +89,6 @@ class PlotWidget(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     w = PlotWidget()
-    w.plot_points2([(1, 0.2, 1), (2, 0.3, 2), (3, 0.8, 3), (0.99, 0.99, 4)], 'x_axe', 'y-axe')
+    w.plot_points([(1, 0.2, 1), (2, 0.3, 2), (3, 0.8, 3), (0.99, 0.99, 4)], 'x_axe', 'y-axe')
     w.show()
     sys.exit(app.exec())
