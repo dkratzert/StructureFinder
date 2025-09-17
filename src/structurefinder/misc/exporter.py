@@ -8,12 +8,12 @@ import gemmi
 from structurefinder.searcher.cif_file import CifFile
 
 
-def export_to_cif_file(cif: Dict, filename: str):
+def export_to_cif_file(cif: dict, filename: str):
     doc = cif_data_to_document(cif)
     write_cif_to_disk(doc, filename)
 
 
-def cif_data_to_document(cif: Dict) -> gemmi.cif.Document:
+def cif_data_to_document(cif: dict) -> gemmi.cif.Document:
     doc: gemmi.cif.Document = gemmi.cif.Document()
     title = 'exported_from_structurefinder_{}'.format(cif['data'])
     block: gemmi.cif.Block = doc.add_new_block(title)
@@ -39,7 +39,9 @@ def cif_data_to_document(cif: Dict) -> gemmi.cif.Document:
 
 
 def write_cif_to_disk(doc: gemmi.cif.Document, filename: str) -> None:
-    doc.write_file(filename, style=gemmi.cif.Style.Indent35)
+    options = gemmi.cif.WriteOptions()
+    options.align_pairs = 35
+    doc.write_file(filename, options=options)
 
 
 def replace_float_values(val: str) -> str:
@@ -52,7 +54,7 @@ def replace_float_values(val: str) -> str:
 
 
 def add_loop_to_block(block: gemmi.cif.Block, value: list[dict]) -> None:
-    loop: Dict
+    loop: dict
     new_loop = None
     current_loop = None
     for loop in value:
@@ -61,12 +63,10 @@ def add_loop_to_block(block: gemmi.cif.Block, value: list[dict]) -> None:
             new_loop = block.init_loop('', list(loop.keys()))
             new_loop.add_row(row)
             current_loop = loop.keys()
+        elif loop.keys() == current_loop:
+            new_loop.add_row(row)
         else:
-            if loop.keys() == current_loop:
-                new_loop.add_row(row)
-            else:
-                current_loop = None
-    return None
+            current_loop = None
 
 
 if __name__ == '__main__':
@@ -79,6 +79,6 @@ if __name__ == '__main__':
         except ValueError:
             continue
         cifok = cif.parsefile(doc)
-        export_to_cif_file(cif.cif_data, 'test{}.cif'.format(num))
+        export_to_cif_file(cif.cif_data, f'test{num}.cif')
         # if num == 2:
         #    break
