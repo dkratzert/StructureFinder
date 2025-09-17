@@ -92,3 +92,4 @@ vc_redist.x64.exe
 /src/structurefinder.egg-info
 /scripts/starter/structurefinder/x64
 testru.sqlite
+test_res_cif.sqlite

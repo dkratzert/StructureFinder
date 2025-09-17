@@ -1,5 +1,6 @@
 StructureFinder Changelog
 -------------------------
+* v83 Added plotting of table data. 
 * v82 Improved internal structure of the indexer. This made it slightly faster and better maintainable.
       Option to disable indexing from .zip etc. archives added. Doesn't crash with CIF files where the element name
       has a charge like O2- anymore. Added .7zip file support. Better support for unusual .res files.

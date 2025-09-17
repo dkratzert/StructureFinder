@@ -15,8 +15,8 @@ class TestDatabase(unittest.TestCase):
 
     def test_column(self):
         c = database_handler.Column(name='foo', table='Structure', visible=True)
-        # This is initialized after all other columns, therefore 38:
-        assert c.position == 38
+        # This is initialized after all other columns, therefore 43:
+        assert c.position == 43
 
     def test_column_sources(self):
         columns = database_handler.columns

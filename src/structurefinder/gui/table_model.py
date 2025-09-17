@@ -1,4 +1,4 @@
-from typing import Any, Union, List
+from typing import Any
 
 from PyQt6 import QtCore
 from PyQt6.QtCore import QModelIndex, Qt
@@ -12,13 +12,13 @@ archives = tuple([x.replace("*", "") for x in structurefinder.searcher.constants
 class TableModel(QtCore.QAbstractTableModel):
     def __init__(self, structures=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._data: List[List[str]] = structures or []
+        self._data: list[list[str]] = structures or []
 
     @property
     def horizontalHeaders(self):
         return columns.visible_header_names()
 
-    def data(self, index: QModelIndex, role: int = None) -> Union[str, None]:
+    def data(self, index: QModelIndex, role: int | None = None) -> str | None:
         if not index.isValid() or role != QtCore.Qt.ItemDataRole.DisplayRole:
             return None
         row, col = index.row(), index.column()
@@ -28,6 +28,7 @@ class TableModel(QtCore.QAbstractTableModel):
             return colmethod.string_method(value)
         if col == 0:
             return value
+        return None
 
     def setHeaderData(self, section, orientation, data, role=Qt.ItemDataRole.EditRole):
         if orientation == Qt.Orientation.Horizontal and role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
@@ -62,7 +63,7 @@ class TableModel(QtCore.QAbstractTableModel):
         else:
             return 0
 
-    def setData(self, index: QModelIndex, value: Any, role: int = None) -> bool:
+    def setData(self, index: QModelIndex, value: Any, role: int | None = None) -> bool:
         row, col = index.row(), index.column()
         if not index:
             return False

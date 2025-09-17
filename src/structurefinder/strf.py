@@ -19,13 +19,16 @@ import time
 import traceback
 from contextlib import suppress
 from datetime import date
-from math import radians, sin
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError
 from xml.etree.ElementTree import ParseError
 
 import gemmi
+import numpy as np
+from math import radians, sin
+
+from structurefinder.plot.plot_widget import PlotWidget
 
 if hasattr(gemmi, 'set_leak_warnings'):
     gemmi.set_leak_warnings(False)
@@ -67,21 +70,6 @@ from structurefinder.searcher.search_worker import SearchWorker
 
 DEBUG = False
 
-"""
-TODO:
-- Use ultra fast file walk for Windows:
-  https://github.com/githubrobbi/Ultra-Fast-Walk-in-NIM
-  nim c -d:danger --app:lib --opt:speed --gc:markAndSweep --out:ultra_fast_walk.pyd ultra_fast_walk.nim
-  import ultra_fast_walk as ufw
-  p = ufw.walker(folderpath= "C:/", extensions=[".res"], yieldfiles=False)
-- add options
-- Use spellfix for text search: https://www.sqlite.org/spellfix1.html
-
-Search for:
-- compare  molecules https://groups.google.com/forum/#!msg/networkx-discuss/gC_-Wc0bRWw/ISRZYFsPCQAJ
-  - search algorithms
-  http://chemmine.ucr.edu/help/#similarity, https://en.wikipedia.org/wiki/Jaccard_index
-"""
 # This is to make sure that strf finds the application path even when it is
 # executed from another path e.g. when opened via "open file" in windows:
 if getattr(sys, 'frozen', False):
@@ -147,6 +135,11 @@ class StartStructureDB(QMainWindow):
         self.ui.SumformLabel.setMinimumWidth(self.ui.reflTotalLineEdit.width())
         if "PYTEST_CURRENT_TEST" not in os.environ:
             self.checkfor_version()
+            self.checkfor_version()
+        self.plot = PlotWidget(self)
+        self.plot.point_clicked.connect(self.gotto_structure_id)
+        self.ui.plot_area_verticalLayout.addWidget(self.plot)
+        self.init_plot_comboboxes()
 
     def set_initial_button_states(self):
         self.ui.appendDatabasePushButton.setDisabled(True)
@@ -208,6 +201,48 @@ class StartStructureDB(QMainWindow):
         # Column menu:
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.show_full_list)
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.save_headers)
+        # plot
+        self.ui.x_axis_plot_comboBox.currentIndexChanged.connect(self.plot_data)
+        self.ui.y_axis_plot_comboBox.currentIndexChanged.connect(self.plot_data)
+        self.ui.dotsRadioButton.clicked.connect(self.plot_data)
+        self.ui.HistogramRadioButton.clicked.connect(self.plot_data)
+        self.ui.ddradioButton.hide()
+        self.ui.z_axis_plot_comboBox.hide()
+        self.ui.ddradioButton.clicked.connect(self.plot_data)
+        self.ui.dotsRadioButton.clicked.connect(lambda: self.ui.ddradioButton.setChecked(False))
+        self.ui.dotsRadioButton.clicked.connect(lambda: self.ui.HistogramRadioButton.setChecked(False))
+        self.ui.ddradioButton.clicked.connect(lambda: self.ui.dotsRadioButton.setChecked(False))
+        self.ui.ddradioButton.clicked.connect(lambda: self.ui.HistogramRadioButton.setChecked(False))
+        self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.ddradioButton.setChecked(False))
+        self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.dotsRadioButton.setChecked(False))
+        #shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+G"), self)
+        #shortcut.activated.connect(lambda: self.gotto_structure_id(300))
+
+    def init_plot_comboboxes(self):
+        residuals = list(database_handler.residuals)
+        residuals.remove('_shelx_res_file')
+        self.ui.x_axis_plot_comboBox.blockSignals(True)
+        self.ui.y_axis_plot_comboBox.blockSignals(True)
+        self.ui.x_axis_plot_comboBox.addItems(residuals)
+        self.ui.y_axis_plot_comboBox.addItems(residuals)
+        self.ui.x_axis_plot_comboBox.blockSignals(False)
+        self.ui.y_axis_plot_comboBox.blockSignals(False)
+
+    def plot_data(self):
+        if not self.structures:
+            return
+        x_label = self.ui.x_axis_plot_comboBox.currentText()
+        y_label = self.ui.y_axis_plot_comboBox.currentText()
+        results = self.structures.get_plot_values(x_axis=x_label, y_axis=y_label)
+        if self.ui.dotsRadioButton.isChecked():
+            print('plotting points')
+            self.plot.plot_points(results, x_title=x_label, y_title=y_label)
+        elif self.ui.HistogramRadioButton.isChecked():
+            print('plotting histogram')
+            self.plot.plot_histogram_text(results, x_title=x_label, y_title=y_label)
+        elif self.ui.ddradioButton.isChecked():
+            print('plotting 3D')
+            pass
 
     def save_headers(self):
         self.settings.save_visible_headers(columns.visible_headers())
@@ -237,6 +272,18 @@ class StartStructureDB(QMainWindow):
         self.ui.cifList_tableView.hideColumn(0)
         self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
         self.ui.cifList_tableView.resizeColumnToContents(3)
+
+    def gotto_structure_id(self, value: int):
+        table = self.ui.cifList_tableView
+        model = table.model()
+        vheader = table.verticalHeader()
+        for row in range(model.rowCount()):
+            header_value = vheader.model().headerData(row, QtCore.Qt.Orientation.Vertical)
+            if int(header_value) == int(value):
+                idx = model.index(row, 0)
+                table.scrollTo(idx)
+                table.selectRow(row)
+                return
 
     def recount(self):
         if hasattr(self, 'table_model'):

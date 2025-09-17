@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 """
 Created on 09.02.2015
 
@@ -73,7 +72,7 @@ def add_atoms(cif, structure_id, structures):
                 sum_formula_dict[at.type] += occu
             else:
                 sum_formula_dict[at.type] = occu
-        except KeyError as e:
+        except KeyError:
             # print(at, structure_id, e)
             pass
     return sum_formula_dict
@@ -156,7 +155,7 @@ def fill_db_with_res_data(res: Shelxfile, result: Result, structure_id: int, str
                 cif.cif_data["_space_group_name_H-M_alt"] = spgr.short_name()
                 cif.cif_data['_space_group_IT_number'] = spgr.number
                 cif.cif_data["_space_group_centring_type"] = spgr.centring_type()
-        except RuntimeError as e:
+        except RuntimeError:
             # print(e, filename)
             pass
     if res.space_group and not cif.cif_data["_space_group_name_H-M_alt"]:

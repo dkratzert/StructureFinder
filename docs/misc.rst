@@ -6,6 +6,14 @@ The database format is just plain sqlite (`http://www.sqlite.org/ <http://www.sq
 You can view the database structure with the
 sqlitebrowser (`http://sqlitebrowser.org/ <http://sqlitebrowser.org/>`_) for example.
 
+
+Plotting of data
+================
+
+The "Plot" tab allows plotting of CIF data as ponts or histogram.
+A click on a data point scrolls the main table to the respective position of the CIF entry.
+
+
 CSD search
 ==========
 

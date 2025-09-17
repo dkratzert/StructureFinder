@@ -1,5 +1,5 @@
+from __future__ import annotations
 import sys
-from typing import Union
 
 from PyQt6 import QtWidgets, QtGui, QtCore
 from PyQt6.QtCore import Qt, pyqtSignal
@@ -12,7 +12,7 @@ from structurefinder.searcher.database_handler import columns
 class CustomHorizontalHeaderView(QtWidgets.QHeaderView):
     columns_changed = pyqtSignal(str)
 
-    def __init__(self, parent: 'StructuresListTableView'):
+    def __init__(self, parent: StructuresListTableView):
         super().__init__(QtCore.Qt.Orientation.Horizontal, parent)
         self.table = parent
         self.available_columns = columns.all_column_names
@@ -92,7 +92,7 @@ class StructuresListTableView(QtWidgets.QTableView):
     def _on_save_excel(self):
         self.save_excel_triggered.emit()
 
-    def get_field_content(self, row: int, col: int) -> Union[str, int]:
+    def get_field_content(self, row: int, col: int) -> str | int:
         model = self.model()
         source_index = model.index(row, col)
         content = model.data(source_index)
