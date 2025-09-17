@@ -138,7 +138,7 @@ def find_cell(args: Namespace):
         print(no_result)
         sys.exit()
     else:
-        print('\n{} Structures found:'.format(len(idlist)))
+        print(f'\n{len(idlist)} Structures found:')
         columns.modification_time.visible = True
         columns.file_size.visible = True
         searchresult = structures.get_structure_rows_by_ids(idlist)
@@ -153,7 +153,7 @@ def find_cell(args: Namespace):
 
 def run_index(args: Namespace = None):
     if not args:
-        print('')
+        print()
     else:
         fill_cif = args.fillcif
         file_res = args.fillres
@@ -199,8 +199,7 @@ def run_index(args: Namespace = None):
                                 archive_count += 1
                     if total_files % 100 == 0:
                         print(f'\r{total_files:,} files found so far.', flush=True, end='')
-                else:
-                    print('\r\b', end='', flush=True)
+                print('\r\b', end='', flush=True)
             except OSError as e:
                 print(f"Unable to collect files: in path '{p}'")
                 print(e)
@@ -275,11 +274,14 @@ def process_res(lastid: int, result: Result, structures: StructureTable) -> bool
             print(f"Could not parse (.res): {result.file_type}")
         return False
     if res:
-        with suppress(Exception):
+        try:
             if not fill_db_with_res_data(res, result=result, structure_id=lastid, structures=structures):
-                if DEBUG:
-                    print('res file not added:', result.file_path, result.filename)
+                print('.res file not added:', result.file_path, result.filename)
                 return False
+        except Exception:
+            if DEBUG:
+                print('res file not added:', result.file_path, result.filename)
+            return False
     return True
 
 

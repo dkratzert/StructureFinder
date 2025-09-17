@@ -40,7 +40,7 @@ class TestApplication(unittest.TestCase):
     def tearDown(self) -> None:
         self.myapp.close()
 
-    def get_row_content(self, row: int, col: int) -> Union[str, int]:
+    def get_row_content(self, row: int, col: int) -> str | int:
         model = self.myapp.table_model
         source_index = model.index(row, col)
         row_content = model.data(source_index)

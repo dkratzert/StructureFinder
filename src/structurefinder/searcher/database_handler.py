@@ -794,7 +794,7 @@ class DatabaseRequest:
             print('Request:', request)
             print('Arguments:', args)
             return []
-        return self.cur.fetchall() or tuple()
+        return self.cur.fetchall() or ()
 
     @staticmethod
     def dict_factory(cursor: Cursor, row: tuple):
@@ -1125,7 +1125,7 @@ class StructureTable:
                                       _publ_contact_author_name,
                                       _publ_contact_author,
                                       _publ_author_name)
-                 VALUES (?, ?, ?, ?, ?, ?) \
+                 VALUES (?, ?, ?, ?, ?, ?)
               '''
         self.database.db_request(req, (structure_id,
                                        cif.cif_data.get('_audit_author_name'),
@@ -1287,7 +1287,7 @@ class StructureTable:
         req = """
               SELECT StructureId
               FROM Residuals
-              WHERE _database_code_depnum_ccdc_archive LIKE ? \
+              WHERE _database_code_depnum_ccdc_archive LIKE ? 
               """
         result = self.database.db_request(req, ('%' + ccdc + '%',))
         return self.result_to_list(result)
@@ -1304,7 +1304,7 @@ class StructureTable:
               WHERE filename MATCH ?
                  OR dataname MATCH ?
                  OR path MATCH ?
-                 OR shelx_res_file MATCH ? \
+                 OR shelx_res_file MATCH ? 
               '''
         try:
             res = self.database.db_request(req, (text, text, text, text))
@@ -1420,7 +1420,7 @@ class StructureTable:
               SELECT StructureId
               FROM Residuals
               WHERE _refine_ls_R_factor_gt <= ?
-                 OR _refine_ls_R_factor_all <= ? \
+                 OR _refine_ls_R_factor_all <= ? 
               """
         return self.result_to_list(self.database.db_request(req, (rvalue, rvalue)))
 

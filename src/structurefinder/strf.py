@@ -70,21 +70,6 @@ from structurefinder.searcher.search_worker import SearchWorker
 
 DEBUG = False
 
-"""
-TODO:
-- Use ultra fast file walk for Windows:
-  https://github.com/githubrobbi/Ultra-Fast-Walk-in-NIM
-  nim c -d:danger --app:lib --opt:speed --gc:markAndSweep --out:ultra_fast_walk.pyd ultra_fast_walk.nim
-  import ultra_fast_walk as ufw
-  p = ufw.walker(folderpath= "C:/", extensions=[".res"], yieldfiles=False)
-- add options
-- Use spellfix for text search: https://www.sqlite.org/spellfix1.html
-
-Search for:
-- compare  molecules https://groups.google.com/forum/#!msg/networkx-discuss/gC_-Wc0bRWw/ISRZYFsPCQAJ
-  - search algorithms
-  http://chemmine.ucr.edu/help/#similarity, https://en.wikipedia.org/wiki/Jaccard_index
-"""
 # This is to make sure that strf finds the application path even when it is
 # executed from another path e.g. when opened via "open file" in windows:
 if getattr(sys, 'frozen', False):
