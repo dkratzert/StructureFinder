@@ -276,7 +276,7 @@ def process_res(lastid: int, result: Result, structures: StructureTable) -> bool
     if res:
         try:
             if not fill_db_with_res_data(res, result=result, structure_id=lastid, structures=structures):
-                print('.res file not added:', result.file_path, result.filename)
+                # print('.res file not added:', result.file_path, result.filename)
                 return False
         except Exception:
             if DEBUG:
