@@ -894,11 +894,11 @@ class StructureTable:
             columns._publ_contact_author.visible = False
         query = f"""SELECT Structure.Id, {columns.current_columns()}
                     FROM Structure 
-                    INNER JOIN Residuals ON Residuals.StructureId = Structure.Id
-                    INNER JOIN cell ON cell.StructureId = Structure.Id
+                    LEFT JOIN Residuals ON Residuals.StructureId = Structure.Id
+                    LEFT JOIN cell ON cell.StructureId = Structure.Id
                 """
         if authors_exists:
-            query = query + """INNER JOIN authors ON authors.StructureId = Structure.Id"""
+            query = query + """LEFT JOIN authors ON authors.StructureId = Structure.Id"""
         if ids:
             ids = tuple(ids)
             placeholders = ', '.join('?' * len(ids))
