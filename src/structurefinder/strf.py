@@ -222,6 +222,7 @@ class StartStructureDB(QMainWindow):
         self.ui.dotsRadioButton.clicked.connect(self.plot_data)
         self.ui.HistogramRadioButton.clicked.connect(self.plot_data)
         self.ui.ddradioButton.hide()
+        self.ui.z_axis_plot_comboBox.hide()
         self.ui.ddradioButton.clicked.connect(self.plot_data)
         self.ui.dotsRadioButton.clicked.connect(lambda: self.ui.ddradioButton.setChecked(False))
         self.ui.dotsRadioButton.clicked.connect(lambda: self.ui.HistogramRadioButton.setChecked(False))
