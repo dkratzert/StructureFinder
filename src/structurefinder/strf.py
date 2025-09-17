@@ -680,17 +680,17 @@ class StartStructureDB(QMainWindow):
         """
         self.tmpfile = True
         self.statusBar().showMessage('')
-        if not append:
-            self.close_db()
-            self.start_db()
-        self.progressbar(1, 0, 20)
-        self.abort_import_button.show()
         if not startdir:
             startdir = self.get_startdir_from_dialog()
         if not startdir:
             self.progress.hide()
             self.abort_import_button.hide()
             return
+        if not append:
+            self.close_db()
+            self.start_db()
+        self.progressbar(1, 0, 20)
+        self.abort_import_button.show()
         self.ui.importDirButton.setDisabled(True)
         self.ui.appendDirButton.setDisabled(True)
         self.ui.closeDatabaseButton.setDisabled(True)
