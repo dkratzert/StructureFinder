@@ -19,14 +19,13 @@ import time
 import traceback
 from contextlib import suppress
 from datetime import date
+from math import radians, sin
 from os.path import isfile, samefile
 from pathlib import Path
 from sqlite3 import DatabaseError, ProgrammingError
 from xml.etree.ElementTree import ParseError
 
 import gemmi
-import numpy as np
-from math import radians, sin
 
 from structurefinder.plot.plot_widget import PlotWidget
 
@@ -216,8 +215,8 @@ class StartStructureDB(QMainWindow):
         self.ui.ddradioButton.clicked.connect(lambda: self.ui.HistogramRadioButton.setChecked(False))
         self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.ddradioButton.setChecked(False))
         self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.dotsRadioButton.setChecked(False))
-        #shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+G"), self)
-        #shortcut.activated.connect(lambda: self.gotto_structure_id(300))
+        # shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+G"), self)
+        # shortcut.activated.connect(lambda: self.gotto_structure_id(300))
 
     def init_plot_comboboxes(self):
         residuals = list(database_handler.residuals)
@@ -356,7 +355,7 @@ class StartStructureDB(QMainWindow):
             box = QMessageBox()
             box.setTextFormat(Qt.TextFormat.AutoText)
             box.setWindowTitle(" ")
-            box.setTextInteractionFlags(Qt.TextFlag.TextBrowserInteraction)
+            box.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
             if sys.platform.startswith("win"):
                 warn_text += r"<br><br>Updating now will end all running StructureFinder programs!"
                 update_button = box.addButton('Update Now', QMessageBox.ButtonRole.AcceptRole)
