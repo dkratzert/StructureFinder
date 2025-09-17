@@ -5,10 +5,9 @@ import sys
 from argparse import ArgumentParser
 from pathlib import Path
 from shutil import which
-from typing import Dict, List, Tuple, Union
 from xml.etree.ElementTree import ParseError
 
-from gemmi.cif import Style
+import gemmi
 
 from structurefinder.ccdc.query import get_cccsd_path, parse_results, search_csd
 from structurefinder.displaymol.mol_file_writer import MolFile
@@ -62,14 +61,13 @@ if pyver[0] == 3 and pyver[1] < 4:
     print("You need Python 3.4 and up in oder to run this program!")
     sys.exit()
 
-from structurefinder.cgi_ui.bottle import (  # noqa: E402
+from structurefinder.cgi_ui.bottle import (
     Bottle,
     HTTPResponse,
     redirect,
     request,
     response,
-    static_file,
-    template,
+    static_file, template,
 )
 
 app = application = Bottle()
@@ -94,9 +92,9 @@ def main():
     data = {"my_ip"        : site_ip,
             "title"        : 'StructureFinder',
             'host'         : host,
-            'download_link': r"""<p><a href="http://{}/dbfile.sqlite" download="structurefinder.sqlite" 
+            'download_link': rf"""<p><a href="http://{site_ip}/dbfile.sqlite" download="structurefinder.sqlite" 
                                      type="application/*">Download
-                                    database file</a></p>""".format(site_ip) if download_button else ''
+                                    database file</a></p>""" if download_button else ''
             }
     output = template('cgi_ui/views/strf_web', data)
     return output
@@ -120,7 +118,7 @@ def cellsrch():
     structures = StructureTable(dbfilename)
     if cell:
         ids = find_cell(structures, cell, more_results=more_results, sublattice=sublattice)
-        print("--> Got {} structures from cell search.".format(len(ids)))
+        print(f"--> Got {len(ids)} structures from cell search.")
         return get_structures_json(structures, ids)
 
 
@@ -159,7 +157,7 @@ def adv():
     ids = advanced_search(cellstr=cell_search, elincl=elincl, elexcl=elexcl, txt=txt_in, txt_ex=txt_out,
                           sublattice=sublattice, more_results=more_results, date1=date1, date2=date2,
                           structures=structures, it_num=it_num, onlythese=onlyelem, r1val=r1val, ccdc_num=ccdc_num)
-    print("--> Got {} structures from Advanced search.".format(len(ids)))
+    print(f"--> Got {len(ids)} structures from Advanced search.")
     return get_structures_json(structures, ids)
 
 
@@ -187,7 +185,7 @@ def jsmol_request():
             m = MolFile(atoms)
             return m.make_mol()
         except(KeyError, TypeError) as e:
-            print('Exception in jsmol_request: {}'.format(e))
+            print(f'Exception in jsmol_request: {e}')
             return ''
 
 
@@ -269,11 +267,13 @@ def redirect_to_favicon():
 def download_currently_selected_cif(structure_id):
     if not download_button:
         return 'Downloading a CIF was turned off by the administrator.'
-    headers = dict()
+    headers = {}
     structures = StructureTable(dbfilename)
     cif_data = structures.get_cif_export_data(structure_id)
     doc = cif_data_to_document(cif_data)
-    file = doc.as_string(style=Style.Indent35)
+    options = gemmi.cif.WriteOptions()
+    options.align_pairs = 35
+    file = doc.as_string(options=options)
     headers['Content-Type'] = 'text/plain'
     headers['Content-Encoding'] = 'ascii'
     headers['Content-Length'] = len(file)
@@ -366,7 +366,7 @@ def is_ajax():
         return False
 
 
-def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, show_all: bool = False) -> dict:
+def get_structures_json(structures: StructureTable, ids: list | tuple | None = None, show_all: bool = False) -> dict:
     """
     Returns the next package of table rows for continuos scrolling.
     """
@@ -374,7 +374,7 @@ def get_structures_json(structures: StructureTable, ids: (list, tuple) = None, s
         return {}
     dic = structures.get_all_structures_as_dict(ids)
     number = len(dic)
-    print("--> Got {} structures from actual search.".format(number))
+    print(f"--> Got {number} structures from actual search.")
     if number == 0:
         return {}
     return {"total": number, "records": dic, "status": "success"}
@@ -385,16 +385,16 @@ def get_cell_parameters(structures: StructureTable, strid: str) -> str:
     Resturns unit cell parameters as html formated string.
     """
     c = structures.get_cell_by_id(strid)
-    cstr = """<b>Unit Cell:</b>&nbsp;&nbsp; 
-                      <i>a</i> = {0:>8.3f}&nbsp;&angst;,&nbsp;
-                      <i>b</i> = {1:>8.3f}&nbsp;&angst;,&nbsp;
-                      <i>c</i> = {2:>8.3f}&nbsp;&angst;,&nbsp; 
-                      <i>&alpha;</i> = {3:>8.3f}&deg;,&nbsp;
-                      <i>&beta;</i> = {4:>8.3f}&deg;,&nbsp;
-                      <i>&gamma;</i> = {5:>8.3f}&deg;,&nbsp;
-                      <i>V</i> = {6}&nbsp;&angst;<sup>3</sup>&nbsp;&nbsp;&nbsp;&nbsp; 
-            <div style="font-size:0pt" id='hidden-cell'>{0}  {1}  {2}  {3}  {4}  {5}</div>
-            """.format(c[0], c[1], c[2], c[3], c[4], c[5], round(c[6], 2))
+    cstr = f"""<b>Unit Cell:</b>&nbsp;&nbsp; 
+                      <i>a</i> = {c[0]:>8.3f}&nbsp;&angst;,&nbsp;
+                      <i>b</i> = {c[1]:>8.3f}&nbsp;&angst;,&nbsp;
+                      <i>c</i> = {c[2]:>8.3f}&nbsp;&angst;,&nbsp; 
+                      <i>&alpha;</i> = {c[3]:>8.3f}&deg;,&nbsp;
+                      <i>&beta;</i> = {c[4]:>8.3f}&deg;,&nbsp;
+                      <i>&gamma;</i> = {c[5]:>8.3f}&deg;,&nbsp;
+                      <i>V</i> = {round(c[6], 2)}&nbsp;&angst;<sup>3</sup>&nbsp;&nbsp;&nbsp;&nbsp; 
+            <div style="font-size:0pt" id='hidden-cell'>{c[0]}  {c[1]}  {c[2]}  {c[3]}  {c[4]}  {c[5]}</div>
+            """
     return cstr
 
 
@@ -422,17 +422,17 @@ def get_residuals_table1(structures: StructureTable, cif_dic: dict, structure_id
     table1 = """
     <table class="table table-bordered table-condensed" id='resitable1'>
         <tbody>
-        <tr><td style='width: 40%'><b>Space Group</b></td>                 <td>{0}</td></tr>
-        <tr><td><b>Z</b></td>                           <td>{1}</td></tr>
-        <tr><td><b>Sum Formula</b></td>                 <td>{2}</td></tr>
-        <tr><td><b>Temperature [K]</b></td>             <td>{3}</td></tr>
-        <tr><td><b><i>wR</i><sub>2</sub></b></td>       <td>{4}</td></tr>
-        <tr><td><b><i>R<i/><sub>1</sub></b></td>        <td>{5}</td></tr>
-        <tr><td><b>Goof</b></td>                        <td>{6}</td></tr>
-        <tr><td><b>Max Shift/esd</b></td>               <td>{7}</td></tr>
-        <tr><td><b>Peak / Hole [e&angst;<sup>&minus;3</sup>]</b></td>             <td>{8}</td></tr>
-        <tr><td><b><i>R</i><sub>int</sub> / <i>R</i><sub>&sigma;</sub></b></b></td>    <td>{9}{10} </td></tr>
-        <tr><td><b>Wavelength [&angst;]</b></td>                      <td>{11}</td></tr>
+        <tr><td style='width: 40%'><b>Space Group</b></td>                 <td>{}</td></tr>
+        <tr><td><b>Z</b></td>                           <td>{}</td></tr>
+        <tr><td><b>Sum Formula</b></td>                 <td>{}</td></tr>
+        <tr><td><b>Temperature [K]</b></td>             <td>{}</td></tr>
+        <tr><td><b><i>wR</i><sub>2</sub></b></td>       <td>{}</td></tr>
+        <tr><td><b><i>R<i/><sub>1</sub></b></td>        <td>{}</td></tr>
+        <tr><td><b>Goof</b></td>                        <td>{}</td></tr>
+        <tr><td><b>Max Shift/esd</b></td>               <td>{}</td></tr>
+        <tr><td><b>Peak / Hole [e&angst;<sup>&minus;3</sup>]</b></td>             <td>{}</td></tr>
+        <tr><td><b><i>R</i><sub>int</sub> / <i>R</i><sub>&sigma;</sub></b></b></td>    <td>{}{} </td></tr>
+        <tr><td><b>Wavelength [&angst;]</b></td>                      <td>{}</td></tr>
         </tbody>
     </table>
     """.format(cif_dic['_space_group_name_H_M_alt'],
@@ -482,32 +482,32 @@ def get_residuals_table2(cif_dic: dict) -> str:
     table2 = """
     <table class="table table-bordered table-condensed" id='resitable2'>
         <tbody>
-        <tr><td style='width: 40%'><b>Measured Refl.</b></td>       <td>{0}</td></tr>
-        <tr><td><b>Independent Refl.</b></td>                       <td>{10}</td></tr>
-        <tr><td><b>Data with [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>    <td>{11}</td></tr>
-        <tr><td><b>Parameters</b></td>                              <td>{1}</td></tr>
-        <tr><td><b>data/param</b></td>                              <td>{2:<5.1f}</td></tr>
-        <tr><td><b>Restraints</b></td>                              <td>{3}</td></tr>
+        <tr><td style='width: 40%'><b>Measured Refl.</b></td>       <td>{}</td></tr>
+        <tr><td><b>Independent Refl.</b></td>                       <td>{}</td></tr>
+        <tr><td><b>Data with [<i>I</i>>2&sigma;(<i>I</i>)] </b></td>    <td>{}</td></tr>
+        <tr><td><b>Parameters</b></td>                              <td>{}</td></tr>
+        <tr><td><b>data/param</b></td>                              <td>{:<5.1f}</td></tr>
+        <tr><td><b>Restraints</b></td>                              <td>{}</td></tr>
         <tr><td><b>&theta;<sub>full</sub> [&deg;]</b> / 
-        <b>&theta;<sub>max</sub> [&deg;]</b></td>                    <td>{4} / {5}</td></tr>
-        <tr><td><b>d [&angst;]</b></td>                             <td>{6:5.3f}</td></tr>
-        <tr><td><b>completeness [%]</b></td>                            <td>{7:<5.1f}</td></tr>
-        <tr><td><b>Flack X parameter</b></td>                             <td>{8}</td></tr>
-        <tr><td><b>CCDC Number</b></td>                             <td>{9}</td></tr>
+        <b>&theta;<sub>max</sub> [&deg;]</b></td>                    <td>{} / {}</td></tr>
+        <tr><td><b>d [&angst;]</b></td>                             <td>{:5.3f}</td></tr>
+        <tr><td><b>completeness [%]</b></td>                            <td>{:<5.1f}</td></tr>
+        <tr><td><b>Flack X parameter</b></td>                             <td>{}</td></tr>
+        <tr><td><b>CCDC Number</b></td>                             <td>{}</td></tr>
         </tbody>
     </table>
     """.format(cif_dic['_diffrn_reflns_number'],  # 0
-               cif_dic['_refine_ls_number_parameters'],  # 1
-               data_to_param,  # 2
-               cif_dic['_refine_ls_number_restraints'],  # 3
-               thetamax if thetamax else '?',  # 4
-               thetafull if thetafull else '?',  # 5
-               d,  # 6
-               compl,  # 7
-               cif_dic['_refine_ls_abs_structure_Flack'],  # 8
-               cif_dic['_database_code_depnum_ccdc_archive'],  # 9
-               cif_dic['_refine_ls_number_reflns'],  # 10
-               cif_dic['_reflns_number_gt']  # 11
+               cif_dic['_refine_ls_number_reflns'],  # 1
+               cif_dic['_reflns_number_gt'],  # 2
+               cif_dic['_refine_ls_number_parameters'],  # 3
+               data_to_param,  # 4
+               cif_dic['_refine_ls_number_restraints'],  # 5
+               thetamax if thetamax else '?',  # 6
+               thetafull if thetafull else '?',  # 7
+               d,  # 8
+               compl,  # 9
+               cif_dic['_refine_ls_abs_structure_Flack'],  # 10
+               cif_dic['_database_code_depnum_ccdc_archive']  # 11
                )
     return table2
 
@@ -518,8 +518,8 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     """
     # starting table header (the div is for css):
     # style="white-space: pre": preserves white space
-    button = """<a type="button" class="btn btn-default btn-sm" id="download_CIF"
-                                                 href='current-cif/{}' >Download as CIF</a>""".format(structure_id)
+    button = f"""<a type="button" class="btn btn-default btn-sm" id="download_CIF"
+                                                 href='current-cif/{structure_id}' >Download as CIF</a>"""
     table_string = """<h4>All CIF values</h4> {}
                         <div id="myresidualtable">
                         <table class="table table-striped table-bordered table-condensed" style="white-space: pre">
@@ -542,15 +542,15 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
             value = ''.join([x.replace("\n", "<br>").rstrip('\r\n') for x in value])
         if key == '_shelx_res_file':
             # Adding an ID to make font monospace in the view:
-            table_string += '''<tr>
-                                 <td class="residual-{}"> {} </a></td> 
-                                 <td id=resfile > {} </a></td> 
-                               </tr> \n'''.format(structure_id, key, value)
+            table_string += f'''<tr>
+                                 <td class="residual-{structure_id}"> {key} </a></td> 
+                                 <td id=resfile > {value} </a></td> 
+                               </tr> \n'''
         else:
-            table_string += '''<tr>
-                                <td class="residual-{}"> {} </a></td> 
-                                <td> {} </a></td> 
-                           </tr> \n'''.format(structure_id, key, value)
+            table_string += f'''<tr>
+                                <td class="residual-{structure_id}"> {key} </a></td> 
+                                <td> {value} </a></td> 
+                           </tr> \n'''
     # closing table:
     table_string += """ </tbody>
                         </table>
@@ -576,14 +576,14 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     else:
         # regular:
         atol, ltol, vol_threshold = regular_results_parameters(volume)
-    cells: List = structures.find_by_volume(volume, vol_threshold)
+    cells: list = structures.find_by_volume(volume, vol_threshold)
     if sublattice:
         # sub- and superlattices:
         for v in [volume * x for x in [2.0, 3.0, 4.0, 6.0, 8.0, 10.0]]:
             # First a list of structures where the volume is similar:
             cells.extend(structures.find_by_volume(v, vol_threshold))
         cells = list(set(cells))
-    idlist2: List = []
+    idlist2: list = []
     # Real lattice comparing in G6:
     if cells:
         lattice1 = lattice.Lattice.from_parameters(*cell)
@@ -654,23 +654,22 @@ def find_dates(structures: StructureTable, date1: str, date2: str) -> list:
 
 
 def advanced_search(cellstr: str, elincl, elexcl, txt, txt_ex, sublattice, more_results,
-                    date1: str = None, date2: str = None, structures: StructureTable = None,
-                    it_num: str = None, onlythese: bool = False, r1val: float = 0.0,
-                    ccdc_num: str = '') -> Union[List[int], Tuple[int, ...]]:
+                    date1: str | None = None, date2: str | None = None, structures: StructureTable = None,
+                    it_num: str | None = None, onlythese: bool = False, r1val: float = 0.0,
+                    ccdc_num: str = '') -> list[int] | tuple[int, ...]:
     """
     Combines all the search fields. Collects all includes, all excludes ad calculates
     the difference.
     """
-    #
-    results: List = []
-    cell_results: List = []
-    spgr_results: List = []
-    elincl_results: List = []
-    txt_results: Union[List, Tuple] = []
-    txt_ex_results: Union[List, Tuple] = []
-    date_results: List = []
-    ccdc_num_results: List = []
-    states: Dict[str, bool] = {'date'    : False,
+    results: list = []
+    cell_results: list = []
+    spgr_results: list = []
+    elincl_results: list = []
+    txt_results: list | tuple = []
+    txt_ex_results: list | tuple = []
+    date_results: list = []
+    ccdc_num_results: list = []
+    states: dict[str, bool] = {'date'    : False,
                                'cell'    : False,
                                'elincl'  : False,
                                'elexcl'  : False,
