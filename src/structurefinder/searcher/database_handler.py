@@ -862,7 +862,7 @@ class StructureTable:
         if found:
             return found
 
-    def get_all_structures_as_dict(self, ids: (list, tuple) = None) -> dict:
+    def get_all_structures_as_dict(self, ids: list | tuple | None = None) -> dict:
         """
         Returns the list of structures as dictionary.
         """
