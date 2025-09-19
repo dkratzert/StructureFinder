@@ -4,9 +4,9 @@ from math import sqrt, cos, sin, dist
 from pathlib import Path
 
 import numpy as np
-from PyQt6 import QtWidgets, QtCore, QtGui
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPalette, QImage, QResizeEvent
+from qtpy import QtWidgets, QtCore, QtGui
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QPainter, QPen, QBrush, QColor, QMouseEvent, QPalette, QImage, QResizeEvent
 
 from shelxfile.misc.elements import get_radius_from_element, element2color
 

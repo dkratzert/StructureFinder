@@ -1,17 +1,15 @@
 import sys
 
 import numpy as np
-from PyQt6.QtCore import pyqtSignal
+import pyqtgraph as pg
+from qtpy import QtCore
+from qtpy.QtWidgets import QApplication, QWidget, QVBoxLayout
 
 from structurefinder.searcher.database_handler import is_numeric
 
-from qtpy.QtWidgets import QApplication, QWidget, QVBoxLayout
-
-import pyqtgraph as pg
-
 
 class PlotWidget(QWidget):
-    point_clicked = pyqtSignal(int)
+    point_clicked = QtCore.Signal(int)
 
     def __init__(self, parent=None):
         super().__init__(parent)

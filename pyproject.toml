@@ -37,6 +37,7 @@ dependencies = [
     "shelxfile",
     "py7zr",
     "pyqtgraph>=0.13",
+    "qtpy>=2.4.3",
 ]
 [project.optional-dependencies]
 devel = [

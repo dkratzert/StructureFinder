@@ -1,7 +1,7 @@
 from typing import Any
 
-from PyQt6 import QtCore
-from PyQt6.QtCore import QModelIndex, Qt
+from qtpy import QtCore
+from qtpy.QtCore import QModelIndex, Qt
 
 import structurefinder.searcher.constants
 from structurefinder.searcher.database_handler import columns

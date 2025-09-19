@@ -1526,7 +1526,7 @@ def is_numeric(val):
 
 
 if __name__ == '__main__':
-    from PyQt6 import QtWidgets
+    from qtpy import QtWidgets
     from structurefinder.plot.plot_widget import PlotWidget
 
     # searcher.filecrawler.put_cifs_in_db(searchpath='../')

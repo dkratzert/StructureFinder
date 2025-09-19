@@ -1,6 +1,6 @@
 import time
 
-from PyQt6.QtCore import QObject, pyqtSignal
+from qtpy.QtCore import QObject, Signal
 
 from structurefinder.searcher.crawler import EXCLUDED_NAMES, FileType, find_files
 from structurefinder.searcher.database_handler import StructureTable
@@ -8,9 +8,9 @@ from structurefinder.strf_cmd import process_cif, process_res
 
 
 class SearchWorker(QObject):
-    progress = pyqtSignal(int)
-    number_of_files = pyqtSignal(int)
-    finished = pyqtSignal()
+    progress = Signal(int)
+    number_of_files = Signal(int)
+    finished = Signal()
 
     def __init__(self,
                  root_dir: str,

@@ -3,7 +3,7 @@ import os
 import re
 import shutil
 
-from PyQt6 import QtCore
+from qtpy import QtCore
 
 PYQT5_TO_PYQT6_IMPORTS = [
     (r'from\s+PyQt5\s+import\s+(QtWidgets|QtGui|QtCore|QtSvg)', r'from PyQt6 import \1'),

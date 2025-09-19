@@ -1,15 +1,15 @@
 import sys
 
 import requests
-from PyQt6.QtCore import QThread, pyqtSignal
+from qtpy.QtCore import QThread, Signal
 
 from structurefinder.misc.version import VERSION
 
 
 class MyDownloader(QThread):
-    progress = pyqtSignal(str)
-    failed = pyqtSignal(int)
-    finished = pyqtSignal(bytes)
+    progress = Signal(str)
+    failed = Signal(int)
+    finished = Signal(bytes)
 
     def __init__(self, parent, url: str):
         super().__init__(parent=parent)
@@ -47,8 +47,8 @@ class MyDownloader(QThread):
 
 
 if __name__ == "__main__":
-    from PyQt6.QtWidgets import QWidget
-    from PyQt6.QtWidgets import QApplication
+    from qtpy.QtWidgets import QWidget
+    from qtpy.QtWidgets import QApplication
 
     app = QApplication(sys.argv)
     w = QWidget()

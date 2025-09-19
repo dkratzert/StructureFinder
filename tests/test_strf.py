@@ -9,11 +9,11 @@ from time import sleep
 from typing import Union
 
 import pytest
-from PyQt6 import QtCore
-from PyQt6.QtCore import QDate, QEventLoop
-from PyQt6.QtGui import QIcon
-from PyQt6.QtTest import QTest
-from PyQt6.QtWidgets import QApplication
+from qtpy import QtCore
+from qtpy.QtCore import QDate, QEventLoop
+from qtpy.QtGui import QIcon
+from qtpy.QtTest import QTest
+from qtpy.QtWidgets import QApplication
 
 from structurefinder import strf
 from structurefinder.misc.version import VERSION

@@ -12,6 +12,7 @@ Created on 09.02.2015
 @author: Daniel Kratzert
 """
 import os
+os.environ['QT_API'] = 'PyQt6'
 import shutil
 import sys
 import tempfile
@@ -33,9 +34,9 @@ if hasattr(gemmi, 'set_leak_warnings'):
     gemmi.set_leak_warnings(False)
 import gemmi.cif
 import qtawesome as qta
-from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtCore import QDate, QEvent, QItemSelection, QModelIndex, QPoint, Qt, QThread
-from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox, QProgressBar, QPushButton, \
+from qtpy import QtCore, QtGui, QtWidgets
+from qtpy.QtCore import QDate, QEvent, QItemSelection, QModelIndex, QPoint, Qt, QThread
+from qtpy.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox, QProgressBar, QPushButton, \
     QTreeWidgetItem
 from shelxfile import Shelxfile
 
@@ -290,8 +291,8 @@ class StartStructureDB(QMainWindow):
             self.statusBar().showMessage(f"Database with {self.table_model.rowCount()} structures loaded", msecs=0)
 
     def show_help(self) -> None:
-        from PyQt6 import QtCore
-        from PyQt6.QtGui import QDesktopServices
+        from qtpy import QtCore
+        from qtpy.QtGui import QDesktopServices
         QDesktopServices.openUrl(QtCore.QUrl('https://dkratzert.de/files/structurefinder/docs/'))
 
     def show_labels(self, value: bool):

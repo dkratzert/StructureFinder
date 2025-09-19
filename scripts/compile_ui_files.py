@@ -3,7 +3,7 @@ import sys
 
 
 
-from PyQt6 import uic
+from qtpy import uic
 
 
 

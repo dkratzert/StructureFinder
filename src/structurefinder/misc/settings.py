@@ -1,8 +1,8 @@
 from collections import namedtuple
 from pathlib import Path
 
-from PyQt6 import QtCore
-from PyQt6.QtCore import QSettings, QPoint, QSize
+from qtpy import QtCore
+from qtpy.QtCore import QSettings, QPoint, QSize
 
 Position = namedtuple('Position', 'size, position, maximized')
 

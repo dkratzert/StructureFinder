@@ -1,16 +1,17 @@
 from __future__ import annotations
+
 import sys
 
-from PyQt6 import QtWidgets, QtGui, QtCore
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QCursor
+from qtpy import QtWidgets, QtGui, QtCore
+from qtpy.QtCore import Qt, Signal
+from qtpy.QtGui import QCursor
 
 from structurefinder import strf
 from structurefinder.searcher.database_handler import columns
 
 
 class CustomHorizontalHeaderView(QtWidgets.QHeaderView):
-    columns_changed = pyqtSignal(str)
+    columns_changed = Signal(str)
 
     def __init__(self, parent: StructuresListTableView):
         super().__init__(QtCore.Qt.Orientation.Horizontal, parent)
@@ -57,8 +58,8 @@ class CustomHorizontalHeaderView(QtWidgets.QHeaderView):
 
 
 class StructuresListTableView(QtWidgets.QTableView):
-    save_excel_triggered = pyqtSignal()
-    open_save_path = pyqtSignal(str)
+    save_excel_triggered = Signal()
+    open_save_path = Signal(str)
 
     def __init__(self, parent):
         super().__init__(parent)

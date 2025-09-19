@@ -1,9 +1,9 @@
 import sys
 
-from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtCore import Qt, QModelIndex
-from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRecord
-from PyQt6 import QtWidgets
+from qtpy import QtWidgets, QtCore
+from qtpy.QtCore import Qt, QModelIndex
+from qtpy.QtSql import QSqlDatabase, QSqlTableModel, QSqlRelationalTableModel, QSqlRelation, QSqlRecord
+from qtpy import QtWidgets
 
 
 class Contacts(QtWidgets.QMainWindow):
