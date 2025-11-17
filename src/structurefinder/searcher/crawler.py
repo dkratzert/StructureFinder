@@ -72,7 +72,7 @@ def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, no_archive=Fa
         for num, filename in enumerate(filenames):
             lower_filename = filename.lower()
             if lower_filename.endswith(exts):
-                filepath = os.path.join(dirpath, filename)
+                filepath = os.path.normpath(os.path.join(dirpath, filename))
                 yield from file_result(filename, filepath)
             elif no_archive:
                 continue
@@ -102,9 +102,9 @@ def is_zipfile(filename: str) -> bool:
 def file_result(filename: str, filepath: str | bytes) -> Generator[Result, Any, None]:
     try:
         mod_time = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(filepath)))
+        size = os.stat(filepath).st_size
     except FileNotFoundError:
-        mod_time = '1900-01-01'
-    size = os.stat(filepath).st_size
+        return None
     with open(filepath, 'rb') as fobj:
         yield Result(file_type=suffix_to_type.get(filepath[-4:].lower()),
                      file_content=fobj.read().decode('latin1', 'replace'),
