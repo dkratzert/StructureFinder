@@ -1,3 +1,4 @@
+import sqlite3
 import time
 
 from qtpy.QtCore import QObject, Signal
@@ -47,12 +48,16 @@ class SearchWorker(QObject):
                                                 exts=exts, no_archive=self.no_archives)):
             if self._stop:
                 break
-            if result.file_type == FileType.CIF:
-                if process_cif(lastid, result, self.structures):
-                    lastid += 1
-            if result.file_type == FileType.RES:
-                if process_res(lastid, result, self.structures):
-                    lastid += 1
+            try:
+                if result.file_type == FileType.CIF:
+                    if process_cif(lastid, result, self.structures):
+                        lastid += 1
+                if result.file_type == FileType.RES:
+                    if process_res(lastid, result, self.structures):
+                        lastid += 1
+            except sqlite3.IntegrityError:
+                # This prevents problems with not-counted lastids from half-indexed files.
+                continue
             self.progress.emit(num)
         self.progress.emit(0)
         self.finished.emit()

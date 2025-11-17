@@ -172,7 +172,7 @@ def fill_db_with_res_data(res: Shelxfile, result: Result, structure_id: int, str
         cif.cif_data["_refine_ls_restrained_S_all"] = res.rgoof
     try:
         cif.cif_data["_shelx_res_file"] = str(res)
-    except IndexError:
+    except Exception:
         pass
     structures.fill_residuals_table(structure_id, cif)
     return True

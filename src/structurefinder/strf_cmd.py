@@ -200,7 +200,7 @@ def run_index(args: Namespace = None):
                     if total_files % 100 == 0:
                         print(f'\r{total_files:,} files found so far.', flush=True, end='')
                 print('\r\b', end='', flush=True)
-            except OSError as e:
+            except Exception as e:
                 print(f"Unable to collect files: in path '{p}'")
                 print(e)
                 if DEBUG:
@@ -259,8 +259,10 @@ def process_cif(lastid: int, result: Result, structures: StructureTable) -> bool
                                    structures=structures)
         if not ok:
             return False
-    elif DEBUG:
-        print('File has no block:', result)
+    else:
+        if DEBUG:
+            print('File has no block:', result)
+        return False
     return True
 
 
