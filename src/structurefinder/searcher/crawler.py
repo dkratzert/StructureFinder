@@ -100,10 +100,13 @@ def is_zipfile(filename: str) -> bool:
 
 
 def file_result(filename: str, filepath: str | bytes) -> Generator[Result, Any, None]:
-    mod_time = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(filepath)))
+    try:
+        mod_time = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(filepath)))
+    except FileNotFoundError:
+        mod_time = '1900-01-01'
     size = os.stat(filepath).st_size
     with open(filepath, 'rb') as fobj:
-        yield Result(file_type=suffix_to_type.get(filepath.lower()[-4:]),
+        yield Result(file_type=suffix_to_type.get(filepath[-4:].lower()),
                      file_content=fobj.read().decode('latin1', 'replace'),
                      filename=filename, file_path=os.path.dirname(filepath),
                      modification_time=mod_time,
@@ -122,7 +125,7 @@ def search_in_zip(zip_path: str | bytes,
                 lower_file = file.lower()
                 if lower_file.endswith(exts):
                     with archive.open(file) as f:
-                        yield Result(file_type=suffix_to_type.get(lower_file[-4:]),
+                        yield Result(file_type=suffix_to_type.get(lower_file[-4:].lower()),
                                      archive_path=zip_path,
                                      filename=file,
                                      file_content=f.read().decode('latin1', 'replace'),
