@@ -58,6 +58,11 @@ class SearchWorker(QObject):
             except sqlite3.IntegrityError:
                 # This prevents problems with not-counted lastids from half-indexed files.
                 continue
+            except Exception:
+                print(f'Error processing file {result.filename}')
+                import traceback
+                traceback.print_exc()
+                continue
             self.progress.emit(num)
         self.progress.emit(0)
         self.finished.emit()
