@@ -28,11 +28,11 @@ class SearchWorker(QObject):
         self.exclude_dirs = EXCLUDED_NAMES
         self.structures = structures_db
 
-    def stop(self):
+    def stop(self) -> None:
         self._stop = True
         print('Stopping index worker...')
 
-    def run(self):
+    def run(self) -> None:
         t1 = time.perf_counter()
         exts = ('.cif', '.res')
         if self.add_res and not self.add_cif:
