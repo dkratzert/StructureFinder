@@ -62,7 +62,7 @@ def is_excluded_dir(dirpath: str, exclude_dirs: Iterable[str]) -> bool:
     return False
 
 
-def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, no_archive=False):
+def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, no_archive=False) -> Generator[Result | None, Any, None]:
     if exclude_dirs is None:
         exclude_dirs = set()
     exclude_dirs = set([x.lower() for x in exclude_dirs])
@@ -71,19 +71,18 @@ def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, no_archive=Fa
             continue
         for num, filename in enumerate(filenames):
             lower_filename = filename.lower()
+            if lower_filename.endswith('.sfrm'):
+                continue
+            filepath = os.path.normpath(os.path.join(dirpath, filename))
             if lower_filename.endswith(exts):
-                filepath = os.path.normpath(os.path.join(dirpath, filename))
                 yield from file_result(filename, filepath)
             elif no_archive:
                 continue
             elif is_zipfile(lower_filename):
-                filepath = os.path.join(dirpath, filename)
                 yield from search_in_zip(filepath, exts, exclude_dirs)
             elif is_tarfile(lower_filename):
-                filepath = os.path.join(dirpath, filename)
                 yield from search_in_tar(filepath, exts)
             elif is_7z_file(lower_filename):
-                filepath = os.path.join(dirpath, filename)
                 yield from search_in_7z(filepath, exts)
 
 
@@ -99,23 +98,29 @@ def is_zipfile(filename: str) -> bool:
     return filename.endswith(".zip")
 
 
-def file_result(filename: str, filepath: str | bytes) -> Generator[Result, Any, None]:
+def file_result(filename: str, filepath: str | bytes) -> Generator[Result | None, Any, None]:
     try:
         mod_time = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(filepath)))
         size = os.stat(filepath).st_size
     except FileNotFoundError:
+        if DEBUG:
+            print(f"File {filepath} not found.")
         return None
     with open(filepath, 'rb') as fobj:
-        yield Result(file_type=suffix_to_type.get(filepath[-4:].lower()),
-                     file_content=fobj.read().decode('latin1', 'replace'),
-                     filename=filename, file_path=os.path.dirname(filepath),
-                     modification_time=mod_time,
-                     file_size=size)
+        try:
+            yield Result(file_type=suffix_to_type.get(filepath[-4:].lower()),
+                         file_content=fobj.read().decode('latin1', 'replace'),
+                         filename=filename, file_path=os.path.dirname(filepath),
+                         modification_time=mod_time,
+                         file_size=size)
+        except OSError as e:
+            print(f"OSError reading {filepath}:\n {e}")
+            yield None
 
 
 def search_in_zip(zip_path: str | bytes,
                   exts: tuple[str] | set[str],
-                  exclude_dirs: Iterable[str] = None) -> Generator[Result, Any, None]:
+                  exclude_dirs: Iterable[str] = None) -> Generator[Result | None, Any, None]:
     try:
         with zipfile.ZipFile(zip_path, 'r') as archive:
             for info, file in zip(archive.infolist(), archive.namelist()):
@@ -125,7 +130,7 @@ def search_in_zip(zip_path: str | bytes,
                 lower_file = file.lower()
                 if lower_file.endswith(exts):
                     with archive.open(file) as f:
-                        yield Result(file_type=suffix_to_type.get(lower_file[-4:].lower()),
+                        yield Result(file_type=suffix_to_type.get(lower_file[-4:]),
                                      archive_path=zip_path,
                                      filename=file,
                                      file_content=f.read().decode('latin1', 'replace'),
@@ -134,8 +139,7 @@ def search_in_zip(zip_path: str | bytes,
     except Exception as e:
         if DEBUG:
             print(f"[ZIP] Error in {zip_path}: {e}")
-        # raise
-    return None
+    yield None
 
 
 def search_in_tar(tar_path: str | bytes,
@@ -165,20 +169,8 @@ def search_in_tar(tar_path: str | bytes,
 
 def search_in_7z(sevenz_path: str | bytes, exts: tuple[str]) -> Generator[Result, Any, None]:
     try:
-        r"""
-        #with py7zr.SevenZipFile(sevenz_path, mode='r') as archive:
-            for name, bio in archive.readall().items():
-                lower_file = name.lower()
-                if lower_file.endswith(exts):
-                    if bio:
-                        yield Result(file_type=suffix_to_type.get(lower_file[-4:]),
-                                     archive_path=sevenz_path,
-                                     filename=name,
-                                     file_content=bio.read().decode('latin1', 'replace'),
-                                     file_path=sevenz_path)
-        """
         with py7zr.SevenZipFile(sevenz_path, mode='r') as archive:
-            for entry in archive.list():  # ArchiveFileEntry-Objekte
+            for entry in archive.list():
                 name = entry.filename
                 lower_file = name.lower()
                 if lower_file.endswith(exts):
@@ -201,7 +193,7 @@ def search_in_7z(sevenz_path: str | bytes, exts: tuple[str]) -> Generator[Result
 
 if __name__ == '__main__':
     # app = QApplication(sys.argv)
-    for num, result in enumerate(find_files("/Users/daniel/Documents/GitHub",
+    for num, result in enumerate(find_files(r"D:\\",
                                             exclude_dirs=EXCLUDED_NAMES)):
         print(result)
         print(num)
