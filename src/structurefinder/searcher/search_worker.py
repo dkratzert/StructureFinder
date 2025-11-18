@@ -14,12 +14,14 @@ class SearchWorker(QObject):
     finished = Signal()
 
     def __init__(self,
+                 parent,
                  root_dir: str,
                  structures_db: StructureTable,
                  add_res: bool,
                  add_cif: bool,
                  no_archives: bool = False) -> None:
-        super().__init__()
+        # parent is essential here:
+        super().__init__(parent)
         self.add_res = add_res
         self.add_cif = add_cif
         self.no_archives = no_archives
@@ -48,6 +50,8 @@ class SearchWorker(QObject):
                                                 exts=exts, no_archive=self.no_archives)):
             if self._stop:
                 break
+            if result is None:
+                continue
             try:
                 if result.file_type == FileType.CIF:
                     if process_cif(lastid, result, self.structures):
@@ -56,6 +60,7 @@ class SearchWorker(QObject):
                     if process_res(lastid, result, self.structures):
                         lastid += 1
             except sqlite3.IntegrityError:
+                print(f'Skipping file {result.filename}')
                 # This prevents problems with not-counted lastids from half-indexed files.
                 continue
             except Exception:

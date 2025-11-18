@@ -12,6 +12,7 @@ Created on 09.02.2015
 @author: Daniel Kratzert
 """
 import os
+
 os.environ['QT_API'] = 'PyQt6'
 import shutil
 import sys
@@ -89,6 +90,8 @@ print(sys.version)
 class StartStructureDB(QMainWindow):
     def __init__(self, db_file_name: str = '', *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.thread = None
+        self.worker = None
         self.settings = StructureFinderSettings()
         self.ui = Ui_stdbMainwindow()
         self.ui.setupUi(self)
@@ -697,16 +700,14 @@ class StartStructureDB(QMainWindow):
         self.ui.p4pCellButton.setDisabled(True)
         self.ui.appendDatabasePushButton.setDisabled(True)
         self.ui.importDatabaseButton.setDisabled(True)
-        self.thread = QThread()
-        self.worker = SearchWorker(startdir, self.structures,
+        self.thread = QThread(self)
+        self.worker = SearchWorker(self, startdir, self.structures,
                                    add_res=self.ui.add_res.isChecked(),
                                    add_cif=self.ui.add_cif.isChecked(),
                                    no_archives=self.ui.ignoreArchivesCB.isChecked())
-        self.worker.progress.connect(self.progress.setValue)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
         self.worker.finished.connect(self.progress.hide)
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.abort_import_button.hide)
@@ -734,6 +735,8 @@ class StartStructureDB(QMainWindow):
     def report_progress(self, progress: int):
         self.statusbar.showMessage(f'Inspected {progress} files')
         self.progressbar(progress, 0, self.maxfiles)
+        if progress % 10 == 0:
+            app.processEvents()
 
     def do_work_after_indexing(self, startdir: str):
         self.progress.hide()

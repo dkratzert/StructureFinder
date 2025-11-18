@@ -185,6 +185,8 @@ def run_index(args: Namespace = None):
         for p in args.dir:
             try:
                 for total_files, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES, no_archive=args.no_archive)):
+                    if result is None:
+                        continue
                     if fill_cif and result.file_type == FileType.CIF:
                         if process_cif(lastid, result, structures):
                             cif_count += 1
@@ -201,7 +203,7 @@ def run_index(args: Namespace = None):
                         print(f'\r{total_files:,} files found so far.', flush=True, end='')
                 print('\r\b', end='', flush=True)
             except Exception as e:
-                print(f"Unable to collect files: in path '{p}'")
+                print(f"Unable to collect files in path '{p}'")
                 print(e)
                 if DEBUG:
                     raise
