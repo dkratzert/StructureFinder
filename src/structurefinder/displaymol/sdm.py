@@ -185,7 +185,10 @@ class SDM():
                     continue
                 if (sdm_item.atom1[1] not in h and sdm_item.atom2[1] not in h) and \
                     sdm_item.atom1[5] * sdm_item.atom2[5] == 0 or sdm_item.atom1[5] == sdm_item.atom2[5]:
-                    dddd = (get_radius_from_element(at1[1]) + get_radius_from_element(at2[1])) * 1.2
+                    try:
+                        dddd = (get_radius_from_element(at1[1]) + get_radius_from_element(at2[1])) * 1.2
+                    except KeyError:
+                        dddd = 4.0
                     sdm_item.dddd = dddd
                 else:
                     dddd = 0.0
