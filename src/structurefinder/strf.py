@@ -701,7 +701,9 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDatabasePushButton.setDisabled(True)
         self.ui.importDatabaseButton.setDisabled(True)
         self.thread = QThread(self)
-        self.worker = SearchWorker(self, startdir, self.structures,
+        self.thread.setObjectName('WorkerTread')
+        # None parent is essential here, or it runs in the main thread:
+        self.worker = SearchWorker(startdir, self.structures,
                                    add_res=self.ui.add_res.isChecked(),
                                    add_cif=self.ui.add_cif.isChecked(),
                                    no_archives=self.ui.ignoreArchivesCB.isChecked())
@@ -726,7 +728,6 @@ class StartStructureDB(QMainWindow):
         self.progress.hide()
         self.statusBar().showMessage("Indexing aborted")
         self.progress.hide()
-        # self.close_db()
 
     def set_maxfiles(self, number: int):
         self.abort_import_button.show()
@@ -735,8 +736,6 @@ class StartStructureDB(QMainWindow):
     def report_progress(self, progress: int):
         self.statusbar.showMessage(f'Inspected {progress} files')
         self.progressbar(progress, 0, self.maxfiles)
-        if progress % 10 == 0:
-            app.processEvents()
 
     def do_work_after_indexing(self, startdir: str):
         self.progress.hide()
@@ -1329,8 +1328,7 @@ class StartStructureDB(QMainWindow):
             return None
         self.ui.cifList_tableView.header_menu.reset_sorting()
         if self.structures:
-            data = self.structures.get_structure_rows_by_ids()
-            self.set_model_from_data(data)
+            self.set_model_from_data(self.structures.get_structure_rows_by_ids())
         self.full_list = True
         self.ui.SpGrpComboBox.setCurrentIndex(0)
         self.ui.adv_elementsIncLineEdit.clear()

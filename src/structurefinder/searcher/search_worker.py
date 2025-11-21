@@ -14,14 +14,13 @@ class SearchWorker(QObject):
     finished = Signal()
 
     def __init__(self,
-                 parent,
                  root_dir: str,
                  structures_db: StructureTable,
                  add_res: bool,
                  add_cif: bool,
                  no_archives: bool = False) -> None:
-        # parent is essential here:
-        super().__init__(parent)
+        # None parent is essential here, or it runs in the main thread:
+        super().__init__(None)
         self.add_res = add_res
         self.add_cif = add_cif
         self.no_archives = no_archives
@@ -35,6 +34,8 @@ class SearchWorker(QObject):
         print('Stopping index worker...')
 
     def run(self) -> None:
+        if self.thread().objectName() == 'mainThread':
+            print(f'Index worker runs in mainThread thread!')
         t1 = time.perf_counter()
         exts = ('.cif', '.res')
         if self.add_res and not self.add_cif:
