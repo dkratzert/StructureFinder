@@ -1,6 +1,7 @@
 StructureFinder Changelog
 -------------------------
 
+* v87 Improved responsiveness during indexing.
 * v86 More robust file indexing and responsive GUI.
 * v85 Fixed potential crash with malformed .res files.
 * v84 Fixed crash of update notification dialog at program startup.
