@@ -73,6 +73,11 @@ Type: files; Name: "{app}\*.pyc"
 ; too dangerous:
 ;Type: files; Name: "{app}\*.*"
 ;Type: filesandordirs; Name: "{app}\*"
+Type: filesandordirs; Name: "{app}\Lib"
+Type: filesandordirs; Name: "{app}\Scripts"
+Type: filesandordirs; Name: "{app}\icons"
+Type: filesandordirs; Name: "{app}\structurefinder"
+Type: filesandordirs; Name: "{app}\python*.*"
 
 [InstallDelete]
 ;Type: filesandordirs; Name: "{app}\*"
