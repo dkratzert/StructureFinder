@@ -185,19 +185,12 @@ class GroupedStructuresModel(QtCore.QAbstractItemModel):
             if positions:
                 key = _make_cell_key(row, positions)
             if key not in groups_dict:
-                if key is not None:
-                    label = (
-                        f"a={key[0]:.2f}  b={key[1]:.2f}  c={key[2]:.2f}  "
-                        f"\u03b1={key[3]:.2f}  \u03b2={key[4]:.2f}  \u03b3={key[5]:.2f}"
-                    )
-                else:
-                    label = "No cell"
-                groups_dict[key] = _GroupNode(key, label)
+                groups_dict[key] = _GroupNode(key, "")
             groups_dict[key].children.append(row)
 
         # Update labels with count and store as list
         for node in groups_dict.values():
-            node.label = f"{node.label}  ({len(node.children)} structures)"
+            node.label = f"({len(node.children)} structures)"
             self._groups.append(node)
         self.endResetModel()
 

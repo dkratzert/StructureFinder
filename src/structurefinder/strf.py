@@ -303,6 +303,13 @@ class StartStructureDB(QMainWindow):
         # stretches across the full width of the tree view.
         for row in range(grouped_model.rowCount()):
             self.ui.cifList_treeView.setFirstColumnSpanned(row, QModelIndex(), True)
+        # Hide cell columns from the view — they are only used for grouping
+        # internally and should not be displayed (same appearance as table view).
+        cell_attrs = ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
+        visible = columns.visible_headers()
+        for attr in cell_attrs:
+            if attr in visible:
+                self.ui.cifList_treeView.hideColumn(1 + visible.index(attr))
         self.ui.cifList_tableView.hide()
         self.ui.cifList_treeView.show()
 
