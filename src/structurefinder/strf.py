@@ -309,31 +309,21 @@ class StartStructureDB(QMainWindow):
     def toggle_group_by_unit_cell(self, checked: bool):
         if not self.structures:
             return
+        need_refetch = False
         if checked:
             # Ensure cell columns are visible so the SQL query includes them
             # and _cell_column_positions() can find them for grouping.
             cell_attrs = ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
-            any_made_visible = False
             for attr in cell_attrs:
                 col = getattr(columns, attr)
                 if not col.visible:
                     col.visible = True
-                    any_made_visible = True
-            if any_made_visible:
-                # Re-fetch data from the database so rows include cell values.
-                data = self.structures.get_structure_rows_by_ids()
-                self.set_model_from_data(data)
-            elif hasattr(self, '_last_data'):
-                self.set_model_from_data(self._last_data)
-            else:
-                data = self.structures.get_structure_rows_by_ids()
-                self.set_model_from_data(data)
+                    need_refetch = True
+        if need_refetch or not hasattr(self, '_last_data'):
+            data = self.structures.get_structure_rows_by_ids()
         else:
-            if hasattr(self, '_last_data'):
-                self.set_model_from_data(self._last_data)
-            else:
-                data = self.structures.get_structure_rows_by_ids()
-                self.set_model_from_data(data)
+            data = self._last_data
+        self.set_model_from_data(data)
 
     def gotto_structure_id(self, value: int):
         table = self.ui.cifList_tableView
