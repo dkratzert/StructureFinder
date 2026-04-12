@@ -64,6 +64,9 @@ class Ui_stdbMainwindow(object):
         self.hideInArchivesCB = QtWidgets.QCheckBox(parent=self.groupBox_6)
         self.hideInArchivesCB.setObjectName("hideInArchivesCB")
         self.verticalLayout_12.addWidget(self.hideInArchivesCB)
+        self.groupByUnitCellCB = QtWidgets.QCheckBox(parent=self.groupBox_6)
+        self.groupByUnitCellCB.setObjectName("groupByUnitCellCB")
+        self.verticalLayout_12.addWidget(self.groupByUnitCellCB)
         self.verticalLayout_10.addWidget(self.groupBox_6)
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Preferred)
         self.verticalLayout_10.addItem(spacerItem1)
@@ -557,6 +560,11 @@ class Ui_stdbMainwindow(object):
         self.cifList_tableView.horizontalHeader().setMinimumSectionSize(90)
         self.cifList_tableView.horizontalHeader().setStretchLastSection(True)
         self.importResults.addWidget(self.cifList_tableView, 1, 0, 1, 7)
+        self.cifList_treeView = StructuresTreeView(parent=self.maintab)
+        self.cifList_treeView.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.cifList_treeView.setObjectName("cifList_treeView")
+        self.cifList_treeView.hide()
+        self.importResults.addWidget(self.cifList_treeView, 1, 0, 1, 7)
         self.gridLayout_3.addLayout(self.importResults, 0, 0, 1, 1)
         self.MaintabWidget.addTab(self.maintab, "")
         self.allEntrysTab = QtWidgets.QWidget()
@@ -1289,6 +1297,7 @@ class Ui_stdbMainwindow(object):
         self.ignoreArchivesCB.setText(_translate("stdbMainwindow", "Ignore files in archives"))
         self.groupBox_6.setTitle(_translate("stdbMainwindow", "View Options"))
         self.hideInArchivesCB.setText(_translate("stdbMainwindow", "hide files in archives"))
+        self.groupByUnitCellCB.setText(_translate("stdbMainwindow", "Group by unit cell"))
         self.importDatabaseButton.setText(_translate("stdbMainwindow", "Open Database File"))
         self.saveDatabaseButton.setText(_translate("stdbMainwindow", "Save Database      "))
         self.appendDatabasePushButton.setText(_translate("stdbMainwindow", "Append a Database"))
@@ -1650,7 +1659,7 @@ class Ui_stdbMainwindow(object):
         self.actionGo_to_All_CIF_Tab.setText(_translate("stdbMainwindow", "Go to All CIF Tab"))
         self.actionGo_to_All_CIF_Tab.setShortcut(_translate("stdbMainwindow", "Meta+A"))
 from structurefinder.displaymol.molecule2D import MoleculeWidget
-from structurefinder.gui.table_view import StructuresListTableView
+from structurefinder.gui.table_view import StructuresListTableView, StructuresTreeView
 
 
 if __name__ == "__main__":

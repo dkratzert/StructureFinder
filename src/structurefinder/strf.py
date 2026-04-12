@@ -45,7 +45,7 @@ from structurefinder import strf_cmd
 from structurefinder.ccdc.query import parse_results, search_csd
 from structurefinder.displaymol.sdm import SDM
 from structurefinder.gui.strf_main import Ui_stdbMainwindow
-from structurefinder.gui.table_model import CustomProxyModel, TableModel
+from structurefinder.gui.table_model import CustomProxyModel, GroupedStructuresModel, TableModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
@@ -201,6 +201,13 @@ class StartStructureDB(QMainWindow):
         self.ui.labelsCheckBox.toggled.connect(self.show_labels)
         self.ui.helpPushButton.clicked.connect(self.show_help)
         self.ui.hideInArchivesCB.clicked.connect(self.recount)
+        # Group by unit cell toggle:
+        self.ui.groupByUnitCellCB.toggled.connect(self.toggle_group_by_unit_cell)
+        # Tree view signals:
+        self.ui.cifList_treeView.save_excel_triggered.connect(self.on_save_as_excel)
+        self.ui.cifList_treeView.open_save_path.connect(self.on_browse_path_from_row)
+        self.ui.cifList_treeView.header_menu.columns_changed.connect(self.show_full_list)
+        self.ui.cifList_treeView.header_menu.columns_changed.connect(self.save_headers)
         # Column menu:
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.show_full_list)
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.save_headers)
@@ -265,6 +272,13 @@ class StartStructureDB(QMainWindow):
             print(f'state restored {ok}')"""
 
     def set_model_from_data(self, data: list | tuple):
+        self._last_data = list(data)
+        if self.ui.groupByUnitCellCB.isChecked():
+            self._set_grouped_model(data)
+        else:
+            self._set_flat_model(data)
+
+    def _set_flat_model(self, data: list | tuple) -> None:
         table_model = TableModel(parent=self, structures=data)
         proxy_model = CustomProxyModel(self)
         proxy_model.setSourceModel(table_model)
@@ -272,10 +286,25 @@ class StartStructureDB(QMainWindow):
         self.ui.hideInArchivesCB.toggled.connect(proxy_model.setFilterEnabled)
         proxy_model.setFilterEnabled(self.ui.hideInArchivesCB.isChecked())
         self.table_model = proxy_model
-        # self.ui.cifList_tableView.setModel(self.table_model)
         self.ui.cifList_tableView.hideColumn(0)
         self.ui.cifList_tableView.selectionModel().selectionChanged.connect(self.get_properties)
         self.ui.cifList_tableView.resizeColumnToContents(3)
+        self.ui.cifList_tableView.show()
+        self.ui.cifList_treeView.hide()
+
+    def _set_grouped_model(self, data: list | tuple) -> None:
+        grouped_model = GroupedStructuresModel(structures=list(data), parent=self)
+        self.ui.cifList_treeView.setModel(grouped_model)
+        self.table_model = grouped_model
+        self.ui.cifList_treeView.hideColumn(0)
+        self.ui.cifList_treeView.selectionModel().selectionChanged.connect(self.get_properties)
+        self.ui.cifList_tableView.hide()
+        self.ui.cifList_treeView.show()
+
+    def toggle_group_by_unit_cell(self, checked: bool):
+        if not hasattr(self, '_last_data'):
+            return
+        self.set_model_from_data(self._last_data)
 
     def gotto_structure_id(self, value: int):
         table = self.ui.cifList_tableView
@@ -291,7 +320,15 @@ class StartStructureDB(QMainWindow):
 
     def recount(self):
         if hasattr(self, 'table_model'):
-            self.statusBar().showMessage(f"Database with {self.table_model.rowCount()} structures loaded", msecs=0)
+            self.statusBar().showMessage(f"Database with {self._structure_count()} structures loaded", msecs=0)
+
+    def _structure_count(self) -> int:
+        """Return the total number of structures currently displayed."""
+        if not hasattr(self, '_last_data'):
+            if hasattr(self, 'table_model'):
+                return self.table_model.rowCount()
+            return 0
+        return len(self._last_data)
 
     def show_help(self) -> None:
         from qtpy import QtCore
@@ -660,7 +697,7 @@ class StartStructureDB(QMainWindow):
         searchresult = self.structures.get_structure_rows_by_ids(idlist)
         self.full_list = False
         self.set_model_from_data(searchresult)
-        self.statusBar().showMessage(f'Found {self.table_model.rowCount()} structures.')
+        self.statusBar().showMessage(f'Found {self._structure_count()} structures.')
         if idlist:
             self.ui.MaintabWidget.setCurrentIndex(0)
 
@@ -829,9 +866,17 @@ class StartStructureDB(QMainWindow):
         This slot shows the properties of a cif file in the properties widget
         """
         try:
-            structure_id = selected.indexes()[0].data()
+            index = selected.indexes()[0]
         except IndexError:
             return False
+        # When using the grouped tree model, only handle child rows
+        model = index.model()
+        if isinstance(model, GroupedStructuresModel):
+            structure_id = model.structure_id_from_index(index)
+            if structure_id is None:
+                return False  # parent row — no single structure
+        else:
+            structure_id = index.data()
         self.structureId = structure_id
         dic = self.structures.get_row_as_dict(structure_id)
         self.display_properties(structure_id, dic)
@@ -1084,7 +1129,7 @@ class StartStructureDB(QMainWindow):
             self.set_model_from_data(self.structures.get_structure_rows_by_ids(searchresult))
         else:
             self.set_model_from_data([])
-        self.statusBar().showMessage(f"Found {self.table_model.rowCount()} structures.")
+        self.statusBar().showMessage(f"Found {self._structure_count()} structures.")
         return True
 
     def search_cell_idlist(self, cell: list) -> list:
@@ -1171,7 +1216,7 @@ class StartStructureDB(QMainWindow):
         searchresult = self.structures.get_structure_rows_by_ids(idlist)
         self.full_list = False
         self.set_model_from_data(searchresult)
-        print(f'Found {self.table_model.rowCount()} results.')
+        print(f'Found {self._structure_count()} results.')
         return True
 
     def search_elements(self, elements: str, excluding: str, onlythese: bool = False) -> list:
@@ -1243,7 +1288,7 @@ class StartStructureDB(QMainWindow):
 
     def display_number_of_structures(self):
         # number = self.structures.get_largest_id()
-        self.ui.statusbar.showMessage(f'Database with {self.table_model.rowCount()} structures loaded.')
+        self.ui.statusbar.showMessage(f'Database with {self._structure_count()} structures loaded.')
 
     def get_name_from_p4p(self):
         """
@@ -1343,7 +1388,7 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
-        self.statusBar().showMessage(f'Found {self.table_model.rowCount()} structures.', msecs=0)
+        self.statusBar().showMessage(f'Found {self._structure_count()} structures.', msecs=0)
         self.ui.cifList_tableView.resizeColumnToContents(columns.path.position)
 
     def clear_fields(self) -> None:

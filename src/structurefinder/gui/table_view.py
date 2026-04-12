@@ -54,7 +54,8 @@ class CustomHorizontalHeaderView(QtWidgets.QHeaderView):
     def reset_sorting(self):
         """Resets the sorting of the table."""
         self.setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
-        self.table.model().sort(-1)
+        if self.table.model() is not None:
+            self.table.model().sort(-1)
 
 
 class StructuresListTableView(QtWidgets.QTableView):
@@ -103,6 +104,74 @@ class StructuresListTableView(QtWidgets.QTableView):
         try:
             path_data = self.get_field_content(self.currentIndex().row(), columns.path.position)
         except IndexError:
+            path_data = ''
+        self.open_save_path.emit(path_data)
+
+    def mousePressEvent(self, e: QtGui.QMouseEvent) -> None:
+        if e.button() == Qt.MouseButton.RightButton:
+            pass
+        super().mousePressEvent(e)
+
+
+class StructuresTreeView(QtWidgets.QTreeView):
+    """QTreeView that displays the grouped (two-level) structures model."""
+
+    save_excel_triggered = Signal()
+    open_save_path = Signal(str)
+
+    def __init__(self, parent=None) -> None:
+        super().__init__(parent)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.DefaultContextMenu)
+        self.doubleClicked.connect(self._on_open_file_path)
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.setAlternatingRowColors(True)
+        self.setEditTriggers(QtWidgets.QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.setUniformRowHeights(True)
+        self.header_menu = CustomHorizontalHeaderView(self)
+        self.header_menu.setSectionsClickable(True)
+        self.setHeader(self.header_menu)
+
+    def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
+        context_menu = QtWidgets.QMenu(self)
+        context_menu.setStyleSheet("""
+                QMenu {
+                    background-color: #f0f0f0;
+                    color: black;
+                }
+                QMenu::item:selected {
+                    background-color: #3874f2;
+                    color: white;
+                }
+            """)
+        save_excel = context_menu.addAction("Save as Excel File")
+        context_menu.addAction(save_excel)
+        open_path = context_menu.addAction("Open file path")
+        context_menu.addAction(open_path)
+        save_excel.triggered.connect(self._on_save_excel)
+        open_path.triggered.connect(self._on_open_file_path)
+        context_menu.popup(QCursor.pos())
+
+    def _on_save_excel(self) -> None:
+        self.save_excel_triggered.emit()
+
+    def get_field_content(self, row: int, col: int) -> str | int:
+        model = self.model()
+        source_index = model.index(row, col)
+        content = model.data(source_index)
+        return content
+
+    def _on_open_file_path(self) -> None:
+        from structurefinder.gui.table_model import GroupedStructuresModel
+        index = self.currentIndex()
+        model = self.model()
+        if isinstance(model, GroupedStructuresModel) and not model.is_child_index(index):
+            return
+        try:
+            path_data = model.data(model.index(index.row(), columns.path.position, index.parent()))
+            if path_data is None:
+                path_data = ''
+        except (IndexError, AttributeError):
             path_data = ''
         self.open_save_path.emit(path_data)
 

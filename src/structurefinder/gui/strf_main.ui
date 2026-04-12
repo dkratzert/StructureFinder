@@ -135,6 +135,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="groupByUnitCellCB">
+            <property name="text">
+             <string>Group by unit cell</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
