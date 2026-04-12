@@ -296,15 +296,44 @@ class StartStructureDB(QMainWindow):
         grouped_model = GroupedStructuresModel(structures=list(data), parent=self)
         self.ui.cifList_treeView.setModel(grouped_model)
         self.table_model = grouped_model
-        self.ui.cifList_treeView.hideColumn(0)
+        # Do NOT hide column 0 — it is the tree column that shows
+        # expand/collapse arrows and group labels in QTreeView.
         self.ui.cifList_treeView.selectionModel().selectionChanged.connect(self.get_properties)
+        # Span the first column for each group (parent) row so the label
+        # stretches across the full width of the tree view.
+        for row in range(grouped_model.rowCount()):
+            self.ui.cifList_treeView.setFirstColumnSpanned(row, QModelIndex(), True)
         self.ui.cifList_tableView.hide()
         self.ui.cifList_treeView.show()
 
     def toggle_group_by_unit_cell(self, checked: bool):
-        if not hasattr(self, '_last_data'):
+        if not self.structures:
             return
-        self.set_model_from_data(self._last_data)
+        if checked:
+            # Ensure cell columns are visible so the SQL query includes them
+            # and _cell_column_positions() can find them for grouping.
+            cell_attrs = ['a', 'b', 'c', 'alpha', 'beta', 'gamma']
+            any_made_visible = False
+            for attr in cell_attrs:
+                col = getattr(columns, attr)
+                if not col.visible:
+                    col.visible = True
+                    any_made_visible = True
+            if any_made_visible:
+                # Re-fetch data from the database so rows include cell values.
+                data = self.structures.get_structure_rows_by_ids()
+                self.set_model_from_data(data)
+            elif hasattr(self, '_last_data'):
+                self.set_model_from_data(self._last_data)
+            else:
+                data = self.structures.get_structure_rows_by_ids()
+                self.set_model_from_data(data)
+        else:
+            if hasattr(self, '_last_data'):
+                self.set_model_from_data(self._last_data)
+            else:
+                data = self.structures.get_structure_rows_by_ids()
+                self.set_model_from_data(data)
 
     def gotto_structure_id(self, value: int):
         table = self.ui.cifList_tableView
