@@ -272,7 +272,7 @@ class StartStructureDB(QMainWindow):
             print(f'state restored {ok}')"""
 
     def set_model_from_data(self, data: list | tuple):
-        self._last_data = list(data)
+        self._last_data = data
         if self.ui.groupByUnitCellCB.isChecked():
             self._set_grouped_model(data)
         else:

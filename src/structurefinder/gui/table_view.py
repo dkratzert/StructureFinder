@@ -145,9 +145,7 @@ class StructuresTreeView(QtWidgets.QTreeView):
                 }
             """)
         save_excel = context_menu.addAction("Save as Excel File")
-        context_menu.addAction(save_excel)
         open_path = context_menu.addAction("Open file path")
-        context_menu.addAction(open_path)
         save_excel.triggered.connect(self._on_save_excel)
         open_path.triggered.connect(self._on_open_file_path)
         context_menu.popup(QCursor.pos())

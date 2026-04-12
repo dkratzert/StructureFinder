@@ -241,7 +241,7 @@ class GroupedStructuresModel(QtCore.QAbstractItemModel):
             return 0
         return columns.number_of_visible_columns() + 1
 
-    def data(self, index: QModelIndex, role: int | None = None) -> str | None:
+    def data(self, index: QModelIndex, role: int | None = None) -> Any:
         if not index.isValid() or role != Qt.ItemDataRole.DisplayRole:
             return None
         internal = index.internalId()
