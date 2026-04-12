@@ -93,10 +93,24 @@ class TableModel(QtCore.QAbstractTableModel):
 class CustomProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.filter_enabled = False
+        self.archive_filter_enabled = False
+        self.unrefined_filter_enabled = False
+        self.refined_structure_ids: set[int] = set()
 
     def setFilterEnabled(self, enabled):
-        self.filter_enabled = bool(enabled)
+        # Backward-compatible alias for the existing archive filter checkbox.
+        self.setArchiveFilterEnabled(enabled)
+
+    def setArchiveFilterEnabled(self, enabled):
+        self.archive_filter_enabled = bool(enabled)
+        self.invalidateFilter()
+
+    def setUnrefinedFilterEnabled(self, enabled):
+        self.unrefined_filter_enabled = bool(enabled)
+        self.invalidateFilter()
+
+    def setRefinedStructureIds(self, structure_ids: set[int] | list[int] | tuple[int, ...]):
+        self.refined_structure_ids = set(structure_ids)
         self.invalidateFilter()
 
     def sort(self, column: int, order: Qt.SortOrder = ...):
@@ -108,14 +122,21 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
         self.layoutChanged.emit()
 
     def filterAcceptsRow(self, sourceRow: int, sourceParent: QModelIndex) -> bool:
-        if not self.filter_enabled:
-            return True
-        if not columns.path.visible:
-            return False
-        # Get the text of the row at sourceRow
-        index = self.sourceModel().index(sourceRow, columns.path.position, sourceParent)
-        text = self.sourceModel().data(index, QtCore.Qt.ItemDataRole.DisplayRole)
+        if self.archive_filter_enabled:
+            if not columns.path.visible:
+                return False
+            index = self.sourceModel().index(sourceRow, columns.path.position, sourceParent)
+            text = self.sourceModel().data(index, QtCore.Qt.ItemDataRole.DisplayRole)
+            if text.endswith(archives):
+                return False
 
-        if text.endswith(archives):
-            return False
+        if self.unrefined_filter_enabled:
+            id_index = self.sourceModel().index(sourceRow, 0, sourceParent)
+            structure_id = self.sourceModel().data(id_index, QtCore.Qt.ItemDataRole.DisplayRole)
+            try:
+                structure_id = int(structure_id)
+            except (TypeError, ValueError):
+                return False
+            if structure_id not in self.refined_structure_ids:
+                return False
         return True

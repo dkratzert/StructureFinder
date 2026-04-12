@@ -135,6 +135,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QCheckBox" name="hideWithoutR1CB">
+            <property name="text">
+             <string>Hide unrefined</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

@@ -201,6 +201,7 @@ class StartStructureDB(QMainWindow):
         self.ui.labelsCheckBox.toggled.connect(self.show_labels)
         self.ui.helpPushButton.clicked.connect(self.show_help)
         self.ui.hideInArchivesCB.clicked.connect(self.recount)
+        self.ui.hideWithoutR1CB.clicked.connect(self.recount)
         # Column menu:
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.show_full_list)
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.save_headers)
@@ -269,8 +270,12 @@ class StartStructureDB(QMainWindow):
         proxy_model = CustomProxyModel(self)
         proxy_model.setSourceModel(table_model)
         self.ui.cifList_tableView.setModel(proxy_model)
-        self.ui.hideInArchivesCB.toggled.connect(proxy_model.setFilterEnabled)
-        proxy_model.setFilterEnabled(self.ui.hideInArchivesCB.isChecked())
+        if self.structures:
+            proxy_model.setRefinedStructureIds(self.structures.find_with_r1_value())
+        self.ui.hideInArchivesCB.toggled.connect(proxy_model.setArchiveFilterEnabled)
+        self.ui.hideWithoutR1CB.toggled.connect(proxy_model.setUnrefinedFilterEnabled)
+        proxy_model.setArchiveFilterEnabled(self.ui.hideInArchivesCB.isChecked())
+        proxy_model.setUnrefinedFilterEnabled(self.ui.hideWithoutR1CB.isChecked())
         self.table_model = proxy_model
         # self.ui.cifList_tableView.setModel(self.table_model)
         self.ui.cifList_tableView.hideColumn(0)
@@ -1217,6 +1222,7 @@ class StartStructureDB(QMainWindow):
             return False
         self.close_db()
         self.clear_fields()
+        self.ui.hideWithoutR1CB.setChecked(False)
         self.dbfilename = file_name
         self.structures = database_handler.StructureTable(self.dbfilename)
         self.load_headers()
