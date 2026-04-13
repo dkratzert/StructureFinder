@@ -59,9 +59,9 @@ mkdir %PACKAGE_DIR%\Lib\site-packages > NUL
 REM Not needed, because it just installs in local python path without venv:
 rem python -m pip install virtualenv
 rem python -m virtualenv venv --clear --no-periodic-update
-rem call venv\Scripts\activate.bat
+call .venv\Scripts\activate.bat
 
-call Scripts\pip install -r %SCRIPT_DIR%\..\pyproject.toml --no-warn-script-location
+call Scripts\pip install ..\..\. --no-build-isolation
 if %errorlevel% neq 0 (
     echo pip failed to install all packages. Stopping now.
     exit /b %errorlevel%

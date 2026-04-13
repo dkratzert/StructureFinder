@@ -55,6 +55,7 @@ dev = [
     "pytest",
     "sphinx",
     "sphinx_rtd_theme",
+    "hatchling[build]>=1.29.0",
 ]
 
 build = [
