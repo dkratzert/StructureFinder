@@ -3,7 +3,7 @@
 REM execute me from the main directory
 
 REM Python version must match the one in scripts\_create_dist.bat
-set PYTHON_VERSION=3.14
+set PYTHON_VERSION=3.14.4
 
 rmdir /S dist /Q
 rmdir /S build /Q
@@ -17,13 +17,14 @@ where uv >nul 2>nul
 if %errorlevel% neq 0 (
     echo uv is not installed. Installing uv...
     powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    set "PATH=%USERPROFILE%\.cargo\bin;%USERPROFILE%\.local\bin;%PATH%"
 )
 
 CALL uv venv --python %PYTHON_VERSION% .venv
 CALL .venv\Scripts\activate.bat
 CALL uv pip install hatchling
 
-CALL scripts\_create_dist.bat
+CALL scripts\_create_dist.bat %PYTHON_VERSION%
 
 rem CALL pip install qtpy
 

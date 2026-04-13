@@ -3,7 +3,8 @@
 REM This script builds a working Python environment into ..\dist of the current file location.
 
 REM Set the Python version here:
-set PYTHON_VERSION=3.14.4
+set PYTHON_VERSION=%1
+if "%PYTHON_VERSION%"=="" set "PYTHON_VERSION=3.14.4"
 
 set PYTHON_URL=https://www.python.org/ftp/python/%PYTHON_VERSION%/python-%PYTHON_VERSION%-embed-amd64.zip
 
@@ -52,6 +53,14 @@ cd %PACKAGE_DIR%
 set PYTHONPATH=%PACKAGE_DIR%
 mkdir %PACKAGE_DIR%\Lib\site-packages > NUL
 
+REM Ensure uv is installed
+where uv >nul 2>nul
+if %errorlevel% neq 0 (
+    echo uv is not installed. Installing uv...
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    set "PATH=%USERPROFILE%\.cargo\bin;%USERPROFILE%\.local\bin;%PATH%"
+)
+
 REM Use uv (must be installed and available in the outer environment) to install dependencies
 REM directly into the embedded Python environment, replacing the need to download and install pip.
 call uv pip install --python %PACKAGE_DIR%\python.exe %SCRIPT_DIR%\.. --no-build-isolation
@@ -62,6 +71,4 @@ if %errorlevel% neq 0 (
 
 cd %SCRIPT_DIR%\..
 
-echo - compiling python packages
-%PACKAGE_DIR%\python.exe -m compileall -q .
 echo - finished!
