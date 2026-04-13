@@ -10,12 +10,12 @@ archives = tuple([x.replace("*", "") for x in structurefinder.searcher.constants
 
 
 class TableModel(QtCore.QAbstractTableModel):
-    def __init__(self, structures=None, *args, **kwargs):
+    def __init__(self, structures: list[list[str]] = None, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._data: list[list[str]] = structures or []
 
     @property
-    def horizontalHeaders(self):
+    def horizontalHeaders(self) -> list[str]:
         return columns.visible_header_names()
 
     def data(self, index: QModelIndex, role: int | None = None) -> str | None:
@@ -75,8 +75,8 @@ class TableModel(QtCore.QAbstractTableModel):
     def clear(self):
         self.resetInternalData()
 
-    def sort(self, column: int, order: Qt.SortOrder = ...):
-        def convert(value):
+    def sort(self, column: int, order: Qt.SortOrder = ...) -> None:
+        def convert(value: object) -> str | float | Any:
             try:
                 return float(value)
             except ValueError:
@@ -97,15 +97,15 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
         self.unrefined_filter_enabled = False
         self.refined_structure_ids: set[int] = set()
 
-    def setFilterEnabled(self, enabled):
+    def setFilterEnabled(self, enabled: bool) -> None:
         # Backward-compatible alias for the existing archive filter checkbox.
         self.setArchiveFilterEnabled(enabled)
 
-    def setArchiveFilterEnabled(self, enabled):
+    def setArchiveFilterEnabled(self, enabled: bool) -> None:
         self.archive_filter_enabled = bool(enabled)
         self.invalidateFilter()
 
-    def setUnrefinedFilterEnabled(self, enabled):
+    def setUnrefinedFilterEnabled(self, enabled: bool) -> None:
         self.unrefined_filter_enabled = bool(enabled)
         self.invalidateFilter()
 
@@ -113,7 +113,7 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
         self.refined_structure_ids = set(structure_ids)
         self.invalidateFilter()
 
-    def sort(self, column: int, order: Qt.SortOrder = ...):
+    def sort(self, column: int, order: Qt.SortOrder = ...) -> None:
         self.layoutAboutToBeChanged.emit()
         self.sourceModel()._data.sort(
             key=lambda row: columns.col_from(column - 1).data_type(row[column]),
