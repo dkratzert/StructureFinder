@@ -201,6 +201,15 @@ class TestApplication(unittest.TestCase):
         # Rows without archives:
         self.assertEqual(51, self.get_row_count_from_table())
 
+    def test_filter_unrefined(self):
+        self.myapp.ui.hideWithoutR1CB.setChecked(False)
+        self.assertEqual(263, self.get_row_count_from_table())
+        expected_refined = len(self.myapp.structures.find_with_r1_value())
+        self.myapp.ui.hideWithoutR1CB.setChecked(True)
+        self.assertEqual(expected_refined, self.get_row_count_from_table())
+        self.myapp.ui.hideWithoutR1CB.setChecked(False)
+        self.assertEqual(263, self.get_row_count_from_table())
+
     def test_p4p_parser(self):
         self.myapp.search_for_p4pcell('tests/test-data/test2.p4p')
         self.assertEqual('14.637 9.221  15.094 90.000 107.186 90.000', self.myapp.ui.searchCellLineEDit.text())

@@ -131,7 +131,14 @@
           <item>
            <widget class="QCheckBox" name="hideInArchivesCB">
             <property name="text">
-             <string>hide files in archives</string>
+             <string>Hide files in archives</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="hideWithoutR1CB">
+            <property name="text">
+             <string>Hide unrefined</string>
             </property>
            </widget>
           </item>

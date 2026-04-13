@@ -110,6 +110,12 @@ class TestDatabase(unittest.TestCase):
     def test_find_by_rvalue(self):
         self.assertEqual([75, 131, 135, 243], self.db.find_by_rvalue(0.030))
 
+    def test_find_with_r1_value(self):
+        refined_ids = self.db.find_with_r1_value()
+        self.assertEqual(143, len(refined_ids))
+        # id 30 has no _refine_ls_R_factor_gt but has _refine_ls_R_factor_all.
+        self.assertIn(30, refined_ids)
+
     def find_biggest_cell(self):
         self.assertEqual((250, 48.48, 21.72, 10.74), self.db.find_biggest_cell())
 

@@ -1424,6 +1424,27 @@ class StructureTable:
               """
         return self.result_to_list(self.database.db_request(req, (rvalue, rvalue)))
 
+    def find_with_r1_value(self) -> list[int]:
+        """
+        Returns IDs of structures that have a usable R1 value.
+        Prefer _refine_ls_R_factor_gt and fall back to _refine_ls_R_factor_all.
+        Missing values are NULL, empty string, '.', and '?'.
+        """
+        req = """
+              SELECT StructureId
+              FROM Residuals
+              WHERE CASE
+                        WHEN _refine_ls_R_factor_gt IS NOT NULL
+                             AND TRIM(CAST(_refine_ls_R_factor_gt AS TEXT)) NOT IN ('', '.', '?')
+                            THEN _refine_ls_R_factor_gt
+                        WHEN _refine_ls_R_factor_all IS NOT NULL
+                             AND TRIM(CAST(_refine_ls_R_factor_all AS TEXT)) NOT IN ('', '.', '?')
+                            THEN _refine_ls_R_factor_all
+                        ELSE NULL
+                    END IS NOT NULL
+              """
+        return self.result_to_list(self.database.db_request(req))
+
     def find_biggest_cell(self):
         """
         Finds the structure with the biggest cell in the db. This should be done by volume, but was
