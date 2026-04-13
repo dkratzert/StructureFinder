@@ -1427,7 +1427,7 @@ dependencies = [
     { name = "xlsxwriter" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 build = [
     { name = "build" },
     { name = "hatchling" },
@@ -1435,7 +1435,7 @@ build = [
     { name = "twine" },
     { name = "wheel" },
 ]
-devel = [
+dev = [
     { name = "pytest" },
     { name = "ruff" },
     { name = "sphinx" },
@@ -1444,11 +1444,9 @@ devel = [
 
 [package.metadata]
 requires-dist = [
-    { name = "build", marker = "extra == 'build'" },
     { name = "docutils" },
     { name = "gemmi", specifier = ">=0.7.5" },
     { name = "gunicorn" },
-    { name = "hatchling", marker = "extra == 'build'" },
     { name = "macholib" },
     { name = "numpy", specifier = ">=2.1" },
     { name = "pefile" },
@@ -1456,22 +1454,29 @@ requires-dist = [
     { name = "pyqt6", specifier = ">=6.9" },
     { name = "pyqt6-sip" },
     { name = "pyqtgraph", specifier = ">=0.13" },
-    { name = "pytest", marker = "extra == 'devel'" },
     { name = "pywin32-ctypes", specifier = ">=0.2" },
     { name = "qtawesome" },
     { name = "qtpy", specifier = ">=2.4.3" },
     { name = "requests" },
-    { name = "ruff", marker = "extra == 'devel'" },
-    { name = "setuptools", marker = "extra == 'build'" },
     { name = "shelxfile" },
     { name = "six" },
-    { name = "sphinx", marker = "extra == 'devel'" },
-    { name = "sphinx-rtd-theme", marker = "extra == 'devel'" },
-    { name = "twine", marker = "extra == 'build'" },
-    { name = "wheel", marker = "extra == 'build'" },
     { name = "xlsxwriter" },
 ]
-provides-extras = ["build", "devel"]
+
+[package.metadata.requires-dev]
+build = [
+    { name = "build" },
+    { name = "hatchling" },
+    { name = "setuptools" },
+    { name = "twine" },
+    { name = "wheel" },
+]
+dev = [
+    { name = "pytest" },
+    { name = "ruff" },
+    { name = "sphinx" },
+    { name = "sphinx-rtd-theme" },
+]
 
 [[package]]
 name = "texttable"
