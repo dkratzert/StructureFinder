@@ -12,6 +12,13 @@ rem git restore *
 rem git switch master
 rem git pull
 
+REM Ensure uv is installed
+where uv >nul 2>nul
+if %errorlevel% neq 0 (
+    echo uv is not installed. Installing uv...
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+)
+
 CALL uv venv --python %PYTHON_VERSION% .venv
 CALL .venv\Scripts\activate.bat
 CALL uv pip install hatchling

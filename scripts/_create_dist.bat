@@ -49,21 +49,14 @@ rem vc_redist.x64.exe /passive /quiet /install
 
 cd %PACKAGE_DIR%
 
-curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-python get-pip.py
-del get-pip.py
-
 set PYTHONPATH=%PACKAGE_DIR%
 mkdir %PACKAGE_DIR%\Lib\site-packages > NUL
 
-REM Not needed, because it just installs in local python path without venv:
-rem python -m pip install virtualenv
-rem python -m virtualenv venv --clear --no-periodic-update
-rem call .venv\Scripts\activate.bat
-
-call Scripts\pip install %SCRIPT_DIR%\.. --no-build-isolation --no-warn-script-location
+REM Use uv (must be installed and available in the outer environment) to install dependencies
+REM directly into the embedded Python environment, replacing the need to download and install pip.
+call uv pip install --python %PACKAGE_DIR%\python.exe %SCRIPT_DIR%\.. --no-build-isolation
 if %errorlevel% neq 0 (
-    echo pip failed to install all packages. Stopping now.
+    echo uv pip failed to install all packages. Stopping now.
     exit /b %errorlevel%
 )
 
