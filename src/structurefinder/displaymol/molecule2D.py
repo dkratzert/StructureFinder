@@ -88,7 +88,7 @@ class MoleculeWidget(QtWidgets.QWidget):
             self.painter.setFont(font)
             try:
                 self.draw()
-            except ValueError as e:
+            except Exception as e:
                 print(f'Draw structure crashed: {e}')
                 self.painter.end()
 
@@ -168,7 +168,6 @@ class MoleculeWidget(QtWidgets.QWidget):
             # bonds:
             if item[0] == 1:
                 self.draw_bond(item[1], item[2], offset=bond_offset)
-        self.painter.end()
 
     def calculate_z_order(self):
         """
@@ -209,8 +208,8 @@ class MoleculeWidget(QtWidgets.QWidget):
 
     def draw_bond(self, at1: 'Atom', at2: 'Atom', offset: int):
         self.painter.setPen(QPen(QtCore.Qt.GlobalColor.darkGray, self.bond_width, Qt.PenStyle.SolidLine))
-        self.painter.drawLine(at1.screenx + offset, at1.screeny + offset,
-                              at2.screenx + offset, at2.screeny + offset)
+        self.painter.drawLine(int(at1.screenx + offset), int(at1.screeny + offset),
+                              int(at2.screenx + offset), int(at2.screeny + offset))
 
     def draw_atom(self, atom: 'Atom'):
         self.painter.setPen(QPen(QtCore.Qt.GlobalColor.black, 1, Qt.PenStyle.SolidLine))

@@ -670,12 +670,12 @@ class StartStructureDB(QMainWindow):
         """
         self.clear_fields()
         if not idlist:
-            self.recount()
+            self.statusBar().showMessage(f'Found {0} structures.')
             return
         searchresult = self.structures.get_structure_rows_by_ids(idlist)
         self.full_list = False
         self.set_model_from_data(searchresult)
-        self.recount()
+        self.statusBar().showMessage(f'Found {self.table_model.rowCount()} structures.')
         if idlist:
             self.ui.MaintabWidget.setCurrentIndex(0)
 
@@ -1134,7 +1134,7 @@ class StartStructureDB(QMainWindow):
         except (ValueError, AttributeError):
             if not self.full_list:
                 self.ui.cifList_tableView.model().setData(value=[])
-                self.recount()
+                self.statusBar().showMessage('Found 0 structures.')
             return []
         # Real lattice comparing in G6:
         idlist = []
@@ -1151,7 +1151,7 @@ class StartStructureDB(QMainWindow):
                 if mapping:
                     idlist.append(curr_cell[0])
         self.progress.hide()
-        self.recount()
+        self.statusBar().showMessage(f'Found {len(idlist)} structures.')
         return idlist
 
     def search_cell(self, search_string: str) -> bool:
@@ -1187,7 +1187,7 @@ class StartStructureDB(QMainWindow):
         searchresult = self.structures.get_structure_rows_by_ids(idlist)
         self.full_list = False
         self.set_model_from_data(searchresult)
-        self.recount()
+        print(f'Found {self.table_model.rowCount()} results.')
         return True
 
     def search_elements(self, elements: str, excluding: str, onlythese: bool = False) -> list:
