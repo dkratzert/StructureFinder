@@ -1,4 +1,0 @@
-ruff
-pytest
-sphinx
-sphinx_rtd_theme

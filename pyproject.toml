@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Search X-ray structures on your hard drive"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -25,12 +25,12 @@ dependencies = [
     "macholib",
     "numpy>=2.1",
     "pefile",
-    "pyqt6<6.9",
+    "pyqt6>=6.9",
     "pyqt6-sip",
-    "pywin32-ctypes~=0.2",
+    "pywin32-ctypes>=0.2",
     "six",
     "requests",
-    "gemmi",
+    "gemmi>=0.7.5",
     "gunicorn",
     "xlsxwriter",
     "qtawesome",
@@ -45,6 +45,14 @@ devel = [
     "pytest",
     "sphinx",
     "sphinx_rtd_theme",
+]
+
+build = [
+    "hatchling",
+    "setuptools",
+    "wheel",
+    "twine",
+    "build",
 ]
 
 [project.urls]

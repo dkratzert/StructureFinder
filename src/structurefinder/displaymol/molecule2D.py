@@ -90,6 +90,7 @@ class MoleculeWidget(QtWidgets.QWidget):
                 self.draw()
             except Exception as e:
                 print(f'Draw structure crashed: {e}')
+            finally:
                 self.painter.end()
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
