@@ -95,7 +95,22 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
         super().__init__(parent)
         self.archive_filter_enabled = False
         self.unrefined_filter_enabled = False
+        self.ignore_archives_filter_enabled = False
+        self.cif_filter_enabled = True
+        self.res_filter_enabled = True
         self.refined_structure_ids: set[int] = set()
+
+    def setCifFilterEnabled(self, enabled: bool) -> None:
+        self.cif_filter_enabled = bool(enabled)
+        self.invalidateFilter()
+
+    def setResFilterEnabled(self, enabled: bool) -> None:
+        self.res_filter_enabled = bool(enabled)
+        self.invalidateFilter()
+
+    def setIgnoreArchivesFilterEnabled(self, enabled: bool) -> None:
+        self.ignore_archives_filter_enabled = bool(enabled)
+        self.invalidateFilter()
 
     def setFilterEnabled(self, enabled: bool) -> None:
         # Backward-compatible alias for the existing archive filter checkbox.
@@ -115,19 +130,32 @@ class CustomProxyModel(QtCore.QSortFilterProxyModel):
 
     def sort(self, column: int, order: Qt.SortOrder = ...) -> None:
         self.layoutAboutToBeChanged.emit()
-        self.sourceModel()._data.sort(
-            key=lambda row: columns.col_from(column - 1).data_type(row[column]),
-            reverse=(order == QtCore.Qt.SortOrder.DescendingOrder),
-        )
+        source_model = self.sourceModel()
+        if hasattr(source_model, '_data'):
+            source_model._data.sort(
+                key=lambda row: columns.col_from(column - 1).data_type(row[column]),
+                reverse=(order == QtCore.Qt.SortOrder.DescendingOrder),
+            )
         self.layoutChanged.emit()
 
     def filterAcceptsRow(self, sourceRow: int, sourceParent: QModelIndex) -> bool:
-        if self.archive_filter_enabled:
-            if not columns.path.visible:
-                return False
+        if self.archive_filter_enabled or self.ignore_archives_filter_enabled:
             index = self.sourceModel().index(sourceRow, columns.path.position, sourceParent)
             text = self.sourceModel().data(index, QtCore.Qt.ItemDataRole.DisplayRole)
+            if not text:
+                return False
             if text.endswith(archives):
+                return False
+
+        filename_index = self.sourceModel().index(sourceRow, columns.filename.position, sourceParent)
+        filename_text = self.sourceModel().data(filename_index, QtCore.Qt.ItemDataRole.DisplayRole)
+        if filename_text:
+            is_cif = filename_text.lower().endswith('.cif')
+            is_res = filename_text.lower().endswith(('.res', '.ins'))
+
+            if not self.cif_filter_enabled and is_cif:
+                return False
+            if not self.res_filter_enabled and is_res:
                 return False
 
         if self.unrefined_filter_enabled:

@@ -202,6 +202,9 @@ class StartStructureDB(QMainWindow):
         self.ui.helpPushButton.clicked.connect(self.show_help)
         self.ui.hideInArchivesCB.clicked.connect(self.recount)
         self.ui.hideWithoutR1CB.clicked.connect(self.recount)
+        self.ui.add_cif.clicked.connect(self.recount)
+        self.ui.add_res.clicked.connect(self.recount)
+        self.ui.ignoreArchivesCB.clicked.connect(self.recount)
         # Column menu:
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.show_full_list)
         self.ui.cifList_tableView.header_menu.columns_changed.connect(self.save_headers)
@@ -274,8 +277,15 @@ class StartStructureDB(QMainWindow):
             proxy_model.setRefinedStructureIds(self.structures.find_with_r1_value())
         self.ui.hideInArchivesCB.toggled.connect(proxy_model.setArchiveFilterEnabled)
         self.ui.hideWithoutR1CB.toggled.connect(proxy_model.setUnrefinedFilterEnabled)
+        self.ui.add_cif.toggled.connect(proxy_model.setCifFilterEnabled)
+        self.ui.add_res.toggled.connect(proxy_model.setResFilterEnabled)
+        self.ui.ignoreArchivesCB.toggled.connect(proxy_model.setIgnoreArchivesFilterEnabled)
+
         proxy_model.setArchiveFilterEnabled(self.ui.hideInArchivesCB.isChecked())
         proxy_model.setUnrefinedFilterEnabled(self.ui.hideWithoutR1CB.isChecked())
+        proxy_model.setCifFilterEnabled(self.ui.add_cif.isChecked())
+        proxy_model.setResFilterEnabled(self.ui.add_res.isChecked())
+        proxy_model.setIgnoreArchivesFilterEnabled(self.ui.ignoreArchivesCB.isChecked())
         self.table_model = proxy_model
         # self.ui.cifList_tableView.setModel(self.table_model)
         self.ui.cifList_tableView.hideColumn(0)
@@ -296,7 +306,7 @@ class StartStructureDB(QMainWindow):
 
     def recount(self):
         if hasattr(self, 'table_model'):
-            self.statusBar().showMessage(f"Database with {self.table_model.rowCount()} structures loaded", msecs=0)
+            self.statusBar().showMessage(f"Database with {len(self.structures)} structures loaded", msecs=0)
 
     def show_help(self) -> None:
         from qtpy import QtCore
@@ -439,7 +449,7 @@ class StartStructureDB(QMainWindow):
         import subprocess
         curdir = Path(curdir).resolve()
         if sys.platform == "win" or sys.platform == "win32":
-            subprocess.Popen(['explorer', str(curdir)], shell=True)
+            subprocess.Popen(['explorer', '/select,', str(curdir)], shell=True)
         if sys.platform == 'darwin':
             subprocess.call(['open', str(curdir)])
         if sys.platform == 'linux':
@@ -467,7 +477,7 @@ class StartStructureDB(QMainWindow):
         from urllib.parse import urlparse
         p = urlparse(e.mimeData().text())
         if sys.platform.startswith('win'):
-            final_path = p.path[1:]  # remove strange / at start
+            final_path = p.path[1]  # remove strange / at start
         else:
             final_path = p.path
         _, ending = os.path.splitext(final_path)
@@ -660,29 +670,29 @@ class StartStructureDB(QMainWindow):
         """
         self.clear_fields()
         if not idlist:
-            self.statusBar().showMessage(f'Found {0} structures.')
+            self.recount()
             return
         searchresult = self.structures.get_structure_rows_by_ids(idlist)
         self.full_list = False
         self.set_model_from_data(searchresult)
-        self.statusBar().showMessage(f'Found {self.table_model.rowCount()} structures.')
+        self.recount()
         if idlist:
             self.ui.MaintabWidget.setCurrentIndex(0)
 
-    def cell_state_changed(self):
+    def cell_state_changed(self) -> None:
         """
         Searches a cell but with diffeent loose or strict option.
         """
         self.search_cell(self.ui.searchCellLineEDit.text())
 
-    def get_startdir_from_dialog(self):
+    def get_startdir_from_dialog(self) -> str:
         return QFileDialog.getExistingDirectory(self, 'Open Directory', directory=self.settings.load_last_indexdir())
 
     def append_file_dirs(self, startdir: str | None = None):
         """Appends new files to database instead of creating a new database"""
         self.import_file_dirs(startdir=startdir, append=True)
 
-    def import_file_dirs(self, startdir=None, append: bool = False):
+    def import_file_dirs(self, startdir: object = None, append: bool = False) -> None:
         """
         Method to import res and cif files into the DB. "startdir" defines the directory where to start indexing.
         """
@@ -726,7 +736,7 @@ class StartStructureDB(QMainWindow):
         self.statusBar().show()
         self.abort_import_button.clicked.connect(self.abort_indexing)
 
-    def abort_indexing(self):
+    def abort_indexing(self) -> None:
         self.worker.stop = True
         self.enable_buttons()
         self.abort_import_button.hide()
@@ -734,15 +744,15 @@ class StartStructureDB(QMainWindow):
         self.statusBar().showMessage("Indexing aborted")
         self.progress.hide()
 
-    def set_maxfiles(self, number: int):
+    def set_maxfiles(self, number: int) -> None:
         self.abort_import_button.show()
         self.maxfiles = number
 
-    def report_progress(self, progress: int):
+    def report_progress(self, progress: int) -> None:
         self.statusbar.showMessage(f'Inspected {progress} files')
         self.progressbar(progress, 0, self.maxfiles)
 
-    def do_work_after_indexing(self, startdir: str):
+    def do_work_after_indexing(self, startdir: str) -> None:
         self.progress.hide()
         strf_cmd.finish_database(self.structures)
         self.ui.cifList_tableView.show()
@@ -750,7 +760,7 @@ class StartStructureDB(QMainWindow):
         self.settings.save_current_index_dir(str(Path(startdir)))
         self.enable_buttons()
 
-    def enable_buttons(self):
+    def enable_buttons(self) -> None:
         self.ui.appendDatabasePushButton.setEnabled(True)
         self.ui.saveDatabaseButton.setEnabled(True)
         self.ui.ExportAsCIFpushButton.setEnabled(True)
@@ -814,13 +824,13 @@ class StartStructureDB(QMainWindow):
             return False
         return True
 
-    def abort_import(self):
+    def abort_import(self) -> None:
         """
         This slot means, import was aborted.
         """
         self.worker.stop()
 
-    def start_db(self):
+    def start_db(self) -> None:
         """
         Initializes the database.
         """
@@ -855,9 +865,9 @@ class StartStructureDB(QMainWindow):
             directory = self.settings.load_last_workdir()
         return QFileDialog.getSaveFileName(self, caption='Save File', directory=directory, filter=filter)
 
-    def save_database(self, save_name=None) -> bool:
+    def save_database(self, save_name: str = None) -> bool:
         """
-        Saves the database to a certain file. Therefore I have to close the database.
+        Saves the database to a certain file. Therefore, I have to close the database.
         """
         if not hasattr(self.structures, 'database'):
             return False
@@ -877,14 +887,15 @@ class StartStructureDB(QMainWindow):
             self.ui.DatabaseNameDisplayLabel.setText('')
             self.statusBar().showMessage("Database saved.", msecs=5000)
             self.open_database_file(save_name)
+        return True
 
-    def eventFilter(self, object, event):
+    def eventFilter(self, object, event) -> bool:
         """Event filter for mouse clicks."""
         if event.type() == QEvent.Type.MouseButtonDblClick:
             self.copyUnitCell()
         return False
 
-    def keyPressEvent(self, q_key_event):
+    def keyPressEvent(self, q_key_event) -> None:
         """
         Event filter for key presses.
         Essentially searches for enter key presses in search fields and runs advanced search.
@@ -1123,7 +1134,7 @@ class StartStructureDB(QMainWindow):
         except (ValueError, AttributeError):
             if not self.full_list:
                 self.ui.cifList_tableView.model().setData(value=[])
-                self.statusBar().showMessage('Found 0 structures.')
+                self.recount()
             return []
         # Real lattice comparing in G6:
         idlist = []
@@ -1140,7 +1151,7 @@ class StartStructureDB(QMainWindow):
                 if mapping:
                     idlist.append(curr_cell[0])
         self.progress.hide()
-        self.statusBar().showMessage(f'Found {len(idlist)} structures.')
+        self.recount()
         return idlist
 
     def search_cell(self, search_string: str) -> bool:
@@ -1176,7 +1187,7 @@ class StartStructureDB(QMainWindow):
         searchresult = self.structures.get_structure_rows_by_ids(idlist)
         self.full_list = False
         self.set_model_from_data(searchresult)
-        print(f'Found {self.table_model.rowCount()} results.')
+        self.recount()
         return True
 
     def search_elements(self, elements: str, excluding: str, onlythese: bool = False) -> list:
@@ -1350,7 +1361,7 @@ class StartStructureDB(QMainWindow):
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
         self.ui.MaintabWidget.setCurrentIndex(0)
-        self.statusBar().showMessage(f'Found {self.table_model.rowCount()} structures.', msecs=0)
+        self.recount()
         self.ui.cifList_tableView.resizeColumnToContents(columns.path.position)
 
     def clear_fields(self) -> None:

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
+from typing import cast
 
 from qtpy import QtWidgets, QtGui, QtCore
 from qtpy.QtCore import Qt, Signal
@@ -101,10 +103,14 @@ class StructuresListTableView(QtWidgets.QTableView):
 
     def _on_open_file_path(self) -> None:
         try:
-            path_data = self.get_field_content(self.currentIndex().row(), columns.path.position)
+            path_data = cast(str, self.get_field_content(self.currentIndex().row(), columns.path.position))
         except IndexError:
             path_data = ''
-        self.open_save_path.emit(path_data)
+        try:
+            file_name = cast(str, self.get_field_content(self.currentIndex().row(), columns.filename.position))
+        except IndexError:
+            file_name = ''
+        self.open_save_path.emit(str(Path(path_data) / file_name))
 
     def mousePressEvent(self, e: QtGui.QMouseEvent) -> None:
         if e.button() == Qt.MouseButton.RightButton:
