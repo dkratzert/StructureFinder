@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Search X-ray structures on your hard drive"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -22,6 +22,7 @@ classifiers = [
 
 dependencies = [
     "docutils",
+    "fastmolwidget>=0.5.1",
     "macholib",
     "numpy>=2.1",
     "pefile",
