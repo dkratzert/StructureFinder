@@ -11,7 +11,7 @@ import gemmi
 
 from structurefinder.ccdc.query import get_cccsd_path, parse_results, search_csd
 from structurefinder.displaymol.mol_file_writer import MolFile
-from structurefinder.displaymol.sdm import SDM
+from fastmolwidget.sdm import SDM
 from structurefinder.misc.exporter import cif_data_to_document
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core import lattice
@@ -172,8 +172,8 @@ def jsmol_request():
     if str_id:
         cell = structures.get_cell_by_id(str_id)
         if request.POST.grow == 'true':
-            symmcards = [x.split(',') for x in structures.get_row_as_dict(str_id)
-            ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
+            symmcards = structures.get_row_as_dict(str_id)[
+                '_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")
             atoms = structures.get_atoms_table(str_id, cartesian=False, as_list=True)
             if atoms:
                 sdm = SDM(atoms, symmcards, cell)

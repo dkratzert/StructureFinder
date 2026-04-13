@@ -43,7 +43,7 @@ from shelxfile import Shelxfile
 
 from structurefinder import strf_cmd
 from structurefinder.ccdc.query import parse_results, search_csd
-from structurefinder.displaymol.sdm import SDM
+from fastmolwidget.sdm import SDM, Atomtuple
 from structurefinder.gui.strf_main import Ui_stdbMainwindow
 from structurefinder.gui.table_model import CustomProxyModel, TableModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
@@ -199,6 +199,8 @@ class StartStructureDB(QMainWindow):
         self.ui.cellcheckExePushButton.clicked.connect(self.browse_for_ccdc_exe)
         self.ui.appendDatabasePushButton.clicked.connect(self.append_database)
         self.ui.labelsCheckBox.toggled.connect(self.show_labels)
+        self.ui.render_widget.show_labels(False)
+        self.ui.render_widget.show_adps(False)
         self.ui.helpPushButton.clicked.connect(self.show_help)
         self.ui.hideInArchivesCB.clicked.connect(self.recount)
         self.ui.hideWithoutR1CB.clicked.connect(self.recount)
@@ -315,6 +317,9 @@ class StartStructureDB(QMainWindow):
 
     def show_labels(self, value: bool):
         self.ui.render_widget.show_labels(value)
+
+    def show_adps(self, value: bool):
+        self.ui.render_widget.show_adps(value)
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super().resizeEvent(event)
@@ -915,9 +920,9 @@ class StartStructureDB(QMainWindow):
             print('No cell found')
             return
         if self.ui.growCheckBox.isChecked():
-            symmcards = [x.split(',') for x in self.structures.get_row_as_dict(self.structureId)
-            ['_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")]
-            if symmcards[0] == ['']:
+            symmcards = self.structures.get_row_as_dict(self.structureId)[
+                '_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")
+            if symmcards[0] == '':
                 print('Cif file has no symmcards, unable to grow structure.')
                 self.show_asymmetric_unit()
                 return
@@ -927,7 +932,7 @@ class StartStructureDB(QMainWindow):
                 sdm = SDM(atoms, symmcards, cell)
                 needsymm = sdm.calc_sdm()
                 atoms = sdm.packer(sdm, needsymm)
-                self.ui.render_widget.open_molecule(atoms, labels=self.ui.labelsCheckBox.isChecked())
+                self.ui.render_widget.open_molecule(atoms)
         else:
             self.show_asymmetric_unit()
 
@@ -935,7 +940,8 @@ class StartStructureDB(QMainWindow):
         self.ui.molGroupBox.setTitle('Asymmetric Unit')
         atoms = self.structures.get_atoms_table(self.structureId, cartesian=True, as_list=False)
         if atoms:
-            self.ui.render_widget.open_molecule(atoms, labels=self.ui.labelsCheckBox.isChecked())
+            atoms = [Atomtuple(label=at[0], type=at[1], x=at[2], y=at[3], z=at[4], part=at[5]) for at in atoms]
+            self.ui.render_widget.open_molecule(atoms)
 
     def redraw_molecule(self) -> None:
         self.view_molecule()

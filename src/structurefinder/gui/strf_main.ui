@@ -888,14 +888,14 @@
                      </property>
                     </widget>
                    </item>
-                   <item>
-                    <widget class="QCheckBox" name="labelsCheckBox">
-                     <property name="text">
-                      <string>Show Labels</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
+                    <item>
+                     <widget class="QCheckBox" name="labelsCheckBox">
+                      <property name="text">
+                       <string>Show Labels</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
                  </item>
                 </layout>
                </widget>
@@ -3538,7 +3538,7 @@ p, li { white-space: pre-wrap; }
   <customwidget>
    <class>MoleculeWidget</class>
    <extends>QWidget</extends>
-   <header>structurefinder.displaymol.molecule2D.h</header>
+    <header>fastmolwidget.molecule2D.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
