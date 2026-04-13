@@ -1248,8 +1248,9 @@ class StartStructureDB(QMainWindow):
         return True
 
     def display_number_of_structures(self):
-        # number = self.structures.get_largest_id()
-        self.ui.statusbar.showMessage(f'Database with {self.table_model.rowCount()} structures loaded.')
+        count = len(self.structures)
+        self.statusbar.showMessage(f'Database with {count} structures loaded.')
+        self.statusbar.show()
 
     def get_name_from_p4p(self):
         """
