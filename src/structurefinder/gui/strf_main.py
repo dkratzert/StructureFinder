@@ -1291,7 +1291,7 @@ class Ui_stdbMainwindow(object):
         self.ignoreArchivesCB.setToolTip(_translate("stdbMainwindow", "<html><head/><body><p>Activating this option will not index .cif and .res files in .zip, .tar.gz, .7zip and other archives.</p></body></html>"))
         self.ignoreArchivesCB.setText(_translate("stdbMainwindow", "Ignore files in archives"))
         self.groupBox_6.setTitle(_translate("stdbMainwindow", "View Options"))
-        self.hideInArchivesCB.setText(_translate("stdbMainwindow", "hide files in archives"))
+        self.hideInArchivesCB.setText(_translate("stdbMainwindow", "Hide files in archives"))
         self.hideWithoutR1CB.setText(_translate("stdbMainwindow", "Hide unrefined"))
         self.importDatabaseButton.setText(_translate("stdbMainwindow", "Open Database File"))
         self.saveDatabaseButton.setText(_translate("stdbMainwindow", "Save Database      "))
