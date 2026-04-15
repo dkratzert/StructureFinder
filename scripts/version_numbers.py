@@ -17,7 +17,6 @@ pypath = ["src/structurefinder/strf.py",
           'src/structurefinder/searcher/search_worker.py',
           'src/structurefinder/searcher/misc.py',
           'src/structurefinder/searcher/cif_file.py',
-          "src/structurefinder/displaymol/sdm.py",
           'src/structurefinder/ccdc/query.py'
           ]
 

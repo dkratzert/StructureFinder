@@ -1,6 +1,8 @@
 StructureFinder Changelog
 -------------------------
 
+* v88 Added option to filter out structures that were not refined (without R1 value). This is useful for example to filter
+      out SHELXT solutions. Updated structure viewer to https://pypi.org/project/fastmolwidget/. Update internal Python to 3.14.
 * v87 Improved responsiveness during indexing.
 * v86 More robust file indexing and responsive GUI.
 * v85 Fixed potential crash with malformed .res files.

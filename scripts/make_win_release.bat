@@ -20,10 +20,6 @@ if %errorlevel% neq 0 (
     set "PATH=%USERPROFILE%\.cargo\bin;%USERPROFILE%\.local\bin;%PATH%"
 )
 
-CALL uv venv --python %PYTHON_VERSION% .venv
-CALL .venv\Scripts\activate.bat
-CALL uv pip install hatchling
-
 CALL scripts\_create_dist.bat %PYTHON_VERSION%
 
 rem CALL pip install qtpy

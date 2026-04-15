@@ -63,11 +63,15 @@ if %errorlevel% neq 0 (
 
 REM Use uv (must be installed and available in the outer environment) to install dependencies
 REM directly into the embedded Python environment, replacing the need to download and install pip.
-call uv pip install --python %PACKAGE_DIR%\python.exe %SCRIPT_DIR%\.. --no-build-isolation
+CALL uv venv --python %PYTHON_VERSION% .venv
+
+call uv pip install --python %PACKAGE_DIR%\python.exe %SCRIPT_DIR%\..
+call uv pip uninstall structurefinder %SCRIPT_DIR%\..
 if %errorlevel% neq 0 (
     echo uv pip failed to install all packages. Stopping now.
     exit /b %errorlevel%
 )
+CALL .venv\Scripts\activate.bat
 
 cd %SCRIPT_DIR%\..
 
