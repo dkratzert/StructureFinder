@@ -2,9 +2,8 @@
 
 REM This script builds a working Python environment into ..\dist of the current file location.
 
-REM Set the Python version here:
-set PYTHON_VERSION=%1
-if "%PYTHON_VERSION%"=="" set "PYTHON_VERSION=3.14.4"
+REM Accept PYTHON_VERSION as first argument, see make_win_release.bat
+set PYTHON_VERSION=%~1
 
 set PYTHON_URL=https://www.python.org/ftp/python/%PYTHON_VERSION%/python-%PYTHON_VERSION%-embed-amd64.zip
 
@@ -12,6 +11,13 @@ for %%A in ("%~dp0.") do set "SCRIPT_DIR=%%~fA"
 set BUILD_DIR=%SCRIPT_DIR%\..\dist
 set PACKAGE_DIR=%BUILD_DIR%\python_dist
 
+REM Check if uv is available
+where uv >NUL 2>&1
+if %errorlevel% neq 0 (
+    echo uv not found, installing...
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    set "PATH=%USERPROFILE%\.local\bin;%PATH%;%PACKAGE_DIR%\Scripts"
+)
 
 setlocal enabledelayedexpansion
 for %%a in (!PYTHON_VERSION!) do (
@@ -46,33 +52,30 @@ endlocal
 del vc_redist.x64.exe
 
 curl -L https://aka.ms/vs/17/release/vc_redist.x64.exe -o vc_redist.x64.exe
-rem vc_redist.x64.exe /passive /quiet /install
-
-cd %PACKAGE_DIR%
-
-set PYTHONPATH=%PACKAGE_DIR%
-mkdir %PACKAGE_DIR%\Lib\site-packages > NUL
-
-REM Ensure uv is installed
-where uv >nul 2>nul
-if %errorlevel% neq 0 (
-    echo uv is not installed. Installing uv...
-    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-    set "PATH=%USERPROFILE%\.cargo\bin;%USERPROFILE%\.local\bin;%PATH%"
-)
-
-REM Use uv (must be installed and available in the outer environment) to install dependencies
-REM directly into the embedded Python environment, replacing the need to download and install pip.
-CALL uv venv --python %PYTHON_VERSION% .venv
-
-call uv pip install --python %PACKAGE_DIR%\python.exe %SCRIPT_DIR%\..
-call uv pip uninstall structurefinder %SCRIPT_DIR%\..
-if %errorlevel% neq 0 (
-    echo uv pip failed to install all packages. Stopping now.
-    exit /b %errorlevel%
-)
-CALL .venv\Scripts\activate.bat
 
 cd %SCRIPT_DIR%\..
 
-echo - finished!
+REM Create a venv for the release build
+rem uv venv --python %PYTHON_VERSION% .venv --clear
+
+REM Install the project and its dependencies into the venv used by the release scripts
+REM (uv pip install <dir> installs the project defined by pyproject.toml in that directory)
+REM uv pip install --python .venv\Scripts\python.exe %SCRIPT_DIR%\..
+REM if %errorlevel% neq 0 (
+REM     echo uv pip install into .venv failed. Stopping now.
+REM     exit /b %errorlevel%
+REM )
+REM Install all dependencies from pyproject.toml into the embedded Python
+REM (uv pip install <dir> installs the project defined by pyproject.toml in that directory)
+uv pip install --python "%PACKAGE_DIR%\python.exe" "%SCRIPT_DIR%\.." --link-mode=copy
+if %errorlevel% neq 0 (
+    echo uv pip install failed. Stopping now.
+    exit /b %errorlevel%
+)
+
+REM Remove the FinalCif package itself (it's provided in-tree, not as an installed package)
+uv pip uninstall --python "%PACKAGE_DIR%\python.exe" structurefinder ipython ruff ty
+
+echo - finished environment install!
+
+CALL "%PACKAGE_DIR%\python.exe" "%SCRIPT_DIR%\_make_win_release.py"

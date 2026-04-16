@@ -1,6 +1,10 @@
-r"""
-This script has to be run from the main dir e.g. D:\GitHub\StructureFinder
-"""
+#  ----------------------------------------------------------------------------
+#  "THE BEER-WARE LICENSE" (Revision 42):
+#  dkratzert@gmx.de> wrote this file.  As long as you retain
+#  this notice you can do whatever you want with this stuff. If we meet some day,
+#  and you think this stuff is worth it, you can buy me a beer in return.
+#  Dr. Daniel Kratzert
+#  ----------------------------------------------------------------------------
 import hashlib
 import subprocess
 import sys
@@ -13,20 +17,7 @@ main_path = str(Path(__file__).resolve().parent)
 pathadd = [app_path, main_path, str(Path(app_path) / 'src')]
 sys.path.extend(pathadd)
 
-#from scripts.compile_ui_files import compile_ui
-from scripts.version_numbers import disable_debug, isspath, process_iss, pypath
 from structurefinder.misc.version import VERSION
-
-print(f"Updating version numbers to version {VERSION} ...")
-
-for i in isspath:
-    process_iss(i)
-
-# disable all debug variables:
-for i in pypath:
-    disable_debug(i)
-
-print("Version numbers updated.")
 
 
 def sha512_checksum(filename, block_size=65536):
@@ -84,12 +75,12 @@ def make_installer():
 
 def compile_python_files():
     import compileall
-    compileall.compile_dir(dir='dist', workers=2, force=True)
-    compileall.compile_dir(dir='src', workers=2, force=True)
+    compileall.compile_dir(dir='dist', workers=2, force=True, quiet=True)
+    compileall.compile_dir(dir='src', workers=2, force=True, quiet=True)
 
 
 if __name__ == '__main__':
-    #compile_ui()
+    # compile_ui()
     compile_python_files()
     # Make binary distributions:
     make_installer()

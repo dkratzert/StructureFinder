@@ -51,9 +51,6 @@ def disable_debug(filepath):
 if __name__ == "__main__":
     print(f"Updating version numbers to version {VERSION} ...")
 
-    for i in isspath:
-        process_iss(i)
-
     for i in pypath:
         disable_debug(i)
 

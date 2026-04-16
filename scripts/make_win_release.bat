@@ -1,29 +1,22 @@
 @echo on
 
-REM execute me from the main directory
+REM Execute me from the main directory
 
-REM Python version must match the one in scripts\_create_dist.bat
 set PYTHON_VERSION=3.14.4
 
-rmdir /S dist /Q
-rmdir /S build /Q
-
-rem git restore *
-rem git switch master
-rem git pull
-
-REM Ensure uv is installed
-where uv >nul 2>nul
+REM Check if uv is available, install if missing
+where uv >NUL 2>&1
 if %errorlevel% neq 0 (
-    echo uv is not installed. Installing uv...
+    echo uv not found, installing...
     powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-    set "PATH=%USERPROFILE%\.cargo\bin;%USERPROFILE%\.local\bin;%PATH%"
+    set "PATH=%USERPROFILE%\.local\bin;%PATH%"
 )
 
-CALL scripts\_create_dist.bat %PYTHON_VERSION%
+rmdir /S /Q dist 2>NUL
+rmdir /S /Q build 2>NUL
 
-rem CALL pip install qtpy
-
-CALL .venv\Scripts\python.exe scripts\_make_win_release.py
-
-CALL .venv\Scripts\deactivate.bat
+call scripts\_create_dist.bat %PYTHON_VERSION%
+if %errorlevel% neq 0 (
+    echo _create_dist.bat failed. Stopping now.
+    exit /b %errorlevel%
+)
