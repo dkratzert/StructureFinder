@@ -24,7 +24,7 @@ dependencies = [
     "docutils",
     "fastmolwidget>=0.5.1",
     "macholib",
-    "numpy>=2.1",
+    "numpy>=2.3.5,<2.4",
     "pefile",
     "pyqt6>=6.9",
     "pyqt6-sip",
@@ -65,6 +65,9 @@ build = [
     "twine",
     "build",
 ]
+
+[tool.uv]
+exclude-newer = "3 days"
 
 [tool.uv.pip]
 only-binary = [":all:"]
