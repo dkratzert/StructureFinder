@@ -6,16 +6,18 @@ on:
 jobs:
   tests:
     uses: ./.github/workflows/python_tests.yml
-  build:
-    needs: [ 'tests' ]
+  release-build:
     runs-on: ubuntu-latest
+    # Build and publish are gated on successful tests.
+    needs:
+      - tests
+
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install uv and set the python version
-        uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v5
         with:
-          python-version: 3.13
+          python-version: "3.14"
 
       - run: |
           uv sync --build
@@ -23,10 +25,12 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          path: ./dist
+          name: release-dists
+          path: dist/
 
   pypi-publish:
-    needs: [ 'build' ]
+    needs:
+      - release-build
     name: publish
     runs-on: ubuntu-latest
     environment:
@@ -37,7 +41,10 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
       - uses: actions/download-artifact@v8
+        with:
+          name: release-dists
+          path: dist/
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          packages-dir: artifact/
+          packages-dir: dist/
