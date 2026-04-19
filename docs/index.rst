@@ -1,8 +1,14 @@
 .. toctree::
-    main
-    indexing
+
+    introduction
     installation
+    indexing
+    searching
+    plotting
+    export
     commandline
-    example
-    misc
+    web_interface
+    csd_search
+    database
+    changes
 

@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath('..'))
 from src.structurefinder.misc.version import VERSION
 
 project = 'StructureFinder'
-copyright = '2023, Daniel Kratzert'
+copyright = '2025, Daniel Kratzert'
 author = 'Daniel Kratzert'
 
 # The full version, including alpha/beta/rc tags
