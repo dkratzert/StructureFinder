@@ -5,7 +5,7 @@ on:
       - '*'
 jobs:
   tests:
-    uses: ./.github/workflows/python_tests.yml
+    uses: .github/workflows/python_tests.yml
   release-build:
     runs-on: ubuntu-latest
     # Build and publish are gated on successful tests.
