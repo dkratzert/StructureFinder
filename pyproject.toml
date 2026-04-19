@@ -66,6 +66,10 @@ build = [
     "build",
 ]
 
+[tool.uv.pip]
+only-binary = [":all:"]
+no-binary = ["structurefinder"]
+
 [project.urls]
 "Homepage" = "https://dkratzert.de/structurefinder.html"
 "Bug Tracker" = "https://github.com/dkratzert/StructureFinder/issues"
