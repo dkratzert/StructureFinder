@@ -21,20 +21,6 @@ pypath = ["src/structurefinder/strf.py",
           ]
 
 
-def process_iss(filepath):
-    pth = Path(filepath)
-    iss_file = pth.read_text(encoding="UTF-8").split("\n")
-    for num, line in enumerate(iss_file):
-        if line.startswith("#define MyAppVersion"):
-            l = line.split()
-            l[2] = f'"{VERSION}"'
-            iss_file[num] = " ".join(l)
-            break
-    iss_file = "\n".join(iss_file)
-    print(f"windows... {VERSION}, {filepath}")
-    pth.write_text(iss_file, encoding="UTF-8")
-
-
 def disable_debug(filepath):
     pth = Path(filepath)
     file = pth.read_text(encoding="UTF-8", errors='ignore').split("\n")
