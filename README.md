@@ -6,7 +6,7 @@
 ![Contributions](https://img.shields.io/badge/contributions-welcome-blue)
 
 # StructureFinder
-A crystal structure finder written in PyQt5 and Python3 with SQlite.
+A crystal structure finder written in PyQt6 and Python 3 with SQLite.
 
 [Homepage: https://dkratzert.de/structurefinder.html](https://dkratzert.de/structurefinder.html)
 
