@@ -187,28 +187,32 @@ def run_index(args: Namespace = None):
                 for total_files, result in enumerate(find_files(p, exclude_dirs=EXCLUDED_NAMES, no_archive=args.no_archive)):
                     if result is None:
                         continue
-                    if fill_cif and result.file_type == FileType.CIF:
-                        if process_cif(lastid, result, structures):
-                            cif_count += 1
-                            lastid += 1
-                            if result.in_archive:
-                                archive_count += 1
-                    elif file_res and result.file_type == FileType.RES:
-                        if process_res(lastid, result, structures):
-                            res_count += 1
-                            lastid += 1
-                            if result.in_archive:
-                                archive_count += 1
+                    try:
+                        if fill_cif and result.file_type == FileType.CIF:
+                            if process_cif(lastid, result, structures):
+                                cif_count += 1
+                                lastid += 1
+                                if result.in_archive:
+                                    archive_count += 1
+                        elif file_res and result.file_type == FileType.RES:
+                            if process_res(lastid, result, structures):
+                                res_count += 1
+                                lastid += 1
+                                if result.in_archive:
+                                    archive_count += 1
+                    except Exception as e:
+                        print(f'Skipping file {result.filename}: {e}')
+                        continue
                     if total_files % 100 == 0:
                         print(f'\r{total_files:,} files found so far.', flush=True, end='')
                 print('\r\b', end='', flush=True)
+            except KeyboardInterrupt:
+                sys.exit()
             except Exception as e:
                 print(f"Unable to collect files in path '{p}'")
                 print(e)
                 if DEBUG:
                     raise
-            except KeyboardInterrupt:
-                sys.exit()
         print()
         finish_database(structures)
         time2 = time.perf_counter()
@@ -250,20 +254,23 @@ def process_cif(lastid: int, result: Result, structures: StructureTable) -> bool
     doc = gemmi.cif.Document()
     try:
         doc.parse_string(result.file_content)
-    except ValueError:
+    except Exception:
         return False
-    cif.parsefile(doc)
-    if cif.block:
-        ok = fill_db_with_cif_data(cif,
-                                   filename=result.filename,
-                                   path=result.file_path,
-                                   structure_id=lastid,
-                                   structures=structures)
-        if not ok:
+    try:
+        cif.parsefile(doc)
+        if cif.block:
+            ok = fill_db_with_cif_data(cif,
+                                       filename=result.filename,
+                                       path=result.file_path,
+                                       structure_id=lastid,
+                                       structures=structures)
+            if not ok:
+                return False
+        else:
+            if DEBUG:
+                print('File has no block:', result)
             return False
-    else:
-        if DEBUG:
-            print('File has no block:', result)
+    except Exception:
         return False
     return True
 

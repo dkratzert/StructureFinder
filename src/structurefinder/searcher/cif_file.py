@@ -278,9 +278,8 @@ class CifFile:
             self['_space_group_centring_type'] == '?':
             try:
                 self.cif_data["_space_group_centring_type"] = self.as_string("_space_group_name_H-M_alt").split()[0][0]
-            except IndexError as e:
-                print(self.as_string("_space_group_name_H-M_alt"))
-                raise
+            except IndexError:
+                pass
         elif self.as_string('_space_group_name_Hall') and not self.as_string('_space_group_centring_type'):
             try:
                 self.cif_data["_space_group_centring_type"] = \

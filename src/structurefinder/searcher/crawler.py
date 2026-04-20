@@ -102,7 +102,7 @@ def file_result(filename: str, filepath: str | bytes) -> Generator[Result | None
     try:
         mod_time = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(filepath)))
         size = os.stat(filepath).st_size
-    except FileNotFoundError:
+    except OSError:
         if DEBUG:
             print(f"File {filepath} not found.")
         return None
@@ -124,18 +124,23 @@ def search_in_zip(zip_path: str | bytes,
     try:
         with zipfile.ZipFile(zip_path, 'r') as archive:
             for info, file in zip(archive.infolist(), archive.namelist()):
-                filepath = os.path.basename(file)
-                if is_excluded_dir(filepath, exclude_dirs):
+                try:
+                    filepath = os.path.basename(file)
+                    if is_excluded_dir(filepath, exclude_dirs):
+                        continue
+                    lower_file = file.lower()
+                    if lower_file.endswith(exts):
+                        with archive.open(file) as f:
+                            yield Result(file_type=suffix_to_type.get(lower_file[-4:]),
+                                         archive_path=zip_path,
+                                         filename=file,
+                                         file_content=f.read().decode('latin1', 'replace'),
+                                         file_path=zip_path,
+                                         modification_time=datetime(*info.date_time).strftime('%Y-%m-%d'))
+                except Exception as e:
+                    if DEBUG:
+                        print(f"[ZIP] Error reading entry {file} in {zip_path}: {e}")
                     continue
-                lower_file = file.lower()
-                if lower_file.endswith(exts):
-                    with archive.open(file) as f:
-                        yield Result(file_type=suffix_to_type.get(lower_file[-4:]),
-                                     archive_path=zip_path,
-                                     filename=file,
-                                     file_content=f.read().decode('latin1', 'replace'),
-                                     file_path=zip_path,
-                                     modification_time=datetime(*info.date_time).strftime('%Y-%m-%d'))
     except Exception as e:
         if DEBUG:
             print(f"[ZIP] Error in {zip_path}: {e}")
@@ -148,20 +153,25 @@ def search_in_tar(tar_path: str | bytes,
     try:
         with tarfile.open(tar_path, 'r:*') as archive:
             for file in archive.getmembers():
-                if is_excluded_dir(file.name, exclude_dirs):
+                try:
+                    if is_excluded_dir(file.name, exclude_dirs):
+                        continue
+                    # file.name also has the path inside the archive in front:
+                    lower_file = file.name.lower()
+                    if lower_file.endswith(exts) and file.isfile():
+                        f = archive.extractfile(file)
+                        if f:
+                            yield Result(file_type=suffix_to_type.get(lower_file[-4:]),
+                                         archive_path=tar_path,
+                                         filename=os.path.basename(file.name),
+                                         file_content=f.read().decode('latin1', 'replace'),
+                                         file_path=tar_path,
+                                         file_size=file.size,
+                                         modification_time=time.strftime('%Y-%m-%d', time.gmtime(file.mtime)))
+                except Exception as e:
+                    if DEBUG:
+                        print(f"[TAR] Error reading entry {file.name} in {tar_path}: {e}")
                     continue
-                # file.name also has the path inside the archive in front:
-                lower_file = file.name.lower()
-                if lower_file.endswith(exts) and file.isfile():
-                    f = archive.extractfile(file)
-                    if f:
-                        yield Result(file_type=suffix_to_type.get(lower_file[-4:]),
-                                     archive_path=tar_path,
-                                     filename=os.path.basename(file.name),
-                                     file_content=f.read().decode('latin1', 'replace'),
-                                     file_path=tar_path,
-                                     file_size=file.size,
-                                     modification_time=time.strftime('%Y-%m-%d', time.gmtime(file.mtime)))
     except Exception as e:
         if DEBUG:
             print(f"[TAR] Error in {tar_path}: {e}")
@@ -171,21 +181,26 @@ def search_in_7z(sevenz_path: str | bytes, exts: tuple[str]) -> Generator[Result
     try:
         with py7zr.SevenZipFile(sevenz_path, mode='r') as archive:
             for entry in archive.list():
-                name = entry.filename
-                lower_file = name.lower()
-                if lower_file.endswith(exts):
-                    file_dict = archive.read([name])
-                    bio = file_dict.get(name)
-                    if bio:
-                        yield Result(
-                            file_type=suffix_to_type.get(lower_file[-4:]),
-                            archive_path=sevenz_path,
-                            filename=name,
-                            file_content=bio.read().decode('latin1', 'replace'),
-                            file_path=sevenz_path,
-                            modification_time=entry.creationtime,
-                            file_size=entry.uncompressed
-                        )
+                try:
+                    name = entry.filename
+                    lower_file = name.lower()
+                    if lower_file.endswith(exts):
+                        file_dict = archive.read([name])
+                        bio = file_dict.get(name)
+                        if bio:
+                            yield Result(
+                                file_type=suffix_to_type.get(lower_file[-4:]),
+                                archive_path=sevenz_path,
+                                filename=name,
+                                file_content=bio.read().decode('latin1', 'replace'),
+                                file_path=sevenz_path,
+                                modification_time=entry.creationtime,
+                                file_size=entry.uncompressed
+                            )
+                except Exception as e:
+                    if DEBUG:
+                        print(f"[7Z] Error reading entry {entry.filename} in {sevenz_path}: {e}")
+                    continue
     except Exception as e:
         if DEBUG:
             print(f"[7Z] Error in {sevenz_path}: {e}")

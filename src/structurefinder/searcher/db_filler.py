@@ -46,7 +46,7 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
 
 def add_atoms(cif, structure_id, structures):
     sum_formula_dict = {}
-    for at, orth in zip(cif.atoms, cif.atoms_orth, strict=True):
+    for at, orth in zip(cif.atoms, cif.atoms_orth):
         try:
             try:
                 part = at.part
