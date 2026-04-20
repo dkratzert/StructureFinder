@@ -984,7 +984,7 @@ class StructureTable:
             self.database.cur.executemany(req, rows)
         except Exception as e:
             self.database.con.rollback()
-            print(e, "\nDB executemany error")
+            print(f"Failed to insert {len(rows)} atoms into Atoms table: {e}")
 
     def get_atoms_table(self, structure_id, cartesian=False, as_list=False) -> list | tuple:
         """

@@ -22,7 +22,6 @@ from gemmi.cif import Column
 DEBUG = False
 
 _Atom = namedtuple('Atom', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
-_AtomOrth = namedtuple('AtomOrth', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
 
 
 class CifFile:
@@ -355,8 +354,8 @@ class CifFile:
         for at in self.atoms:
             x, y, z = self.cell.orthogonalize(
                 gemmi.Fractional(cif.as_number(at.x), cif.as_number(at.y), cif.as_number(at.z)))
-            yield _AtomOrth(label=at.label, type=at.type[:2].strip('+-'), x=x, y=y, z=z,
-                            part=at.part, occ=at.occ, u_eq=at.u_eq)
+            yield _Atom(label=at.label, type=at.type[:2].strip('+-'), x=x, y=y, z=z,
+                        part=at.part, occ=at.occ, u_eq=at.u_eq)
 
     def atoms_and_orth(self):
         """

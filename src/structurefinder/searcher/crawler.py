@@ -102,7 +102,7 @@ def file_result(filename: str, filepath: str | bytes) -> Generator[Result | None
     try:
         mod_time = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(filepath)))
         size = os.stat(filepath).st_size
-    except OSError:
+    except OSError as e:
         if DEBUG:
             print(f"Unable to access file {filepath}: {e}")
         return None
