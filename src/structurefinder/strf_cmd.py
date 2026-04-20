@@ -201,18 +201,18 @@ def run_index(args: Namespace = None):
                                 if result.in_archive:
                                     archive_count += 1
                     except Exception as e:
-                        print(f'Skipping file {result.filename}: {e}')
+                        print(f'Skipping file {result.filename} in {result.file_path}: {e}')
                         continue
                     if total_files % 100 == 0:
                         print(f'\r{total_files:,} files found so far.', flush=True, end='')
                 print('\r\b', end='', flush=True)
-            except KeyboardInterrupt:
-                sys.exit()
             except Exception as e:
                 print(f"Unable to collect files in path '{p}'")
                 print(e)
                 if DEBUG:
                     raise
+            except KeyboardInterrupt:
+                sys.exit()
         print()
         finish_database(structures)
         time2 = time.perf_counter()

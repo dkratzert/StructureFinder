@@ -104,7 +104,7 @@ def file_result(filename: str, filepath: str | bytes) -> Generator[Result | None
         size = os.stat(filepath).st_size
     except OSError:
         if DEBUG:
-            print(f"File {filepath} not found.")
+            print(f"Unable to access file {filepath}: {e}")
         return None
     with open(filepath, 'rb') as fobj:
         try:
