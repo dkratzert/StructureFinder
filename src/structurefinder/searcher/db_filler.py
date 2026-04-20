@@ -19,7 +19,6 @@ from shelxfile import Shelxfile
 from structurefinder.searcher import database_handler
 from structurefinder.searcher.crawler import Result
 from structurefinder.searcher.cif_file import CifFile
-from structurefinder.searcher.misc import get_value
 
 DEBUG = False
 
@@ -46,35 +45,12 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
 
 def add_atoms(cif, structure_id, structures):
     sum_formula_dict = {}
-    for at, orth in zip(cif.atoms, cif.atoms_orth, strict=True):
-        try:
-            try:
-                part = at.part
-                if part in {'.', '', '?'}:
-                    part = 0
-            except (KeyError, ValueError, IndexError):
-                part = 0
-            try:
-                occu = get_value(at.occ)
-                if not occu:
-                    occu = 1.0
-            except (KeyError, ValueError, IndexError):
-                occu = 1.0
-            try:
-                structures.fill_atoms_table(structure_id, at.label, at.type,
-                                            get_value(at.x), get_value(at.y), get_value(at.z),
-                                            occu, part,
-                                            orth.x, orth.y, orth.z)
-            except ValueError:
-                pass
-                # print(cif.cif_data['data'], structure_id)
-            if at.type in sum_formula_dict:
-                sum_formula_dict[at.type] += occu
-            else:
-                sum_formula_dict[at.type] = occu
-        except KeyError:
-            # print(at, structure_id, e)
-            pass
+    batch = []
+    for label, typ, fx, fy, fz, part, occ, xc, yc, zc in cif.atoms_and_orth():
+        batch.append((structure_id, label, typ, fx, fy, fz, occ, part, xc, yc, zc))
+        sum_formula_dict[typ] = sum_formula_dict.get(typ, 0) + occ
+    if batch:
+        structures.fill_atoms_table_batch(batch)
     return sum_formula_dict
 
 
@@ -91,20 +67,20 @@ def fill_db_with_res_data(res: Shelxfile, result: Result, structure_id: int, str
     structures.fill_structures_table(path, result.filename, structure_id, measurement_id, res.titl)
     structures.fill_cell_table(structure_id, res.cell.a, res.cell.b, res.cell.c, res.cell.alpha,
                                res.cell.beta, res.cell.gamma, res.cell.volume)
+    res_batch = []
     for at in res.atoms:
         if at.qpeak:
             continue
         if at.element.lower() == 'cnt':  # Do not add Shelxle centroids
             continue
-        structures.fill_atoms_table(structure_id,
-                                    at.name,
-                                    at.element.capitalize(),
-                                    at.x,
-                                    at.y,
-                                    at.z,
-                                    at.sof,
-                                    at.part.n,
-                                    round(at.xc, 5), round(at.yc, 5), round(at.zc, 5))
+        res_batch.append((structure_id,
+                          at.name,
+                          at.element.capitalize(),
+                          at.x, at.y, at.z,
+                          at.sof, at.part.n,
+                          round(at.xc, 5), round(at.yc, 5), round(at.zc, 5)))
+    if res_batch:
+        structures.fill_atoms_table_batch(res_batch)
     cif = CifFile()
     cif.cif_data['file_size'] = result.file_size
     cif.cif_data['modification_time'] = result.modification_time
@@ -170,9 +146,6 @@ def fill_db_with_res_data(res: Shelxfile, result: Result, structure_id: int, str
         cif.cif_data["_refine_ls_goodness_of_fit_ref"] = res.goof
     if res.rgoof:
         cif.cif_data["_refine_ls_restrained_S_all"] = res.rgoof
-    try:
-        cif.cif_data["_shelx_res_file"] = str(res)
-    except Exception:
-        pass
+    cif.cif_data["_shelx_res_file"] = result.file_content
     structures.fill_residuals_table(structure_id, cif)
     return True

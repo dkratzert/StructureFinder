@@ -21,6 +21,8 @@ from gemmi.cif import Column
 
 DEBUG = False
 
+_Atom = namedtuple('Atom', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
+
 
 class CifFile:
 
@@ -278,9 +280,8 @@ class CifFile:
             self['_space_group_centring_type'] == '?':
             try:
                 self.cif_data["_space_group_centring_type"] = self.as_string("_space_group_name_H-M_alt").split()[0][0]
-            except IndexError as e:
-                print(self.as_string("_space_group_name_H-M_alt"))
-                raise
+            except IndexError:
+                pass
         elif self.as_string('_space_group_name_Hall') and not self.as_string('_space_group_centring_type'):
             try:
                 self.cif_data["_space_group_centring_type"] = \
@@ -342,21 +343,48 @@ class CifFile:
         part = self.block.find_loop('_atom_site_disorder_group')
         occ = self.block.find_loop('_atom_site_occupancy')
         u_eq = self.block.find_loop('_atom_site_U_iso_or_equiv')
-        atom = namedtuple('Atom', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
         for label, type, x, y, z, part, occ, u_eq in zip(labels, types, x, y, z,
                                                          part if part else ('0',) * len(labels),
                                                          occ if occ else ('1.000000',) * len(labels),
                                                          u_eq):
-            yield atom(label=label, type=type[:2].strip('+-'), x=x, y=y, z=z, part=part, occ=occ, u_eq=u_eq)
+            yield _Atom(label=label, type=type[:2].strip('+-'), x=x, y=y, z=z, part=part, occ=occ, u_eq=u_eq)
 
     @property
     def atoms_orth(self):
-        atom = namedtuple('Atom', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
         for at in self.atoms:
             x, y, z = self.cell.orthogonalize(
                 gemmi.Fractional(cif.as_number(at.x), cif.as_number(at.y), cif.as_number(at.z)))
-            yield atom(label=at.label, type=at.type[:2].strip('+-'), x=x, y=y, z=z,
-                       part=at.part, occ=at.occ, u_eq=at.u_eq)
+            yield _Atom(label=at.label, type=at.type[:2].strip('+-'), x=x, y=y, z=z,
+                        part=at.part, occ=at.occ, u_eq=at.u_eq)
+
+    def atoms_and_orth(self):
+        """
+        Single-pass generator yielding a flat 10-tuple per atom:
+        (label, type, fx, fy, fz, part, occ, xc, yc, zc)
+        All numeric values are pre-parsed so callers do not need to re-parse
+        the CIF strings.  Skips atoms whose fractional coordinates are not
+        valid numbers (CIF '.' / '?' / other non-numeric values).
+        """
+        labels: Column = self.block.find_loop('_atom_site_label')
+        types: Column = self.block.find_loop('_atom_site_type_symbol')
+        x_col = self.block.find_loop('_atom_site_fract_x')
+        y_col = self.block.find_loop('_atom_site_fract_y')
+        z_col = self.block.find_loop('_atom_site_fract_z')
+        part_col = self.block.find_loop('_atom_site_disorder_group')
+        occ_col = self.block.find_loop('_atom_site_occupancy')
+        for label, typ, x, y, z, part, occ in zip(
+                labels, types, x_col, y_col, z_col,
+                part_col if part_col else ('0',) * len(labels),
+                occ_col if occ_col else ('1.000000',) * len(labels)):
+            try:
+                fx = cif.as_number(x)
+                fy = cif.as_number(y)
+                fz = cif.as_number(z)
+            except Exception:
+                continue
+            xc, yc, zc = self.cell.orthogonalize(gemmi.Fractional(fx, fy, fz))
+            part_val = part if part not in {'.', '', '?'} else '0'
+            yield label, typ[:2].strip('+-'), fx, fy, fz, part_val, cif.as_number(occ), xc, yc, zc
 
     @property
     def symm(self) -> List[str]:
