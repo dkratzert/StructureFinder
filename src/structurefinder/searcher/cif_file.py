@@ -359,8 +359,11 @@ class CifFile:
 
     def atoms_and_orth(self):
         """
-        Single-pass generator yielding (fract_atom, orth_x, orth_y, orth_z) for each atom.
-        Avoids iterating the atom loops twice as zip(atoms, atoms_orth) would.
+        Single-pass generator yielding a flat 10-tuple per atom:
+        (label, type, fx, fy, fz, part, occ, xc, yc, zc)
+        All numeric values are pre-parsed so callers do not need to re-parse
+        the CIF strings.  Skips atoms whose fractional coordinates are not
+        valid numbers (CIF '.' / '?' / other non-numeric values).
         """
         labels: Column = self.block.find_loop('_atom_site_label')
         types: Column = self.block.find_loop('_atom_site_type_symbol')
@@ -369,17 +372,19 @@ class CifFile:
         z_col = self.block.find_loop('_atom_site_fract_z')
         part_col = self.block.find_loop('_atom_site_disorder_group')
         occ_col = self.block.find_loop('_atom_site_occupancy')
-        u_eq_col = self.block.find_loop('_atom_site_U_iso_or_equiv')
-        for label, typ, x, y, z, part, occ, u_eq in zip(
+        for label, typ, x, y, z, part, occ in zip(
                 labels, types, x_col, y_col, z_col,
                 part_col if part_col else ('0',) * len(labels),
-                occ_col if occ_col else ('1.000000',) * len(labels),
-                u_eq_col):
-            atom = _Atom(label=label, type=typ[:2].strip('+-'), x=x, y=y, z=z,
-                         part=part, occ=occ, u_eq=u_eq)
-            xc, yc, zc = self.cell.orthogonalize(
-                gemmi.Fractional(cif.as_number(x), cif.as_number(y), cif.as_number(z)))
-            yield atom, xc, yc, zc
+                occ_col if occ_col else ('1.000000',) * len(labels)):
+            try:
+                fx = cif.as_number(x)
+                fy = cif.as_number(y)
+                fz = cif.as_number(z)
+            except Exception:
+                continue
+            xc, yc, zc = self.cell.orthogonalize(gemmi.Fractional(fx, fy, fz))
+            part_val = part if part not in {'.', '', '?'} else '0'
+            yield label, typ[:2].strip('+-'), fx, fy, fz, part_val, cif.as_number(occ), xc, yc, zc
 
     @property
     def symm(self) -> List[str]:

@@ -19,7 +19,6 @@ from shelxfile import Shelxfile
 from structurefinder.searcher import database_handler
 from structurefinder.searcher.crawler import Result
 from structurefinder.searcher.cif_file import CifFile
-from structurefinder.searcher.misc import get_value
 
 DEBUG = False
 
@@ -47,33 +46,9 @@ def fill_db_with_cif_data(cif: CifFile, filename: str, path: str, structure_id: 
 def add_atoms(cif, structure_id, structures):
     sum_formula_dict = {}
     batch = []
-    for at, xc, yc, zc in cif.atoms_and_orth():
-        try:
-            try:
-                part = at.part
-                if part in {'.', '', '?'}:
-                    part = 0
-            except (KeyError, ValueError, IndexError):
-                part = 0
-            try:
-                occu = get_value(at.occ)
-                if not occu:
-                    occu = 1.0
-            except (KeyError, ValueError, IndexError):
-                occu = 1.0
-            try:
-                fx = get_value(at.x)
-                fy = get_value(at.y)
-                fz = get_value(at.z)
-            except ValueError:
-                continue
-            batch.append((structure_id, at.label, at.type, fx, fy, fz, occu, part, xc, yc, zc))
-            if at.type in sum_formula_dict:
-                sum_formula_dict[at.type] += occu
-            else:
-                sum_formula_dict[at.type] = occu
-        except KeyError:
-            pass
+    for label, typ, fx, fy, fz, part, occ, xc, yc, zc in cif.atoms_and_orth():
+        batch.append((structure_id, label, typ, fx, fy, fz, occ, part, xc, yc, zc))
+        sum_formula_dict[typ] = sum_formula_dict.get(typ, 0) + occ
     if batch:
         structures.fill_atoms_table_batch(batch)
     return sum_formula_dict
