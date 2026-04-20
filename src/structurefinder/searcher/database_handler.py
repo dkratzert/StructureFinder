@@ -973,6 +973,19 @@ class StructureTable:
         if self.database.db_request(req, (structure_id, name, element, x, y, z, occ, part, xc, yc, zc)):
             return True
 
+    def fill_atoms_table_batch(self, rows: list):
+        """
+        Insert a batch of atoms in a single executemany call.
+        Each row must be a tuple of (StructureId, name, element, x, y, z, occupancy, part, xc, yc, zc).
+        """
+        req = '''INSERT INTO Atoms (StructureId, name, element, x, y, z, occupancy, part, xc, yc, zc)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        try:
+            self.database.cur.executemany(req, rows)
+        except Exception as e:
+            self.database.con.rollback()
+            print(e, "\nDB executemany error")
+
     def get_atoms_table(self, structure_id, cartesian=False, as_list=False) -> list | tuple:
         """
         returns the atoms of structure with structure_id

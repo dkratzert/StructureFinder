@@ -21,6 +21,9 @@ from gemmi.cif import Column
 
 DEBUG = False
 
+_Atom = namedtuple('Atom', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
+_AtomOrth = namedtuple('AtomOrth', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
+
 
 class CifFile:
 
@@ -341,21 +344,43 @@ class CifFile:
         part = self.block.find_loop('_atom_site_disorder_group')
         occ = self.block.find_loop('_atom_site_occupancy')
         u_eq = self.block.find_loop('_atom_site_U_iso_or_equiv')
-        atom = namedtuple('Atom', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
         for label, type, x, y, z, part, occ, u_eq in zip(labels, types, x, y, z,
                                                          part if part else ('0',) * len(labels),
                                                          occ if occ else ('1.000000',) * len(labels),
                                                          u_eq):
-            yield atom(label=label, type=type[:2].strip('+-'), x=x, y=y, z=z, part=part, occ=occ, u_eq=u_eq)
+            yield _Atom(label=label, type=type[:2].strip('+-'), x=x, y=y, z=z, part=part, occ=occ, u_eq=u_eq)
 
     @property
     def atoms_orth(self):
-        atom = namedtuple('Atom', ('label', 'type', 'x', 'y', 'z', 'part', 'occ', 'u_eq'))
         for at in self.atoms:
             x, y, z = self.cell.orthogonalize(
                 gemmi.Fractional(cif.as_number(at.x), cif.as_number(at.y), cif.as_number(at.z)))
-            yield atom(label=at.label, type=at.type[:2].strip('+-'), x=x, y=y, z=z,
-                       part=at.part, occ=at.occ, u_eq=at.u_eq)
+            yield _AtomOrth(label=at.label, type=at.type[:2].strip('+-'), x=x, y=y, z=z,
+                            part=at.part, occ=at.occ, u_eq=at.u_eq)
+
+    def atoms_and_orth(self):
+        """
+        Single-pass generator yielding (fract_atom, orth_x, orth_y, orth_z) for each atom.
+        Avoids iterating the atom loops twice as zip(atoms, atoms_orth) would.
+        """
+        labels: Column = self.block.find_loop('_atom_site_label')
+        types: Column = self.block.find_loop('_atom_site_type_symbol')
+        x_col = self.block.find_loop('_atom_site_fract_x')
+        y_col = self.block.find_loop('_atom_site_fract_y')
+        z_col = self.block.find_loop('_atom_site_fract_z')
+        part_col = self.block.find_loop('_atom_site_disorder_group')
+        occ_col = self.block.find_loop('_atom_site_occupancy')
+        u_eq_col = self.block.find_loop('_atom_site_U_iso_or_equiv')
+        for label, typ, x, y, z, part, occ, u_eq in zip(
+                labels, types, x_col, y_col, z_col,
+                part_col if part_col else ('0',) * len(labels),
+                occ_col if occ_col else ('1.000000',) * len(labels),
+                u_eq_col):
+            atom = _Atom(label=label, type=typ[:2].strip('+-'), x=x, y=y, z=z,
+                         part=part, occ=occ, u_eq=u_eq)
+            xc, yc, zc = self.cell.orthogonalize(
+                gemmi.Fractional(cif.as_number(x), cif.as_number(y), cif.as_number(z)))
+            yield atom, xc, yc, zc
 
     @property
     def symm(self) -> List[str]:
