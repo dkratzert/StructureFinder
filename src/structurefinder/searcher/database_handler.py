@@ -90,6 +90,16 @@ residuals = (
 
 # Residuals: TypeAlias = Literal[residuals]
 
+# R1 value ranges used for statistics bucketing: maps display label -> (min_inclusive, max_exclusive)
+R1_RANGES: dict[str, tuple[float, float]] = {
+    '< 3%' : (0.0, 0.03),
+    '3-5%' : (0.03, 0.05),
+    '5-8%' : (0.05, 0.08),
+    '8-10%': (0.08, 0.10),
+    '> 10%': (0.10, 1.0),
+}
+
+
 def default_repr(value: str | bytes) -> str:
     if isinstance(value, bytes):
         return value.decode('utf-8', errors='ignore')
@@ -1457,6 +1467,139 @@ class StructureTable:
                     END IS NOT NULL
               """
         return self.result_to_list(self.database.db_request(req))
+
+    def get_space_group_statistics(self) -> list[tuple]:
+        """Returns list of (space_group_name, count) ordered by count descending."""
+        req = """
+              SELECT _space_group_name_H_M_alt, COUNT(*) as cnt
+              FROM Residuals
+              WHERE _space_group_name_H_M_alt IS NOT NULL
+                AND TRIM(_space_group_name_H_M_alt) NOT IN ('', '.', '?')
+              GROUP BY _space_group_name_H_M_alt
+              ORDER BY cnt DESC
+              """
+        result = self.database.db_request(req)
+        return result if result else []
+
+    def get_crystal_system_statistics(self) -> list[tuple]:
+        """Returns list of (crystal_system, count) ordered by count descending."""
+        req = """
+              SELECT _space_group_crystal_system, COUNT(*) as cnt
+              FROM Residuals
+              WHERE _space_group_crystal_system IS NOT NULL
+                AND TRIM(_space_group_crystal_system) NOT IN ('', '.', '?')
+              GROUP BY _space_group_crystal_system
+              ORDER BY cnt DESC
+              """
+        result = self.database.db_request(req)
+        return result if result else []
+
+    def get_year_statistics(self) -> list[tuple]:
+        """Returns list of (year, count) from modification_time, ordered by year descending."""
+        req = """
+              SELECT SUBSTR(modification_time, 1, 4) as year, COUNT(*) as cnt
+              FROM Residuals
+              WHERE modification_time IS NOT NULL
+                AND TRIM(modification_time) NOT IN ('', '.', '?')
+                AND SUBSTR(modification_time, 1, 4) GLOB '[0-9][0-9][0-9][0-9]'
+              GROUP BY year
+              ORDER BY year DESC
+              """
+        result = self.database.db_request(req)
+        return result if result else []
+
+    def get_r1_statistics(self) -> list[tuple]:
+        """Returns list of (r1_range_label, count) for R1 value distribution."""
+        req = """
+              SELECT
+                CASE
+                  WHEN r1 < 0.03 THEN '< 3%'
+                  WHEN r1 < 0.05 THEN '3-5%'
+                  WHEN r1 < 0.08 THEN '5-8%'
+                  WHEN r1 < 0.10 THEN '8-10%'
+                  ELSE '> 10%'
+                END as r1_range,
+                COUNT(*) as cnt
+              FROM (
+                SELECT COALESCE(
+                  CASE WHEN _refine_ls_R_factor_gt IS NOT NULL
+                            AND TRIM(CAST(_refine_ls_R_factor_gt AS TEXT)) NOT IN ('', '.', '?')
+                       THEN CAST(_refine_ls_R_factor_gt AS REAL) END,
+                  CASE WHEN _refine_ls_R_factor_all IS NOT NULL
+                            AND TRIM(CAST(_refine_ls_R_factor_all AS TEXT)) NOT IN ('', '.', '?')
+                       THEN CAST(_refine_ls_R_factor_all AS REAL) END
+                ) as r1
+                FROM Residuals
+              )
+              WHERE r1 IS NOT NULL AND r1 > 0
+              GROUP BY r1_range
+              ORDER BY MIN(r1)
+              """
+        result = self.database.db_request(req)
+        return result if result else []
+
+    def get_author_statistics(self) -> list[tuple]:
+        """Returns list of (author_name, count) for the top 50 authors by structure count."""
+        if not self.database.table_exists('authors'):
+            return []
+        req = """
+              SELECT _audit_author_name, COUNT(*) as cnt
+              FROM authors
+              WHERE _audit_author_name IS NOT NULL
+                AND TRIM(_audit_author_name) NOT IN ('', '.', '?')
+              GROUP BY _audit_author_name
+              ORDER BY cnt DESC
+              LIMIT 50
+              """
+        result = self.database.db_request(req)
+        return result if result else []
+
+    def find_by_space_group_name(self, name: str) -> list[int]:
+        """Find structures by space group H-M name."""
+        req = """SELECT StructureId FROM Residuals WHERE _space_group_name_H_M_alt = ?"""
+        result = self.database.db_request(req, (name,))
+        return self.result_to_list(result)
+
+    def find_by_crystal_system(self, crystal_system: str) -> list[int]:
+        """Find structures by crystal system."""
+        req = """SELECT StructureId FROM Residuals WHERE _space_group_crystal_system = ?"""
+        result = self.database.db_request(req, (crystal_system,))
+        return self.result_to_list(result)
+
+    def find_by_year(self, year: str) -> list[int]:
+        """Find structures by year of modification."""
+        req = """SELECT StructureId FROM Residuals WHERE SUBSTR(modification_time, 1, 4) = ?"""
+        result = self.database.db_request(req, (year,))
+        return self.result_to_list(result)
+
+    def find_by_r1_range(self, r1_min: float, r1_max: float) -> list[int]:
+        """Find structures with R1 value in a specific range [r1_min, r1_max)."""
+        req = """
+              WITH r1_values AS (
+                SELECT StructureId,
+                  COALESCE(
+                    CASE WHEN _refine_ls_R_factor_gt IS NOT NULL
+                              AND TRIM(CAST(_refine_ls_R_factor_gt AS TEXT)) NOT IN ('', '.', '?')
+                         THEN CAST(_refine_ls_R_factor_gt AS REAL) END,
+                    CASE WHEN _refine_ls_R_factor_all IS NOT NULL
+                              AND TRIM(CAST(_refine_ls_R_factor_all AS TEXT)) NOT IN ('', '.', '?')
+                         THEN CAST(_refine_ls_R_factor_all AS REAL) END
+                  ) AS r1
+                FROM Residuals
+              )
+              SELECT StructureId FROM r1_values
+              WHERE r1 IS NOT NULL AND r1 >= ? AND r1 < ?
+              """
+        result = self.database.db_request(req, (r1_min, r1_max))
+        return self.result_to_list(result)
+
+    def find_by_author_name(self, name: str) -> list[int]:
+        """Find structures by author name (exact match)."""
+        if not self.database.table_exists('authors'):
+            return []
+        req = """SELECT StructureId FROM authors WHERE _audit_author_name = ?"""
+        result = self.database.db_request(req, (name,))
+        return self.result_to_list(result)
 
     def find_biggest_cell(self):
         """

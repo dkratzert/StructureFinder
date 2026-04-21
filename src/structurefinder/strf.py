@@ -59,7 +59,7 @@ from structurefinder.searcher.constants import (
     centering_letter_2_num,
     centering_num_2_letter,
 )
-from structurefinder.searcher.database_handler import columns
+from structurefinder.searcher.database_handler import R1_RANGES, columns
 from structurefinder.searcher.misc import (
     combine_results,
     elements,
@@ -114,6 +114,7 @@ class StartStructureDB(QMainWindow):
         self.abort_import_button.hide()
         self.statusbar.hide()
         self.structures: database_handler.StructureTable | None = None
+        self._statistics_populated: bool = False
         self.apx = None
         self.structureId = 0
         self.passwd = ''
@@ -225,6 +226,9 @@ class StartStructureDB(QMainWindow):
         self.ui.ddradioButton.clicked.connect(lambda: self.ui.HistogramRadioButton.setChecked(False))
         self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.ddradioButton.setChecked(False))
         self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.dotsRadioButton.setChecked(False))
+        # statistics
+        self.ui.statisticsTreeWidget.itemClicked.connect(self.on_statistics_item_clicked)
+        self.ui.MaintabWidget.currentChanged.connect(self._on_main_tab_changed)
         # shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+G"), self)
         # shortcut.activated.connect(lambda: self.gotto_structure_id(300))
 
@@ -817,6 +821,7 @@ class StartStructureDB(QMainWindow):
         self.ui.DatabaseNameDisplayLabel.setText('')
         self.set_model_from_data([])
         self.clear_fields()
+        self._statistics_populated = False
         self.ui.MaintabWidget.setCurrentIndex(0)
         self.statusBar().showMessage('Database closed')
         return True
@@ -842,6 +847,7 @@ class StartStructureDB(QMainWindow):
         self.dbfdesc, self.dbfilename = tempfile.mkstemp()
         self.structures = database_handler.StructureTable(self.dbfilename)
         self.structures.database.initialize_db()
+        self._statistics_populated = False
         self.ui.appendDirButton.setEnabled(True)
 
     def get_properties(self, selected: QItemSelection, _: QItemSelection) -> bool:
@@ -1268,6 +1274,91 @@ class StartStructureDB(QMainWindow):
         count = len(self.structures)
         self.statusbar.showMessage(f'Database with {count} structures loaded.')
         self.statusbar.show()
+
+    def _on_main_tab_changed(self, index: int) -> None:
+        """Populate statistics lazily when the Statistics tab is activated."""
+        if index == self.ui.MaintabWidget.indexOf(self.ui.statisticsTab):
+            self.populate_statistics()
+
+    def populate_statistics(self) -> None:
+        """Populates the Statistics tab tree with aggregated data from the current database."""
+        if not self.structures:
+            return
+        if self._statistics_populated:
+            return
+        tree = self.ui.statisticsTreeWidget
+        tree.blockSignals(True)
+        tree.clear()
+
+        crystal_system_stats = self.structures.get_crystal_system_statistics()
+        sections = [
+            ('Space Group', self.structures.get_space_group_statistics(), 'space_group'),
+            ('Crystal System', crystal_system_stats[:10], 'crystal_system'),
+            ('Year', self.structures.get_year_statistics(), 'year'),
+            ('R1 Range', self.structures.get_r1_statistics(), 'r1_range'),
+            ('Author', self.structures.get_author_statistics(), 'author'),
+        ]
+
+        for category, stats, stat_type in sections:
+            if not stats:
+                continue
+            total = sum(count for _, count in stats if count)
+            category_item = QtWidgets.QTreeWidgetItem(tree)
+            font = category_item.font(0)
+            font.setBold(True)
+            category_item.setFont(0, font)
+            category_item.setFont(1, font)
+            category_item.setText(0, category)
+            category_item.setText(1, str(total))
+            category_item.setFlags(category_item.flags() & ~Qt.ItemFlag.ItemIsSelectable)
+
+            for value, count in stats:
+                if value is None:
+                    continue
+                child = QtWidgets.QTreeWidgetItem(category_item)
+                child.setText(0, str(value))
+                child.setText(1, str(int(count)))
+                child.setTextAlignment(1, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+                if stat_type == 'r1_range':
+                    r1_bounds = R1_RANGES.get(str(value))
+                    if r1_bounds is None:
+                        print(f"Unknown R1 range label encountered: {value!r}")
+                        r1_bounds = (0.0, 1.0)
+                    child.setData(0, Qt.ItemDataRole.UserRole, (stat_type, r1_bounds))
+                else:
+                    child.setData(0, Qt.ItemDataRole.UserRole, (stat_type, value))
+
+        tree.blockSignals(False)
+        self._statistics_populated = True
+        tree.resizeColumnToContents(0)
+        tree.resizeColumnToContents(1)
+        self.ui.statisticsTreeWidget.setSortingEnabled(False)
+        self.ui.statisticsTreeWidget.setObjectName("statisticsTreeWidget")
+        self.ui.statisticsTreeWidget.header().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        self.ui.statisticsTreeWidget.header().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+
+    def on_statistics_item_clicked(self, item: QtWidgets.QTreeWidgetItem, column: int) -> None:
+        """Filters the Structures list when a leaf item in the Statistics tree is clicked."""
+        if not self.structures:
+            return
+        data = item.data(0, Qt.ItemDataRole.UserRole)
+        if not data:
+            return
+        stat_type, value = data
+        if stat_type == 'space_group':
+            idlist = self.structures.find_by_space_group_name(value)
+        elif stat_type == 'crystal_system':
+            idlist = self.structures.find_by_crystal_system(value)
+        elif stat_type == 'year':
+            idlist = self.structures.find_by_year(value)
+        elif stat_type == 'r1_range':
+            r1_min, r1_max = value
+            idlist = self.structures.find_by_r1_range(r1_min, r1_max)
+        elif stat_type == 'author':
+            idlist = self.structures.find_by_author_name(value)
+        else:
+            return
+        self.display_structures_by_idlist(tuple(idlist))
 
     def get_name_from_p4p(self):
         """

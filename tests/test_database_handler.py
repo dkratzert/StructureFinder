@@ -4,6 +4,7 @@ from collections import namedtuple
 from pathlib import Path
 
 from structurefinder.searcher import database_handler
+from structurefinder.searcher.database_handler import R1_RANGES
 from structurefinder.strf_cmd import run_index
 
 
@@ -182,6 +183,87 @@ class TestDatabase(unittest.TestCase):
     def test_get_filepath(self):
         self.assertEqual((b'p-1', b'/Users/daniel/GitHub/StructureFinder/test-data/106c.tgz'),
                          self.db.get_filepath(16))
+
+    def test_get_space_group_statistics(self):
+        stats = self.db.get_space_group_statistics()
+        self.assertIsInstance(stats, list)
+        self.assertTrue(len(stats) > 0)
+        # Each entry is (name, count)
+        self.assertEqual(2, len(stats[0]))
+        # Most frequent space group should have more than 1 structure
+        self.assertGreater(stats[0][1], 1)
+        # All counts should be positive integers
+        for name, count in stats:
+            self.assertIsNotNone(name)
+            self.assertGreater(count, 0)
+
+    def test_get_crystal_system_statistics(self):
+        stats = self.db.get_crystal_system_statistics()
+        self.assertIsInstance(stats, list)
+        # monoclinic should be present with count > 0
+        systems = {name: count for name, count in stats}
+        self.assertIn('monoclinic', systems)
+        self.assertGreater(systems['monoclinic'], 0)
+
+    def test_get_year_statistics(self):
+        stats = self.db.get_year_statistics()
+        self.assertIsInstance(stats, list)
+        self.assertTrue(len(stats) > 0)
+        # Year 2017 should have the most entries
+        years = {year: count for year, count in stats}
+        self.assertIn('2017', years)
+        self.assertGreater(years['2017'], 100)
+
+    def test_get_r1_statistics(self):
+        stats = self.db.get_r1_statistics()
+        self.assertIsInstance(stats, list)
+        self.assertTrue(len(stats) > 0)
+        labels = [label for label, _ in stats]
+        # All returned labels must be valid R1_RANGES keys
+        for label in labels:
+            self.assertIn(label, R1_RANGES)
+        total = sum(count for _, count in stats)
+        self.assertGreater(total, 0)
+
+    def test_get_author_statistics(self):
+        # Authors table may not exist in old test databases - should return empty list
+        stats = self.db.get_author_statistics()
+        self.assertIsInstance(stats, list)
+
+    def test_find_by_space_group_name(self):
+        ids = self.db.find_by_space_group_name('P n m a')
+        self.assertIsInstance(ids, list)
+        self.assertGreater(len(ids), 0)
+        # A non-existent space group should return empty list
+        self.assertEqual([], self.db.find_by_space_group_name('Not a space group'))
+
+    def test_find_by_crystal_system(self):
+        ids = self.db.find_by_crystal_system('monoclinic')
+        self.assertIsInstance(ids, list)
+        self.assertGreater(len(ids), 0)
+        self.assertEqual([], self.db.find_by_crystal_system('nonexistent'))
+
+    def test_find_by_year(self):
+        ids = self.db.find_by_year('2017')
+        self.assertIsInstance(ids, list)
+        self.assertGreater(len(ids), 0)
+        self.assertEqual([], self.db.find_by_year('1900'))
+
+    def test_find_by_r1_range(self):
+        ids = self.db.find_by_r1_range(0.0, 0.05)
+        self.assertIsInstance(ids, list)
+        self.assertGreater(len(ids), 0)
+        # Structures with R1 in [0, 0.03) should be a subset of [0, 0.05)
+        ids_low = self.db.find_by_r1_range(0.0, 0.03)
+        self.assertTrue(set(ids_low).issubset(set(ids)))
+        # Empty range should return nothing useful
+        ids_empty = self.db.find_by_r1_range(0.0, 0.0)
+        self.assertEqual([], ids_empty)
+
+    def test_find_by_author_name(self):
+        # Authors table may not exist in test db - should return empty list
+        ids = self.db.find_by_author_name('Some Author')
+        self.assertIsInstance(ids, list)
 
 
 class TestMerging(unittest.TestCase):
