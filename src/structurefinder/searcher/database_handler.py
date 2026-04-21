@@ -90,6 +90,16 @@ residuals = (
 
 # Residuals: TypeAlias = Literal[residuals]
 
+# R1 value ranges used for statistics bucketing: maps display label -> (min_inclusive, max_exclusive)
+R1_RANGES: dict[str, tuple[float, float]] = {
+    '< 3%' : (0.0, 0.03),
+    '3-5%' : (0.03, 0.05),
+    '5-8%' : (0.05, 0.08),
+    '8-10%': (0.08, 0.10),
+    '> 10%': (0.10, 1.0),
+}
+
+
 def default_repr(value: str | bytes) -> str:
     if isinstance(value, bytes):
         return value.decode('utf-8', errors='ignore')
@@ -1565,26 +1575,20 @@ class StructureTable:
     def find_by_r1_range(self, r1_min: float, r1_max: float) -> list[int]:
         """Find structures with R1 value in a specific range [r1_min, r1_max)."""
         req = """
-              SELECT StructureId FROM Residuals
-              WHERE (
-                COALESCE(
-                  CASE WHEN _refine_ls_R_factor_gt IS NOT NULL
-                            AND TRIM(CAST(_refine_ls_R_factor_gt AS TEXT)) NOT IN ('', '.', '?')
-                       THEN CAST(_refine_ls_R_factor_gt AS REAL) END,
-                  CASE WHEN _refine_ls_R_factor_all IS NOT NULL
-                            AND TRIM(CAST(_refine_ls_R_factor_all AS TEXT)) NOT IN ('', '.', '?')
-                       THEN CAST(_refine_ls_R_factor_all AS REAL) END
-                )
-              ) >= ? AND (
-                COALESCE(
-                  CASE WHEN _refine_ls_R_factor_gt IS NOT NULL
-                            AND TRIM(CAST(_refine_ls_R_factor_gt AS TEXT)) NOT IN ('', '.', '?')
-                       THEN CAST(_refine_ls_R_factor_gt AS REAL) END,
-                  CASE WHEN _refine_ls_R_factor_all IS NOT NULL
-                            AND TRIM(CAST(_refine_ls_R_factor_all AS TEXT)) NOT IN ('', '.', '?')
-                       THEN CAST(_refine_ls_R_factor_all AS REAL) END
-                )
-              ) < ?
+              WITH r1_values AS (
+                SELECT StructureId,
+                  COALESCE(
+                    CASE WHEN _refine_ls_R_factor_gt IS NOT NULL
+                              AND TRIM(CAST(_refine_ls_R_factor_gt AS TEXT)) NOT IN ('', '.', '?')
+                         THEN CAST(_refine_ls_R_factor_gt AS REAL) END,
+                    CASE WHEN _refine_ls_R_factor_all IS NOT NULL
+                              AND TRIM(CAST(_refine_ls_R_factor_all AS TEXT)) NOT IN ('', '.', '?')
+                         THEN CAST(_refine_ls_R_factor_all AS REAL) END
+                  ) AS r1
+                FROM Residuals
+              )
+              SELECT StructureId FROM r1_values
+              WHERE r1 IS NOT NULL AND r1 >= ? AND r1 < ?
               """
         result = self.database.db_request(req, (r1_min, r1_max))
         return self.result_to_list(result)

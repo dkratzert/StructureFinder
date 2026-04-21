@@ -4,6 +4,7 @@ from collections import namedtuple
 from pathlib import Path
 
 from structurefinder.searcher import database_handler
+from structurefinder.searcher.database_handler import R1_RANGES
 from structurefinder.strf_cmd import run_index
 
 
@@ -218,7 +219,9 @@ class TestDatabase(unittest.TestCase):
         self.assertIsInstance(stats, list)
         self.assertTrue(len(stats) > 0)
         labels = [label for label, _ in stats]
-        self.assertTrue(any(label in ('< 3%', '3-5%', '5-8%', '8-10%', '> 10%') for label in labels))
+        # All returned labels must be valid R1_RANGES keys
+        for label in labels:
+            self.assertIn(label, R1_RANGES)
         total = sum(count for _, count in stats)
         self.assertGreater(total, 0)
 

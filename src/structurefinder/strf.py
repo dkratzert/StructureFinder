@@ -59,7 +59,7 @@ from structurefinder.searcher.constants import (
     centering_letter_2_num,
     centering_num_2_letter,
 )
-from structurefinder.searcher.database_handler import columns
+from structurefinder.searcher.database_handler import R1_RANGES, columns
 from structurefinder.searcher.misc import (
     combine_results,
     elements,
@@ -1282,14 +1282,6 @@ class StartStructureDB(QMainWindow):
         table.setRowCount(0)
         table.blockSignals(True)
 
-        r1_ranges = {
-            '< 3%' : (0.0, 0.03),
-            '3-5%' : (0.03, 0.05),
-            '5-8%' : (0.05, 0.08),
-            '8-10%': (0.08, 0.10),
-            '> 10%': (0.10, 1.0),
-        }
-
         sections = [
             ('Space Group', self.structures.get_space_group_statistics(), 'space_group'),
             ('Crystal System', self.structures.get_crystal_system_statistics(), 'crystal_system'),
@@ -1307,7 +1299,11 @@ class StartStructureDB(QMainWindow):
                 cat_item = QtWidgets.QTableWidgetItem(category)
                 val_item = QtWidgets.QTableWidgetItem(str(value))
                 if stat_type == 'r1_range':
-                    val_item.setData(Qt.ItemDataRole.UserRole, (stat_type, r1_ranges.get(str(value), (0.0, 1.0))))
+                    r1_bounds = R1_RANGES.get(str(value))
+                    if r1_bounds is None:
+                        print(f"Unknown R1 range label encountered: {value!r}")
+                        r1_bounds = (0.0, 1.0)
+                    val_item.setData(Qt.ItemDataRole.UserRole, (stat_type, r1_bounds))
                 else:
                     val_item.setData(Qt.ItemDataRole.UserRole, (stat_type, value))
                 cnt_item = QtWidgets.QTableWidgetItem()
