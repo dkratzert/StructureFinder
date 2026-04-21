@@ -1330,6 +1330,12 @@ class StartStructureDB(QMainWindow):
 
         tree.blockSignals(False)
         self._statistics_populated = True
+        tree.resizeColumnToContents(0)
+        tree.resizeColumnToContents(1)
+        self.ui.statisticsTreeWidget.setSortingEnabled(False)
+        self.ui.statisticsTreeWidget.setObjectName("statisticsTreeWidget")
+        self.ui.statisticsTreeWidget.header().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        self.ui.statisticsTreeWidget.header().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
 
     def on_statistics_item_clicked(self, item: QtWidgets.QTreeWidgetItem, column: int) -> None:
         """Filters the Structures list when a leaf item in the Statistics tree is clicked."""
