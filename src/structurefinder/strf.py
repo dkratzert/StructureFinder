@@ -225,6 +225,8 @@ class StartStructureDB(QMainWindow):
         self.ui.ddradioButton.clicked.connect(lambda: self.ui.HistogramRadioButton.setChecked(False))
         self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.ddradioButton.setChecked(False))
         self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.dotsRadioButton.setChecked(False))
+        # statistics
+        self.ui.statisticsTableWidget.itemClicked.connect(self.on_statistics_item_clicked)
         # shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+G"), self)
         # shortcut.activated.connect(lambda: self.gotto_structure_id(300))
 
@@ -762,6 +764,7 @@ class StartStructureDB(QMainWindow):
         strf_cmd.finish_database(self.structures)
         self.ui.cifList_tableView.show()
         self.show_full_list()
+        self.populate_statistics()
         self.settings.save_current_index_dir(str(Path(startdir)))
         self.enable_buttons()
 
@@ -1261,6 +1264,7 @@ class StartStructureDB(QMainWindow):
         self.ui.ExportAsCIFpushButton.setEnabled(True)
         self.ui.DatabaseNameDisplayLabel.setText(f'Database opened: {Path(file_name).resolve()!s}')
         self.display_number_of_structures()
+        self.populate_statistics()
         self.ui.appendDatabasePushButton.setEnabled(True)
         return True
 
@@ -1268,6 +1272,79 @@ class StartStructureDB(QMainWindow):
         count = len(self.structures)
         self.statusbar.showMessage(f'Database with {count} structures loaded.')
         self.statusbar.show()
+
+    def populate_statistics(self) -> None:
+        """Populates the Statistics tab with aggregated data from the current database."""
+        if not self.structures:
+            return
+        table = self.ui.statisticsTableWidget
+        table.setSortingEnabled(False)
+        table.setRowCount(0)
+        table.blockSignals(True)
+
+        r1_ranges = {
+            '< 3%' : (0.0, 0.03),
+            '3-5%' : (0.03, 0.05),
+            '5-8%' : (0.05, 0.08),
+            '8-10%': (0.08, 0.10),
+            '> 10%': (0.10, 1.0),
+        }
+
+        sections = [
+            ('Space Group', self.structures.get_space_group_statistics(), 'space_group'),
+            ('Crystal System', self.structures.get_crystal_system_statistics(), 'crystal_system'),
+            ('Year', self.structures.get_year_statistics(), 'year'),
+            ('R1 Range', self.structures.get_r1_statistics(), 'r1_range'),
+            ('Author', self.structures.get_author_statistics(), 'author'),
+        ]
+
+        for category, stats, stat_type in sections:
+            for value, count in stats:
+                if value is None:
+                    continue
+                row = table.rowCount()
+                table.insertRow(row)
+                cat_item = QtWidgets.QTableWidgetItem(category)
+                val_item = QtWidgets.QTableWidgetItem(str(value))
+                if stat_type == 'r1_range':
+                    val_item.setData(Qt.ItemDataRole.UserRole, (stat_type, r1_ranges.get(str(value), (0.0, 1.0))))
+                else:
+                    val_item.setData(Qt.ItemDataRole.UserRole, (stat_type, value))
+                cnt_item = QtWidgets.QTableWidgetItem()
+                cnt_item.setData(Qt.ItemDataRole.DisplayRole, int(count))
+                table.setItem(row, 0, cat_item)
+                table.setItem(row, 1, val_item)
+                table.setItem(row, 2, cnt_item)
+
+        table.blockSignals(False)
+        table.setSortingEnabled(True)
+
+    def on_statistics_item_clicked(self, item: QtWidgets.QTableWidgetItem) -> None:
+        """Filters the Structures list when a row in the Statistics tab is clicked."""
+        if not self.structures:
+            return
+        row = item.row()
+        val_item = self.ui.statisticsTableWidget.item(row, 1)
+        if not val_item:
+            return
+        data = val_item.data(Qt.ItemDataRole.UserRole)
+        if not data:
+            return
+        stat_type, value = data
+        if stat_type == 'space_group':
+            idlist = self.structures.find_by_space_group_name(value)
+        elif stat_type == 'crystal_system':
+            idlist = self.structures.find_by_crystal_system(value)
+        elif stat_type == 'year':
+            idlist = self.structures.find_by_year(value)
+        elif stat_type == 'r1_range':
+            r1_min, r1_max = value
+            idlist = self.structures.find_by_r1_range(r1_min, r1_max)
+        elif stat_type == 'author':
+            idlist = self.structures.find_by_author_name(value)
+        else:
+            return
+        self.display_structures_by_idlist(tuple(idlist))
 
     def get_name_from_p4p(self):
         """
