@@ -227,6 +227,7 @@ class StartStructureDB(QMainWindow):
         self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.dotsRadioButton.setChecked(False))
         # statistics
         self.ui.statisticsTreeWidget.itemClicked.connect(self.on_statistics_item_clicked)
+        self.ui.MaintabWidget.currentChanged.connect(self._on_main_tab_changed)
         # shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+G"), self)
         # shortcut.activated.connect(lambda: self.gotto_structure_id(300))
 
@@ -764,7 +765,6 @@ class StartStructureDB(QMainWindow):
         strf_cmd.finish_database(self.structures)
         self.ui.cifList_tableView.show()
         self.show_full_list()
-        self.populate_statistics()
         self.settings.save_current_index_dir(str(Path(startdir)))
         self.enable_buttons()
 
@@ -1264,7 +1264,6 @@ class StartStructureDB(QMainWindow):
         self.ui.ExportAsCIFpushButton.setEnabled(True)
         self.ui.DatabaseNameDisplayLabel.setText(f'Database opened: {Path(file_name).resolve()!s}')
         self.display_number_of_structures()
-        self.populate_statistics()
         self.ui.appendDatabasePushButton.setEnabled(True)
         return True
 
@@ -1272,6 +1271,11 @@ class StartStructureDB(QMainWindow):
         count = len(self.structures)
         self.statusbar.showMessage(f'Database with {count} structures loaded.')
         self.statusbar.show()
+
+    def _on_main_tab_changed(self, index: int) -> None:
+        """Populate statistics lazily when the Statistics tab is activated."""
+        if index == self.ui.MaintabWidget.indexOf(self.ui.statisticsTab):
+            self.populate_statistics()
 
     def populate_statistics(self) -> None:
         """Populates the Statistics tab tree with aggregated data from the current database."""
