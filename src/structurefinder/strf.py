@@ -1329,7 +1329,9 @@ class StartStructureDB(QMainWindow):
                     child.setData(0, Qt.ItemDataRole.UserRole, (stat_type, value))
 
         tree.blockSignals(False)
-        self._statistics_populated = True(self, item: QtWidgets.QTreeWidgetItem, column: int) -> None:
+        self._statistics_populated = True
+
+    def on_statistics_item_clicked(self, item: QtWidgets.QTreeWidgetItem, column: int) -> None:
         """Filters the Structures list when a leaf item in the Statistics tree is clicked."""
         if not self.structures:
             return
