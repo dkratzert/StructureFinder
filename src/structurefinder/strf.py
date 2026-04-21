@@ -226,7 +226,7 @@ class StartStructureDB(QMainWindow):
         self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.ddradioButton.setChecked(False))
         self.ui.HistogramRadioButton.clicked.connect(lambda: self.ui.dotsRadioButton.setChecked(False))
         # statistics
-        self.ui.statisticsTableWidget.itemClicked.connect(self.on_statistics_item_clicked)
+        self.ui.statisticsTreeWidget.itemClicked.connect(self.on_statistics_item_clicked)
         # shortcut = QtGui.QShortcut(QtGui.QKeySequence("Ctrl+G"), self)
         # shortcut.activated.connect(lambda: self.gotto_structure_id(300))
 
@@ -1274,13 +1274,12 @@ class StartStructureDB(QMainWindow):
         self.statusbar.show()
 
     def populate_statistics(self) -> None:
-        """Populates the Statistics tab with aggregated data from the current database."""
+        """Populates the Statistics tab tree with aggregated data from the current database."""
         if not self.structures:
             return
-        table = self.ui.statisticsTableWidget
-        table.setSortingEnabled(False)
-        table.setRowCount(0)
-        table.blockSignals(True)
+        tree = self.ui.statisticsTreeWidget
+        tree.blockSignals(True)
+        tree.clear()
 
         sections = [
             ('Space Group', self.structures.get_space_group_statistics(), 'space_group'),
@@ -1291,39 +1290,43 @@ class StartStructureDB(QMainWindow):
         ]
 
         for category, stats, stat_type in sections:
+            if not stats:
+                continue
+            total = sum(count for _, count in stats if count)
+            category_item = QtWidgets.QTreeWidgetItem(tree)
+            font = category_item.font(0)
+            font.setBold(True)
+            category_item.setFont(0, font)
+            category_item.setFont(1, font)
+            category_item.setText(0, category)
+            category_item.setText(1, str(total))
+            category_item.setFlags(category_item.flags() & ~Qt.ItemFlag.ItemIsSelectable)
+
             for value, count in stats:
                 if value is None:
                     continue
-                row = table.rowCount()
-                table.insertRow(row)
-                cat_item = QtWidgets.QTableWidgetItem(category)
-                val_item = QtWidgets.QTableWidgetItem(str(value))
+                child = QtWidgets.QTreeWidgetItem(category_item)
+                child.setText(0, str(value))
+                child.setText(1, str(int(count)))
+                child.setTextAlignment(1, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
                 if stat_type == 'r1_range':
                     r1_bounds = R1_RANGES.get(str(value))
                     if r1_bounds is None:
                         print(f"Unknown R1 range label encountered: {value!r}")
                         r1_bounds = (0.0, 1.0)
-                    val_item.setData(Qt.ItemDataRole.UserRole, (stat_type, r1_bounds))
+                    child.setData(0, Qt.ItemDataRole.UserRole, (stat_type, r1_bounds))
                 else:
-                    val_item.setData(Qt.ItemDataRole.UserRole, (stat_type, value))
-                cnt_item = QtWidgets.QTableWidgetItem()
-                cnt_item.setData(Qt.ItemDataRole.DisplayRole, int(count))
-                table.setItem(row, 0, cat_item)
-                table.setItem(row, 1, val_item)
-                table.setItem(row, 2, cnt_item)
+                    child.setData(0, Qt.ItemDataRole.UserRole, (stat_type, value))
 
-        table.blockSignals(False)
-        table.setSortingEnabled(True)
+            category_item.setExpanded(True)
 
-    def on_statistics_item_clicked(self, item: QtWidgets.QTableWidgetItem) -> None:
-        """Filters the Structures list when a row in the Statistics tab is clicked."""
+        tree.blockSignals(False)
+
+    def on_statistics_item_clicked(self, item: QtWidgets.QTreeWidgetItem, column: int) -> None:
+        """Filters the Structures list when a leaf item in the Statistics tree is clicked."""
         if not self.structures:
             return
-        row = item.row()
-        val_item = self.ui.statisticsTableWidget.item(row, 1)
-        if not val_item:
-            return
-        data = val_item.data(Qt.ItemDataRole.UserRole)
+        data = item.data(0, Qt.ItemDataRole.UserRole)
         if not data:
             return
         stat_type, value = data
