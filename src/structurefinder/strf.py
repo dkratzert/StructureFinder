@@ -114,6 +114,7 @@ class StartStructureDB(QMainWindow):
         self.abort_import_button.hide()
         self.statusbar.hide()
         self.structures: database_handler.StructureTable | None = None
+        self._statistics_populated: bool = False
         self.apx = None
         self.structureId = 0
         self.passwd = ''
@@ -820,6 +821,7 @@ class StartStructureDB(QMainWindow):
         self.ui.DatabaseNameDisplayLabel.setText('')
         self.set_model_from_data([])
         self.clear_fields()
+        self._statistics_populated = False
         self.ui.MaintabWidget.setCurrentIndex(0)
         self.statusBar().showMessage('Database closed')
         return True
@@ -845,6 +847,7 @@ class StartStructureDB(QMainWindow):
         self.dbfdesc, self.dbfilename = tempfile.mkstemp()
         self.structures = database_handler.StructureTable(self.dbfilename)
         self.structures.database.initialize_db()
+        self._statistics_populated = False
         self.ui.appendDirButton.setEnabled(True)
 
     def get_properties(self, selected: QItemSelection, _: QItemSelection) -> bool:
@@ -1281,6 +1284,8 @@ class StartStructureDB(QMainWindow):
         """Populates the Statistics tab tree with aggregated data from the current database."""
         if not self.structures:
             return
+        if self._statistics_populated:
+            return
         tree = self.ui.statisticsTreeWidget
         tree.blockSignals(True)
         tree.clear()
@@ -1324,8 +1329,7 @@ class StartStructureDB(QMainWindow):
                     child.setData(0, Qt.ItemDataRole.UserRole, (stat_type, value))
 
         tree.blockSignals(False)
-
-    def on_statistics_item_clicked(self, item: QtWidgets.QTreeWidgetItem, column: int) -> None:
+        self._statistics_populated = True(self, item: QtWidgets.QTreeWidgetItem, column: int) -> None:
         """Filters the Structures list when a leaf item in the Statistics tree is clicked."""
         if not self.structures:
             return
