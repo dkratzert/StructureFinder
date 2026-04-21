@@ -1,6 +1,9 @@
 StructureFinder Changelog
 -------------------------
 
+* v89 Improved indexing speed a bit.
+      Added a statistics page. This is a first version and will be improved in the future.
+      It shows some statistics about the structures in the database. Improved documentation.
 * v88 Added option to filter out structures that were not refined (without R1 value). This is useful for example to filter
       out SHELXT solutions. Updated structure viewer to https://pypi.org/project/fastmolwidget/. Update internal Python to 3.14.
 * v87 Improved responsiveness during indexing.
@@ -82,7 +85,7 @@ StructureFinder Changelog
 * v35 Improved .cif file parser
 * v34 Web interface improvements.
 * v33 Added search option to search for structures with only certain elements included.
-* v32 Improved element search. Is is faster and more precise. (You need to rebuild your database!)
+* v32 Improved element search. It is faster and more precise. (You need to rebuild your database!)
 * v31 Fixed two bugs that caused StructureFinder to crash during cell search.
 * v30 Added search in CellCeckCSD database. You need to install CellChekCSD in order to search CSD data.
 * v29 Fixed missing shelxfile directory in 32bit installer.
