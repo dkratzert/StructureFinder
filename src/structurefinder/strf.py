@@ -1281,9 +1281,10 @@ class StartStructureDB(QMainWindow):
         tree.blockSignals(True)
         tree.clear()
 
+        crystal_system_stats = self.structures.get_crystal_system_statistics()
         sections = [
             ('Space Group', self.structures.get_space_group_statistics(), 'space_group'),
-            ('Crystal System', self.structures.get_crystal_system_statistics(), 'crystal_system'),
+            ('Crystal System', crystal_system_stats[:10], 'crystal_system'),
             ('Year', self.structures.get_year_statistics(), 'year'),
             ('R1 Range', self.structures.get_r1_statistics(), 'r1_range'),
             ('Author', self.structures.get_author_statistics(), 'author'),
@@ -1317,8 +1318,6 @@ class StartStructureDB(QMainWindow):
                     child.setData(0, Qt.ItemDataRole.UserRole, (stat_type, r1_bounds))
                 else:
                     child.setData(0, Qt.ItemDataRole.UserRole, (stat_type, value))
-
-            category_item.setExpanded(True)
 
         tree.blockSignals(False)
 
