@@ -124,6 +124,7 @@ class StartStructureDB(QMainWindow):
         self.full_list = True  # indicator if the full structures list is shown
         self.ui.cellcheckExeLineEdit.setText(self.settings.load_ccdc_exe_path())
         self.connect_signals_and_slots()
+        self.ui.growCheckBox.setChecked(True)
         self.set_initial_button_states()
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
@@ -201,6 +202,7 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDatabasePushButton.clicked.connect(self.append_database)
         self.ui.labelsCheckBox.toggled.connect(self.show_labels)
         self.ui.render_widget.show_labels(False)
+        # There are no ADPs in the database:
         self.ui.render_widget.show_adps(False)
         self.ui.helpPushButton.clicked.connect(self.show_help)
         self.ui.hideInArchivesCB.clicked.connect(self.recount)
@@ -921,6 +923,8 @@ class StartStructureDB(QMainWindow):
             super().keyPressEvent(q_key_event)
 
     def view_molecule(self) -> None:
+        if not self.structures:
+            return
         cell = self.structures.get_cell_by_id(self.structureId)
         if not cell:
             print('No cell found')
