@@ -81,7 +81,7 @@ no-binary = ["structurefinder"]
 "Bug Tracker" = "https://github.com/dkratzert/StructureFinder/issues"
 
 [tool.hatch.version]
-path = "src/structurefinder/misc/version.py"
+path = "src/structurefinder/__init__.py"
 pattern = "VERSION\\s*=\\s*(?P<version>\\d+\\.{0,1}\\d{0,1})"
 
 [tool.hatch.build.targets.sdist]
