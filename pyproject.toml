@@ -70,7 +70,7 @@ web = [
 ]
 
 [tool.uv]
-exclude-newer = "3 days"
+exclude-newer = "1 days"
 
 [tool.uv.pip]
 only-binary = [":all:"]
