@@ -2,7 +2,11 @@ name: publish
 on:
   push:
     tags:
-      - '*'
+      - 'version-*'
+
+permissions:
+  contents: read
+
 jobs:
   tests:
     uses: ./.github/workflows/python_tests.yml
@@ -15,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v8
         with:
           python-version: "3.14"
 
