@@ -2,7 +2,7 @@
 
 
 ![Lates Release](https://img.shields.io/github/v/tag/dkratzert/StructureFinder?label=Latest%20Release)
-[![Unit Tests](https://github.com/dkratzert/StructureFinder/actions/workflows/python_tests.yml/badge.svg?branch=master)](https://github.com/dkratzert/StructureFinder/actions/workflows/python_tests.yml)
+[![Tests](https://github.com/dkratzert/StructureFinder/actions/workflows/python_tests.yml/badge.svg?branch=master)](https://github.com/dkratzert/StructureFinder/actions/workflows/python_tests.yml)
 ![Contributions](https://img.shields.io/badge/contributions-welcome-blue)
 
 # StructureFinder
