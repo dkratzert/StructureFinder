@@ -125,7 +125,6 @@ class StartStructureDB(QMainWindow):
         self.ui.cellcheckExeLineEdit.setText(self.settings.load_ccdc_exe_path())
         self.connect_signals_and_slots()
         self.ui.growCheckBox.setChecked(True)
-        self.ui.part_filter_widget.show()  # always visible; combo populates on disorder
         self.set_initial_button_states()
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
@@ -961,7 +960,6 @@ class StartStructureDB(QMainWindow):
         """Refresh the PartFilterWidget and apply the current selection."""
         parts = frozenset(at.part for at in atoms)
         self.ui.part_filter_widget.update_parts(parts)
-        self.ui.part_filter_widget.show()  # keep visible even when no disorder
         self._on_part_filter_changed()
 
     def _on_part_filter_changed(self) -> None:
