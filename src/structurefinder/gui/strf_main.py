@@ -6,6 +6,7 @@
 
 
 from PyQt6 import QtCore, QtGui, QtWidgets
+from fastmolwidget.part_combo import PartFilterWidget
 
 
 class Ui_stdbMainwindow(object):
@@ -379,6 +380,9 @@ class Ui_stdbMainwindow(object):
         self.growCheckBox = QtWidgets.QCheckBox(parent=self.molGroupBox)
         self.growCheckBox.setObjectName("growCheckBox")
         self.horizontalLayout_6.addWidget(self.growCheckBox)
+        self.part_filter_widget = PartFilterWidget(parent=self.molGroupBox, label='')
+        self.part_filter_widget.setObjectName("part_filter_widget")
+        self.horizontalLayout_6.addWidget(self.part_filter_widget)
         self.labelsCheckBox = QtWidgets.QCheckBox(parent=self.molGroupBox)
         self.labelsCheckBox.setObjectName("labelsCheckBox")
         self.horizontalLayout_6.addWidget(self.labelsCheckBox)

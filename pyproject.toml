@@ -22,7 +22,7 @@ classifiers = [
 
 dependencies = [
     "docutils",
-    "fastmolwidget>=0.7.4",
+    "fastmolwidget>=0.9.3",
     "macholib",
     "numpy>=2.3.5,<2.4",
     "pefile",
@@ -34,7 +34,7 @@ dependencies = [
     "gemmi>=0.7.5",
     "xlsxwriter",
     "qtawesome",
-    "shelxfile",
+    "shelxfile>=22",
     "py7zr",
     "pyqtgraph>=0.13",
     "qtpy>=2.4.3",
@@ -70,7 +70,7 @@ web = [
 ]
 
 [tool.uv]
-exclude-newer = "1 days"
+#exclude-newer = "1 days"
 
 [tool.uv.pip]
 only-binary = [":all:"]

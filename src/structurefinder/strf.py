@@ -125,6 +125,7 @@ class StartStructureDB(QMainWindow):
         self.ui.cellcheckExeLineEdit.setText(self.settings.load_ccdc_exe_path())
         self.connect_signals_and_slots()
         self.ui.growCheckBox.setChecked(True)
+        self.ui.part_filter_widget.show()  # always visible; combo populates on disorder
         self.set_initial_button_states()
         self.ui.dateEdit1.setDate(QDate(date.today()))
         self.ui.dateEdit2.setDate(QDate(date.today()))
@@ -196,6 +197,7 @@ class StartStructureDB(QMainWindow):
         self.ui.add_res.clicked.connect(self.res_checkbox_clicked)
         self.ui.add_cif.clicked.connect(self.cif_checkbox_clicked)
         self.ui.growCheckBox.toggled.connect(self.redraw_molecule)
+        self.ui.part_filter_widget.selectionChanged.connect(self._on_part_filter_changed)
         self.ui.ExportAsCIFpushButton.clicked.connect(self.export_current_cif)
         self.ui.cellcheckExeLineEdit.textChanged.connect(self.save_cellcheck_exe_path)
         self.ui.cellcheckExePushButton.clicked.connect(self.browse_for_ccdc_exe)
@@ -943,6 +945,7 @@ class StartStructureDB(QMainWindow):
                 needsymm = sdm.calc_sdm()
                 atoms = sdm.packer(sdm, needsymm)
                 self.ui.render_widget.open_molecule(atoms)
+                self._update_part_filter(atoms)
         else:
             self.show_asymmetric_unit()
 
@@ -952,6 +955,19 @@ class StartStructureDB(QMainWindow):
         if atoms:
             atoms = [Atomtuple(label=at[0], type=at[1], x=at[2], y=at[3], z=at[4], part=at[5]) for at in atoms]
             self.ui.render_widget.open_molecule(atoms)
+            self._update_part_filter(atoms)
+
+    def _update_part_filter(self, atoms) -> None:
+        """Refresh the PartFilterWidget and apply the current selection."""
+        parts = frozenset(at.part for at in atoms)
+        self.ui.part_filter_widget.update_parts(parts)
+        self.ui.part_filter_widget.show()  # keep visible even when no disorder
+        self._on_part_filter_changed()
+
+    def _on_part_filter_changed(self) -> None:
+        """Pass the currently checked parts to the render widget."""
+        checked = self.ui.part_filter_widget.checked_values()
+        self.ui.render_widget.set_visible_parts(set(checked) if checked else None)
 
     def redraw_molecule(self) -> None:
         self.view_molecule()
