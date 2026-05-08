@@ -1,6 +1,7 @@
 StructureFinder Changelog
 -------------------------
 
+* v90 Improved structure viewer and added possibility to hide parts. Grow structure got so fast that it is the default now.
 * v89 Improved indexing speed a bit.
       Added a statistics page. This is a first version and will be improved in the future.
       It shows some statistics about the structures in the database. Improved documentation.
