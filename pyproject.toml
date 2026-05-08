@@ -22,7 +22,7 @@ classifiers = [
 
 dependencies = [
     "docutils",
-    "fastmolwidget>=0.9.4",
+    "fastmolwidget>=0.9.5",
     "macholib",
     "numpy>=2.3.5,<2.4",
     "pefile",
