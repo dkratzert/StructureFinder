@@ -968,7 +968,12 @@ class StartStructureDB(QMainWindow):
         self.ui.render_widget.set_visible_parts(set(checked) if checked else None)
 
     def redraw_molecule(self) -> None:
-        self.view_molecule()
+        try:
+            self.view_molecule()
+        except Exception as e:
+            print(f"Error while drawing molecule: {e}")
+            if DEBUG:
+                raise
 
     def display_properties(self, structure_id, cif_dic: CifFile):
         """
