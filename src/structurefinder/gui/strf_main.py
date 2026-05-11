@@ -6,7 +6,6 @@
 
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-from fastmolwidget.part_combo import PartFilterWidget
 
 
 class Ui_stdbMainwindow(object):
@@ -380,12 +379,12 @@ class Ui_stdbMainwindow(object):
         self.growCheckBox = QtWidgets.QCheckBox(parent=self.molGroupBox)
         self.growCheckBox.setObjectName("growCheckBox")
         self.horizontalLayout_6.addWidget(self.growCheckBox)
-        self.part_filter_widget = PartFilterWidget(parent=self.molGroupBox, label='', min_combo_width=80)
-        self.part_filter_widget.setObjectName("part_filter_widget")
-        self.horizontalLayout_6.addWidget(self.part_filter_widget)
         self.labelsCheckBox = QtWidgets.QCheckBox(parent=self.molGroupBox)
         self.labelsCheckBox.setObjectName("labelsCheckBox")
         self.horizontalLayout_6.addWidget(self.labelsCheckBox)
+        self.part_filter_widget = PartFilterWidget(parent=self.molGroupBox)
+        self.part_filter_widget.setObjectName("part_filter_widget")
+        self.horizontalLayout_6.addWidget(self.part_filter_widget)
         self.ogllayout.addLayout(self.horizontalLayout_6)
         self.importResults.addWidget(self.molGroupBox, 2, 6, 1, 1)
         self.groupBox_3 = QtWidgets.QGroupBox(parent=self.maintab)
@@ -1674,6 +1673,7 @@ class Ui_stdbMainwindow(object):
         self.actionGo_to_All_CIF_Tab.setText(_translate("stdbMainwindow", "Go to All CIF Tab"))
         self.actionGo_to_All_CIF_Tab.setShortcut(_translate("stdbMainwindow", "Meta+A"))
 from fastmolwidget.molecule2D import MoleculeWidget
+from fastmolwidget.part_combo import PartFilterWidget
 from structurefinder.gui.table_view import StructuresListTableView
 
 

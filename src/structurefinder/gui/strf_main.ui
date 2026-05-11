@@ -895,6 +895,9 @@
                       </property>
                      </widget>
                     </item>
+                    <item>
+                     <widget class="PartFilterWidget" name="part_filter_widget" native="true"/>
+                    </item>
                    </layout>
                  </item>
                 </layout>
@@ -3581,6 +3584,12 @@ p, li { white-space: pre-wrap; }
    <class>StructuresListTableView</class>
    <extends>QTableView</extends>
    <header>structurefinder.gui.table_view.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PartFilterWidget</class>
+   <extends>QWidget</extends>
+   <header>fastmolwidget.part_combo.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>

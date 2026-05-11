@@ -362,7 +362,7 @@ wheels = [
 
 [[package]]
 name = "fastmolwidget"
-version = "0.9.3"
+version = "0.9.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "gemmi" },
@@ -371,18 +371,18 @@ dependencies = [
     { name = "shelxfile" },
 ]
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2c/fb/dd8c49c03493b939dd7551f80c60e81ea96e0b51ced11aa0bb5359ee904b/fastmolwidget-0.9.3-cp312-cp312-macosx_14_0_universal2.whl", hash = "sha256:54b4807b126c0fc4d07430320e963efe13a78b049e01ab02479e9071f606d25d", size = 261079, upload-time = "2026-05-07T19:51:33.656Z" },
-    { url = "https://files.pythonhosted.org/packages/99/b1/9cf4da4efd2471c4acc877efac9aa965b6d583122d7fc044ab8a27dbc933/fastmolwidget-0.9.3-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:a279baf294594a1f9e3a3d290c9d29a254f6124ca3329135b2095c9dd20287d5", size = 1416045, upload-time = "2026-05-07T19:51:35.14Z" },
-    { url = "https://files.pythonhosted.org/packages/e1/43/489ae88de2ecd9834022fb8530c412523ae1e5fc24f125f98473a94fde97/fastmolwidget-0.9.3-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:a2035ff8984df24c1c8c794a474dee2423bbdba7e722b25dfd90ca7091f51ec6", size = 2476966, upload-time = "2026-05-07T19:51:36.799Z" },
-    { url = "https://files.pythonhosted.org/packages/16/b4/b362271ce3ec13cc3195274eb6dca5cba125d1231eccaafd7dfe606a1e33/fastmolwidget-0.9.3-cp312-cp312-win_amd64.whl", hash = "sha256:d2b87f11a63360c5d70ce42fe93467f20732370dbaf1367936d443b5be484c55", size = 175240, upload-time = "2026-05-07T19:51:38.117Z" },
-    { url = "https://files.pythonhosted.org/packages/86/4e/81a7d0af784e9a0faa6fc1eca5636c3c5a559a57f6ed4664874cf07012cc/fastmolwidget-0.9.3-cp313-cp313-macosx_14_0_universal2.whl", hash = "sha256:2830ad6fab9fe3cf8ba3033976da50a4bfd1b6cb27e44603986f925a93157cb6", size = 261242, upload-time = "2026-05-07T19:51:39.36Z" },
-    { url = "https://files.pythonhosted.org/packages/88/2b/2a2b0069d02523fad3c856b7a9af271ac8bb6adc9daf7e3458b3a2c06a8c/fastmolwidget-0.9.3-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:5de06a8eafd9d14c310d7d57f0f591833e75aa2cc71499dd0c9e302b0bf7f83d", size = 1415849, upload-time = "2026-05-07T19:51:40.68Z" },
-    { url = "https://files.pythonhosted.org/packages/4e/aa/f429f2c5783db545ce9a593d028f303a2ddff35056330a891b3bf817ba9a/fastmolwidget-0.9.3-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:737013840bf18ee778d6518afc3e7d93b82fa8c1ea19c39e31a86f93bb301117", size = 2477168, upload-time = "2026-05-07T19:51:42.157Z" },
-    { url = "https://files.pythonhosted.org/packages/c2/71/d996858842734b90c2c1be5c3d7759eb34f75a59791ca427cde28ec11e48/fastmolwidget-0.9.3-cp313-cp313-win_amd64.whl", hash = "sha256:35bb52eca53cee43f93d6abbfcc3791a7e3b9a3517ce1c3d19e14658f47008e2", size = 175252, upload-time = "2026-05-07T19:51:43.663Z" },
-    { url = "https://files.pythonhosted.org/packages/93/f4/15d8863f13c78ad5cf368e105c721e15de8f3077635170700c4bfb55dfd8/fastmolwidget-0.9.3-cp314-cp314-macosx_14_0_universal2.whl", hash = "sha256:0c103d8cba51cdc55a15c8a8bb10002c68bbcac14a0c6c323c1e66de67826f15", size = 261217, upload-time = "2026-05-07T19:51:45.088Z" },
-    { url = "https://files.pythonhosted.org/packages/9c/f5/a73286c9d4c981175a99e15e8aa3705a423a9c5ed9d8b2516bab2b185319/fastmolwidget-0.9.3-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:2fb3ccb01a5310d4e339b6f99b0706da55dff8f3d122ff1c57a4854a5d6b17a9", size = 1416046, upload-time = "2026-05-07T19:51:46.766Z" },
-    { url = "https://files.pythonhosted.org/packages/65/18/2406a98b9427fd13e8fef3768e2219d14909d8b8170f907addf8e7597754/fastmolwidget-0.9.3-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:0b7186168de6fbc9075d47573e0c11743f7a8ddc8669448d3695f0c38881687f", size = 2476629, upload-time = "2026-05-07T19:51:48.627Z" },
-    { url = "https://files.pythonhosted.org/packages/51/b9/ba516e21f23ecd45dfaa2c4c66174891f3837268a0b5b1ed8fa8a71873ff/fastmolwidget-0.9.3-cp314-cp314-win_amd64.whl", hash = "sha256:70d1991f50c9347e65c104681ec032b2751598283ed4b1d3104bf98fa6274bc3", size = 177962, upload-time = "2026-05-07T19:51:50.493Z" },
+    { url = "https://files.pythonhosted.org/packages/2b/66/2be2641ad4aedab101e76580c64cc199b2e191dd48debff32626b1e77d28/fastmolwidget-0.9.6-cp312-cp312-macosx_14_0_universal2.whl", hash = "sha256:8503dd63028f0d880a155698c92f771b9e13c111e6447a74b60c24d5602a1565", size = 262277, upload-time = "2026-05-09T16:55:53.223Z" },
+    { url = "https://files.pythonhosted.org/packages/47/03/977ba8b1736df96f6c1c1904ad90350df0d5089d04c9df22be2b7c91b967/fastmolwidget-0.9.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:596350b88fae0acf772c296f830edfa0b3612568981f7f5b94fe091d76e9a002", size = 1417250, upload-time = "2026-05-09T16:55:55.147Z" },
+    { url = "https://files.pythonhosted.org/packages/87/38/95dcff9fa7e419945a1cee7f12033e017eada8d3e030fe6b214528679080/fastmolwidget-0.9.6-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:8e54435ddcb3722a9c8545d73cdeb3fa8305e87629a4ada32fab37461b56382c", size = 2478171, upload-time = "2026-05-09T16:55:56.824Z" },
+    { url = "https://files.pythonhosted.org/packages/25/de/5e5f031c14432c3b8eb6fbfe32af6390d0dcbe077596b1c051e7fb2c8a73/fastmolwidget-0.9.6-cp312-cp312-win_amd64.whl", hash = "sha256:1f498a017722ac2ac23c5dac343775c55f3645a5c88705fc1a32cdad37305468", size = 176479, upload-time = "2026-05-09T16:55:58.682Z" },
+    { url = "https://files.pythonhosted.org/packages/0e/c5/ba9fce4651bb0b0f3b0b87530d08e621495abd19715a284a3f833a1ea7a7/fastmolwidget-0.9.6-cp313-cp313-macosx_14_0_universal2.whl", hash = "sha256:50a92e66b118d9db25d31d855ed71bf03ddcbbf436c2865763457599537bc093", size = 262443, upload-time = "2026-05-09T16:56:00.137Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/be/d8ba87fe55095f9c90852c9805fe57bd25eed21f9b01873b22f702c33b11/fastmolwidget-0.9.6-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:7331d1e2285c926bb6c3a23dc0e5a06c582dcabd6c3eb6278c5f378a8be28d74", size = 1417049, upload-time = "2026-05-09T16:56:01.885Z" },
+    { url = "https://files.pythonhosted.org/packages/64/15/1c4eae8d2b2673a10deb81e46391f77b3ac3dcd4123ad9ee8785dc1e25c8/fastmolwidget-0.9.6-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:4652863f8294a91fff9c207ec5a54e537869962c4e6ba42f1d6ba8d1cc7694b9", size = 2478372, upload-time = "2026-05-09T16:56:03.657Z" },
+    { url = "https://files.pythonhosted.org/packages/04/2d/5e1889b427e51491194120f871106b5a0331fef935a1d0caa678db74199e/fastmolwidget-0.9.6-cp313-cp313-win_amd64.whl", hash = "sha256:6c464e050c04886501efce8f6215a2eeb2b2112ef59d684d567c8064f87ac2a3", size = 176493, upload-time = "2026-05-09T16:56:05.151Z" },
+    { url = "https://files.pythonhosted.org/packages/e6/ec/16b75fbe5bca18d6a78dd77839d2b99ea4a0e7f56ada3bae4ddb4aa8875b/fastmolwidget-0.9.6-cp314-cp314-macosx_14_0_universal2.whl", hash = "sha256:d35b783663f39ca94c39110f6f9f6fda9badb1dbcb8dc7cec13e79855dabc923", size = 262423, upload-time = "2026-05-09T16:56:06.998Z" },
+    { url = "https://files.pythonhosted.org/packages/63/49/54e6cb78bad86cdcdd11f233c5b5936d8f603ee64648908fd6c25c27a0f6/fastmolwidget-0.9.6-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:3ad681f6f53f193600dd21d37911483ab565955d46f001e378d090305b92557e", size = 1417249, upload-time = "2026-05-09T16:56:09.047Z" },
+    { url = "https://files.pythonhosted.org/packages/b3/86/69e238e356476c9621aaae413ca08c11dcbd359cfae666586ec79cea5d23/fastmolwidget-0.9.6-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:75683c2ee2b335489a222df14deee69db1ed6d6561ec93a2b511fa548e41796a", size = 2477833, upload-time = "2026-05-09T16:56:10.772Z" },
+    { url = "https://files.pythonhosted.org/packages/1a/0f/c72e4aa263cda014e23290df9ca276eaeb314ec7f4488da865ec2c1a4acf/fastmolwidget-0.9.6-cp314-cp314-win_amd64.whl", hash = "sha256:325b6bd9ec1f7661e60897098ae9b86f018f30b6ad5fbe7c787766290d5b4ed1", size = 179244, upload-time = "2026-05-09T16:56:12.308Z" },
 ]
 
 [[package]]
@@ -1499,7 +1499,7 @@ web = [
 [package.metadata]
 requires-dist = [
     { name = "docutils" },
-    { name = "fastmolwidget", specifier = ">=0.9.3" },
+    { name = "fastmolwidget", specifier = ">=0.9.5" },
     { name = "gemmi", specifier = ">=0.7.5" },
     { name = "macholib" },
     { name = "numpy", specifier = ">=2.3.5,<2.4" },
