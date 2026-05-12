@@ -93,3 +93,4 @@ vc_redist.x64.exe
 /scripts/starter/structurefinder/x64
 testru.sqlite
 test_res_cif.sqlite
+/all_on_d.sqlite
