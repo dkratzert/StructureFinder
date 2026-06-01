@@ -727,6 +727,8 @@ class StartStructureDB(QMainWindow):
         self.ui.p4pCellButton.setDisabled(True)
         self.ui.appendDatabasePushButton.setDisabled(True)
         self.ui.importDatabaseButton.setDisabled(True)
+        self.ui.add_res.setDisabled(True)
+        self.ui.add_cif.setDisabled(True)
         self.thread = QThread(self)
         self.thread.setObjectName('WorkerTread')
         # None parent is essential here, or it runs in the main thread:
@@ -781,6 +783,8 @@ class StartStructureDB(QMainWindow):
         self.ui.closeDatabaseButton.setEnabled(True)
         self.ui.p4pCellButton.setEnabled(True)
         self.ui.importDatabaseButton.setEnabled(True)
+        self.ui.add_res.setEnabled(True)
+        self.ui.add_cif.setEnabled(True)
 
     def progressbar(self, curr: int, min: int, max: int) -> None:
         """
