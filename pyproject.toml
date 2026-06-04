@@ -34,7 +34,7 @@ dependencies = [
     "gemmi>=0.7.5",
     "xlsxwriter",
     "qtawesome",
-    "shelxfile>=23",
+    "shelxfile>=24",
     "py7zr",
     "pyqtgraph>=0.13",
     "qtpy>=2.4.3",
