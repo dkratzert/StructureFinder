@@ -86,13 +86,11 @@ def fill_db_with_res_data(res: Shelxfile, result: Result, structure_id: int, str
     cif.cif_data['modification_time'] = result.modification_time
     cif.cif_data["_cell_formula_units_Z"] = res.Z
     try:
-        symmops = "\n".join([x.to_fractional() for x in res.symmcards])
-        # gemmi needs integer ratio instead of float values in symmcards:
-        # symmops = "\n".join([x.toShelxl() for x in res.symmcards])
+        symmops = "\n".join([x.to_cif() for x in res.symmcards])
         cif.cif_data["_space_group_symop_operation_xyz"] = symmops
     except Exception:
         try:
-            symmops = "\n".join([x.toShelxl() for x in res.symmcards])
+            symmops = "\n".join([x.to_shelxl() for x in res.symmcards])
             cif.cif_data["_space_group_symop_operation_xyz"] = symmops
         except Exception:
             pass

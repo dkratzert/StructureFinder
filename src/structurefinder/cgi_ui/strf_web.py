@@ -172,8 +172,8 @@ def jsmol_request():
     if str_id:
         cell = structures.get_cell_by_id(str_id)
         if request.POST.grow == 'true':
-            symmcards = structures.get_row_as_dict(str_id)[
-                '_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")
+            symm_xyz = structures.get_row_as_dict(str_id).get('_space_group_symop_operation_xyz') or ''
+            symmcards = symm_xyz.replace("'", "").replace(" ", "").split("\n")
             atoms = structures.get_atoms_table(str_id, cartesian=False, as_list=True)
             if atoms:
                 sdm = SDM(atoms, symmcards, cell)
