@@ -1,6 +1,8 @@
 StructureFinder Changelog
 -------------------------
 
+* v93 Fixed ´structure expanding (grow) for .res files.
+      The symmetry operations (SYMM cards) were not stored in the database.
 * v92 Updated with faster SHELX .res file parser.
 * v91 Small improvement of the structure viewer.
 * v90 Improved structure viewer and added possibility to hide parts. Grow structure got so fast that it is the default now.
