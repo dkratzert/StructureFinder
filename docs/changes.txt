@@ -1,7 +1,7 @@
 StructureFinder Changelog
 -------------------------
 
-* v92 Improved, faster SHELX .res file parser updated.
+* v92 Updated with faster SHELX .res file parser.
 * v91 Small improvement of the structure viewer.
 * v90 Improved structure viewer and added possibility to hide parts. Grow structure got so fast that it is the default now.
 * v89 Improved indexing speed a bit.
