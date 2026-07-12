@@ -561,12 +561,60 @@ class Lattice(object):
 
         return d
 
+    def get_sphere_points(self, r: float) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """
+        Pre-compute the fractional/cartesian coordinates and distances of all
+        lattice points of this lattice within a sphere of radius ``r`` around
+        the origin.
+
+        This is the expensive part of :meth:`find_all_mappings` and only depends
+        on ``self`` and ``r``. When comparing one fixed lattice against many
+        other lattices (e.g. a unit cell search), pass an (initially empty)
+        ``sphere_cache`` dict to :meth:`find_all_mappings` / :meth:`find_mapping`
+        so this computation is reused for all candidates of a similar size
+        instead of being repeated for every comparison.
+
+        Args:
+            r (float): Radius of the sphere.
+
+        Returns:
+            Tuple of (fractional coords, distances, cartesian coords).
+        """
+        frac, dist, _, _ = self.get_points_in_sphere(
+            [[0, 0, 0]], [0, 0, 0], r, zip_results=False
+        )
+        cart = self.get_cartesian_coords(frac)
+        return frac, dist, cart
+
+    # Quantization step (in Angstrom) used to bucket sphere radii so that
+    # comparisons against differently sized cells can share a cached sphere
+    # without forcing small cells to scan an oversized one.
+    _SPHERE_CACHE_STEP = 0.5
+
+    def _sphere_points_for(self, r: float, sphere_cache: Optional[Dict]):
+        """
+        Return sphere points for radius ``r``. If ``sphere_cache`` is a dict,
+        the radius is rounded *up* to the next :data:`_SPHERE_CACHE_STEP` grid
+        point (a larger radius is a superset, so results are unchanged) and the
+        result is cached/reused across calls sharing the same ``self`` lattice.
+        """
+        if sphere_cache is None:
+            return self.get_sphere_points(r)
+        step = self._SPHERE_CACHE_STEP
+        key = math.ceil(r / step) * step
+        cached = sphere_cache.get(key)
+        if cached is None:
+            cached = self.get_sphere_points(key)
+            sphere_cache[key] = cached
+        return cached
+
     def find_all_mappings(
             self,
             other_lattice: "Lattice",
             ltol: float = 1e-5,
             atol: float = 1,
             skip_rotation_matrix: bool = False,
+            sphere_cache: Optional[Dict] = None,
     ) -> Iterator[Tuple["Lattice", Optional[np.ndarray], np.ndarray]]:
         """
         Finds all mappings between current lattice and another lattice.
@@ -578,6 +626,10 @@ class Lattice(object):
             atol (float): Tolerance for matching angles. Defaults to 1.
             skip_rotation_matrix (bool): Whether to skip calculation of the
                 rotation matrix
+            sphere_cache (dict): Optional mutable dict used to cache/reuse the
+                lattice points within the search sphere across many comparisons
+                with the same ``self`` lattice (e.g. a unit cell search). Pass
+                the same (initially empty) dict for every candidate.
 
         Yields:
             (aligned_lattice, rotation_matrix, scale_matrix) if a mapping is
@@ -598,10 +650,7 @@ class Lattice(object):
         (lengths, angles) = other_lattice.lengths_and_angles
         (alpha, beta, gamma) = angles
 
-        frac, dist, _, _ = self.get_points_in_sphere(
-            [[0, 0, 0]], [0, 0, 0], max(lengths) * (1 + ltol), zip_results=False
-        )
-        cart = self.get_cartesian_coords(frac)
+        frac, dist, cart = self._sphere_points_for(max(lengths) * (1 + ltol), sphere_cache)
         # this can't be broadcast because they're different lengths
         inds = [
             np.logical_and(dist / l < 1 + ltol, dist / l > 1 / (1 + ltol))
@@ -646,6 +695,7 @@ class Lattice(object):
             ltol: float = 1e-5,
             atol: float = 1,
             skip_rotation_matrix: bool = False,
+            sphere_cache: Optional[Dict] = None,
     ) -> Optional[Tuple["Lattice", Optional[np.ndarray], np.ndarray]]:
         """
         Finds a mapping between current lattice and another lattice. There
@@ -676,7 +726,8 @@ class Lattice(object):
             None is returned if no matches are found.
         """
         for x in self.find_all_mappings(
-                other_lattice, ltol, atol, skip_rotation_matrix=skip_rotation_matrix
+                other_lattice, ltol, atol, skip_rotation_matrix=skip_rotation_matrix,
+                sphere_cache=sphere_cache,
         ):
             return x
 

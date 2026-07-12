@@ -126,12 +126,17 @@ def find_cell(args: Namespace):
         print(no_result)
         sys.exit()
     lattice1 = Lattice.from_parameters(*cell)
+    # The query lattice is constant, so the lattice points within the search
+    # sphere can be cached and reused across candidates (grouped by size)
+    # instead of being recomputed inside find_mapping for every candidate.
+    sphere_cache = {}
     for num, curr_cell in enumerate(cells):
         try:
             lattice2 = Lattice.from_parameters(*curr_cell[1:7])
         except ValueError:
             continue
-        mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
+        mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True,
+                                        sphere_cache=sphere_cache)
         if mapping:
             idlist.append(curr_cell[0])
     if not idlist:

@@ -1180,13 +1180,15 @@ class StartStructureDB(QMainWindow):
         if cells:
             lattice1 = lattice.Lattice.from_parameters(*cell)
             self.statusBar().clearMessage()
+            sphere_cache = {}
             for num, curr_cell in enumerate(cells):
                 self.progressbar(num, 0, len(cells) - 1)
                 try:
                     lattice2 = lattice.Lattice.from_parameters(*curr_cell[1:7])
                 except ValueError:
                     continue
-                mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
+                mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True,
+                                                sphere_cache=sphere_cache)
                 if mapping:
                     idlist.append(curr_cell[0])
         self.progress.hide()

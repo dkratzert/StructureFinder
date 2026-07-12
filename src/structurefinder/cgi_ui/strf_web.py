@@ -587,12 +587,14 @@ def find_cell(structures: StructureTable, cell: list, sublattice=False, more_res
     # Real lattice comparing in G6:
     if cells:
         lattice1 = lattice.Lattice.from_parameters(*cell)
+        sphere_cache = {}
         for num, curr_cell in enumerate(cells):
             try:
                 lattice2 = lattice.Lattice.from_parameters(*curr_cell[1:7])
             except ValueError:
                 continue
-            mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
+            mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True,
+                                            sphere_cache=sphere_cache)
             if mapping:
                 idlist2.append(curr_cell[0])
     if idlist2:
