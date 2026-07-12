@@ -273,7 +273,9 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
-        self.assertEqual(1, self.get_row_count_from_table())
+        # 2 results: the query cell plus a further findable cell that the old,
+        # too-narrow volume pre-filter used to discard before the lattice match.
+        self.assertEqual(2, self.get_row_count_from_table())
 
     def test_advanced_with_more_results_and_superlattice(self):
         QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
@@ -285,7 +287,7 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
-        self.assertEqual(1, self.get_row_count_from_table())
+        self.assertEqual(2, self.get_row_count_from_table())
 
     def test_advanced_with_superlattice_only(self):
         QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
@@ -403,7 +405,7 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
-        self.assertEqual(1, self.myapp.ui.cifList_tableView.model().rowCount())
+        self.assertEqual(2, self.myapp.ui.cifList_tableView.model().rowCount())
 
     def test_superlatice_onlythese(self):
         # back to adv search tab:

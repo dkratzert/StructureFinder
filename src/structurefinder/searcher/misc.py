@@ -11,7 +11,7 @@ Created on 09.02.2015
 """
 
 import os
-from math import cos, log, radians, sqrt
+from math import cos, radians, sqrt
 from pathlib import Path
 from typing import Dict, List, Tuple, Union
 
@@ -20,17 +20,35 @@ from structurefinder.searcher import constants
 COL_ID, COL_DATA, COL_FILE, COL_MODIFIED, COL_PATH = range(5)
 
 
+# Extra safety factor on top of the theoretical (1+ltol)^3 - 1 bound to absorb
+# the (second order) contribution of the angle tolerance for non-orthogonal
+# cells and floating point noise.
+_VOL_THRESHOLD_SAFETY = 1.2
+
+
+def volume_prefilter_threshold(volume, ltol, safety=_VOL_THRESHOLD_SAFETY):
+    """
+    Volume half-width for the cell pre-filter.
+
+    A det=+/-1 lattice mapping preserves the volume exactly, but a findable
+    stored cell may differ from the query because every edge is allowed to
+    differ by ``ltol``. In the worst case (all three edges stretched by
+    ``ltol``) the stored volume differs by ``(1 + ltol)**3 - 1``.
+    """
+    return volume * ((1.0 + ltol) ** 3 - 1.0) * safety
+
+
 def regular_results_parameters(volume):
-    vol_threshold = log(volume) + 1.3
     ltol = 0.03
     atol = 1.0
+    vol_threshold = volume_prefilter_threshold(volume, ltol)
     return atol, ltol, vol_threshold
 
 
 def more_results_parameters(volume):
-    vol_threshold = log(volume) + 20.0
     ltol = 0.05
     atol = 1.8
+    vol_threshold = volume_prefilter_threshold(volume, ltol)
     return atol, ltol, vol_threshold
 
 
