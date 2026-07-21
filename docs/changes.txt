@@ -3,7 +3,7 @@ StructureFinder Changelog
 
 * v94 Fixed the volume pre-filter of the cell search. The volume window now scales
       proportionally with the cell volume ((1+ltol)^3 - 1) instead of a log(volume) term that was
-      too small for larger cells.
+      too small for larger cells. The Windows installer now ships a source-less distribution for faster startup.
 * v93 Fixed ´structure expanding (grow) for .res files.
       The symmetry operations (SYMM cards) were not stored in the database.
 * v92 Updated with faster SHELX .res file parser.
