@@ -90,8 +90,15 @@ Type: filesandordirs; Name: "{app}\python*.*"
 [Tasks]
 
 [Files]
-Source: "..\src\structurefinder\*";            DestDir: "{app}\structurefinder"; Flags: ignoreversion createallsubdirs recursesubdirs
-Source: "..\dist\python_dist\*";               DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs
+; The environment is pre-compiled to legacy .pyc (see scripts/_make_win_release.py); *.py, *.pyi and the
+; now redundant __pycache__ (never used for a sourceless import) are excluded below so the installer ships
+; sourceless and slim. Only structurefinder\strf.py is kept, because the C launcher (structurefinder.exe)
+; executes it as a source file.
+Source: "..\src\structurefinder\*";            DestDir: "{app}\structurefinder"; Flags: ignoreversion createallsubdirs recursesubdirs; \
+    Excludes: "*.py,*.pyi,__pycache__"
+Source: "..\src\structurefinder\strf.py";      DestDir: "{app}\structurefinder"; Flags: ignoreversion
+Source: "..\dist\python_dist\*";               DestDir: "{app}"; Flags: ignoreversion createallsubdirs recursesubdirs; \
+    Excludes: "*.py,*.pyi,__pycache__"
 Source: "..\icons\*";                          DestDir: "{app}\icons"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\structurefinder.exe";              DestDir: "{app}"; Flags: ignoreversion
 Source: "..\update.exe";                       DestDir: "{app}"; Flags: ignoreversion
