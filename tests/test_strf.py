@@ -308,7 +308,7 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
-        self.assertEqual(2, self.get_row_count_from_table())
+        self.assertEqual(3, self.get_row_count_from_table())
 
     def test_advanced_with_superlattice_only(self):
         QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
@@ -426,7 +426,7 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
-        self.assertEqual(2, self.myapp.ui.cifList_tableView.model().rowCount())
+        self.assertEqual(3, self.myapp.ui.cifList_tableView.model().rowCount())
 
     def test_superlatice_onlythese(self):
         # back to adv search tab:

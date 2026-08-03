@@ -20,7 +20,8 @@ the `pymatgen <http://pymatgen.org/>`_ project.
 The tolerances for the cell search can be set directly in the main window with
 the *Length tol.* and *Angle tol.* fields next to the search line. The length
 tolerance is a relative value (0.03 means the cell edges may differ by 3 %) and
-the angle tolerance is given in degrees.
+the angle tolerance is given in degrees. The same fields are available on the
+*Advanced search* tab and both sets always show the same values.
 
 The **More Results** check box only applies one of two presets to these fields:
 
@@ -28,9 +29,11 @@ The **More Results** check box only applies one of two presets to these fields:
     length: 0.03, angle: 1.0°
 
 **More results** (checked)
-    length: 0.05, angle: 1.8°
+    length: 0.08, angle: 1.8°
 
-The values may be modified afterwards, which repeats the search immediately.
+The values may be modified afterwards. On the main tab this repeats the search
+immediately, on the advanced search tab the new values are used with the next
+click on the *Search* button.
 
 .. tip::
 

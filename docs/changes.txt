@@ -1,6 +1,9 @@
 StructureFinder Changelog
 -------------------------
 
+* v95 The length and angle tolerances of the unit cell search are now editable in the main window
+      between the "More Results" and "Find Superlattices" options and on the advanced search tab.
+      Improved the self-updater. Installation in the user directory is now possible.
 * v94 Fixed the volume pre-filter of the cell search. The volume window now scales
       proportionally with the cell volume ((1+ltol)^3 - 1) instead of a log(volume) term that was
       too small for larger cells. The Windows installer now ships a source-less distribution for faster startup.
