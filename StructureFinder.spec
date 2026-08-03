@@ -5,7 +5,7 @@ block_cipher = None
 
 a = Analysis(['src/structurefinder/strf.py'],
              pathex=['src/structurefinder'],
-             binaries=[('update.exe', '.')],
+             binaries=[],
              datas=[('src/structurefinder/gui', 'gui'),
                     ('src/structurefinder/displaymol', 'displaymol'),
                     ('icons', 'icons'),

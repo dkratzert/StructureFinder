@@ -17,13 +17,23 @@ The algorithm is a combination of a cell comparison by volume first (for speed)
 and subsequent lattice matching. The lattice matching implementation is based on
 the `pymatgen <http://pymatgen.org/>`_ project.
 
-The tolerances for the cell search are:
+The tolerances for the cell search can be set directly in the main window with
+the *Length tol.* and *Angle tol.* fields next to the search line. The length
+tolerance is a relative value (0.03 means the cell edges may differ by 3 %) and
+the angle tolerance is given in degrees. The same fields are available on the
+*Advanced search* tab and both sets always show the same values.
 
-**Regular**
-    Volume: ±3 %, length: 0.06 Å, angle: 1.0°
+The **More Results** check box only applies one of two presets to these fields:
 
-**More results option**
-    Volume: ±9 %, length: 0.2 Å, angle: 2.0°
+**Regular** (unchecked)
+    length: 0.03, angle: 1.0°
+
+**More results** (checked)
+    length: 0.08, angle: 1.8°
+
+The values may be modified afterwards. On the main tab this repeats the search
+immediately, on the advanced search tab the new values are used with the next
+click on the *Search* button.
 
 .. tip::
 

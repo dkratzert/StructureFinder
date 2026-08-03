@@ -47,6 +47,7 @@ from fastmolwidget.sdm import SDM, Atomtuple
 from structurefinder.gui.strf_main import Ui_stdbMainwindow
 from structurefinder.gui.table_model import CustomProxyModel, TableModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
+from structurefinder.misc.selfupdate import create_running_mutex
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
 from structurefinder.misc.settings import StructureFinderSettings
@@ -66,6 +67,7 @@ from structurefinder.searcher.misc import (
     is_valid_cell,
     more_results_parameters,
     regular_results_parameters,
+    volume_prefilter_threshold,
 )
 from structurefinder.searcher.search_worker import SearchWorker
 
@@ -101,7 +103,6 @@ class StartStructureDB(QMainWindow):
         self.ui.SHELXplainTextEdit.setFont(font)
         self.statusbar: QtWidgets.QStatusBar = self.statusBar()
         self.upd = None
-        self.maxfiles = 0
         self.dbfdesc = None
         self.dbfilename = db_file_name
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
@@ -124,6 +125,7 @@ class StartStructureDB(QMainWindow):
         self.full_list = True  # indicator if the full structures list is shown
         self.ui.cellcheckExeLineEdit.setText(self.settings.load_ccdc_exe_path())
         self.connect_signals_and_slots()
+        self.set_more_results_tooltips()
         self.ui.growCheckBox.setChecked(True)
         self.set_initial_button_states()
         self.ui.dateEdit1.setDate(QDate(date.today()))
@@ -171,9 +173,14 @@ class StartStructureDB(QMainWindow):
         self.ui.importDirButton.clicked.connect(self.import_file_dirs)
         self.ui.appendDirButton.clicked.connect(self.append_file_dirs)
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
-        self.abort_import_button.clicked.connect(self.abort_import)
-        self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
+        self.abort_import_button.clicked.connect(self.abort_indexing)
+        self.ui.moreResultsCheckBox.stateChanged.connect(self.more_results_state_changed)
+        self.ui.adv_moreResultscheckBox.stateChanged.connect(self.adv_more_results_state_changed)
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
+        self.ui.ltolSpinBox.valueChanged.connect(self.threshold_changed)
+        self.ui.atolSpinBox.valueChanged.connect(self.threshold_changed)
+        self.ui.adv_ltolSpinBox.valueChanged.connect(self.adv_threshold_changed)
+        self.ui.adv_atolSpinBox.valueChanged.connect(self.adv_threshold_changed)
         self.ui.adv_SearchPushButton.clicked.connect(self.advanced_search)
         self.ui.adv_ClearSearchButton.clicked.connect(self.show_full_list)
         self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
@@ -390,7 +397,7 @@ class StartStructureDB(QMainWindow):
             if sys.platform.startswith("win"):
                 warn_text += r"<br><br>Updating now will end all running StructureFinder programs!"
                 update_button = box.addButton('Update Now', QMessageBox.ButtonRole.AcceptRole)
-                update_button.clicked.connect(lambda: do_update_program(str(remote_version)))
+                update_button.clicked.connect(lambda: do_update_program(str(remote_version), self))
             box.setText(warn_text.format(remote_version))
             box.exec()
         else:
@@ -697,6 +704,88 @@ class StartStructureDB(QMainWindow):
         """
         self.search_cell(self.ui.searchCellLineEDit.text())
 
+    def set_more_results_tooltips(self) -> None:
+        """
+        Builds the tooltip of the "More Results" check boxes from the actual
+        tolerance presets, so they can never get out of sync.
+        """
+        reg_atol, reg_ltol, _ = regular_results_parameters(1.0)
+        more_atol, more_ltol, _ = more_results_parameters(1.0)
+        tooltip = ('<html><head/><body><p>Presets for the tolerances of the unit cell search.</p>'
+                   f'<p><span style=" font-weight:600;">regular</span><br/>'
+                   f'length: {reg_ltol}, angle: {reg_atol}°</p>'
+                   f'<p><span style=" font-weight:600;">more results</span><br/>'
+                   f'length: {more_ltol}, angle: {more_atol}°</p>'
+                   '<p>The values can be adjusted afterwards.</p></body></html>')
+        self.ui.moreResultsCheckBox.setToolTip(tooltip)
+        self.ui.adv_moreResultscheckBox.setToolTip(tooltip)
+
+    def more_results_state_changed(self) -> None:
+        """
+        Applies the tolerance presets of the "More Results" option of the main
+        tab to the threshold fields and repeats the search afterwards.
+        """
+        self.apply_more_results_preset(self.ui.moreResultsCheckBox.isChecked())
+        self.cell_state_changed()
+
+    def adv_more_results_state_changed(self) -> None:
+        """
+        Applies the tolerance presets of the "More Results" option of the
+        advanced search tab. The advanced search is only run on demand, so no
+        search is triggered here.
+        """
+        self.apply_more_results_preset(self.ui.adv_moreResultscheckBox.isChecked())
+
+    def apply_more_results_preset(self, more_results: bool) -> None:
+        """
+        Writes the tolerance preset into the threshold fields and synchronizes
+        the "More Results" check boxes of both search tabs.
+        """
+        if more_results:
+            atol, ltol, _ = more_results_parameters(1.0)
+        else:
+            atol, ltol, _ = regular_results_parameters(1.0)
+        for checkbox in (self.ui.moreResultsCheckBox, self.ui.adv_moreResultscheckBox):
+            blocked = checkbox.blockSignals(True)
+            checkbox.setChecked(more_results)
+            checkbox.blockSignals(blocked)
+        self.set_search_thresholds(ltol, atol)
+
+    def threshold_changed(self) -> None:
+        """
+        A threshold field of the main tab was edited by the user. Mirror the
+        values to the advanced search tab and repeat the search.
+        """
+        self.set_search_thresholds(self.ui.ltolSpinBox.value(), self.ui.atolSpinBox.value())
+        self.cell_state_changed()
+
+    def adv_threshold_changed(self) -> None:
+        """
+        A threshold field of the advanced search tab was edited by the user.
+        Mirror the values to the main tab, but do not start a search.
+        """
+        self.set_search_thresholds(self.ui.adv_ltolSpinBox.value(), self.ui.adv_atolSpinBox.value())
+
+    def set_search_thresholds(self, ltol: float, atol: float) -> None:
+        """
+        Sets the cell search tolerance fields of both search tabs without
+        triggering a new search.
+        """
+        for spinbox, value in ((self.ui.ltolSpinBox, ltol),
+                               (self.ui.adv_ltolSpinBox, ltol),
+                               (self.ui.atolSpinBox, atol),
+                               (self.ui.adv_atolSpinBox, atol)):
+            blocked = spinbox.blockSignals(True)
+            spinbox.setValue(value)
+            spinbox.blockSignals(blocked)
+
+    def get_search_thresholds(self) -> tuple[float, float]:
+        """
+        Returns the angle and length tolerance of the unit cell search as
+        defined in the user interface.
+        """
+        return self.ui.atolSpinBox.value(), self.ui.ltolSpinBox.value()
+
     def get_startdir_from_dialog(self) -> str:
         return QFileDialog.getExistingDirectory(self, 'Open Directory', directory=self.settings.load_last_indexdir())
 
@@ -740,31 +829,30 @@ class StartStructureDB(QMainWindow):
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.progress.hide)
+        # The worker has no parent, so it has to delete itself or it leaks with every import:
+        self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.abort_import_button.hide)
         self.worker.progress.connect(self.report_progress)
-        self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
         self.worker.finished.connect(lambda: self.do_work_after_indexing(startdir))
         self.statusBar().showMessage('Searching potential files...')
         self.statusBar().show()
-        self.abort_import_button.clicked.connect(self.abort_indexing)
 
     def abort_indexing(self) -> None:
-        self.worker.stop = True
+        # The worker deletes itself when it is finished, so its wrapper may be dead already:
+        with suppress(RuntimeError, AttributeError):
+            self.worker.stop()
         self.enable_buttons()
         self.abort_import_button.hide()
         self.progress.hide()
         self.statusBar().showMessage("Indexing aborted")
-        self.progress.hide()
-
-    def set_maxfiles(self, number: int) -> None:
-        self.abort_import_button.show()
-        self.maxfiles = number
 
     def report_progress(self, progress: int) -> None:
         self.statusbar.showMessage(f'Inspected {progress} files')
-        self.progressbar(progress, 0, self.maxfiles)
+        # The crawler is a generator, so the number of files is unknown until it is done.
+        # A zero range makes the progress bar a busy indicator instead of showing a wrong value:
+        self.progressbar(progress, 0, 0)
 
     def do_work_after_indexing(self, startdir: str) -> None:
         self.progress.hide()
@@ -845,7 +933,7 @@ class StartStructureDB(QMainWindow):
         """
         This slot means, import was aborted.
         """
-        self.worker.stop()
+        self.abort_indexing()
 
     def start_db(self) -> None:
         """
@@ -1153,13 +1241,8 @@ class StartStructureDB(QMainWindow):
                 return []
         except ValueError:
             return []
-        if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
-            # more results:
-            print('more results activated')
-            atol, ltol, vol_threshold = more_results_parameters(volume)
-        else:
-            # regular:
-            atol, ltol, vol_threshold = regular_results_parameters(volume)
+        atol, ltol = self.get_search_thresholds()
+        vol_threshold = volume_prefilter_threshold(volume, ltol)
         try:
             # the fist number in the result is the structureid:
             cells = self.structures.find_by_volume(volume, vol_threshold)
@@ -1180,13 +1263,15 @@ class StartStructureDB(QMainWindow):
         if cells:
             lattice1 = lattice.Lattice.from_parameters(*cell)
             self.statusBar().clearMessage()
+            sphere_cache = {}
             for num, curr_cell in enumerate(cells):
                 self.progressbar(num, 0, len(cells) - 1)
                 try:
                     lattice2 = lattice.Lattice.from_parameters(*curr_cell[1:7])
                 except ValueError:
                     continue
-                mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
+                mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True,
+                                                sphere_cache=sphere_cache)
                 if mapping:
                     idlist.append(curr_cell[0])
         self.progress.hide()
@@ -1569,6 +1654,9 @@ def my_exception_hook(exctype: type[BaseException], value: BaseException, error_
 def main():
     if not DEBUG:
         sys.excepthook = my_exception_hook
+    # Announce the running StructureFinder to its Inno Setup installer (AppMutex), so a
+    # self-update does not try to replace loaded files of this process:
+    create_running_mutex()
     app.setWindowIcon(QtGui.QIcon(str(Path(application_path, 'icons/strf.png').resolve())))
     # Has to be without version number, because QWebengine stores data in ApplicationName directory:
     app.setApplicationName('StructureFinder')

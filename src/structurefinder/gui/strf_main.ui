@@ -299,7 +299,7 @@
            <string notr="true"/>
           </property>
           <property name="currentIndex">
-           <number>5</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="maintab">
            <attribute name="title">
@@ -888,17 +888,17 @@
                      </property>
                     </widget>
                    </item>
-                    <item>
-                     <widget class="QCheckBox" name="labelsCheckBox">
-                      <property name="text">
-                       <string>Show Labels</string>
-                      </property>
-                     </widget>
-                    </item>
-                    <item>
-                     <widget class="PartFilterWidget" name="part_filter_widget" native="true"/>
-                    </item>
-                   </layout>
+                   <item>
+                    <widget class="QCheckBox" name="labelsCheckBox">
+                     <property name="text">
+                      <string>Show Labels</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="PartFilterWidget" name="part_filter_widget" native="true"/>
+                   </item>
+                  </layout>
                  </item>
                 </layout>
                </widget>
@@ -1123,7 +1123,7 @@
                </spacer>
               </item>
               <item row="0" column="0" colspan="7">
-               <layout class="QHBoxLayout" name="searchLayout" stretch="0,0,0,0,0,0,0">
+               <layout class="QHBoxLayout" name="searchLayout" stretch="0,0,0,0,0,0,0,0,0,0,0">
                 <property name="sizeConstraint">
                  <enum>QLayout::SizeConstraint::SetDefaultConstraint</enum>
                 </property>
@@ -1165,12 +1165,7 @@
                 <item>
                  <widget class="QCheckBox" name="moreResultsCheckBox">
                   <property name="toolTip">
-                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.SF NS Text'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Menlo'; font-weight:600; color:#000000;&quot;&gt;regular&lt;/span&gt;&lt;span style=&quot; font-family:'Menlo'; color:#000000;&quot;&gt;&lt;br /&gt;volume: ±3.0%, length: 0.06 Å, &lt;br /&gt;angle: 1.0°&lt;br /&gt;&lt;br /&gt;&lt;/span&gt;&lt;span style=&quot; font-family:'Menlo'; font-weight:600; color:#000000;&quot;&gt;more results option&lt;/span&gt;&lt;span style=&quot; font-family:'Menlo'; color:#000000;&quot;&gt;&lt;br /&gt;volume: ±9.0%, length: 0.2 Å, &lt;br /&gt;angle: 2.0°&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Presets for the tolerances of the unit cell search.&lt;/p&gt;&lt;p&gt;length: 0.03, angle: 1.0°&lt;/p&gt;&lt;p&gt;more results&lt;br/&gt;length: 0.08, angle: 1.8°&lt;/p&gt;&lt;p&gt;The values can be adjusted afterwards.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
                    <string>More Results</string>
@@ -1178,9 +1173,76 @@ p, li { white-space: pre-wrap; }
                  </widget>
                 </item>
                 <item>
+                 <widget class="QLabel" name="ltolLabel">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Relative length tolerance for the unit cell comparison.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>Length tol.:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="ltolSpinBox">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Relative length tolerance for the unit cell comparison. 0.03 means the cell edges may differ by 3%.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="decimals">
+                   <number>3</number>
+                  </property>
+                  <property name="minimum">
+                   <double>0.001000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>1.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.005000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>0.030000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="atolLabel">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle tolerance in degrees for the unit cell comparison.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>Angle tol.:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QDoubleSpinBox" name="atolSpinBox">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle tolerance in degrees for the unit cell comparison.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="suffix">
+                   <string>°</string>
+                  </property>
+                  <property name="decimals">
+                   <number>2</number>
+                  </property>
+                  <property name="minimum">
+                   <double>0.010000000000000</double>
+                  </property>
+                  <property name="maximum">
+                   <double>90.000000000000000</double>
+                  </property>
+                  <property name="singleStep">
+                   <double>0.100000000000000</double>
+                  </property>
+                  <property name="value">
+                   <double>1.000000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                  <widget class="QCheckBox" name="sublattCheckbox">
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Menlo'; color:#000000; background-color:#ffffff;&quot;&gt;Find also unit cells of 1, 2, 3, 4, 6, 8, 10 times the volume.&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Find also unit cells of 1, 2, 3, 4, 6, 8, 10 times the volume.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
                    <string>Find Superlattices</string>
@@ -1675,13 +1737,6 @@ p, li { white-space: pre-wrap; }
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="1">
-                 <widget class="QCheckBox" name="adv_superlatticeCheckBox">
-                  <property name="text">
-                   <string>Sub- or Superlattice</string>
-                  </property>
-                 </widget>
-                </item>
                 <item row="3" column="4">
                  <spacer name="horizontalSpacer_7">
                   <property name="orientation">
@@ -1860,6 +1915,9 @@ p, li { white-space: pre-wrap; }
                 </item>
                 <item row="0" column="0">
                  <widget class="QCheckBox" name="adv_moreResultscheckBox">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Presets for the tolerances of the unit cell search.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;regular&lt;/span&gt;&lt;br/&gt;length: 0.03, angle: 1.0°&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;more results&lt;/span&gt;&lt;br/&gt;length: 0.08, angle: 1.8°&lt;/p&gt;&lt;p&gt;The values can be adjusted afterwards.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
                   <property name="text">
                    <string>More Results</string>
                   </property>
@@ -1881,7 +1939,7 @@ p, li { white-space: pre-wrap; }
                    </sizepolicy>
                   </property>
                   <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;pre style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; background-color:#ffffff;&quot;&gt;&lt;span style=&quot; font-family:'Menlo'; color:#000000; background-color:#ffffff;&quot;&gt;Be aware that not every cif file before SHELXL-2013 has a space group number. These will not be found.&lt;/span&gt;&lt;/pre&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Be aware that not every cif file before SHELXL-2013 has a space group number. These will not be found.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <item>
                    <property name="text">
@@ -3067,6 +3125,84 @@ p, li { white-space: pre-wrap; }
                   </property>
                  </widget>
                 </item>
+                <item row="0" column="3">
+                 <layout class="QHBoxLayout" name="adv_toleranceLayout">
+                  <item>
+                   <widget class="QLabel" name="adv_ltolLabel">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Relative length tolerance for the unit cell comparison.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string>Length tolerance:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QDoubleSpinBox" name="adv_ltolSpinBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Relative length tolerance for the unit cell comparison. 0.03 means the cell edges may differ by 3%.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="decimals">
+                     <number>3</number>
+                    </property>
+                    <property name="minimum">
+                     <double>0.001000000000000</double>
+                    </property>
+                    <property name="maximum">
+                     <double>1.000000000000000</double>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.005000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>0.030000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="adv_atolLabel">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle tolerance in degrees for the unit cell comparison.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="text">
+                     <string>Angle tolerance:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QDoubleSpinBox" name="adv_atolSpinBox">
+                    <property name="toolTip">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle tolerance in degrees for the unit cell comparison.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
+                    <property name="suffix">
+                     <string>°</string>
+                    </property>
+                    <property name="decimals">
+                     <number>2</number>
+                    </property>
+                    <property name="minimum">
+                     <double>0.010000000000000</double>
+                    </property>
+                    <property name="maximum">
+                     <double>90.000000000000000</double>
+                    </property>
+                    <property name="singleStep">
+                     <double>0.100000000000000</double>
+                    </property>
+                    <property name="value">
+                     <double>1.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QCheckBox" name="adv_superlatticeCheckBox">
+                  <property name="text">
+                   <string>Sub- or Superlattice</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </item>
              </layout>
@@ -3577,7 +3713,7 @@ p, li { white-space: pre-wrap; }
   <customwidget>
    <class>MoleculeWidget</class>
    <extends>QWidget</extends>
-    <header>fastmolwidget.molecule2D.h</header>
+   <header>fastmolwidget.molecule2D.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -3599,6 +3735,8 @@ p, li { white-space: pre-wrap; }
   <tabstop>cifList_tableView</tabstop>
   <tabstop>searchCellLineEDit</tabstop>
   <tabstop>moreResultsCheckBox</tabstop>
+  <tabstop>ltolSpinBox</tabstop>
+  <tabstop>atolSpinBox</tabstop>
   <tabstop>txtSearchEdit</tabstop>
   <tabstop>SpaceGroupLineEdit</tabstop>
   <tabstop>zLineEdit</tabstop>

@@ -25,6 +25,20 @@ These tests only run with pytest, because they rely on the PYTEST_CURRENT_TEST e
 """
 
 
+def destroy_pending_widgets() -> None:
+    """Really destroy the widgets of the closed window.
+
+    No event loop runs during the tests, so deleteLater() alone leaks the whole
+    widget tree. Draining the complete posted event queue first is essential:
+    sendPostedEvents() with an event type filter has to walk the whole queue, so
+    leftover paint/layout events would make every following teardown slower.
+    """
+    if QApplication.instance() is None:
+        return
+    QApplication.sendPostedEvents()
+    QApplication.sendPostedEvents(None, QtCore.QEvent.Type.DeferredDelete)
+
+
 class TestApplication(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -38,7 +52,14 @@ class TestApplication(unittest.TestCase):
         self.myapp.settings.save_visible_headers([])
 
     def tearDown(self) -> None:
-        self.myapp.close()
+        if getattr(self, 'myapp', None) is not None:
+            try:
+                self.myapp.close()
+                self.myapp.deleteLater()
+            except RuntimeError:
+                pass
+            self.myapp = None
+            destroy_pending_widgets()
 
     def get_row_content(self, row: int, col: int) -> str | int:
         model = self.myapp.table_model
@@ -273,7 +294,9 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
-        self.assertEqual(1, self.get_row_count_from_table())
+        # 2 results: the query cell plus a further findable cell that the old,
+        # too-narrow volume pre-filter used to discard before the lattice match.
+        self.assertEqual(2, self.get_row_count_from_table())
 
     def test_advanced_with_more_results_and_superlattice(self):
         QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
@@ -285,7 +308,7 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
-        self.assertEqual(1, self.get_row_count_from_table())
+        self.assertEqual(3, self.get_row_count_from_table())
 
     def test_advanced_with_superlattice_only(self):
         QTest.mouseClick(self.myapp.ui.adv_searchtab, QtCore.Qt.MouseButton.LeftButton)
@@ -403,7 +426,7 @@ class TestApplication(unittest.TestCase):
         # click on search button:
         QTest.mouseClick(self.myapp.ui.adv_SearchPushButton, QtCore.Qt.MouseButton.LeftButton)
         # check results
-        self.assertEqual(1, self.myapp.ui.cifList_tableView.model().rowCount())
+        self.assertEqual(3, self.myapp.ui.cifList_tableView.model().rowCount())
 
     def test_superlatice_onlythese(self):
         # back to adv search tab:

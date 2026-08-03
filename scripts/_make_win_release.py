@@ -75,12 +75,25 @@ def make_installer():
 
 def compile_python_files():
     import compileall
-    compileall.compile_dir(dir='dist', workers=2, force=True, quiet=True)
-    compileall.compile_dir(dir='src', workers=2, force=True, quiet=True)
+    import py_compile
+    # legacy=True writes a name.pyc right next to each source (not into __pycache__), so the installer
+    # can strip the .py (see strf-install_win64.iss) and the interpreter still imports the sibling
+    # .pyc. UNCHECKED_HASH keeps those .pyc valid after the installer copies them to fresh mtimes; a
+    # timestamp-based .pyc would be considered stale and trigger a slow full recompile on first start.
+    mode = py_compile.PycInvalidationMode.UNCHECKED_HASH
+    for directory in ('dist', 'src'):
+        compileall.compile_dir(dir=directory, workers=2, force=True, quiet=True,
+                               legacy=True, invalidation_mode=mode)
 
 
 if __name__ == '__main__':
     # compile_ui()
+    # disable_debug must edit the sources BEFORE compile_python_files: the shipped installer is
+    # sourceless (only the legacy .pyc are kept, except structurefinder/strf.py), so a .pyc compiled
+    # before this edit would ship the old DEBUG/PROFILE values baked in.
+    from scripts.version_numbers import disable_debug, pypath
+    for source_file in pypath:
+        disable_debug(source_file)
     compile_python_files()
     # Make binary distributions:
     make_installer()

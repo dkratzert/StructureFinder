@@ -24,7 +24,7 @@ dependencies = [
     "docutils",
     "fastmolwidget>=0.9.7",
     "macholib",
-    "numpy>=2.3.5,<2.4",
+    "numpy>=2.3.5,<=2.4",
     "pefile",
     "pyqt6>=6.9",
     "pyqt6-sip",

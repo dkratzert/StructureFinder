@@ -18,7 +18,10 @@ class TestSearch(unittest.TestCase):
         volume = vol_unitcell(*cell)
         atol, ltol, vol_threshold = regular_results_parameters(volume)
         cells = self.structures.find_by_volume(volume, vol_threshold)
-        self.assertEqual(results, cells)
+        # The volume pre-filter returns a superset; the match is decided by
+        # find_mapping (ltol/atol) below.
+        for result in results:
+            self.assertIn(result, cells)
         lattice1 = lattice.Lattice.from_parameters(*cell)
         for curr_cell in cells:
             try:
@@ -39,7 +42,10 @@ class TestSearch(unittest.TestCase):
         volume = vol_unitcell(*cell)
         atol, ltol, vol_threshold = more_results_parameters(volume)
         cells = self.structures.find_by_volume(volume, vol_threshold)
-        self.assertEqual(cells, results)
+        # The volume pre-filter returns a superset; the match is decided by
+        # find_mapping (ltol/atol) below.
+        for result in results:
+            self.assertIn(result, cells)
         lattice1 = lattice.Lattice.from_parameters(*cell)
         for curr_cell in cells:
             try:
@@ -49,4 +55,6 @@ class TestSearch(unittest.TestCase):
             mapping = lattice1.find_mapping(lattice2, ltol, atol, skip_rotation_matrix=True)
             if mapping:
                 idlist.append(curr_cell[0])
-        self.assertEqual(idlist, [260])
+        # Cell 113 is a genuinely findable cell (it passes find_mapping) that the
+        # old, too-narrow volume pre-filter used to exclude before this stage.
+        self.assertEqual(idlist, [260, 113])
