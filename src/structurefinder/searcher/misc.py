@@ -46,7 +46,7 @@ def regular_results_parameters(volume):
 
 
 def more_results_parameters(volume):
-    ltol = 0.05
+    ltol = 0.08
     atol = 1.8
     vol_threshold = volume_prefilter_threshold(volume, ltol)
     return atol, ltol, vol_threshold

@@ -67,6 +67,7 @@ from structurefinder.searcher.misc import (
     is_valid_cell,
     more_results_parameters,
     regular_results_parameters,
+    volume_prefilter_threshold,
 )
 from structurefinder.searcher.search_worker import SearchWorker
 
@@ -172,8 +173,10 @@ class StartStructureDB(QMainWindow):
         self.ui.appendDirButton.clicked.connect(self.append_file_dirs)
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
         self.abort_import_button.clicked.connect(self.abort_indexing)
-        self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
+        self.ui.moreResultsCheckBox.stateChanged.connect(self.more_results_state_changed)
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
+        self.ui.ltolSpinBox.valueChanged.connect(self.cell_state_changed)
+        self.ui.atolSpinBox.valueChanged.connect(self.cell_state_changed)
         self.ui.adv_SearchPushButton.clicked.connect(self.advanced_search)
         self.ui.adv_ClearSearchButton.clicked.connect(self.show_full_list)
         self.ui.CSDpushButton.clicked.connect(self.search_csd_and_display_results)
@@ -697,6 +700,34 @@ class StartStructureDB(QMainWindow):
         """
         self.search_cell(self.ui.searchCellLineEDit.text())
 
+    def more_results_state_changed(self) -> None:
+        """
+        Applies the tolerance presets of the "More Results" option to the
+        threshold fields and repeats the search afterwards.
+        """
+        if self.ui.moreResultsCheckBox.isChecked():
+            atol, ltol, _ = more_results_parameters(1.0)
+        else:
+            atol, ltol, _ = regular_results_parameters(1.0)
+        self.set_search_thresholds(ltol, atol)
+        self.cell_state_changed()
+
+    def set_search_thresholds(self, ltol: float, atol: float) -> None:
+        """
+        Sets the cell search tolerance fields without triggering a new search.
+        """
+        for spinbox, value in ((self.ui.ltolSpinBox, ltol), (self.ui.atolSpinBox, atol)):
+            blocked = spinbox.blockSignals(True)
+            spinbox.setValue(value)
+            spinbox.blockSignals(blocked)
+
+    def get_search_thresholds(self) -> tuple[float, float]:
+        """
+        Returns the angle and length tolerance of the unit cell search as
+        defined in the user interface.
+        """
+        return self.ui.atolSpinBox.value(), self.ui.ltolSpinBox.value()
+
     def get_startdir_from_dialog(self) -> str:
         return QFileDialog.getExistingDirectory(self, 'Open Directory', directory=self.settings.load_last_indexdir())
 
@@ -1152,13 +1183,13 @@ class StartStructureDB(QMainWindow):
                 return []
         except ValueError:
             return []
-        if self.ui.moreResultsCheckBox.isChecked() or self.ui.adv_moreResultscheckBox.isChecked():
+        if self.ui.adv_moreResultscheckBox.isChecked():
             # more results:
             print('more results activated')
             atol, ltol, vol_threshold = more_results_parameters(volume)
         else:
-            # regular:
-            atol, ltol, vol_threshold = regular_results_parameters(volume)
+            atol, ltol = self.get_search_thresholds()
+            vol_threshold = volume_prefilter_threshold(volume, ltol)
         try:
             # the fist number in the result is the structureid:
             cells = self.structures.find_by_volume(volume, vol_threshold)
