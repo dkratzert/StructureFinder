@@ -10,7 +10,6 @@ from structurefinder.strf_cmd import process_cif, process_res
 
 class SearchWorker(QObject):
     progress = Signal(int)
-    number_of_files = Signal(int)
     finished = Signal()
 
     def __init__(self,

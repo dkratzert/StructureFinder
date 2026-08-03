@@ -1519,7 +1519,7 @@ requires-dist = [
     { name = "fastmolwidget", specifier = ">=0.9.7" },
     { name = "gemmi", specifier = ">=0.7.5" },
     { name = "macholib" },
-    { name = "numpy", specifier = ">=2.3.5,<=2.5" },
+    { name = "numpy", specifier = ">=2.3.5,<=2.4" },
     { name = "pefile" },
     { name = "py7zr" },
     { name = "pyqt6", specifier = ">=6.9" },

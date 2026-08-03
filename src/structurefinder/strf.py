@@ -102,7 +102,6 @@ class StartStructureDB(QMainWindow):
         self.ui.SHELXplainTextEdit.setFont(font)
         self.statusbar: QtWidgets.QStatusBar = self.statusBar()
         self.upd = None
-        self.maxfiles = 0
         self.dbfdesc = None
         self.dbfilename = db_file_name
         self.tmpfile = False  # indicates wether a tmpfile or any other db file is used
@@ -172,7 +171,7 @@ class StartStructureDB(QMainWindow):
         self.ui.importDirButton.clicked.connect(self.import_file_dirs)
         self.ui.appendDirButton.clicked.connect(self.append_file_dirs)
         self.ui.closeDatabaseButton.clicked.connect(self.close_db)
-        self.abort_import_button.clicked.connect(self.abort_import)
+        self.abort_import_button.clicked.connect(self.abort_indexing)
         self.ui.moreResultsCheckBox.stateChanged.connect(self.cell_state_changed)
         self.ui.sublattCheckbox.stateChanged.connect(self.cell_state_changed)
         self.ui.adv_SearchPushButton.clicked.connect(self.advanced_search)
@@ -741,31 +740,30 @@ class StartStructureDB(QMainWindow):
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.progress.hide)
+        # The worker has no parent, so it has to delete itself or it leaks with every import:
+        self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.finished.connect(self.abort_import_button.hide)
         self.worker.progress.connect(self.report_progress)
-        self.worker.number_of_files.connect(lambda x: self.set_maxfiles(x))
         self.thread.start()
         self.worker.finished.connect(lambda: self.do_work_after_indexing(startdir))
         self.statusBar().showMessage('Searching potential files...')
         self.statusBar().show()
-        self.abort_import_button.clicked.connect(self.abort_indexing)
 
     def abort_indexing(self) -> None:
-        self.worker.stop = True
+        # The worker deletes itself when it is finished, so its wrapper may be dead already:
+        with suppress(RuntimeError, AttributeError):
+            self.worker.stop()
         self.enable_buttons()
         self.abort_import_button.hide()
         self.progress.hide()
         self.statusBar().showMessage("Indexing aborted")
-        self.progress.hide()
-
-    def set_maxfiles(self, number: int) -> None:
-        self.abort_import_button.show()
-        self.maxfiles = number
 
     def report_progress(self, progress: int) -> None:
         self.statusbar.showMessage(f'Inspected {progress} files')
-        self.progressbar(progress, 0, self.maxfiles)
+        # The crawler is a generator, so the number of files is unknown until it is done.
+        # A zero range makes the progress bar a busy indicator instead of showing a wrong value:
+        self.progressbar(progress, 0, 0)
 
     def do_work_after_indexing(self, startdir: str) -> None:
         self.progress.hide()
@@ -846,7 +844,7 @@ class StartStructureDB(QMainWindow):
         """
         This slot means, import was aborted.
         """
-        self.worker.stop()
+        self.abort_indexing()
 
     def start_db(self) -> None:
         """
