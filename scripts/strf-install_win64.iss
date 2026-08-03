@@ -15,7 +15,19 @@ AppId={{FD3791DD-E642-47A6-8434-FBD976271019}}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-DefaultDirName={commonpf}\{#MyAppName}
+; StructureFinder creates this mutex while it runs (see structurefinder/misc/selfupdate.py).
+; Without it, Setup would try to replace loaded .pyd/.dll files of a running instance.
+AppMutex=StructureFinderSetupMutex
+; Machine-wide install (Program Files) by default. Pass /CURRENTUSER on the command line for a
+; per-user install into {localappdata}\Programs\StructureFinder that needs no administrator rights, e.g.:
+;   StructureFinder-setup-x64-vXXX.exe /CURRENTUSER /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+; /ALLUSERS forces the machine-wide install. {autopf} and {group} follow the selected mode.
+; "dialog" lets users without administrator rights (restricted domain accounts) choose the
+; per-user install in the Setup wizard instead of being stopped by the UAC prompt.
+PrivilegesRequired=admin
+PrivilegesRequiredOverridesAllowed=commandline dialog
+UsePreviousPrivileges=yes
+DefaultDirName={autopf}\{#MyAppName}
 OutputBaseFilename={#MyAppName}-setup-x64-v{#MyAppVersion}
 Compression=lzma2/fast
 SolidCompression=yes
@@ -60,7 +72,11 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 ;Excludes: "*.pyc"
 
 [Run]
-Filename: "{app}\vc_redist.x64.exe"; WorkingDir: "{app}"; Parameters: "/passive /norestart"
+; The VC++ redistributable is a machine-wide package and needs administrator rights, so it is only
+; run for an /ALLUSERS (admin) install. For a /CURRENTUSER install the redistributable has to be
+; deployed separately (it is part of every up to date Windows 10/11).
+Filename: "{app}\vc_redist.x64.exe"; WorkingDir: "{app}"; Parameters: "/passive /norestart"; \
+    Check: IsAdminInstallMode
 
 [UninstallRun]
 
@@ -86,6 +102,8 @@ Type: filesandordirs; Name: "{app}\Scripts"
 Type: filesandordirs; Name: "{app}\icons"
 Type: filesandordirs; Name: "{app}\structurefinder"
 Type: filesandordirs; Name: "{app}\python*.*"
+; StructureFinder downloads and starts its installer itself, update.exe is not used anymore:
+Type: files; Name: "{app}\update.exe"
 
 [Tasks]
 
@@ -101,7 +119,6 @@ Source: "..\dist\python_dist\*";               DestDir: "{app}"; Flags: ignoreve
     Excludes: "*.py,*.pyi,__pycache__"
 Source: "..\icons\*";                          DestDir: "{app}\icons"; Flags: ignoreversion createallsubdirs recursesubdirs
 Source: "..\structurefinder.exe";              DestDir: "{app}"; Flags: ignoreversion
-Source: "..\update.exe";                       DestDir: "{app}"; Flags: ignoreversion
 Source: "..\vc_redist.x64.exe";                DestDir: "{app}"; Flags: ignoreversion
 
 [Dirs]

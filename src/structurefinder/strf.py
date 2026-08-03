@@ -47,6 +47,7 @@ from fastmolwidget.sdm import SDM, Atomtuple
 from structurefinder.gui.strf_main import Ui_stdbMainwindow
 from structurefinder.gui.table_model import CustomProxyModel, TableModel
 from structurefinder.misc.dialogs import bug_found_warning, do_update_program
+from structurefinder.misc.selfupdate import create_running_mutex
 from structurefinder.misc.download import MyDownloader
 from structurefinder.misc.exporter import export_to_cif_file
 from structurefinder.misc.settings import StructureFinderSettings
@@ -390,7 +391,7 @@ class StartStructureDB(QMainWindow):
             if sys.platform.startswith("win"):
                 warn_text += r"<br><br>Updating now will end all running StructureFinder programs!"
                 update_button = box.addButton('Update Now', QMessageBox.ButtonRole.AcceptRole)
-                update_button.clicked.connect(lambda: do_update_program(str(remote_version)))
+                update_button.clicked.connect(lambda: do_update_program(str(remote_version), self))
             box.setText(warn_text.format(remote_version))
             box.exec()
         else:
@@ -1571,6 +1572,9 @@ def my_exception_hook(exctype: type[BaseException], value: BaseException, error_
 def main():
     if not DEBUG:
         sys.excepthook = my_exception_hook
+    # Announce the running StructureFinder to its Inno Setup installer (AppMutex), so a
+    # self-update does not try to replace loaded files of this process:
+    create_running_mutex()
     app.setWindowIcon(QtGui.QIcon(str(Path(application_path, 'icons/strf.png').resolve())))
     # Has to be without version number, because QWebengine stores data in ApplicationName directory:
     app.setApplicationName('StructureFinder')
