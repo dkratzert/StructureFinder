@@ -6,6 +6,7 @@
 #  Dr. Daniel Kratzert
 #  ----------------------------------------------------------------------------
 import hashlib
+import re
 import subprocess
 import sys
 import winreg
@@ -18,6 +19,21 @@ pathadd = [app_path, main_path, str(Path(app_path) / 'src')]
 sys.path.extend(pathadd)
 
 from structurefinder.misc.version import VERSION
+
+ISS_FILE = r'scripts\strf-install_win64.iss'
+SIGNTOOL_DIRECTIVE = re.compile(r'^SignTool\s*=\s*sign_sha256\b', re.IGNORECASE)
+
+
+def is_signing_enabled(iss_file: str | Path) -> bool:
+    """Whether the Inno Setup script has an active (uncommented) SignTool=sign_sha256 directive."""
+    path = Path(iss_file)
+    if not path.exists():
+        return False
+    for line in path.read_text(encoding='utf-8', errors='ignore').splitlines():
+        stripped = line.strip()
+        if not stripped.startswith(';') and SIGNTOOL_DIRECTIVE.match(stripped):
+            return True
+    return False
 
 
 def sha512_checksum(filename, block_size=65536):
@@ -70,7 +86,7 @@ def make_installer():
         print("Error: Inno Setup 6 not found in registry.")
         sys.exit(1)
 
-    subprocess.run([innosetup_compiler, '/Qp', f'/dMyAppVersion={VERSION}', r'scripts\strf-install_win64.iss'], check=False)
+    subprocess.run([innosetup_compiler, '/Qp', f'/dMyAppVersion={VERSION}', ISS_FILE], check=False)
 
 
 def compile_python_files():
@@ -87,6 +103,11 @@ def compile_python_files():
 
 
 if __name__ == '__main__':
+    if not is_signing_enabled(ISS_FILE):
+        print(f"Error: Code signing is disabled. No active 'SignTool=sign_sha256' line found in {ISS_FILE}.\n"
+              "Enable it there before building a release.")
+        sys.exit(1)
+
     # compile_ui()
     # disable_debug must edit the sources BEFORE compile_python_files: the shipped installer is
     # sourceless (only the legacy .pyc are kept, except structurefinder/strf.py), so a .pyc compiled
