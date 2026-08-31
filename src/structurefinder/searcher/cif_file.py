@@ -32,6 +32,10 @@ class CifFile:
         It can not handle multi cif files.
         """
         self.doc: Union[None, gemmi.cif.Document] = None
+        self._block: Union[None, gemmi.cif.Block] = None
+        self._space_group: Union[gemmi.SpaceGroup, None] = None
+        self._space_group_cached = False
+        self._symm: Union[List[str], None] = None
         self.block: Union[None, gemmi.cif.Block] = None
         self.cell: Union[None, gemmi.UnitCell] = None
         # This is a set of keys that are already there:
@@ -106,6 +110,19 @@ class CifFile:
             "file_size"                           : '',
             "calculated_formula_sum"              : '',
         }
+
+    @property
+    def block(self) -> Union[None, gemmi.cif.Block]:
+        return self._block
+
+    @block.setter
+    def block(self, value: Union[None, gemmi.cif.Block]) -> None:
+        # Both space group and symmetry operations are derived purely from the
+        # block, so any block change has to invalidate their caches.
+        self._block = value
+        self._space_group = None
+        self._space_group_cached = False
+        self._symm = None
 
     def parsefile(self, doc: cif.Document) -> bool:
         self.global_data = None
@@ -321,13 +338,22 @@ class CifFile:
 
     @property
     def space_group(self) -> Union[gemmi.SpaceGroup, None]:
+        """
+        The space group derived from the symmetry operations of the block.
+        Cached, because determining it is expensive and it is read repeatedly
+        while filling the data dictionary.
+        """
+        if self._space_group_cached:
+            return self._space_group
         try:
             gops = gemmi.GroupOps([gemmi.Op(o) for o in self.symm])
             spgr = gemmi.find_spacegroup_by_ops(gops)
         except RuntimeError as e:
             if DEBUG:
                 print('Space group not found:', e)
-            return None
+            spgr = None
+        self._space_group = spgr
+        self._space_group_cached = True
         return spgr
 
     @property
@@ -392,9 +418,12 @@ class CifFile:
         Yields symmetry operations.
         ['x, y, z', '-x+1/2, y+1/2, -z+1/2', '-x, -y, -z', 'x-1/2, -y-1/2, z-1/2']
         """
+        if self._symm is not None:
+            return self._symm
         symm1 = self.block.find_values('_space_group_symop_operation_xyz')
         symm2 = self.block.find_values('_symmetry_equiv_pos_as_xyz')
-        return [cif.as_string(x) for x in symm1] if symm1 else [cif.as_string(x) for x in symm2]
+        self._symm = [cif.as_string(x) for x in symm1] if symm1 else [cif.as_string(x) for x in symm2]
+        return self._symm
 
 
 if __name__ == '__main__':
