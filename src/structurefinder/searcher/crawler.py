@@ -91,7 +91,7 @@ def is_7z_file(filename: str) -> bool:
 
 
 def is_tarfile(filename: str) -> bool:
-    return filename.endswith(('*.tar.gz', '*.tar.bz2', '*.tgz'))
+    return filename.endswith(('.tar.gz', '.tar.bz2', '.tgz'))
 
 
 def is_zipfile(filename: str) -> bool:
