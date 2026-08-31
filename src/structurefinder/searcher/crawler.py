@@ -4,7 +4,9 @@ import os
 import tarfile
 import time
 import zipfile
+from collections import deque
 from collections.abc import Iterable
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -13,6 +15,12 @@ from typing import Any, Generator
 import py7zr
 
 DEBUG = False
+
+# Reading many small files is dominated by per-file I/O latency, not bandwidth.
+# Reading them concurrently keeps several requests in flight and is about an
+# order of magnitude faster on SSDs, so we use more workers than cores.
+# Beyond ~16 workers throughput no longer improves, but memory use does grow.
+IO_WORKERS = min(16, (os.cpu_count() or 4) * 4)
 
 EXCLUDED_NAMES = {'ROOT',
                   '.OLEX',
@@ -62,28 +70,51 @@ def is_excluded_dir(dirpath: str, exclude_dirs: Iterable[str]) -> bool:
     return False
 
 
-def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, no_archive=False) -> Generator[Result | None, Any, None]:
+def find_files(root_dir, exts=(".cif", ".res"), exclude_dirs=None, no_archive=False,
+               workers: int = IO_WORKERS) -> Generator[Result | None, Any, None]:
     if exclude_dirs is None:
         exclude_dirs = set()
     exclude_dirs = set([x.lower() for x in exclude_dirs])
-    for dirpath, dirnames, filenames in os.walk(root_dir):
-        if is_excluded_dir(dirpath, exclude_dirs):
-            continue
-        for num, filename in enumerate(filenames):
-            lower_filename = filename.lower()
-            if lower_filename.endswith('.sfrm'):
-                continue
-            filepath = os.path.normpath(os.path.join(dirpath, filename))
-            if lower_filename.endswith(exts):
-                yield from file_result(filename, filepath)
-            elif no_archive:
-                continue
-            elif is_zipfile(lower_filename):
-                yield from search_in_zip(filepath, exts, exclude_dirs)
-            elif is_tarfile(lower_filename):
-                yield from search_in_tar(filepath, exts)
-            elif is_7z_file(lower_filename):
-                yield from search_in_7z(filepath, exts)
+    # Plain files are read concurrently, but only a bounded number of results is
+    # kept in flight so memory stays constant no matter how large the tree is.
+    max_pending = max(workers * 4, 8)
+    pending: deque[Future] = deque()
+
+    def drain(limit: int) -> Generator[Result | None, Any, None]:
+        while len(pending) > limit:
+            result = pending.popleft().result()
+            if result is not None:
+                yield result
+
+    with ThreadPoolExecutor(max_workers=workers, thread_name_prefix='strf-io') as pool:
+        try:
+            for dirpath, dirnames, filenames in os.walk(root_dir):
+                if is_excluded_dir(dirpath, exclude_dirs):
+                    continue
+                for filename in filenames:
+                    lower_filename = filename.lower()
+                    if lower_filename.endswith('.sfrm'):
+                        continue
+                    filepath = os.path.normpath(os.path.join(dirpath, filename))
+                    if lower_filename.endswith(exts):
+                        pending.append(pool.submit(read_file_result, filename, filepath))
+                        yield from drain(max_pending)
+                    elif no_archive:
+                        continue
+                    elif is_zipfile(lower_filename):
+                        yield from drain(0)
+                        yield from search_in_zip(filepath, exts, exclude_dirs)
+                    elif is_tarfile(lower_filename):
+                        yield from drain(0)
+                        yield from search_in_tar(filepath, exts)
+                    elif is_7z_file(lower_filename):
+                        yield from drain(0)
+                        yield from search_in_7z(filepath, exts)
+            yield from drain(0)
+        finally:
+            # Never wait for queued reads when the consumer stops early.
+            for future in pending:
+                future.cancel()
 
 
 def is_7z_file(filename: str) -> bool:
@@ -98,24 +129,30 @@ def is_zipfile(filename: str) -> bool:
     return filename.endswith(".zip")
 
 
-def file_result(filename: str, filepath: str | bytes) -> Generator[Result | None, Any, None]:
+def read_file_result(filename: str, filepath: str | bytes) -> Result | None:
+    """
+    Reads a single file and returns its Result, or None if it is not readable.
+    """
     try:
         mod_time = time.strftime('%Y-%m-%d', time.gmtime(os.path.getmtime(filepath)))
         size = os.stat(filepath).st_size
+        with open(filepath, 'rb') as fobj:
+            content = fobj.read()
     except OSError as e:
         if DEBUG:
             print(f"Unable to access file {filepath}: {e}")
         return None
-    with open(filepath, 'rb') as fobj:
-        try:
-            yield Result(file_type=suffix_to_type.get(filepath[-4:].lower()),
-                         file_content=fobj.read().decode('latin1', 'replace'),
-                         filename=filename, file_path=os.path.dirname(filepath),
-                         modification_time=mod_time,
-                         file_size=size)
-        except OSError as e:
-            print(f"OSError reading {filepath}:\n {e}")
-            yield None
+    return Result(file_type=suffix_to_type.get(filepath[-4:].lower()),
+                  file_content=content.decode('latin1', 'replace'),
+                  filename=filename, file_path=os.path.dirname(filepath),
+                  modification_time=mod_time,
+                  file_size=size)
+
+
+def file_result(filename: str, filepath: str | bytes) -> Generator[Result | None, Any, None]:
+    result = read_file_result(filename, filepath)
+    if result is not None:
+        yield result
 
 
 def search_in_zip(zip_path: str | bytes,

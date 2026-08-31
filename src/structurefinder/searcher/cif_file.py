@@ -418,12 +418,13 @@ class CifFile:
         Yields symmetry operations.
         ['x, y, z', '-x+1/2, y+1/2, -z+1/2', '-x, -y, -z', 'x-1/2, -y-1/2, z-1/2']
         """
-        if self._symm is not None:
-            return self._symm
-        symm1 = self.block.find_values('_space_group_symop_operation_xyz')
-        symm2 = self.block.find_values('_symmetry_equiv_pos_as_xyz')
-        self._symm = [cif.as_string(x) for x in symm1] if symm1 else [cif.as_string(x) for x in symm2]
-        return self._symm
+        symm = self._symm
+        if symm is None:
+            symm1 = self.block.find_values('_space_group_symop_operation_xyz')
+            symm2 = self.block.find_values('_symmetry_equiv_pos_as_xyz')
+            symm = [cif.as_string(x) for x in symm1] if symm1 else [cif.as_string(x) for x in symm2]
+            self._symm = symm
+        return symm
 
 
 if __name__ == '__main__':
