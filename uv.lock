@@ -1548,7 +1548,7 @@ web = [
 
 [package.metadata]
 requires-dist = [
-    { name = "docutils", specifier = "==0.23" },
+    { name = "docutils", specifier = ">=0.22" },
     { name = "fastmolwidget", specifier = ">=1.2.0" },
     { name = "gemmi", specifier = ">=0.7.5" },
     { name = "macholib" },
