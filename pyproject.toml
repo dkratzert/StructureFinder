@@ -21,10 +21,10 @@ classifiers = [
 ]
 
 dependencies = [
-    "docutils",
-    "fastmolwidget>=0.9.7",
+    "docutils>=0.22",
+    "fastmolwidget>=1.2.0",
     "macholib",
-    "numpy>=2.3.5,<=2.4",
+    "numpy>=2.3.5,<=2.5",
     "pefile",
     "pyqt6>=6.9",
     "pyqt6-sip",

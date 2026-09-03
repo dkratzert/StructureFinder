@@ -1,8 +1,9 @@
 StructureFinder Changelog
 -------------------------
 
-* v96 The self-updater now closes the running StructureFinder before the installer replaces the
+* v97 The self-updater now closes the running StructureFinder before the installer replaces the
        files.
+* v96 Improved indexing speed by ~30%.
 * v95 The length and angle tolerances of the unit cell search are now editable in the main window
       between the "More Results" and "Find Superlattices" options and on the advanced search tab.
       Improved the self-updater. Installation in the user directory is now possible.
