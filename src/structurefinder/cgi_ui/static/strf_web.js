@@ -9,15 +9,13 @@ elements = ['X', 'H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
 
 $(document).ready(function ($) {
 
-    var d1 = $('input[id=date1]');
-    d1.w2field('date', {
-        format: 'yyyy-mm-dd',
-        end: d1
-    });
-    $('input[id=date2]').w2field('date', {
-        format: 'yyyy-mm-dd',
-        start: d1
-    });
+    var d1 = document.getElementById('date1');
+    var d2 = document.getElementById('date2');
+    if (d1 && d2) {
+        // w2ui 2.0 needs the elements themselves, "start"/"end" strings are dates:
+        new w2field('date', {format: 'yyyy-mm-dd', end: d2}).render(d1);
+        new w2field('date', {format: 'yyyy-mm-dd', start: d1}).render(d2);
+    }
 
     // The structure ID
     var strid = null;
@@ -39,30 +37,52 @@ $(document).ready(function ($) {
     // toggle for cell tooltip
     $('[data-toggle="cell_tooltip"]').tooltip();
 
+    // The record id of a w2ui 2.0 selection event. Depending on how the row was
+    // selected, the id is either in "recid" or below "clicked".
+    function selected_recid(event) {
+        var detail = event.detail || {};
+        if (detail.recid !== undefined && detail.recid !== null) {
+            return detail.recid;
+        }
+        var clicked = detail.clicked || {};
+        if (clicked.recid !== undefined && clicked.recid !== null) {
+            return clicked.recid;
+        }
+        if (clicked.recids && clicked.recids.length > 0) {
+            return clicked.recids[0];
+        }
+        return null;
+    }
+
     mygrid = $('#mygrid');
 
     // The main structures table:
-    mygrid.w2grid({
+    var mygrid_obj = new w2grid({
         name: 'mygrid',
         header: 'StructureFinder',
         url: cgifile + "/all",
-        method: 'GET',
+        // Send the search parameters as plain query values, not wrapped in a
+        // "request" JSON parameter as the w2ui default HTTPJSON would do:
+        dataType: 'HTTP',
         show: {
             toolbar: false,
             footer: true
         },
         columns: [
-            {field: 'recid', caption: 'ID', size: '45px', sortable: false, attr: 'align=center'},
-            {field: 'dataname', caption: 'Data Name', size: '15%', sortable: false, resizable: true},
-            {field: 'filename', caption: 'File Name', size: '20%', sortable: false, resizable: true},
-            {field: 'modification_time', caption: 'Last Modified', size: '10%', sortable: false, resizable: true},
-            {field: 'path', caption: 'Path', size: '65%', sortable: false, resizable: true}
+            {field: 'recid', text: 'ID', size: '45px', sortable: false, attr: 'align=center'},
+            {field: 'dataname', text: 'Data Name', size: '15%', sortable: false, resizable: true},
+            {field: 'filename', text: 'File Name', size: '20%', sortable: false, resizable: true},
+            {field: 'modification_time', text: 'Last Modified', size: '10%', sortable: false, resizable: true},
+            {field: 'path', text: 'Path', size: '65%', sortable: false, resizable: true}
         ],
         //sortData: [{field: 'modification_time', direction: 'ASC'}],
         onSelect: function (event) {
-            strid = event.recid;
+            var recid = selected_recid(event);
+            if (recid === null) {
+                return;
+            }
+            strid = recid;
             showprop(strid);
-            //console.log(event);
         }
     });
 
@@ -74,6 +94,8 @@ $(document).ready(function ($) {
     }
     // Define the grid height to 35% of the screen:
     mygrid.css("height", h);
+    // w2ui 2.0 does not render the grid in the constructor:
+    mygrid_obj.render(mygrid[0]);
 
     // Do advanced search:
     let advanced_search_button = $("#advsearch-button");
@@ -495,7 +517,7 @@ $(document).ready(function ($) {
         };
         //console.log(gridparams);
         var url;
-        w2ui['mygrid'].request('get-records', gridparams,
+        w2ui['mygrid'].request('load', gridparams,
             url = cgifile + "/adv_srch",
             function (result) {
                 displayresultnum(result);
@@ -547,7 +569,7 @@ $(document).ready(function ($) {
         var params;
         var url;
         if (isValidCell(cell)) {
-            w2ui['mygrid'].request('get-records',
+            w2ui['mygrid'].request('load',
                 params = {cell_search: cell, more: more_res, supercell: supercell},
                 url = cgifile + "/cellsrch",
                 function (result) {
@@ -564,7 +586,7 @@ $(document).ready(function ($) {
         var params;
         var url;
         //console.log(text+' in txtsearch');
-        w2ui['mygrid'].request('get-records',
+        w2ui['mygrid'].request('load',
             params = {text_search: text},
             url = cgifile + "/txtsrch",
             function (result) {

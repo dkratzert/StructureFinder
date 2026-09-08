@@ -4,31 +4,38 @@ $(document).ready(function($){
     let my_ccdc_grid = $('#my_ccdc_grid');
 
     // The main structures table:
-    my_ccdc_grid.w2grid({
+    let my_ccdc_grid_obj = new w2grid({
         name: 'my_ccdc_grid',
         header: 'StructureFinder',
         url: cgifile+"/csd-list",
-        method: 'POST',
+        // Send the search parameters as plain query values, not wrapped in a
+        // "request" JSON parameter as the w2ui default HTTPJSON would do:
+        dataType: 'HTTP',
         show: {
             toolbar: false,
             footer: true
         },
         columns: [
-            {field: 'chemical_formula',  caption: 'Formula', size: '20%', sortable: false, attr: 'align=left'},
-            {field: 'cell_length_a',     caption: '<i>a</i>', size: '10%',  sortable: false, resizable: true},
-            {field: 'cell_length_b',     caption: '<i>b</i>', size: '10%',  sortable: false, resizable: true},
-            {field: 'cell_length_c',     caption: '<i>c</i>', size: '10%',  sortable: false, resizable: true},
-            {field: 'cell_angle_alpha',  caption: '<i>&alpha;</i>', size: '10%',  sortable: false, resizable: true},
-            {field: 'cell_angle_beta',   caption: '<i>&beta;</i>', size: '10%',  sortable: false, resizable: true},
-            {field: 'cell_angle_gamma',  caption: '<i>&gamma;</i>', size: '10%',  sortable: false, resizable: true},
-            {field: 'recid',             caption: 'Itentity', size: '10%',  sortable: false, resizable: true},
-            {field: 'space_group',     caption: 'Space Group', size: '10%',  sortable: false, resizable: true}
+            {field: 'chemical_formula',  text: 'Formula', size: '20%', sortable: false, attr: 'align=left'},
+            {field: 'cell_length_a',     text: '<i>a</i>', size: '10%',  sortable: false, resizable: true},
+            {field: 'cell_length_b',     text: '<i>b</i>', size: '10%',  sortable: false, resizable: true},
+            {field: 'cell_length_c',     text: '<i>c</i>', size: '10%',  sortable: false, resizable: true},
+            {field: 'cell_angle_alpha',  text: '<i>&alpha;</i>', size: '10%',  sortable: false, resizable: true},
+            {field: 'cell_angle_beta',   text: '<i>&beta;</i>', size: '10%',  sortable: false, resizable: true},
+            {field: 'cell_angle_gamma',  text: '<i>&gamma;</i>', size: '10%',  sortable: false, resizable: true},
+            {field: 'recid',             text: 'Itentity', size: '10%',  sortable: false, resizable: true},
+            {field: 'space_group',     text: 'Space Group', size: '10%',  sortable: false, resizable: true}
         ],
         //sortData: [{field: 'dataname', direction: 'ASC'}],
         onDblClick:function(event) {
-            let strid = event.recid;
-            show_csd_entry(strid);
-            //console.log(event);
+            let detail = event.detail || {};
+            let recid = detail.recid;
+            if (recid == null && detail.clicked) {
+                recid = detail.clicked.recid;
+            }
+            if (recid != null) {
+                show_csd_entry(recid);
+            }
         }
     });
 
@@ -40,6 +47,8 @@ $(document).ready(function($){
     }
     // Define the grid height to 35% of the screen:
     my_ccdc_grid.css("height", hc);
+    // w2ui 2.0 does not render the grid in the constructor:
+    my_ccdc_grid_obj.render(my_ccdc_grid[0]);
 
 
     function csdcellsearch(cell) {
@@ -53,9 +62,9 @@ $(document).ready(function($){
         let params;
         let url;
         if (isValidCell(cell)) {
-            w2ui['my_ccdc_grid'].request('get-records',
+            w2ui['my_ccdc_grid'].request('load',
                 {cell: cell, centering: centering, str_id: strid},
-                cgifile + "/csd-list",  // the 'get-records' request of w2ui fetches the CSD entries found by 'params'
+                cgifile + "/csd-list",  // the 'load' request of w2ui fetches the CSD entries found by 'params'
                 function (result) {
                     display_csd_resultnum(result);
                     //console.log(result);

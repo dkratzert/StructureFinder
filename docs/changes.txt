@@ -4,6 +4,7 @@ StructureFinder Changelog
 * v98 The web interface now uses the fastmolwidget structure viewer instead of JSmol. Growing a
       structure happens in the browser now and needs no additional request to the server. Grow is
       enabled by default there, like in the desktop application.
+      Updated the results table of the web interface to w2ui 2.0, which no longer needs jQuery.
       Updated dependencies to their latest versions.
 * v97 The self-updater now closes the running StructureFinder before the installer replaces the
        files.

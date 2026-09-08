@@ -329,30 +329,29 @@ def show_cellcheck():
     return output
 
 
-@app.post('/csd-list')
+@app.route('/csd-list', method=['GET', 'POST'])
 def search_cellcheck_csd():
     """
     Search with CellcheckCSD.
     """
-    cmd = request.POST.cmd
-    cell = request.POST.cell
+    cell = request.params.cell
     if not cell:
-        return {}
-    cent = request.POST.centering
+        return {"total": 0, "records": [], "status": "success"}
+    cent = request.params.centering
     if len(cell) < 6:
-        return {}
-    if cmd == 'get-records' and len(cell.split()) == 6:
+        return {"total": 0, "records": [], "status": "success"}
+    if len(cell.split()) == 6:
         xml = search_csd(cell.split(), centering=centering_num_2_letter[int(cent)])
         # print(xml)
         try:
             results = parse_results(xml)  # results in a dictionary
         except ParseError as e:
             print(e)
-            return
+            return {"total": 0, "records": [], "status": "success"}
         print(len(results), 'Structures found...')
         return {"total": len(results), "records": results, "status": "success"}
     else:
-        return {}
+        return {"total": 0, "records": [], "status": "success"}
 
 
 @app.error(404)
@@ -381,12 +380,12 @@ def get_structures_json(structures: StructureTable, ids: list | tuple | None = N
     Returns the next package of table rows for continuos scrolling.
     """
     if not ids and not show_all:
-        return {}
+        return {"total": 0, "records": [], "status": "success"}
     dic = structures.get_all_structures_as_dict(ids)
     number = len(dic)
     print(f"--> Got {number} structures from actual search.")
     if number == 0:
-        return {}
+        return {"total": 0, "records": [], "status": "success"}
     return {"total": number, "records": dic, "status": "success"}
 
 
