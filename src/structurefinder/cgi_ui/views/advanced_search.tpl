@@ -1,15 +1,21 @@
-<!-- The collapsible for Advanced search options: -->
-<div id="adv-search" class="collapse">
-    <div class="row">
-        <div class="column col-sm-12">
+<!-- Advanced search options (collapsible) -->
+<div id="adv-search" class="collapse mb-3">
+    <div class="row mb-2">
+        <div class="col-12">
             <div class="btn-group btn-group-sm" role="group">
-                <a href="#" class="badge" id="more_info_badge">info</a>
+                <button type="button" class="badge bg-secondary" id="more_info_badge">info</button>
                 <span>&nbsp;&nbsp;</span>
-                <input title="More cell search results" class="checkbox-addon" type="checkbox"
-                       value="" id="more_results">More cell search results
+                <div class="form-check form-check-inline">
+                    <input type="checkbox" class="form-check-input" id="more_results"
+                           title="More cell search results">
+                    <label class="form-check-label" for="more_results">More cell search results</label>
+                </div>
                 <span>&nbsp;&nbsp;</span>
-                <input title="Find supercells" type="checkbox" class="checkbox-addon-sm"
-                       value="" id="supercells">Find supercells
+                <div class="form-check form-check-inline">
+                    <input type="checkbox" class="form-check-input" id="supercells"
+                           title="Find supercells">
+                    <label class="form-check-label" for="supercells">Find supercells</label>
+                </div>
                 <span>&nbsp;&nbsp;</span>
                 %include('cgi_ui/views/spgr.tpl')
                 Find by space group
@@ -17,14 +23,14 @@
         </div>
     </div>
 
-    <div id="more-cell-info" class="collapse">
+    <div id="more-cell-info" class="collapse mb-3">
         <div class="row">
             <div class="col-sm-6">
                 <b>regular</b><br>
-                volume: &plusmn;3 %, length: 0.06&nbsp;&angst;, angle: 1.0&deg;<br>
+                volume: ±3 %, length: 0.06 Å, angle: 1.0°<br>
                 <br>
                 <b>more results option</b><br>
-                volume: &plusmn;9 &percnt;, length: 0.2&nbsp;&angst;, angle: 2.0&deg;<br>
+                volume: ±9 %, length: 0.2 Å, angle: 2.0°<br>
             </div>
             <div class="col-sm-6">
                 <b>Supercells</b>
@@ -39,93 +45,89 @@
         </div>
     </div>
 
-    <div class="row">
-        <div class="column col-sm-6">
+    <div class="row mb-2">
+        <div class="col-sm-6">
             <div class="input-group input-group-sm">
-                <span class="input-group-addon">Uni Cell</span>
-                <label for="cell_adv"></label>
-                <input type="text" class="form-control form-sm" placeholder="a b c &alpha; &beta; &gamma;"
+                <span class="input-group-text">Unit Cell</span>
+                <input type="text" class="form-control" placeholder="a b c α β γ"
                        id="cell_adv">
             </div>
         </div>
 
-        <div class="column col-sm-6">
+        <div class="col-sm-6">
             <div class="input-group input-group-sm">
-                <span class="input-group-addon"><i>R</i><sub>1</sub> <=</span>
-                <label for="r1_val_adv"></label>
-                <input type="text" class="form-control form-sm" id="r1_val_adv">
-                <span class="input-group-addon">%</span>
+                <span class="input-group-text"><i>R</i><sub>1</sub> <=</span>
+                <input type="text" class="form-control" id="r1_val_adv">
+                <span class="input-group-text">%</span>
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="column col-sm-6">
+    <div class="row mb-2">
+        <div class="col-sm-6">
             <div class="input-group input-group-sm w2ui-field">
-                <span class="input-group-addon" data-toggle="tooltip"
-                      title="Search for structures that were modified between two dates">Date from</span>
-                <input class="input-sm" title="Date" type="text" id="date1" style="width: 95%">
-                <span class="input-group-addon">to</span>
-                <input class="input-sm" title="Date" type="text" id="date2" style="width: 95%">
-                <a type="button" class="input-group-addon"
-                   data-toggle="tooltip" title="Search for structures modified during the last month."
-                   id="lastmsearchlink"> From Last Month</a>
+                <span class="input-group-text" data-bs-toggle="tooltip"
+                       title="Search for structures that were modified between two dates">Date from</span>
+                <input class="form-control form-control-sm" title="Date" type="text" id="date1" style="width: 50%;">
+                <span class="input-group-text">to</span>
+                <input class="form-control form-control-sm" title="Date" type="text" id="date2" style="width: 50%;">
+                <button type="button" class="btn btn-sm btn-outline-secondary"
+                   data-bs-toggle="tooltip" title="Search for structures modified during the last month."
+                   id="lastmsearchlink">Last Month</button>
             </div>
         </div>
-        <div class="column col-sm-6">
+        <div class="col-sm-6">
             <div class="input-group input-group-sm">
-                <span class="input-group-addon">CCDC number</span>
-                <label for="ccdc_num_adv"></label>
-                <input type="text" class="form-control form-sm" id="ccdc_num_adv">
+                <span class="input-group-text">CCDC number</span>
+                <input type="text" class="form-control" id="ccdc_num_adv">
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="column col-xs-6">
-            <div class="input-group input-group-sm input-group-prepend has-success">
-                <span class="input-group-addon" data-toggle="tooltip" title="should contain">Elements</span>
-                <label for="elements_in"></label>
-                <input type="text" class="form-control form-sm" placeholder="C H O ... (should contain)"
+    <div class="row mb-2">
+        <div class="col-xs-6">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text" data-bs-toggle="tooltip" title="should contain">Elements</span>
+                <input type="text" class="form-control" placeholder="C H O ... (should contain)"
                        pattern="^[A-z]{1,}$" id="elements_in">
-                <input class="checkbox-addon" type="checkbox" aria-label="Only these elements"
-                       title="Only above Elements" id="onlythese_elem"> Only above Elements
+                <div class="form-check form-check-inline ms-2">
+                    <input type="checkbox" class="form-check-input" id="onlythese_elem"
+                           title="Only above Elements">
+                    <label class="form-check-label" for="onlythese_elem">Only above</label>
+                </div>
             </div>
         </div>
-        <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-error">
-                <span class="input-group-addon" data-toggle="tooltip" title="should not contain">Elements</span>
-                <label for="elements_out"></label>
-                <input type="text" class="form-control form-sm" placeholder="C H O ... (should not contain)"
+        <div class="col-xs-6">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text" data-bs-toggle="tooltip" title="should not contain">Elements</span>
+                <input type="text" class="form-control" placeholder="C H O ... (should not contain)"
                        pattern="^[A-z]{1,}$" id="elements_out">
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-success">
-                <span class="input-group-addon" data-toggle="tooltip" title="should contain">Text</span>
-                <label for="text_in"></label>
-                <input type="text" class="form-control form-sm" placeholder="should contain" id="text_in">
+    <div class="row mb-2">
+        <div class="col-xs-6">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text" data-bs-toggle="tooltip" title="should contain">Text</span>
+                <input type="text" class="form-control" placeholder="should contain" id="text_in">
             </div>
         </div>
-        <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-error">
-                <span class="input-group-addon" data-toggle="tooltip" title="should not contain">Text</span>
-                <label for="text_out"></label>
-                <input type="text" class="form-control form-sm" placeholder="should not contain" id="text_out">
+        <div class="col-xs-6">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text" data-bs-toggle="tooltip" title="should not contain">Text</span>
+                <input type="text" class="form-control" placeholder="should not contain" id="text_out">
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="column col-xs-12">
-            <a type="button" class="btn btn-sm btn-success" id="advsearch-button" style="min-width:90px">
-                Search </a>
+    <div class="row mb-2">
+        <div class="col-12">
+            <button type="button" class="btn btn-sm btn-success" id="advsearch-button" style="min-width:90px">
+                Search
+            </button>
         </div>
     </div>
 
-    <br>
 </div>
 
-<!-- End of collapsible for search options. -->
+<!-- End of advanced search -->
