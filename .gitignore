@@ -65,8 +65,6 @@ uploads/
 stdb_main.py
 <tmpfile>
 test.sqlite
-src/structurefinder/displaymol/jsmol.htm
-jsmol.htm
 *.sqlite-journal
 structuredb.sqlite
 scripts/Output/*

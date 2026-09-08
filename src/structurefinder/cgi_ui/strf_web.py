@@ -9,9 +9,9 @@ from xml.etree.ElementTree import ParseError
 
 import gemmi
 
+from fastmolwidget.web import bundle_js
+
 from structurefinder.ccdc.query import get_cccsd_path, parse_results, search_csd
-from structurefinder.displaymol.mol_file_writer import MolFile
-from fastmolwidget.sdm import SDM
 from structurefinder.misc.exporter import cif_data_to_document
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core import lattice
@@ -162,31 +162,41 @@ def adv():
 
 
 @app.post('/molecule')
-def jsmol_request():
+def molecule_request():
     """
-    A request for atom data from jsmol.
+    Structure data for the fastmolwidget viewer.
+
+    Returns fractional coordinates plus symmetry, so the browser can grow the
+    asymmetric unit to complete molecules on its own.
     """
     str_id = request.POST.id
     print("Molecule id:", str_id)
     structures = StructureTable(dbfilename)
-    if str_id:
-        cell = structures.get_cell_by_id(str_id)
-        if request.POST.grow == 'true':
-            symm_xyz = structures.get_row_as_dict(str_id).get('_space_group_symop_operation_xyz') or ''
-            symmcards = symm_xyz.replace("'", "").replace(" ", "").split("\n")
-            atoms = structures.get_atoms_table(str_id, cartesian=False, as_list=True)
-            if atoms:
-                sdm = SDM(atoms, symmcards, cell)
-                needsymm = sdm.calc_sdm()
-                atoms = sdm.packer(sdm, needsymm)
-        else:
-            atoms = structures.get_atoms_table(str_id, cartesian=True, as_list=False)
-        try:
-            m = MolFile(atoms)
-            return m.make_mol()
-        except(KeyError, TypeError) as e:
-            print(f'Exception in jsmol_request: {e}')
-            return ''
+    if not str_id:
+        return {}
+    cell = structures.get_cell_by_id(str_id)
+    atoms = structures.get_atoms_table(str_id, cartesian=False, as_list=True)
+    if not cell or not atoms:
+        return {}
+    symm_xyz = structures.get_row_as_dict(str_id).get('_space_group_symop_operation_xyz') or ''
+    symmcards = [x for x in symm_xyz.replace("'", "").replace(" ", "").split("\n") if x]
+    return {'cell'   : list(cell[:6]),
+            'centric': False,
+            'symmops': symmcards,
+            'atoms'  : [{'label': at[0], 'type': at[1], 'x': at[2], 'y': at[3], 'z': at[4],
+                         'part' : at[5], 'adp': None}
+                        for at in atoms],
+            }
+
+
+@app.route('/fastmolwidget.js')
+def fastmolwidget_js():
+    """
+    The JavaScript part of fastmolwidget as a single classic script.
+    """
+    response.content_type = 'application/javascript; charset=UTF-8'
+    response.set_header("Cache-Control", "public, max-age=240")
+    return bundle_js()
 
 
 @app.post('/residuals')

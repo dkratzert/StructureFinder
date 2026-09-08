@@ -122,7 +122,6 @@ Source: "..\structurefinder.exe";              DestDir: "{app}"; Flags: ignoreve
 Source: "..\vc_redist.x64.exe";                DestDir: "{app}"; Flags: ignoreversion
 
 [Dirs]
-;Name: "{app}\displaymol"; Permissions: everyone-full
 ;Name: "{app}\gui"; Permissions: everyone-full
 
 [Code]

@@ -36,7 +36,7 @@
                 </span>
                     <span class="btn-group invisible" id="growCheckBoxgroup">
                         &nbsp;&nbsp;&nbsp;&nbsp;
-                        <input type="checkbox" title="Grow Structure" value="false" id="growCheckBox">Grow Structure
+                        <input type="checkbox" title="Grow Structure" value="true" id="growCheckBox" checked>Grow Structure
                 </span>
                 </div>
             </div>
@@ -46,8 +46,8 @@
     <div id="all_residuals">
 
         <div class="row">
-            <div class="column col-md-4 panel panel-default invisible" id="jsmolcolumn"
-                 data-toggle="tooltip" title="Asymmetric Unit"></div>
+            <div class="column col-md-4 panel panel-default invisible" id="moleculecolumn"
+                 data-toggle="tooltip" title="Completed Molecule"></div>
             <div class="column col-md-4" id="residualstable1"></div>
             <div class="column col-md-4" id="residualstable2"></div>
         </div>

@@ -21,6 +21,10 @@ $(document).ready(function ($) {
 
     // The structure ID
     var strid = null;
+    // The fastmolwidget viewer instance
+    var molviewer = null;
+    // Grow is on by default, see the growCheckBox in the template:
+    var grow_enabled = true;
 
     $.get(url = cgifile + '/cellcheck', function (result) {
         if (result === 'true') {
@@ -316,18 +320,10 @@ $(document).ready(function ($) {
 
     // Switch between grow and fuse:
     $('#growCheckBox').click(function () {
-        var jsmolcol = $("#jsmolcolumn");
-        var data;
-        if (this.checked) {
-            // Get molecule data and display the molecule:
-            $.post(url = cgifile + '/molecule', data = {id: strid, grow: true}, function (result) {
-                display_molecule(result);
-            });
-        } else {
-            // Get molecule data and display the molecule:
-            $.post(url = cgifile + '/molecule', data = {id: strid, grow: false}, function (result) {
-                display_molecule(result);
-            });
+        grow_enabled = this.checked;
+        $("#moleculecolumn").attr('title', grow_enabled ? 'Completed Molecule' : 'Asymmetric Unit');
+        if (molviewer) {
+            molviewer.setGrow(grow_enabled);
         }
     });
 
@@ -395,22 +391,37 @@ $(document).ready(function ($) {
         $("#cellrow").removeClass('invisible');
         $("#cell_copy_btn").addClass('invisible');
         $("#growCheckBoxgroup").addClass('invisible');
-        $("#jsmolcolumn").addClass('invisible');
+        $("#moleculecolumn").addClass('invisible');
         $("#all_residuals").addClass('invisible');
         //$("#residualstable2").addClass('invisible');
         //$("#residuals").addClass('invisible');
         document.getElementById("cellrow").innerHTML = "Found " + numresult + " structures";
     }
 
-    function display_molecule(atoms) {
-        Jmol._document = null;
-        Jmol.getTMApplet("jmol", jsmol_options);
-        var jsmolcol = $("#jsmolcolumn");
-        jsmolcol.html(jmol._code);
-        jmol.__loadModel(atoms);
+    function display_molecule(structure) {
+        var molcol = $("#moleculecolumn");
+        if (!structure || !structure.atoms || structure.atoms.length === 0) {
+            molcol.addClass('invisible');
+            return;
+        }
         var tbl = $('#residualstable2');
-        jsmolcol.css("height", tbl.height() - 20);
-        jsmolcol.removeClass('invisible');
+        // The residuals table is filled asynchronously, so keep the CSS default
+        // height until it has a sensible size. The canvas fills this container.
+        var height = tbl.height() - 20;
+        if (height > 100) {
+            molcol.css("height", height);
+        }
+        molcol.removeClass('invisible');
+        if (!molviewer) {
+            molviewer = Fastmolwidget.createViewer(molcol[0], null, molecule_options);
+            // Only sets the flag, there is no structure to refresh yet:
+            molviewer.setGrow(grow_enabled);
+        }
+        // loadStructure() honours the grow state kept in sync by the checkbox:
+        molviewer.loadStructure(structure);
+        molcol.attr('title', grow_enabled ? 'Completed Molecule' : 'Asymmetric Unit');
+        molviewer.fit();
+        molviewer.widget.fitToView();
     }
 
     function showprop(idstr) {
@@ -455,44 +466,19 @@ $(document).ready(function ($) {
         );
 
         // Get molecule data and display the molecule:
-        if ($('#growCheckBox').is(':checked') === true) {
-            $.post(url = cgifile + '/molecule', data = {id: idstr, grow: true}, function (result) {
-                display_molecule(result)
-            });
-        } else {
-            $.post(url = cgifile + '/molecule', data = {id: idstr, grow: false}, function (result) {
-                display_molecule(result)
-            });
-        }
+        $.post(url = cgifile + '/molecule', data = {id: idstr}, function (result) {
+            display_molecule(result)
+        });
     }
 
-    // some options for JSmol:
+    // some options for the fastmolwidget viewer:
     var bgcolor = $(this.body).css("background-color");
-    var jsmol_options;
-    jsmol_options = {
-        //width: 320,
-        //height: 300,
-        color: bgcolor,
-        //color: "0xf0f0f0",
-        shadeAtoms: false,
-        addSelectionOptions: false,
-        use: "HTML5",
-        readyFunction: null,
-        defaultModel: "",
-        bondWidth: 3,
-        zoomScaling: 5,
-        pinchScaling: 5.0,
-        mouseDragFactor: 0.9,
-        touchDragFactor: 0.9,
-        multipleBondSpacing: 0,
-        spinRateX: -0.08,
-        spinRateY: 0.05,
-        spinFPS: 20,
-        spin: false,
-        infodiv: false,
-        debug: false,
-        j2sPath: ".",
-        _serverUrl: ''
+    var molecule_options = {
+        controls: false,
+        background: bgcolor,
+        adps: false,
+        labels: false,
+        bondWidth: 3
     };
 
     function advanced_search(text_in, text_out, elements_in, elements_out, cell_adv, more_res, supercell,
