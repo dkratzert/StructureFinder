@@ -43,7 +43,7 @@
 
 <div class="row">
     <div class="column col-sm-12">
-        <div class="card">
+        <div class="card mb-3">
             <div class="card-body">
                 <span id="found_csd"> </span>
             </div>

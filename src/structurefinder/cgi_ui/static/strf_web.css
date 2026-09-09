@@ -43,10 +43,7 @@ body {
 }
 
 #moleculecolumn {
-    margin-right: 15px;
-    margin-left: 15px;
-    width: 360px;
-    height: 320px;
+    min-height: 320px;
 }
 
 #smpl_textsrchbutton {

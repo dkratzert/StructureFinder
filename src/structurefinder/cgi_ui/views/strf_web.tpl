@@ -28,7 +28,7 @@
 
     <div class="row">
         <div class="column col-sm-12">
-            <div class="card">
+            <div class="card mb-3">
                 <div class="card-body">
                     <span class="invisible btn-group" id="cellrow"> </span>
                     <span class="btn btn-outline-secondary bi bi-clipboard invisible" id="cell_copy_btn"
@@ -46,8 +46,10 @@
     <div id="all_residuals">
 
         <div class="row">
-            <div class="column col-md-4 card invisible" id="moleculecolumn"
-                 data-bs-toggle="tooltip" title="Completed Molecule"></div>
+            <div class="column col-md-4">
+                <div class="card invisible h-100" id="moleculecolumn"
+                     data-bs-toggle="tooltip" title="Completed Molecule"></div>
+            </div>
             <div class="column col-md-4" id="residualstable1"></div>
             <div class="column col-md-4" id="residualstable2"></div>
         </div>
