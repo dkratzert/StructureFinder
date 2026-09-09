@@ -7,7 +7,26 @@ elements = ['X', 'H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne',
     'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn',
     'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es'];
 
-$(document).ready(function ($) {
+// Equivalent of jQuery's $.isNumeric():
+function isNumeric(value) {
+    return !isNaN(parseFloat(value)) && isFinite(value);
+}
+
+// Toggles an element's visibility, equivalent in effect to the previous
+// jQuery $(el).toggle(1) call. Elements using Bootstrap's ".collapse" class
+// (display:none by default) are toggled via the ".show" class Bootstrap 5
+// expects; plain elements are toggled via their inline "display" style.
+function toggleDisplay(el) {
+    if (el.classList.contains('collapse')) {
+        el.classList.toggle('show');
+    } else if (getComputedStyle(el).display === 'none') {
+        el.style.display = '';
+    } else {
+        el.style.display = 'none';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
 
     var d1 = document.getElementById('date1');
     var d2 = document.getElementById('date2');
@@ -24,18 +43,24 @@ $(document).ready(function ($) {
     // Grow is on by default, see the growCheckBox in the template:
     var grow_enabled = true;
 
-    $.get(url = cgifile + '/cellcheck', function (result) {
-        if (result === 'true') {
-            $("#cellsearchcsd_button").removeClass('invisible');
-        }
-    });
+    fetch(cgifile + '/cellcheck')
+        .then(function (response) { return response.text(); })
+        .then(function (result) {
+            if (result === 'true') {
+                document.getElementById("cellsearchcsd_button").classList.remove('invisible');
+            }
+        });
 
-    $.get(url = cgifile + '/version', function (result) {
-        document.getElementById("version").innerHTML = result;
-    });
+    fetch(cgifile + '/version')
+        .then(function (response) { return response.text(); })
+        .then(function (result) {
+            document.getElementById("version").innerHTML = result;
+        });
 
-    // toggle for cell tooltip
-    $('[data-toggle="cell_tooltip"]').tooltip();
+    // Enable Bootstrap tooltips for elements that request one:
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {
+        new bootstrap.Tooltip(el);
+    });
 
     // The record id of a w2ui 2.0 selection event. Depending on how the row was
     // selected, the id is either in "recid" or below "clicked".
@@ -54,7 +79,7 @@ $(document).ready(function ($) {
         return null;
     }
 
-    mygrid = $('#mygrid');
+    let mygrid = document.getElementById('mygrid');
 
     // The main structures table:
     var mygrid_obj = new w2grid({
@@ -87,30 +112,30 @@ $(document).ready(function ($) {
     });
 
     //gets the window's height
-    let b = $(window).height();
+    let b = window.innerHeight;
     let h = b * 0.35;
     if (h < 200) {
         h = 220;
     }
     // Define the grid height to 35% of the screen:
-    mygrid.css("height", h);
+    mygrid.style.height = h + 'px';
     // w2ui 2.0 does not render the grid in the constructor:
-    mygrid_obj.render(mygrid[0]);
+    mygrid_obj.render(mygrid);
 
     // Do advanced search:
-    let advanced_search_button = $("#advsearch-button");
-    advanced_search_button.click(function (event) {
+    let advanced_search_button = document.getElementById("advsearch-button");
+    advanced_search_button.addEventListener('click', function (event) {
         let txt_in = document.getElementById("text_in").value;
         let txt_out = document.getElementById("text_out").value;
         let elements_in = document.getElementById("elements_in").value;
         let elements_out = document.getElementById("elements_out").value;
         let cell_adv = document.getElementById("cell_adv").value;
-        let more_res = $('#more_results').is(':checked');
-        let supercell = $('#supercells').is(':checked');
-        let onlyelem = $('#onlythese_elem').is(':checked');
+        let more_res = document.getElementById('more_results').checked;
+        let supercell = document.getElementById('supercells').checked;
+        let onlyelem = document.getElementById('onlythese_elem').checked;
         let datefield1 = document.getElementById("date1").value;
         let datefield2 = document.getElementById("date2").value;
-        let itnum = $("#IT_number").val().split(" ")[0];
+        let itnum = document.getElementById("IT_number").value.split(" ")[0];
         let r1val = document.getElementById("r1_val_adv").value;
         let ccdc_num = document.getElementById("ccdc_num_adv").value;
         advanced_search(txt_in, txt_out, elements_in, elements_out, cell_adv, more_res,
@@ -241,7 +266,7 @@ $(document).ready(function ($) {
         ok = validateSumForm(elements_in);
         for (const element of sumlist) {
             let el = element;
-            if ($.inArray(el, outlist) >= 0) {
+            if (outlist.includes(el)) {
                 // A space character is allowed:
                 if (el === "") {
                     continue
@@ -265,21 +290,21 @@ $(document).ready(function ($) {
     }
 
     function elements_red() {
-        let elinform = $("#elements_in.form-control");
-        let elexform = $("#elements_out.form-control");
-        elinform.css("color", "#f35e59");
-        elinform.css("font-weight", "bold");
-        elexform.css("color", "#f35e59");
-        elexform.css("font-weight", "bold");
+        let elinform = document.querySelector("#elements_in.form-control");
+        let elexform = document.querySelector("#elements_out.form-control");
+        elinform.style.color = "#f35e59";
+        elinform.style.fontWeight = "bold";
+        elexform.style.color = "#f35e59";
+        elexform.style.fontWeight = "bold";
     }
 
     function elements_regular() {
-        let elinform = $("#elements_in.form-control");
-        let elexform = $("#elements_out.form-control");
-        elinform.css("color", "#000000");
-        elinform.css("font-weight", "normal");
-        elexform.css("color", "#000000");
-        elexform.css("font-weight", "normal");
+        let elinform = document.querySelector("#elements_in.form-control");
+        let elexform = document.querySelector("#elements_out.form-control");
+        elinform.style.color = "#000000";
+        elinform.style.fontWeight = "normal";
+        elexform.style.color = "#000000";
+        elexform.style.fontWeight = "normal";
     }
 
     function validate_element_input() {
@@ -292,12 +317,12 @@ $(document).ready(function ($) {
     }
 
     // Validators for chemical elemets included search field:
-    $("#elements_in").keyup(function () {
+    document.getElementById("elements_in").addEventListener('keyup', function () {
         validate_element_input();
     });
 
     // Validators for chemical elemets excluded search field:
-    $("#elements_out").keyup(function () {
+    document.getElementById("elements_out").addEventListener('keyup', function () {
         validate_element_input();
     });
 
@@ -314,7 +339,7 @@ $(document).ready(function ($) {
         for (var i = 0; i < sumlist.length; i++) {
             var el = sumlist[i];
             //console.log(el);
-            if ($.inArray(el, elements) === -1) {
+            if (!elements.includes(el)) {
                 // A space character is allowed:
                 if (el.length === 0) {
                     continue
@@ -326,13 +351,12 @@ $(document).ready(function ($) {
     }
 
     // Toggle search info:
-    var more_info_button = $('#more_info_badge');
-    more_info_button.click(function () {
-        var button_text = more_info_button.text();
-        $("#more-cell-info").toggle(1);
+    var more_info_button = document.getElementById('more_info_badge');
+    more_info_button.addEventListener('click', function () {
+        toggleDisplay(document.getElementById("more-cell-info"));
     });
 
-    $('#all_structures').click(function () {
+    document.getElementById('all_structures').addEventListener('click', function () {
         w2ui['mygrid'].reload(
             function (result) {
                 displayresultnum(result);
@@ -341,44 +365,44 @@ $(document).ready(function ($) {
     });
 
     // Switch between grow and fuse:
-    $('#growCheckBox').click(function () {
+    document.getElementById('growCheckBox').addEventListener('click', function () {
         grow_enabled = this.checked;
-        $("#moleculecolumn").attr('title', grow_enabled ? 'Completed Molecule' : 'Asymmetric Unit');
+        document.getElementById("moleculecolumn").setAttribute('title', grow_enabled ? 'Completed Molecule' : 'Asymmetric Unit');
         if (molviewer) {
             molviewer.setGrow(grow_enabled);
         }
     });
 
     // Switch between advanced and simple search:
-    var advbutton = $('#toggle_advsearch-button');
-    advbutton.click(function () {
-        var button_text = advbutton.text();
-        $("#mainsearch").toggle(1);
+    var advbutton = document.getElementById('toggle_advsearch-button');
+    advbutton.addEventListener('click', function () {
+        var button_text = advbutton.textContent;
+        toggleDisplay(document.getElementById("mainsearch"));
         if (button_text.split(" ")[0] === "Advanced") {
-            advbutton.html("Simple Search");
+            advbutton.innerHTML = "Simple Search";
             document.getElementById("cell_adv").value = document.getElementById("smpl_cellsrch").value;
         } else {
-            advbutton.html("Advanced Search");
+            advbutton.innerHTML = "Advanced Search";
             document.getElementById("smpl_cellsrch").value = document.getElementById("cell_adv").value;
         }
     });
 
     // Text search Button clicked:
-    $("#smpl_textsrchbutton").click(function (event) {
+    document.getElementById("smpl_textsrchbutton").addEventListener('click', function (event) {
         var txt = document.getElementById("smpl_textsrch").value;
         txtsearch(txt);
         //console.log(txt);
     });
 
     // Cell search Button clicked:
-    $("#smpl_cellsrchbutton").click(function (event) {
+    document.getElementById("smpl_cellsrchbutton").addEventListener('click', function (event) {
         var cell = document.getElementById("smpl_cellsrch").value;
         cellsearch(cell);
     });
 
     // Enter key pressed in the simple text search field:
-    $('#smpl_textsrch').keypress(function (e) {
-        if (e.which === 13) {  // enter key
+    document.getElementById('smpl_textsrch').addEventListener('keypress', function (e) {
+        if (e.which === 13 || e.key === 'Enter') {  // enter key
             var txt = document.getElementById("smpl_textsrch").value;
             txtsearch(txt);
             //console.log(txt);
@@ -386,8 +410,8 @@ $(document).ready(function ($) {
     });
 
     // Enter key pressed in the simple cell search field:
-    $('#smpl_cellsrch').keypress(function (e) {
-        if (e.which === 13) {  // enter key
+    document.getElementById('smpl_cellsrch').addEventListener('keypress', function (e) {
+        if (e.which === 13 || e.key === 'Enter') {  // enter key
             var cell = document.getElementById("smpl_cellsrch").value;
             cellsearch(cell);
             //console.log(cell);
@@ -395,8 +419,8 @@ $(document).ready(function ($) {
     });
 
     // Enter key pressed in one of the advanced search fields:
-    $('#adv-search').keypress(function (e) {
-        if (e.which === 13) {  // enter key
+    document.getElementById('adv-search').addEventListener('keypress', function (e) {
+        if (e.which === 13 || e.key === 'Enter') {  // enter key
             advanced_search_button.click();
             //console.log(cell);
         }
@@ -410,91 +434,111 @@ $(document).ready(function ($) {
         } else {
             numresult = result.total;
         }
-        $("#cellrow").removeClass('invisible');
-        $("#cell_copy_btn").addClass('invisible');
-        $("#growCheckBoxgroup").addClass('invisible');
-        $("#moleculecolumn").addClass('invisible');
-        $("#all_residuals").addClass('invisible');
-        //$("#residualstable2").addClass('invisible');
-        //$("#residuals").addClass('invisible');
+        document.getElementById("cellrow").classList.remove('invisible');
+        document.getElementById("cell_copy_btn").classList.add('invisible');
+        document.getElementById("growCheckBoxgroup").classList.add('invisible');
+        document.getElementById("moleculecolumn").classList.add('invisible');
+        document.getElementById("all_residuals").classList.add('invisible');
+        //document.getElementById("residualstable2").classList.add('invisible');
+        //document.getElementById("residuals").classList.add('invisible');
         document.getElementById("cellrow").innerHTML = "Found " + numresult + " structures";
     }
 
     function display_molecule(structure) {
-        var molcol = $("#moleculecolumn");
+        var molcol = document.getElementById("moleculecolumn");
         if (!structure || !structure.atoms || structure.atoms.length === 0) {
-            molcol.addClass('invisible');
+            molcol.classList.add('invisible');
             return;
         }
-        var tbl = $('#residualstable2');
+        var tbl = document.getElementById('residualstable2');
         // The residuals table is filled asynchronously, so keep the CSS default
         // height until it has a sensible size. The canvas fills this container.
-        var height = tbl.height() - 20;
+        var height = tbl.offsetHeight - 20;
         if (height > 100) {
-            molcol.css("height", height);
+            molcol.style.height = height + 'px';
         }
-        molcol.removeClass('invisible');
+        molcol.classList.remove('invisible');
         if (!molviewer) {
-            molviewer = Fastmolwidget.createViewer(molcol[0], null, molecule_options);
+            molviewer = Fastmolwidget.createViewer(molcol, null, molecule_options);
             // Only sets the flag, there is no structure to refresh yet:
             molviewer.setGrow(grow_enabled);
         }
         // loadStructure() honours the grow state kept in sync by the checkbox:
         molviewer.loadStructure(structure);
-        molcol.attr('title', grow_enabled ? 'Completed Molecule' : 'Asymmetric Unit');
+        molcol.setAttribute('title', grow_enabled ? 'Completed Molecule' : 'Asymmetric Unit');
         molviewer.fit();
         molviewer.widget.fitToView();
     }
 
-    function showprop(idstr) {
-        /*
-        This function uses AJAX POST calls to get the data of a structure and displays
-        them below the main table.
-        */
-        $("#all_residuals").removeClass('invisible');
-        // Uncheck the grow button:
-        //$('#growCheckBox').prop("checked", false);
-        var data;
-        // Get residuals table 1:
-        $.post(url = cgifile + '/residuals', data = {id: idstr, residuals1: true}, function (result) {
-            document.getElementById("residualstable1").innerHTML = result;
-        });
-
-        // Get residuals table 2:
-        $.post(url = cgifile + '/residuals', data = {id: idstr, residuals2: true}, function (result) {
-            document.getElementById("residualstable2").innerHTML = result;
-        });
-
-        // Get unit cell row:
-        $.post(url = cgifile + '/residuals', data = {id: idstr, unitcell: true}, function (result) {
-            $("#cellrow").removeClass('invisible');
-            $("#growCheckBoxgroup").removeClass('invisible');
-            $("#cell_copy_btn").removeClass('invisible');
-            document.getElementById("cellrow").innerHTML = result;
-
-            var clipboard = new Clipboard('.btn');
-            clipboard.on('success',
-                function (e) {
-                    e.clearSelection();
-                }
-            );
-        });
-
-        // display the big cif data table:
-        $.post(url = cgifile + '/residuals', data = {id: idstr, all: true},
-            function (result) {
-                document.getElementById("residuals").innerHTML = result;
-            }
-        );
-
-        // Get molecule data and display the molecule:
-        $.post(url = cgifile + '/molecule', data = {id: idstr}, function (result) {
-            display_molecule(result)
+    function postForm(url, data) {
+        var body = new URLSearchParams();
+        for (var key in data) {
+            body.append(key, data[key]);
+        }
+        return fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: body
         });
     }
 
+    function showprop(idstr) {
+        /*
+        This function uses fetch() POST calls to get the data of a structure and displays
+        them below the main table.
+        */
+        document.getElementById("all_residuals").classList.remove('invisible');
+        // Uncheck the grow button:
+        //document.getElementById('growCheckBox').checked = false;
+
+        // Get residuals table 1:
+        postForm(cgifile + '/residuals', {id: idstr, residuals1: true})
+            .then(function (response) { return response.text(); })
+            .then(function (result) {
+                document.getElementById("residualstable1").innerHTML = result;
+            });
+
+        // Get residuals table 2:
+        postForm(cgifile + '/residuals', {id: idstr, residuals2: true})
+            .then(function (response) { return response.text(); })
+            .then(function (result) {
+                document.getElementById("residualstable2").innerHTML = result;
+            });
+
+        // Get unit cell row:
+        postForm(cgifile + '/residuals', {id: idstr, unitcell: true})
+            .then(function (response) { return response.text(); })
+            .then(function (result) {
+                document.getElementById("cellrow").classList.remove('invisible');
+                document.getElementById("growCheckBoxgroup").classList.remove('invisible');
+                document.getElementById("cell_copy_btn").classList.remove('invisible');
+                document.getElementById("cellrow").innerHTML = result;
+
+                var clipboard = new Clipboard('.btn');
+                clipboard.on('success',
+                    function (e) {
+                        e.clearSelection();
+                    }
+                );
+            });
+
+        // display the big cif data table:
+        postForm(cgifile + '/residuals', {id: idstr, all: true})
+            .then(function (response) { return response.text(); })
+            .then(function (result) {
+                document.getElementById("residuals").innerHTML = result;
+            });
+
+        // Get molecule data and display the molecule:
+        postForm(cgifile + '/molecule', {id: idstr})
+            .then(function (response) { return response.json(); })
+            .then(function (result) {
+                display_molecule(result)
+            });
+    }
+
     // some options for the fastmolwidget viewer:
-    var bgcolor = $(this.body).css("background-color");
+    var bgcolor = getComputedStyle(document.body).backgroundColor;
     var molecule_options = {
         controls: false,
         background: bgcolor,
@@ -516,9 +560,8 @@ $(document).ready(function ($) {
             , it_num: itnum, onlyelem: onlyelem, r1val: r1val, ccdc_num: ccdc_num
         };
         //console.log(gridparams);
-        var url;
         w2ui['mygrid'].request('load', gridparams,
-            url = cgifile + "/adv_srch",
+            cgifile + "/adv_srch",
             function (result) {
                 displayresultnum(result);
                 //console.log(result);
@@ -527,7 +570,7 @@ $(document).ready(function ($) {
     }
 
     // Search for structures of last month:
-    $('#lastmsearchlink').click(function () {
+    document.getElementById('lastmsearchlink').addEventListener('click', function () {
         var date_now = new Date();
         var month = date_now.getUTCMonth();
         var day = date_now.getUTCDate();
@@ -553,7 +596,7 @@ $(document).ready(function ($) {
     function isNumericArray(array) {
         var isal = true;
         for (var i = 0; i < array.length; i++) {
-            if (!$.isNumeric(array[i])) {
+            if (!isNumeric(array[i])) {
                 isal = false;
             }
         }
@@ -561,17 +604,15 @@ $(document).ready(function ($) {
     }
 
     function cellsearch(cell) {
-        var more_res = $('#more_results').is(':checked');
-        var supercell = $('#supercells').is(':checked');
+        var more_res = document.getElementById('more_results').checked;
+        var supercell = document.getElementById('supercells').checked;
         cell = cell.replace(/\s+/g, ' ').trim();  // replace multiple spaces with one
         cell = cell.replace(/,/g, '.');  // replace comma with point
         //console.log(cell);
-        var params;
-        var url;
         if (isValidCell(cell)) {
             w2ui['mygrid'].request('load',
-                params = {cell_search: cell, more: more_res, supercell: supercell},
-                url = cgifile + "/cellsrch",
+                {cell_search: cell, more: more_res, supercell: supercell},
+                cgifile + "/cellsrch",
                 function (result) {
                     displayresultnum(result);
                     //console.log(result.total);
@@ -582,13 +623,10 @@ $(document).ready(function ($) {
     }
 
     function txtsearch(text) {
-        var advanced = false;
-        var params;
-        var url;
         //console.log(text+' in txtsearch');
         w2ui['mygrid'].request('load',
-            params = {text_search: text},
-            url = cgifile + "/txtsrch",
+            {text_search: text},
+            cgifile + "/txtsrch",
             function (result) {
                 displayresultnum(result);
                 //console.log(result);

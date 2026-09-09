@@ -33,7 +33,7 @@ body {
     padding-top: 2px;
 }
 
-.input-group-addon {
+.input-group-text {
     min-width: 75px;
     text-align: left;
 }

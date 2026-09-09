@@ -8,14 +8,14 @@
     <div class="row">
         <div class="column col-sm-7">
             <div class="input-group input-group-sm advsearchfields">
-                <span class="input-group-addon">Unit Cell</span>
+                <span class="input-group-text">Unit Cell</span>
                 <input type="text" class="form-control form-sm" style="font-style: italic" placeholder="a b c &alpha; &beta; &gamma;" 
                        id="cell_csd_inp" value="{{cellstr}}">
-                <span class="input-group-addon input-group-btn btn-success" id="csd_search_btn">Search</span>
+                <span class="input-group-text btn btn-success" id="csd_search_btn">Search</span>
             </div>
         </div>
         <div class="column col-sm-2">
-            <select id="centering_drop" class="dropdown dropdown-toggle btn-md" data-toggle="dropdown">
+            <select id="centering_drop" class="form-select form-select-sm dropdown-toggle" data-bs-toggle="dropdown">
                 <option value="{{cent}}" {{!'selected="selected"' if cent == 0 else ""}}>Primitive (P)</option>
                 <option value="{{cent}}" {{!'selected="selected"' if cent == 1 else ""}}>A-centered (A)</option>
                 <option value="{{cent}}" {{!'selected="selected"' if cent == 2 else ""}}>B-centered (B)</option>
@@ -27,7 +27,7 @@
         </div>
         <!-- 
         <div class="column col-sm-2">
-            <a type="button" class="btn btn-default btn-sm" id="filter_button">Filter by Elements</a>
+            <a type="button" class="btn btn-outline-secondary btn-sm" id="filter_button">Filter by Elements</a>
         </div>
         -->
     </div>
@@ -43,8 +43,8 @@
 
 <div class="row">
     <div class="column col-sm-12">
-        <div class="panel panel-default">
-            <div class="panel-body">
+        <div class="card">
+            <div class="card-body">
                 <span id="found_csd"> </span>
             </div>
         </div>

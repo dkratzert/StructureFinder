@@ -5,7 +5,7 @@
 &#x2082;  <- 2 as subscript
 &#x2083;  <- 3 as subscript
 -->
-<select id="IT_number" title="Space Group Number">
+<select id="IT_number" title="Space Group Number" class="form-select form-select-sm">
     <option>  None  </option>
     <option>  1 -> (P1)</option>
     <option>  2 -> (P1&#x0305;)</option>

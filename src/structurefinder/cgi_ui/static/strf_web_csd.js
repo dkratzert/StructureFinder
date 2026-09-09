@@ -1,7 +1,7 @@
 
-$(document).ready(function($){
+document.addEventListener('DOMContentLoaded', function () {
 
-    let my_ccdc_grid = $('#my_ccdc_grid');
+    let my_ccdc_grid = document.getElementById('my_ccdc_grid');
 
     // The main structures table:
     let my_ccdc_grid_obj = new w2grid({
@@ -40,27 +40,25 @@ $(document).ready(function($){
     });
 
     //gets the window's height
-    let bc = $(window).height();
+    let bc = window.innerHeight;
     let hc = bc * 0.50;
     if (hc < 220) {
         hc = 220;
     }
     // Define the grid height to 35% of the screen:
-    my_ccdc_grid.css("height", hc);
+    my_ccdc_grid.style.height = hc + 'px';
     // w2ui 2.0 does not render the grid in the constructor:
-    my_ccdc_grid_obj.render(my_ccdc_grid[0]);
+    my_ccdc_grid_obj.render(my_ccdc_grid);
 
 
     function csdcellsearch(cell) {
-        //var more_res = $('#more_results').is(':checked');
+        //var more_res = document.getElementById('more_results').checked;
         let e = document.getElementById("centering_drop");
         let centering = e.options[e.selectedIndex].value;
         //console.log(centering+' #centering##');
         cell = cell.replace(/\s+/g, ' ').trim();  // replace multiple spaces with one
         cell = cell.replace(/,/g, '.');  // replace comma with point
         //console.log(cell+'csdcellsrch');
-        let params;
-        let url;
         if (isValidCell(cell)) {
             w2ui['my_ccdc_grid'].request('load',
                 {cell: cell, centering: centering, str_id: strid},
@@ -73,16 +71,19 @@ $(document).ready(function($){
             );
         }
     }
-    
-    
-    $('#filter_button').click(function(event) {
-        refine_elements(elements);    
-    });
-    
+
+
+    let filter_button = document.getElementById('filter_button');
+    if (filter_button) {
+        filter_button.addEventListener('click', function (event) {
+            refine_elements(elements);
+        });
+    }
+
     function refine_elements(elements) {
-        my_ccdc_grid.select(0);
-        //my_ccdc_grid.remove(0);
-        my_ccdc_grid.hide();
+        w2ui['my_ccdc_grid'].select(0);
+        //w2ui['my_ccdc_grid'].remove(0);
+        my_ccdc_grid.style.display = 'none';
     }
 
     // display how many results I got
@@ -92,7 +93,7 @@ $(document).ready(function($){
         else (numresult = result.total);
         document.getElementById("found_csd").innerHTML = "Found " + numresult + " structures";
     }
-    
+
     function show_csd_entry(identifier) {
         //console.log(identifier);
         let win = window.open('https://www.ccdc.cam.ac.uk/structures/Search?entry_list=' + identifier, '_blank');
@@ -114,25 +115,30 @@ $(document).ready(function($){
     function isNumericArray(array) {
         let isal = true;
         for (const element of array) {
-            if (!$.isNumeric(element)) {
+            if (!isNumeric(element)) {
                 isal = false;
             }
         }
         return isal;
     }
-    
-    
+
+    // Equivalent of jQuery's $.isNumeric():
+    function isNumeric(value) {
+        return !isNaN(parseFloat(value)) && isFinite(value);
+    }
+
+
     // Cell search Button clicked:
-    $("#csd_search_btn").click(function(event) {
+    document.getElementById("csd_search_btn").addEventListener('click', function (event) {
         let cell = document.getElementById("cell_csd_inp").value;
         //console.log(cell+' btnsrch');
         csdcellsearch(cell);
     });
 
-    
+
     // Enter key pressed in the cell search field:
-    $('#cell_csd_inp').keypress(function(e) {
-        if (e.which === 13) {  // enter key
+    document.getElementById('cell_csd_inp').addEventListener('keypress', function (e) {
+        if (e.which === 13 || e.key === 'Enter') {  // enter key
             let cell = document.getElementById("cell_csd_inp").value;
             csdcellsearch(cell);
             //console.log(txt);
