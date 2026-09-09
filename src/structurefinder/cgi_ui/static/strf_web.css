@@ -44,6 +44,8 @@ body {
 
 #moleculecolumn {
     min-height: 320px;
+    /* Clip the molecule viewer's canvas to the card's rounded corners: */
+    overflow: hidden;
 }
 
 #smpl_textsrchbutton {
