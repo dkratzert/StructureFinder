@@ -964,7 +964,8 @@ class StartStructureDB(QMainWindow):
             return
         cif_data = self.structures.get_cif_export_data(self.structureId)
         export_to_cif_file(cif_data, filename=filename)
-        print('cif exported')
+        if DEBUG:
+            print('cif exported')
 
     def get_save_name_from_dialog(self, directory: str = '', filter="*.sqlite"):
         if not directory:
@@ -1020,13 +1021,15 @@ class StartStructureDB(QMainWindow):
             return
         cell = self.structures.get_cell_by_id(self.structureId)
         if not cell:
-            print('No cell found')
+            if DEBUG:
+                print('No cell found')
             return
         if self.ui.growCheckBox.isChecked():
             symmcards = self.structures.get_row_as_dict(self.structureId)[
                 '_space_group_symop_operation_xyz'].replace("'", "").replace(" ", "").split("\n")
             if symmcards[0] == '':
-                print('Cif file has no symmcards, unable to grow structure.')
+                if DEBUG:
+                    print('Cif file has no symmcards, unable to grow structure.')
                 self.show_asymmetric_unit()
                 return
             self.ui.molGroupBox.setTitle('Completed Molecule')
