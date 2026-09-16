@@ -1,6 +1,7 @@
 StructureFinder Changelog
 -------------------------
 
+* v99 Improved support for structure files with BEDE/LONE instructions.
 * v98 The web interface now uses the fastmolwidget structure viewer instead of JSmol. Growing a
       structure happens in the browser now and needs no additional request to the server. Grow is
       enabled by default there, like in the desktop application.
