@@ -9,9 +9,9 @@ from xml.etree.ElementTree import ParseError
 
 import gemmi
 
+from fastmolwidget.web import bundle_js
+
 from structurefinder.ccdc.query import get_cccsd_path, parse_results, search_csd
-from structurefinder.displaymol.mol_file_writer import MolFile
-from fastmolwidget.sdm import SDM
 from structurefinder.misc.exporter import cif_data_to_document
 from structurefinder.misc.version import VERSION
 from structurefinder.pymatgen.core import lattice
@@ -162,31 +162,41 @@ def adv():
 
 
 @app.post('/molecule')
-def jsmol_request():
+def molecule_request():
     """
-    A request for atom data from jsmol.
+    Structure data for the fastmolwidget viewer.
+
+    Returns fractional coordinates plus symmetry, so the browser can grow the
+    asymmetric unit to complete molecules on its own.
     """
     str_id = request.POST.id
     print("Molecule id:", str_id)
     structures = StructureTable(dbfilename)
-    if str_id:
-        cell = structures.get_cell_by_id(str_id)
-        if request.POST.grow == 'true':
-            symm_xyz = structures.get_row_as_dict(str_id).get('_space_group_symop_operation_xyz') or ''
-            symmcards = symm_xyz.replace("'", "").replace(" ", "").split("\n")
-            atoms = structures.get_atoms_table(str_id, cartesian=False, as_list=True)
-            if atoms:
-                sdm = SDM(atoms, symmcards, cell)
-                needsymm = sdm.calc_sdm()
-                atoms = sdm.packer(sdm, needsymm)
-        else:
-            atoms = structures.get_atoms_table(str_id, cartesian=True, as_list=False)
-        try:
-            m = MolFile(atoms)
-            return m.make_mol()
-        except(KeyError, TypeError) as e:
-            print(f'Exception in jsmol_request: {e}')
-            return ''
+    if not str_id:
+        return {}
+    cell = structures.get_cell_by_id(str_id)
+    atoms = structures.get_atoms_table(str_id, cartesian=False, as_list=True)
+    if not cell or not atoms:
+        return {}
+    symm_xyz = structures.get_row_as_dict(str_id).get('_space_group_symop_operation_xyz') or ''
+    symmcards = [x for x in symm_xyz.replace("'", "").replace(" ", "").split("\n") if x]
+    return {'cell'   : list(cell[:6]),
+            'centric': False,
+            'symmops': symmcards,
+            'atoms'  : [{'label': at[0], 'type': at[1], 'x': at[2], 'y': at[3], 'z': at[4],
+                         'part' : at[5], 'adp': None}
+                        for at in atoms],
+            }
+
+
+@app.route('/fastmolwidget.js')
+def fastmolwidget_js():
+    """
+    The JavaScript part of fastmolwidget as a single classic script.
+    """
+    response.content_type = 'application/javascript; charset=UTF-8'
+    response.set_header("Cache-Control", "public, max-age=240")
+    return bundle_js()
 
 
 @app.post('/residuals')
@@ -319,30 +329,29 @@ def show_cellcheck():
     return output
 
 
-@app.post('/csd-list')
+@app.route('/csd-list', method=['GET', 'POST'])
 def search_cellcheck_csd():
     """
     Search with CellcheckCSD.
     """
-    cmd = request.POST.cmd
-    cell = request.POST.cell
+    cell = request.params.cell
     if not cell:
-        return {}
-    cent = request.POST.centering
+        return {"total": 0, "records": [], "status": "success"}
+    cent = request.params.centering
     if len(cell) < 6:
-        return {}
-    if cmd == 'get-records' and len(cell.split()) == 6:
+        return {"total": 0, "records": [], "status": "success"}
+    if len(cell.split()) == 6:
         xml = search_csd(cell.split(), centering=centering_num_2_letter[int(cent)])
         # print(xml)
         try:
             results = parse_results(xml)  # results in a dictionary
         except ParseError as e:
             print(e)
-            return
+            return {"total": 0, "records": [], "status": "success"}
         print(len(results), 'Structures found...')
         return {"total": len(results), "records": results, "status": "success"}
     else:
-        return {}
+        return {"total": 0, "records": [], "status": "success"}
 
 
 @app.error(404)
@@ -371,12 +380,12 @@ def get_structures_json(structures: StructureTable, ids: list | tuple | None = N
     Returns the next package of table rows for continuos scrolling.
     """
     if not ids and not show_all:
-        return {}
+        return {"total": 0, "records": [], "status": "success"}
     dic = structures.get_all_structures_as_dict(ids)
     number = len(dic)
     print(f"--> Got {number} structures from actual search.")
     if number == 0:
-        return {}
+        return {"total": 0, "records": [], "status": "success"}
     return {"total": number, "records": dic, "status": "success"}
 
 
@@ -420,7 +429,7 @@ def get_residuals_table1(structures: StructureTable, cif_dic: dict, structure_id
         # Display this as last resort:
         sumform = cif_dic['_chemical_formula_sum']
     table1 = """
-    <table class="table table-bordered table-condensed" id='resitable1'>
+    <table class="table table-bordered table-sm" id='resitable1'>
         <tbody>
         <tr><td style='width: 40%'><b>Space Group</b></td>                 <td>{}</td></tr>
         <tr><td><b>Z</b></td>                           <td>{}</td></tr>
@@ -480,7 +489,7 @@ def get_residuals_table2(cif_dic: dict) -> str:
     except TypeError:
         data_to_param = 0
     table2 = """
-    <table class="table table-bordered table-condensed" id='resitable2'>
+    <table class="table table-bordered table-sm" id='resitable2'>
         <tbody>
         <tr><td style='width: 40%'><b>Measured Refl.</b></td>       <td>{}</td></tr>
         <tr><td><b>Independent Refl.</b></td>                       <td>{}</td></tr>
@@ -518,11 +527,11 @@ def get_all_cif_val_table(structures: StructureTable, structure_id: int) -> str:
     """
     # starting table header (the div is for css):
     # style="white-space: pre": preserves white space
-    button = f"""<a type="button" class="btn btn-default btn-sm" id="download_CIF"
+    button = f"""<a type="button" class="btn btn-outline-secondary btn-sm" id="download_CIF"
                                                  href='current-cif/{structure_id}' >Download as CIF</a>"""
     table_string = """<h4>All CIF values</h4> {}
                         <div id="myresidualtable">
-                        <table class="table table-striped table-bordered table-condensed" style="white-space: pre">
+                        <table class="table table-striped table-bordered table-sm" style="white-space: pre">
                             <thead>
                                 <tr>
                                     <th> Item </th>

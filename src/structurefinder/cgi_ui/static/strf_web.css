@@ -33,7 +33,7 @@ body {
     padding-top: 2px;
 }
 
-.input-group-addon {
+.input-group-text {
     min-width: 75px;
     text-align: left;
 }
@@ -42,11 +42,10 @@ body {
     font-family: "Bitstream Vera Sans Mono", Monaco, "Courier New", Courier, monospace;
 }
 
-#jsmolcolumn {
-    margin-right: 15px;
-    margin-left: 15px;
-    width: 360px;
-    height: 320px;
+#moleculecolumn {
+    min-height: 320px;
+    /* Clip the molecule viewer's canvas to the card's rounded corners: */
+    overflow: hidden;
 }
 
 #smpl_textsrchbutton {

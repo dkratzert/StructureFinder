@@ -42,7 +42,7 @@
     <div class="row">
         <div class="column col-sm-6">
             <div class="input-group input-group-sm">
-                <span class="input-group-addon">Uni Cell</span>
+                <span class="input-group-text">Uni Cell</span>
                 <label for="cell_adv"></label>
                 <input type="text" class="form-control form-sm" placeholder="a b c &alpha; &beta; &gamma;"
                        id="cell_adv">
@@ -51,29 +51,29 @@
 
         <div class="column col-sm-6">
             <div class="input-group input-group-sm">
-                <span class="input-group-addon"><i>R</i><sub>1</sub> <=</span>
+                <span class="input-group-text"><i>R</i><sub>1</sub> <=</span>
                 <label for="r1_val_adv"></label>
                 <input type="text" class="form-control form-sm" id="r1_val_adv">
-                <span class="input-group-addon">%</span>
+                <span class="input-group-text">%</span>
             </div>
         </div>
     </div>
     <div class="row">
         <div class="column col-sm-6">
             <div class="input-group input-group-sm w2ui-field">
-                <span class="input-group-addon" data-toggle="tooltip"
+                <span class="input-group-text" data-bs-toggle="tooltip"
                       title="Search for structures that were modified between two dates">Date from</span>
                 <input class="input-sm" title="Date" type="text" id="date1" style="width: 95%">
-                <span class="input-group-addon">to</span>
+                <span class="input-group-text">to</span>
                 <input class="input-sm" title="Date" type="text" id="date2" style="width: 95%">
-                <a type="button" class="input-group-addon"
-                   data-toggle="tooltip" title="Search for structures modified during the last month."
+                <a type="button" class="input-group-text"
+                   data-bs-toggle="tooltip" title="Search for structures modified during the last month."
                    id="lastmsearchlink"> From Last Month</a>
             </div>
         </div>
         <div class="column col-sm-6">
             <div class="input-group input-group-sm">
-                <span class="input-group-addon">CCDC number</span>
+                <span class="input-group-text">CCDC number</span>
                 <label for="ccdc_num_adv"></label>
                 <input type="text" class="form-control form-sm" id="ccdc_num_adv">
             </div>
@@ -81,9 +81,9 @@
     </div>
 
     <div class="row">
-        <div class="column col-xs-6">
-            <div class="input-group input-group-sm input-group-prepend has-success">
-                <span class="input-group-addon" data-toggle="tooltip" title="should contain">Elements</span>
+        <div class="column col-6">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text" data-bs-toggle="tooltip" title="should contain">Elements</span>
                 <label for="elements_in"></label>
                 <input type="text" class="form-control form-sm" placeholder="C H O ... (should contain)"
                        pattern="^[A-z]{1,}$" id="elements_in">
@@ -91,9 +91,9 @@
                        title="Only above Elements" id="onlythese_elem"> Only above Elements
             </div>
         </div>
-        <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-error">
-                <span class="input-group-addon" data-toggle="tooltip" title="should not contain">Elements</span>
+        <div class="column col-6">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text" data-bs-toggle="tooltip" title="should not contain">Elements</span>
                 <label for="elements_out"></label>
                 <input type="text" class="form-control form-sm" placeholder="C H O ... (should not contain)"
                        pattern="^[A-z]{1,}$" id="elements_out">
@@ -102,16 +102,16 @@
     </div>
 
     <div class="row">
-        <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-success">
-                <span class="input-group-addon" data-toggle="tooltip" title="should contain">Text</span>
+        <div class="column col-6">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text" data-bs-toggle="tooltip" title="should contain">Text</span>
                 <label for="text_in"></label>
                 <input type="text" class="form-control form-sm" placeholder="should contain" id="text_in">
             </div>
         </div>
-        <div class="column col-xs-6">
-            <div class="input-group input-group-sm has-error">
-                <span class="input-group-addon" data-toggle="tooltip" title="should not contain">Text</span>
+        <div class="column col-6">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text" data-bs-toggle="tooltip" title="should not contain">Text</span>
                 <label for="text_out"></label>
                 <input type="text" class="form-control form-sm" placeholder="should not contain" id="text_out">
             </div>
@@ -119,7 +119,7 @@
     </div>
 
     <div class="row">
-        <div class="column col-xs-12">
+        <div class="column col-12">
             <a type="button" class="btn btn-sm btn-success" id="advsearch-button" style="min-width:90px">
                 Search </a>
         </div>
