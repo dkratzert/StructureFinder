@@ -1,9 +1,8 @@
-[![Packaging Status](https://repology.org/badge/vertical-allrepos/python:structurefinder.svg)](https://repology.org/project/python:structurefinder/versions)
-
 
 ![Lates Release](https://img.shields.io/github/v/tag/dkratzert/StructureFinder?label=Latest%20Release)
 [![Tests](https://github.com/dkratzert/StructureFinder/actions/workflows/python_tests.yml/badge.svg?branch=master)](https://github.com/dkratzert/StructureFinder/actions/workflows/python_tests.yml)
 ![Contributions](https://img.shields.io/badge/contributions-welcome-blue)
+[![PyPI version](https://img.shields.io/pypi/v/structurefinder.svg)](https://pypi.org/project/structurefinder/)
 
 # StructureFinder
 A crystal structure finder written in PyQt6 and Python 3 with SQLite.
