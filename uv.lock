@@ -1566,6 +1566,8 @@ dev = [
     { name = "hatchling" },
     { name = "pytest" },
     { name = "ruff" },
+]
+doc = [
     { name = "sphinx" },
     { name = "sphinx-rtd-theme" },
 ]
@@ -1609,7 +1611,9 @@ dev = [
     { name = "hatchling", extras = ["build"], specifier = ">=1.29.0" },
     { name = "pytest" },
     { name = "ruff" },
-    { name = "sphinx" },
+]
+doc = [
+    { name = "sphinx", specifier = ">=8.1.3" },
     { name = "sphinx-rtd-theme" },
 ]
 web = [{ name = "gunicorn" }]
