@@ -111,4 +111,5 @@ StructureFinder Changelog
 * v29 Fixed missing shelxfile directory in 32bit installer.
 * v28 Faster structure display. Some bugs fixed.
 * v27 Suport "grow structure" for web and qt interface.
+
 ...
