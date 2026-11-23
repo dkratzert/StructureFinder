@@ -13,6 +13,17 @@ Linux / Mac / Windows (Python Package)
 Since version 73, there is a `PyPI <https://pypi.org/project/structurefinder>`_ package for
 installation in a Python environment. StructureFinder requires **Python 3.12** or newer.
 
+.. note::
+
+    On Python 3.15, the dependency ``gemmi`` has no pre-built wheels yet and is compiled from
+    source, which requires a C++ compiler. With pip, constrain its build dependency
+    ``nanobind`` to version 2.x:
+
+    .. code-block:: bash
+
+        echo "nanobind<3" > build-constraints.txt
+        PIP_BUILD_CONSTRAINT=build-constraints.txt pip install structurefinder
+
 Do the following steps in order to install and run StructureFinder:
 
 .. code-block:: bash

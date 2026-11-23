@@ -18,16 +18,19 @@ classifiers = [
     "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering :: Chemistry",
     "Development Status :: 5 - Production/Stable",
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
 ]
 
 dependencies = [
     "docutils>=0.22",
-    "fastmolwidget>=1.2.0",
+    "fastmolwidget==1.6.1",
     "macholib",
-    "numpy>=2.3.5,<=2.5",
+    "numpy",
     "pefile",
-    "pyqt6>=6.9",
+    "pyqt6>=6.11",
     "pyqt6-sip",
     "pywin32-ctypes>=0.2",
     "six",
@@ -53,7 +56,7 @@ pyqt6 = [
 dev = [
     "ruff",
     "pytest",
-    "hatchling[build]>=1.29.0",
+    "hatchling>=1.29.0",
 ]
 
 doc = [
@@ -75,6 +78,8 @@ web = [
 
 [tool.uv]
 #exclude-newer = "1 days"
+# gemmi 0.7.5 has no Python 3.15 wheels and its sdist does not build with nanobind 3.x:
+build-constraint-dependencies = ["nanobind<3"]
 
 [tool.uv.pip]
 only-binary = [":all:"]
