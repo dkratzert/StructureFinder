@@ -57,6 +57,7 @@ dev = [
     "ruff",
     "pytest",
     "hatchling>=1.29.0",
+    "ty>=0.0.108",
 ]
 
 doc = [
@@ -84,6 +85,9 @@ build-constraint-dependencies = ["nanobind<3"]
 [tool.uv.pip]
 only-binary = [":all:"]
 no-binary = ["structurefinder"]
+
+[tool.ty.src]
+exclude = ["src/structurefinder/cgi_ui/bottle.py"]
 
 [project.urls]
 "Homepage" = "https://dkratzert.de/structurefinder.html"
